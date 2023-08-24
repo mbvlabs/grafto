@@ -30,7 +30,7 @@ func NewViews() Views {
 			FS: templates,
 		},
 		Extensions:      []string{".html"},
-		RequirePartials:false,
+		RequirePartials: false,
 		Funcs: []template.FuncMap{
 			sprig.FuncMap(),
 		},
@@ -48,8 +48,8 @@ type RenderOpts struct {
 
 func (v Views) Render(w io.Writer, tmpl string, data interface{}, e echo.Context) error {
 	renderOpts, ok := data.(RenderOpts)
-	if !ok {
-		panic("bad render opts")
+	if data != nil && !ok {
+		panic("bad render opts") // TODO add fallback tmpl
 	}
 
 	if renderOpts.Layout != "" {

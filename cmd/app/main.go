@@ -20,9 +20,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.GET("/", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "home/index", views.RenderOpts{
-			Data: "this is a long string",
-		})
+		return c.Render(http.StatusOK, "home/index", nil)
 	})
 
 	e.GET("/dashboard", func(c echo.Context) error {
