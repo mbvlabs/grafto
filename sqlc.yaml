@@ -1,0 +1,12 @@
+version: "2"
+sql:
+- schema: "migrations"
+  queries: "repository/database/queries"
+  engine: "postgresql"
+  gen:
+    go:
+      package: "database"
+      out: "repository/database"
+      output_db_file_name: "database.go"
+      sql_package: "pgx/v5"
+
