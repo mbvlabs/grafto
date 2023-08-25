@@ -6,3 +6,6 @@ make-migration name:
 
 generate-db:
 	sqlc compile && sqlc generate --experimental
+
+run:
+    go run cmd/app/main.go

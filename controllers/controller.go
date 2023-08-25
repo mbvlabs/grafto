@@ -17,6 +17,6 @@ func NewController(db database.Queries) Controller {
 	}
 }
 
-func (c *Controller) Health(ctx echo.Context) error {
+func (c *Controller) AppHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, []byte("app is healthy and running"))
 }
