@@ -22,15 +22,25 @@ Make sure you've the following dependencies installed:
 
 Next, run the cmd below to have your `.env` files ready:
 ```bash
-    cp .env.example .env
+cp .env.example .env
 ```
 
 You'll need to setup a database before you can run the migrations, do that, and fill out the variable in the `.env` file
 named "DATABASE_URL".
 
-With that in-place, simply run `just migrations-up` and the database will be ready. Lastly, to run the application,
-open two terminals, run `just run` in one of them and `just watch-css` in another. Visit `http://0.0.0.0:8080` to see
-the start page.
+With that in-place, simply run:
+```bash 
+just migrations-up
+``` 
+and the database will be ready. Lastly, to run the application, open two terminals, run:
+```bash 
+just run
+```
+in one of them and 
+```bash 
+just watch-css
+``` 
+in another. Visit `http://0.0.0.0:8080` to see the start page.
 
 ## Views
 You can define `partials`, either using `unrolled/render`'s `partial_name-current_tmpl_name` or the one built in with
