@@ -36,11 +36,13 @@ and the database will be ready. Lastly, to run the application, open two termina
 ```bash 
 just run
 ```
-in one of them and 
+in one of and
 ```bash 
 just watch-css
 ``` 
-in another. Visit `http://0.0.0.0:8080` to see the start page.
+in another.
+
+Visit `http://0.0.0.0:8080` to see the start page.
 
 ## Views
 You can define `partials`, either using `unrolled/render`'s `partial_name-current_tmpl_name` or the one built in with
