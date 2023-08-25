@@ -36,7 +36,7 @@ and the database will be ready. Lastly, to run the application, open two termina
 ```bash 
 just run
 ```
-in one of and
+in one, and
 ```bash 
 just watch-css
 ``` 
