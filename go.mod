@@ -41,5 +41,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/labstack/echo/v4 v4.11.1
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 	golang.org/x/sys v0.11.0 // indirect
 )
