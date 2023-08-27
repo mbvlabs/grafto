@@ -1,9 +1,11 @@
 set dotenv-load
 
+default:
+    @just --list
+
 # CSS
 watch-css:
     npx tailwindcss -i ./base.css -o ./static/css/output.css --watch
-
 
 # Database 
 make-migration name:
@@ -12,5 +14,7 @@ make-migration name:
 generate-db:
 	sqlc compile && sqlc generate --experimental
 
+# Application
 run:
-    go run cmd/app/main.go
+    air -c .air.toml
+
