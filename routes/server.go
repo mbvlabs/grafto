@@ -44,6 +44,8 @@ func NewServer(router *echo.Echo, v views.Views, controllers controllers.Control
 		router.Debug = true
 	}
 
+	router.Static("/static", "static")
+
 	return Server{
 		router,
 		host,

@@ -1,0 +1,19 @@
+{
+  "name": "grafto",
+  "version": "1.0.0",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MBvisti/grafto.git"
+  },
+  "dependencies": {
+    "alpinejs": "^3.13.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.3"
+  }
+}
