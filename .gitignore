@@ -23,3 +23,5 @@ go.work
 .env
 
 node_modules
+
+tmp
