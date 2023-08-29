@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 
+	"log/slog"
+
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/repository/database"
@@ -10,6 +12,7 @@ import (
 	"github.com/MBvisti/grafto/views"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	slogecho "github.com/samber/slog-echo"
 )
 
 func main() {
@@ -18,8 +21,14 @@ func main() {
 	router := echo.New()
 	router.Renderer = v
 
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	// Middleware
+	router.Use(slogecho.New(logger))
+
 	router.Use(middleware.Logger())
 	router.Use(middleware.Recover())
+
 	conn := database.SetupDatabaseConnection(os.Getenv("DATABASE_URL"))
 	db := database.New(conn)
 
