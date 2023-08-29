@@ -7,6 +7,7 @@ import (
 
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/pkg/mail"
+	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/routes"
 	"github.com/MBvisti/grafto/views"
@@ -21,12 +22,12 @@ func main() {
 	router := echo.New()
 	router.Renderer = v
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := telemetry.SetupLogger()
+
+	slog.SetDefault(logger)
 
 	// Middleware
 	router.Use(slogecho.New(logger))
-
-	router.Use(middleware.Logger())
 	router.Use(middleware.Recover())
 
 	conn := database.SetupDatabaseConnection(os.Getenv("DATABASE_URL"))
@@ -37,7 +38,7 @@ func main() {
 	mailClient := mail.NewMail(&postmark)
 	controllers := controllers.NewController(*db, mailClient)
 
-	server := routes.NewServer(router, v, controllers)
+	server := routes.NewServer(router, v, controllers, logger)
 
 	server.Start()
 }
