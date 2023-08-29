@@ -1,4 +1,5 @@
-# Grafto
+## Grafto - full-stack web development in Go
+The kickstarter repository for full-stack Go apps, using your grandfather's technology
 
 ## Aim
 
@@ -8,6 +9,24 @@ HTML rendered on the server) but tries to be as idiomatic as possible.
 
 The target audience for the starter is mostly going to be solo-devs building side-projects or trying to bootstrap a 
 new business.
+
+It's important to note that there currently exists a much more feature complete starter template, called [pagado](https://github.com/mikestefanello/pagoda).
+This is not an attempt at replacing that, but rather offer another approach and view to full-stack web development
+in Go.
+
+## Things left TODO
+- [X] Implement view layer
+- [X] Implement repository layer
+- [X] Implement controller layer
+- [X] Implement router layer
+- [X] Add static assets (tailwind, alpine & htmx)
+- [ ] Add users migration
+- [ ] Add login & authentication
+- [X] Add mail functionality
+- [ ] Explore different queuing options
+- [ ] Add Dockerfile
+- [X] Add AIR
+- [ ] Add slog (and maybe tint)
 
 ## Getting started
 
