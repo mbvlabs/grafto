@@ -3,17 +3,20 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/labstack/echo/v4"
 )
 
 type Controller struct {
-	db database.Queries
+	db   database.Queries
+	mail mail.Mail
 }
 
-func NewController(db database.Queries) Controller {
+func NewController(db database.Queries, mail mail.Mail) Controller {
 	return Controller{
 		db,
+		mail,
 	}
 }
 
