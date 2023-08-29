@@ -1,5 +1,5 @@
-# Grafto - full-stack web development in Go, using your grandfather's technology
-The kickstarter repository for full-stack Go apps
+## Grafto - full-stack web development in Go
+The kickstarter repository for full-stack Go apps, using your grandfather's technology
 
 ## Aim
 
