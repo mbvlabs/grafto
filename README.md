@@ -14,6 +14,20 @@ It's important to note that there currently exists a much more feature complete 
 This is not an attempt at replacing that, but rather offer another approach and view to full-stack web development
 in Go.
 
+## Things left TODO
+- [X] Implement view layer
+- [X] Implement repository layer
+- [X] Implement controller layer
+- [X] Implement router layer
+- [X] Add static assets (tailwind, alpine & htmx)
+- [ ] Add users migration
+- [ ] Add login & authentication
+- [X] Add mail functionality
+- [ ] Explore different queuing options
+- [ ] Add Dockerfile
+- [X] Add AIR
+- [ ] Add slog (and maybe tint)
+
 ## Getting started
 
 Make sure you've the following dependencies installed:
