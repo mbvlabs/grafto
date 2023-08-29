@@ -4,8 +4,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/lmittmann/tint"
 	"log/slog"
+
+	"github.com/lmittmann/tint"
 )
 
 func SetupLogger() *slog.Logger {
