@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/MBvisti/grafto/controllers"
+	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/routes"
 	"github.com/MBvisti/grafto/views"
@@ -21,7 +22,11 @@ func main() {
 	router.Use(middleware.Recover())
 	conn := database.SetupDatabaseConnection(os.Getenv("DATABASE_URL"))
 	db := database.New(conn)
-	controllers := controllers.NewController(*db)
+
+	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
+
+	mailClient := mail.NewMail(&postmark)
+	controllers := controllers.NewController(*db, mailClient)
 
 	server := routes.NewServer(router, v, controllers)
 
