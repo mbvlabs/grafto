@@ -12,7 +12,7 @@ import (
 	"github.com/MBvisti/grafto/routes/web"
 	"github.com/MBvisti/grafto/views"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 type Server struct {
@@ -23,8 +23,9 @@ type Server struct {
 	web    web.Web
 }
 
-func NewServer(router *echo.Echo, v views.Views, controllers controllers.Controller) Server {
-	api := api.NewAPI(router, controllers)
+func NewServer(
+	router *echo.Echo, v views.Views, controllers controllers.Controller, logger *slog.Logger) Server {
+	api := api.NewAPI(router, controllers, logger)
 	api.SetupAPIRoutes()
 
 	web := web.NewWeb(router, controllers)
