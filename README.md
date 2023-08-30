@@ -23,10 +23,10 @@ in Go.
 - [ ] Add users migration
 - [ ] Add login & authentication
 - [X] Add mail functionality
-- [ ] Explore different queuing options
+- [ ] Add queue/job/task/option
 - [ ] Add Dockerfile
 - [X] Add AIR
-- [ ] Add slog (and maybe tint)
+- [X] Add slog (and maybe tint)
 
 ## Getting started
 
@@ -63,7 +63,26 @@ in another.
 
 Visit `http://0.0.0.0:8080` to see the start page.
 
+
+## Mails
+
+For mails, this template use [mjml](https://documentation.mjml.io/) to build out responsive mails. To add a new mail,
+simply add a new file under `resources/mails/{name-of-file}.mjml`, then run (file name without extension):
+```bash
+just watch-mail {name-of-file}
+```
+
+This will watch for changes in that file, open a browser window and you can start building out your mail.
+
+Before you can start sending mails you need to provide an email client that implements the `mailClient` interface. The
+template provides an implementation for Postmark. If you need to add more functionality simply extend the interface.
+
+During the Docker build process, the `compose-emails` command will be call, which will take all files within the
+`resource/mails` folder, compile it to `html` and move it to `pkg/mail/templates` which will be embedded into the
+binary.
+
 ## Views
+
 You can define `partials`, either using `unrolled/render`'s `partial_name-current_tmpl_name` or the one built in with
 Go's template library, using `define`. A `define` can be reused throughout the templates by using either `template` or
 `block`. Those two are effectively the same, but `block` lets you define a fallback. If you create a file under `partials/`
