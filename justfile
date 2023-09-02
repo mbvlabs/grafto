@@ -1,5 +1,19 @@
 set dotenv-load
 
+# alias
+alias r := run
+
+alias wc := watch-css
+
+alias wm := watch-mail
+
+alias mm := make-migration
+alias um := up-migrations
+alias dm := down-migrations
+alias dmt := down-migrations-to
+alias rdb := reset-db
+alias gdf := generate-db-functions
+
 default:
     @just --list
 
@@ -19,7 +33,19 @@ watch-mail name:
 make-migration name:
 	@goose -dir migrations $DATABASE $DATABASE_URL create {{name}} sql
 
-generate-db:
+up-migrations:
+	@goose -dir migrations $DATABASE $DATABASE_URL up
+
+down-migrations:
+	@goose -dir migrations $DATABASE $DATABASE_URL down
+
+down-migrations-to version:
+	@goose -dir migrations $DATABASE $DATABASE_URL down-to {{version}}
+
+reset-db:
+	@goose -dir migrations $DATABASE $DATABASE_URL reset
+
+generate-db-functions:
 	sqlc compile && sqlc generate --experimental
 
 # Application
