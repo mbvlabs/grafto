@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,11 +9,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
 </head>
-<body>
+<body class="dark:bg-slate-900 bg-gray-100 max-w-[100rem] flex flex-col mx-auto w-full h-full">
     {{ template "navigation" .}}
     {{ yield }}
-
     <script src="/static/js/htmx.min.js"></script>
     <script src="/static/js/alpine.js"></script>
+    <script src="/static/js/preline/preline.js"></script>
 </body>
 </html>

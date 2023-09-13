@@ -11,9 +11,11 @@
     "url": "git+https://github.com/MBvisti/grafto.git"
   },
   "dependencies": {
-    "mjml": "^4.14.1"
+    "mjml": "^4.14.1",
+    "preline": "^1.9.0"
   },
   "devDependencies": {
+    "daisyui": "^3.6.4",
     "tailwindcss": "^3.3.3"
   }
 }

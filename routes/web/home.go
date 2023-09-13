@@ -5,7 +5,7 @@ import (
 )
 
 func (w *Web) HomeRoutes() {
-	w.router.GET("/home", func(c echo.Context) error {
+	w.router.GET("/", func(c echo.Context) error {
 		return w.controllers.HomeIndex(c)
 	})
 }

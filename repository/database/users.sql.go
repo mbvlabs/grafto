@@ -7,15 +7,16 @@ package database
 
 import (
 	"context"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const deleteUser = `-- name: DeleteUser :exec
 delete from users where id=$1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
@@ -29,9 +30,9 @@ returning id, created_at, updated_at, name, mail, mail_verified_at, password
 `
 
 type InsertUserParams struct {
-	ID        pgtype.UUID
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	Name      string
 	Mail      string
 	Password  string
@@ -63,7 +64,7 @@ const queryUser = `-- name: QueryUser :one
 select id, created_at, updated_at, name, mail, mail_verified_at, password from users where id=$1
 `
 
-func (q *Queries) QueryUser(ctx context.Context, id pgtype.UUID) (User, error) {
+func (q *Queries) QueryUser(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, queryUser, id)
 	var i User
 	err := row.Scan(
@@ -118,8 +119,8 @@ returning id, created_at, updated_at, name, mail, mail_verified_at, password
 `
 
 type UpdateUserParams struct {
-	ID        pgtype.UUID
-	UpdatedAt pgtype.Timestamptz
+	ID        uuid.UUID
+	UpdatedAt time.Time
 	Name      string
 	Mail      string
 	Password  string

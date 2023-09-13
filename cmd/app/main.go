@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/MBvisti/grafto/controllers"
+	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
@@ -30,7 +31,7 @@ func main() {
 	router.Use(slogecho.New(logger))
 	router.Use(middleware.Recover())
 
-	conn := database.SetupDatabaseConnection(os.Getenv("DATABASE_URL"))
+	conn := database.SetupDatabaseConnection(config.GetDatabaseURL())
 	db := database.New(conn)
 
 	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
