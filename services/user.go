@@ -19,29 +19,29 @@ type userDatabase interface {
 
 type NewUserData struct {
 	ConfirmPassword string `validate:"required,gte=8"`
-	Name            string `validate:"required,gte=40"`
+	Name            string `validate:"required,gte=2"`
 	Mail            string `validate:"required,email"`
 	Password        string `validate:"required,gte=8"`
 }
 
+func passwordMatchValidation(sl validator.StructLevel) {
+
+	data := sl.Current().Interface().(NewUserData)
+
+	if data.ConfirmPassword != data.Password {
+		sl.ReportError(data.ConfirmPassword, "", "ConfirmPassword", "", "confirm password must match password")
+	}
+}
+
 func NewUser(
-	ctx context.Context, data NewUserData, db userDatabase) (entity.User, error) {
+	ctx context.Context, data NewUserData, db userDatabase, v *validator.Validate) (entity.User, error) {
 	telemetry.Logger.Info("creating user")
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
+	v.RegisterStructValidation(passwordMatchValidation, NewUserData{})
 
-	if err := validate.Struct(data); err != nil {
+	if err := v.Struct(data); err != nil {
 		return entity.User{}, err
 	}
-	// if ok := v.Validate(); !ok {
-	// 	telemetry.Logger.Error("error creating new user", "error", v.Errors.All())
-	// 	return entity.User{}, errors.Wrap(ErrInvalidInput, v.Errors.Error())
-	// }
-
-	// userData := NewUserData{}
-	// if err := v.BindSafeData(&userData); err != nil {
-	// 	return entity.User{}, err
-	// }
 
 	hashedPassword, err := hashAndPepperPassword(data.Password)
 	if err != nil {

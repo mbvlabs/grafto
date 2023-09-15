@@ -5,18 +5,26 @@ import (
 
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/repository/database"
+	"github.com/MBvisti/grafto/views"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
 type Controller struct {
-	db   database.Queries
-	mail mail.Mail
+	db       database.Queries
+	mail     mail.Mail
+	views    views.Views
+	validate *validator.Validate
 }
 
-func NewController(db database.Queries, mail mail.Mail) Controller {
+func NewController(db database.Queries, mail mail.Mail, views views.Views) Controller {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
 	return Controller{
 		db,
 		mail,
+		views,
+		validate,
 	}
 }
 

@@ -12,9 +12,7 @@ import (
 
 // CreateUser method    shows the form to create the user
 func (c *Controller) CreateUser(ctx echo.Context) error {
-	return ctx.Render(http.StatusOK, "user/register", views.RenderOpts{
-		Data: nil,
-	})
+	return c.views.RegisterUser(ctx, views.RegisterUserData{})
 }
 
 type StoreUserPayload struct {
@@ -36,14 +34,49 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		Mail:            payload.Mail,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
-	}, &c.db)
+	}, &c.db, c.validate)
 	if err != nil {
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {
 			telemetry.Logger.Info("internal error", "ok", ok)
 		}
-		telemetry.Logger.Info("error payload", "error", e)
-		return err
+		viewData := views.RegisterUserData{
+			NameInput: views.InputData{
+				OldValue: payload.UserName,
+			},
+			EmailInput: views.InputData{
+				OldValue: payload.Mail,
+			},
+		}
+
+		for _, validationError := range e {
+			switch validationError.StructField() {
+			case "Name":
+				viewData.NameInput = views.InputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+					OldValue:   validationError.Value(),
+				}
+			case "Mail":
+				viewData.EmailInput = views.InputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+					OldValue:   validationError.Value(),
+				}
+			case "Password":
+				viewData.PasswordInput = views.InputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			case "ConfirmPassword":
+				viewData.ConfirmPassword = views.InputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			}
+		}
+
+		return c.views.RegisterUser(ctx, viewData)
 	}
 
 	return ctx.Render(http.StatusOK, "user/__registered", views.RenderOpts{

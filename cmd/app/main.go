@@ -37,7 +37,7 @@ func main() {
 	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
 
 	mailClient := mail.NewMail(&postmark)
-	controllers := controllers.NewController(*db, mailClient)
+	controllers := controllers.NewController(*db, mailClient, v)
 
 	server := routes.NewServer(router, v, controllers, logger)
 
