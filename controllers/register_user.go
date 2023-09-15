@@ -6,6 +6,7 @@ import (
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,17 +31,20 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		panic("yooyoyyoy")
 	}
 
-	newlyCreatedUser, err := services.NewUser(ctx.Request().Context(), services.NewUserData{
-		Name:     payload.UserName,
-		Mail:     payload.Mail,
-		Password: payload.Password,
+	_, err := services.NewUser(ctx.Request().Context(), services.NewUserData{
+		Name:            payload.UserName,
+		Mail:            payload.Mail,
+		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
 	}, &c.db)
 	if err != nil {
+		e, ok := err.(validator.ValidationErrors)
+		if !ok {
+			telemetry.Logger.Info("internal error", "ok", ok)
+		}
+		telemetry.Logger.Info("error payload", "error", e)
 		return err
 	}
-
-	telemetry.Logger.Info("user value", "user", newlyCreatedUser)
 
 	return ctx.Render(http.StatusOK, "user/__registered", views.RenderOpts{
 		Data: nil,
