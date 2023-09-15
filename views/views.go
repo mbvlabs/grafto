@@ -25,7 +25,7 @@ type Views struct {
 func NewViews() Views {
 	r := render.New(render.Options{
 		Directory: "templates",
-		Layout:    BaseLayout,
+		// Layout:    BaseLayout,
 		FileSystem: &render.EmbedFileSystem{
 			FS: templates,
 		},

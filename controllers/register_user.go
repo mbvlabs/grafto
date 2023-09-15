@@ -12,7 +12,7 @@ import (
 
 // CreateUser method    shows the form to create the user
 func (c *Controller) CreateUser(ctx echo.Context) error {
-	return c.views.RegisterUser(ctx, views.RegisterUserData{})
+	return c.views.RegisterUser(ctx)
 }
 
 type StoreUserPayload struct {
@@ -76,12 +76,10 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			}
 		}
 
-		return c.views.RegisterUser(ctx, viewData)
+		return c.views.RegisterUserForm(ctx, viewData)
 	}
 
-	return ctx.Render(http.StatusOK, "user/__registered", views.RenderOpts{
-		Data: nil,
-	})
+	return c.views.RegisteredUser(ctx)
 }
 
 func (c *Controller) AuthenticateUser(ctx echo.Context) error {
