@@ -4,7 +4,6 @@ import (
 	"embed"
 	"html/template"
 	"io"
-	"net/http"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/labstack/echo/v4"
@@ -60,4 +59,3 @@ func (v Views) Render(w io.Writer, tmpl string, data interface{}, e echo.Context
 	}
 	return v.render.HTML(w, 0, tmpl, renderOpts.Data)
 }
-

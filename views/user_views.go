@@ -1,5 +1,11 @@
 package views
 
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
 type RegisterUserData struct {
 	NameInput       InputData
 	EmailInput      InputData
