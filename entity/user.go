@@ -16,8 +16,8 @@ type User struct {
 }
 
 type NewUser struct {
-	ConfirmPassword string 
-	Name            string 
-	Mail            string 
-	Password        string 
+	ConfirmPassword string
+	Name            string
+	Mail            string
+	Password        string
 }

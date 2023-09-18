@@ -19,6 +19,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -46,6 +47,7 @@ require (
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/gorilla/csrf v1.7.1
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/pkg/errors v0.9.1
 	github.com/samber/slog-echo v1.2.1

@@ -7,12 +7,15 @@ import (
 	"os"
 	"time"
 
+	"log/slog"
+
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/routes/api"
+	"github.com/gorilla/csrf"
+
 	"github.com/MBvisti/grafto/routes/web"
 	"github.com/MBvisti/grafto/views"
 	"github.com/labstack/echo/v4"
-	"log/slog"
 )
 
 type Server struct {
@@ -57,10 +60,13 @@ func NewServer(
 }
 
 func (s *Server) Start() {
+	csrf := csrf.Protect(
+		[]byte(os.Getenv("CSRF_TOKEN")), csrf.Secure(false), csrf.CookieName("_csrf"), csrf.FieldName("_csrf"))
+
 	slog.Info("starting server on", "host", s.host, "port", s.port)
 	srv := http.Server{
 		Addr:         fmt.Sprintf("%v:%v", s.host, s.port),
-		Handler:      s.router,
+		Handler:      csrf(s.router),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}

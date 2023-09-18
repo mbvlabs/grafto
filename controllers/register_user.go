@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"html/template"
 	"net/http"
 
 	"github.com/MBvisti/grafto/entity"
@@ -8,6 +9,7 @@ import (
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,6 +27,7 @@ type StoreUserPayload struct {
 
 // StoreUser method    stores the new user
 func (c *Controller) StoreUser(ctx echo.Context) error {
+	// ctx.Request().Header.Set("X-XSRF-TOKEN", csrf.Token(ctx.Request()))
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -61,6 +64,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			EmailInput: views.InputData{
 				OldValue: payload.Mail,
 			},
+			CsrfField: template.HTML(csrf.TemplateField(ctx.Request())),
 		}
 
 		for _, validationError := range e {
