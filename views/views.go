@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/labstack/echo/v4"
@@ -26,7 +27,6 @@ type Views struct {
 func NewViews() Views {
 	r := render.New(render.Options{
 		Directory: "templates",
-		// Layout:    BaseLayout,
 		FileSystem: &render.EmbedFileSystem{
 			FS: templates,
 		},
@@ -35,6 +35,7 @@ func NewViews() Views {
 		Funcs: []template.FuncMap{
 			sprig.FuncMap(),
 		},
+		IsDevelopment: os.Getenv("ENVIRONMENT") == "development",
 	})
 
 	return Views{
