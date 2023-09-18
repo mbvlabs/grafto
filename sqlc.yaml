@@ -8,4 +8,4 @@ sql:
       package: "database"
       out: "repository/database"
       output_db_file_name: "database.go"
-      sql_package: "pgx/v5"
+      sql_package: "pgx/v4"

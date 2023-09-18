@@ -4,6 +4,8 @@ import (
 	"embed"
 	"html/template"
 	"io"
+	"net/http"
+	"os"
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/labstack/echo/v4"
@@ -25,7 +27,6 @@ type Views struct {
 func NewViews() Views {
 	r := render.New(render.Options{
 		Directory: "templates",
-		Layout:    BaseLayout,
 		FileSystem: &render.EmbedFileSystem{
 			FS: templates,
 		},
@@ -34,6 +35,7 @@ func NewViews() Views {
 		Funcs: []template.FuncMap{
 			sprig.FuncMap(),
 		},
+		IsDevelopment: os.Getenv("ENVIRONMENT") == "development",
 	})
 
 	return Views{
@@ -58,4 +60,15 @@ func (v Views) Render(w io.Writer, tmpl string, data interface{}, e echo.Context
 		})
 	}
 	return v.render.HTML(w, 0, tmpl, renderOpts.Data)
+}
+
+type InternalServerErrData struct {
+	FromLocation string
+}
+
+func (v Views) InternalServerErr(ctx echo.Context, data InternalServerErrData) error {
+	return ctx.Render(http.StatusOK, "errors/500", RenderOpts{
+		Layout: BaseLayout,
+		Data:   data,
+	})
 }

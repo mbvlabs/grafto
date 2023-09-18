@@ -9,6 +9,8 @@ import (
 	"github.com/lmittmann/tint"
 )
 
+var Logger *slog.Logger = SetupLogger()
+
 func SetupLogger() *slog.Logger {
 	// create a new logger
 	return slog.New(

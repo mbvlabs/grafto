@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v4"
 )
 
 func SetupDatabaseConnection(databaseURL string) *pgx.Conn {
@@ -15,7 +15,6 @@ func SetupDatabaseConnection(databaseURL string) *pgx.Conn {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(ctx)
 
 	return conn
 }
