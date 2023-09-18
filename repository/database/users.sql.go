@@ -21,6 +21,17 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const doesMailExists = `-- name: DoesMailExists :one
+select exists (select 1 from users where mail = $1) as does_mail_exists
+`
+
+func (q *Queries) DoesMailExists(ctx context.Context, mail string) (bool, error) {
+	row := q.db.QueryRow(ctx, doesMailExists, mail)
+	var does_mail_exists bool
+	err := row.Scan(&does_mail_exists)
+	return does_mail_exists, err
+}
+
 const insertUser = `-- name: InsertUser :one
 insert into
     users (id, created_at, updated_at, name, mail, password)

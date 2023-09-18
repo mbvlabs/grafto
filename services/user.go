@@ -15,18 +15,19 @@ import (
 
 type userDatabase interface {
 	InsertUser(ctx context.Context, arg database.InsertUserParams) (database.User, error)
+	DoesMailExists(ctx context.Context, mail string) (bool, error)
 }
 
-type NewUserData struct {
+type newUserValidation struct {
 	ConfirmPassword string `validate:"required,gte=8"`
 	Name            string `validate:"required,gte=2"`
 	Mail            string `validate:"required,email"`
+	MailRegistered  bool   `validate:"ne=true"` // TODO: why does this fail with 'required'?
 	Password        string `validate:"required,gte=8"`
 }
 
 func passwordMatchValidation(sl validator.StructLevel) {
-
-	data := sl.Current().Interface().(NewUserData)
+	data := sl.Current().Interface().(newUserValidation)
 
 	if data.ConfirmPassword != data.Password {
 		sl.ReportError(data.ConfirmPassword, "", "ConfirmPassword", "", "confirm password must match password")
@@ -34,18 +35,30 @@ func passwordMatchValidation(sl validator.StructLevel) {
 }
 
 func NewUser(
-	ctx context.Context, data NewUserData, db userDatabase, v *validator.Validate) (entity.User, error) {
-	telemetry.Logger.Info("creating user")
-
-	v.RegisterStructValidation(passwordMatchValidation, NewUserData{})
-
-	if err := v.Struct(data); err != nil {
+	ctx context.Context, data entity.NewUser, db userDatabase, v *validator.Validate) (entity.User, error) {
+	mailAlreadyRegistered, err := db.DoesMailExists(ctx, data.Mail)
+	if err != nil {
+		telemetry.Logger.Error("could not check if email exists", "error", err)
 		return entity.User{}, err
 	}
 
-	hashedPassword, err := hashAndPepperPassword(data.Password)
+	v.RegisterStructValidation(passwordMatchValidation, newUserValidation{})
+
+	newUserData := newUserValidation{
+		ConfirmPassword: data.ConfirmPassword,
+		Name:            data.Name,
+		Mail:            data.Mail,
+		MailRegistered:  mailAlreadyRegistered,
+		Password:        data.Password,
+	}
+
+	if err := v.Struct(newUserData); err != nil {
+		return entity.User{}, err
+	}
+
+	hashedPassword, err := hashAndPepperPassword(newUserData.Password)
 	if err != nil {
-		telemetry.Logger.Error("error", "value", err)
+		telemetry.Logger.Error("error hashing and peppering password", "error", err)
 		return entity.User{}, err
 	}
 
@@ -53,11 +66,12 @@ func NewUser(
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name:      data.Name,
-		Mail:      data.Mail,
+		Name:      newUserData.Name,
+		Mail:      newUserData.Mail,
 		Password:  hashedPassword,
 	})
 	if err != nil {
+		telemetry.Logger.Error("could not insert user", "error", err)
 		return entity.User{}, err
 	}
 

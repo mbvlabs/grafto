@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/MBvisti/grafto/entity"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
@@ -26,10 +27,13 @@ type StoreUserPayload struct {
 func (c *Controller) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
-		panic("yooyoyyoy")
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+		return c.InternalError(ctx)
 	}
 
-	_, err := services.NewUser(ctx.Request().Context(), services.NewUserData{
+	_, err := services.NewUser(ctx.Request().Context(), entity.NewUser{
 		Name:            payload.UserName,
 		Mail:            payload.Mail,
 		Password:        payload.Password,
@@ -40,6 +44,16 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		if !ok {
 			telemetry.Logger.Info("internal error", "ok", ok)
 		}
+
+		if len(e) == 0 {
+			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
+
+			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+			return c.InternalError(ctx)
+		}
+
 		viewData := views.RegisterUserData{
 			NameInput: views.InputData{
 				OldValue: payload.UserName,
@@ -72,6 +86,11 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 				viewData.ConfirmPassword = views.InputData{
 					Invalid:    true,
 					InvalidMsg: validationError.Param(),
+				}
+			case "MailRegistered":
+				viewData.EmailInput = views.InputData{
+					Invalid:    true,
+					InvalidMsg: "Email already registered",
 				}
 			}
 		}

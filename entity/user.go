@@ -14,3 +14,10 @@ type User struct {
 	Mail           string
 	MailVerifiedAt time.Time
 }
+
+type NewUser struct {
+	ConfirmPassword string 
+	Name            string 
+	Mail            string 
+	Password        string 
+}

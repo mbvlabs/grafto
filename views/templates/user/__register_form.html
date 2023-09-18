@@ -32,7 +32,12 @@
                     </div>
                 </div>
                 <div>
-                    <label for="email" class="block text-sm mb-2 dark:text-white">Email address</label>
+                    <div class="flex items center">
+                        <label for="email" class="block text-sm mb-2 dark:text-white">Email address</label>
+                        {{ if .EmailInput.Invalid }}
+                        <p class="ml-2 text-sm text-red-500">{{ .EmailInput.InvalidMsg }}</p>
+                        {{ end }}
+                    </div>
                     <div class="relative">
                         <input type="email" name="email"
                             class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"

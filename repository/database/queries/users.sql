@@ -19,3 +19,6 @@ returning *;
 
 -- name: DeleteUser :exec
 delete from users where id=$1;
+
+-- name: DoesMailExists :one
+select exists (select 1 from users where mail = $1) as does_mail_exists;
