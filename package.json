@@ -15,7 +15,6 @@
     "preline": "^1.9.0"
   },
   "devDependencies": {
-    "daisyui": "^3.6.4",
     "tailwindcss": "^3.3.3"
   }
 }

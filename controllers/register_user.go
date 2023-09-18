@@ -27,7 +27,6 @@ type StoreUserPayload struct {
 
 // StoreUser method    stores the new user
 func (c *Controller) StoreUser(ctx echo.Context) error {
-	// ctx.Request().Header.Set("X-XSRF-TOKEN", csrf.Token(ctx.Request()))
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
