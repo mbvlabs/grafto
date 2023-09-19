@@ -22,7 +22,7 @@ in Go.
 - [X] Implement controller layer
 - [X] Implement router layer
 - [X] Add static assets (tailwind, alpine & htmx)
-- [ ] Add users migration
+- [X] Add users migration
 - [ ] Add login & authentication
 - [X] Add mail functionality
 - [ ] Add queue/job/task/option
