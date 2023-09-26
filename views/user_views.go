@@ -16,10 +16,6 @@ type RegisterUserData struct {
 	CsrfField       template.HTML
 }
 
-type CsrfTag struct {
-	FieldTwo string
-}
-
 func (v Views) RegisterUser(ctx echo.Context) error {
 	return ctx.Render(http.StatusOK, "user/register", RenderOpts{
 		Layout: BaseLayout,

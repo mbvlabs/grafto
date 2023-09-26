@@ -1,6 +1,9 @@
 -- name: QueryUser :one
 select * from users where id=$1;
 
+-- name: QueryUserByMail :one
+select * from users where mail=$1;
+
 -- name: QueryUsers :many
 select * from users;
 

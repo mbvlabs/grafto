@@ -11,7 +11,10 @@ func (w *Web) UserRoutes() {
 	w.router.POST("/user/store", func(c echo.Context) error {
 		return w.controllers.StoreUser(c)
 	})
-	w.router.GET("/sign-in", func(c echo.Context) error {
-		return w.controllers.AuthenticateUser(c)
+	w.router.GET("/login", func(c echo.Context) error {
+		return w.controllers.Login(c)
+	})
+	w.router.POST("/authenticate", func(c echo.Context) error {
+		return w.controllers.Authenticate(c)
 	})
 }

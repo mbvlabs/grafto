@@ -16,6 +16,7 @@ import (
 type userDatabase interface {
 	InsertUser(ctx context.Context, arg database.InsertUserParams) (database.User, error)
 	DoesMailExists(ctx context.Context, mail string) (bool, error)
+	QueryUserByMail(ctx context.Context, mail string) (database.User, error)
 }
 
 type newUserValidation struct {
