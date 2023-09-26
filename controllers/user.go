@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"html/template"
-	"net/http"
 
 	"github.com/MBvisti/grafto/entity"
 	"github.com/MBvisti/grafto/pkg/telemetry"
@@ -102,10 +101,4 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	}
 
 	return c.views.RegisteredUser(ctx)
-}
-
-func (c *Controller) AuthenticateUser(ctx echo.Context) error {
-	return ctx.Render(http.StatusOK, "user/sign_in", views.RenderOpts{
-		Data: nil,
-	})
 }

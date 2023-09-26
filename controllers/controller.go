@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -48,4 +49,16 @@ func (c *Controller) InternalError(ctx echo.Context) error {
 	return c.views.InternalServerErr(ctx, views.InternalServerErrData{
 		FromLocation: from,
 	})
+}
+
+func (c *Controller) Redirect(ctx echo.Context) error {
+	toLocation := ctx.QueryParam("to")
+	if toLocation == "" {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		return c.InternalError(ctx)
+	}
+
+	ctx.Response().Writer.Header().Add("HX-Redirect", fmt.Sprintf("/%s", toLocation))
+
+	return nil
 }
