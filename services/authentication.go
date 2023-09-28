@@ -2,17 +2,23 @@ package services
 
 import (
 	"context"
+	"encoding/gob"
 	"errors"
+	"net/http"
+	"os"
 
 	"github.com/MBvisti/grafto/entity"
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/telemetry"
+	"github.com/google/uuid"
+	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var (
-	passwordPepper = config.GetPwdPepper()
+	passwordPepper   = config.GetPwdPepper()
+	authSessionStore = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")), []byte(os.Getenv("SESSION_ENCRYPTION_KEY")))
 )
 
 func hashAndPepperPassword(password string) (string, error) {
@@ -69,4 +75,35 @@ func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db user
 		Name:      user.Name,
 		Mail:      user.Mail,
 	}, nil
+}
+
+func CreateAuthenticatedSession(r *http.Request, w http.ResponseWriter, userID uuid.UUID) error {
+	gob.Register(uuid.UUID{})
+	session, err := authSessionStore.Get(r, "ua")
+	if err != nil {
+		return err
+	}
+
+	session.Options.HttpOnly = true
+	session.Options.Domain = os.Getenv("DOMAIN_NAME")
+	session.Options.Secure = true
+
+	session.Values["user_id"] = userID
+	session.Values["authenticated"] = true
+
+	return session.Save(r, w)
+}
+
+func IsAuthenticated(r *http.Request) (bool, error) {
+	gob.Register(uuid.UUID{})
+	session, err := authSessionStore.Get(r, "ua")
+	if err != nil {
+		return false, err
+	}
+
+	if session.Values["authenticated"] == nil {
+		return false, nil
+	}
+
+	return session.Values["authenticated"].(bool), nil
 }
