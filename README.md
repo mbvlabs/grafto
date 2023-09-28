@@ -23,7 +23,8 @@ in Go.
 - [X] Implement router layer
 - [X] Add static assets (tailwind, alpine & htmx)
 - [X] Add users migration
-- [ ] Add login & authentication
+- [X] Add login & authentication
+- [ ] Add password reset and mail verification
 - [X] Add mail functionality
 - [ ] Add queue/job/task/option
 - [ ] Add Dockerfile
