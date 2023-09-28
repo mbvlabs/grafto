@@ -30,7 +30,7 @@ func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 			ctx := &ContextUserID{c, userID}
 			return next(ctx)
 		} else {
-			return c.Redirect(http.StatusPermanentRedirect, "/")
+			return c.Redirect(http.StatusPermanentRedirect, "/login")
 		}
 	}
 }
