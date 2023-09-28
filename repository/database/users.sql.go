@@ -90,6 +90,25 @@ func (q *Queries) QueryUser(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
+const queryUserByMail = `-- name: QueryUserByMail :one
+select id, created_at, updated_at, name, mail, mail_verified_at, password from users where mail=$1
+`
+
+func (q *Queries) QueryUserByMail(ctx context.Context, mail string) (User, error) {
+	row := q.db.QueryRow(ctx, queryUserByMail, mail)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Mail,
+		&i.MailVerifiedAt,
+		&i.Password,
+	)
+	return i, err
+}
+
 const queryUsers = `-- name: QueryUsers :many
 select id, created_at, updated_at, name, mail, mail_verified_at, password from users
 `
