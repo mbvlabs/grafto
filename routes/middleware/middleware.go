@@ -9,13 +9,26 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type ContextUserID struct {
+type AuthContext struct {
 	echo.Context
-	userID uuid.UUID
+	userID          uuid.UUID
+	isAuthenticated bool
 }
 
-func (c *ContextUserID) GetID() uuid.UUID {
-	return c.userID
+func (a *AuthContext) GetID() uuid.UUID {
+	return a.userID
+}
+func (a *AuthContext) GetAuthStatus() bool {
+	return a.isAuthenticated
+}
+
+type AdminContext struct {
+	echo.Context
+	isAdmin bool
+}
+
+func (a *AdminContext) GetAdminStatus() bool {
+	return a.isAdmin
 }
 
 func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
@@ -27,10 +40,22 @@ func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		if authenticated {
-			ctx := &ContextUserID{c, userID}
+			ctx := &AuthContext{c, userID, true}
 			return next(ctx)
 		} else {
 			return c.Redirect(http.StatusPermanentRedirect, "/login")
 		}
+	}
+}
+
+func AdminOnly(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		isAdmin, err := services.IsAdmin(c.Request())
+		if err != nil {
+			return c.Redirect(http.StatusPermanentRedirect, "/500")
+		}
+
+		ctx := &AdminContext{c, isAdmin}
+		return next(ctx)
 	}
 }

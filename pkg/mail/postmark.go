@@ -34,6 +34,7 @@ type mailBody struct {
 	To       string `json:"To"`
 	Subject  string `json:"Subject"`
 	HtmlBody string `json:"HtmlBody"`
+	TextBody string `json:"TextBody"`
 }
 
 // SendMail implements emailClient.

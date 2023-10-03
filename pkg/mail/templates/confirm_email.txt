@@ -1,0 +1,37 @@
+Confirm your email address
+
+Please confirm your email address in order to activate your account.
+
+http://localhost:8000
+
+Hi,
+
+Thanks for signing up.
+
+To continue, please confirm your email address by clicking the button below:
+
+‍
+
+Confirm email address →
+
+http://localhost:8000/verify-email?token={{.Token}}
+
+‍
+
+If you didn't sign up for Grafto, we apologize. Click the button below, and we'll remove
+email:
+
+Remove email address →
+
+http://localhost:8000/remove-email?token={{.Token}}
+
+Thanks, The Grafto Team
+
+‍
+
+The kickstarter repository for full-stack Go apps, using your grandfather's technology.
+
+Github
+https://github.com/MBvisti/grafto
+•
+Twitter https://twitter.com/mbvisti

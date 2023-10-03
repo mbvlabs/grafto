@@ -1,10 +1,15 @@
 package controllers
 
 import (
+	"database/sql"
 	"html/template"
+	"time"
 
 	"github.com/MBvisti/grafto/entity"
+	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/telemetry"
+	"github.com/MBvisti/grafto/pkg/tokens"
+	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
 	"github.com/go-playground/validator/v10"
@@ -34,7 +39,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	_, err := services.NewUser(ctx.Request().Context(), entity.NewUser{
+	user, err := services.NewUser(ctx.Request().Context(), entity.NewUser{
 		Name:            payload.UserName,
 		Mail:            payload.Mail,
 		Password:        payload.Password,
@@ -100,5 +105,84 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.views.RegisterUserForm(ctx, viewData)
 	}
 
+	confirmationToken := user.ID // TODO: add table to hold references to conf token and fk to user id
+	confirmEmailClaim := tokens.ConfirmEmailClaim{
+		ConfirmationID: confirmationToken,
+	}
+
+	signedToken, err := confirmEmailClaim.GetSignedToken()
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	if err := c.mail.Send(ctx.Request().Context(),
+		user.Mail, "newsletter@mortenvistisen.com", "Testing Email Confirmation", "confirm_email",
+		mail.ConfirmPassword{
+			Token: signedToken,
+		}); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
 	return c.views.RegisteredUser(ctx)
+}
+
+type VerifyEmail struct {
+	Token string `query:"token"`
+}
+
+// VerifyEmail method    verifies the email the user provided during signup
+func (c *Controller) VerifyEmail(ctx echo.Context) error {
+	var tkn VerifyEmail
+	if err := ctx.Bind(&tkn); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+		return c.InternalError(ctx)
+	}
+
+	confirmEmailClaim := tokens.ConfirmEmailClaim{}
+
+	validatedClaim, err := confirmEmailClaim.Parse(tkn.Token)
+	if err != nil {
+		telemetry.Logger.Info("this is the error", "error", err)
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	confirmTime := time.Now()
+	user, err := c.db.ConfirmUserEmail(ctx.Request().Context(), database.ConfirmUserEmailParams{
+		ID:             validatedClaim.ConfirmationID,
+		UpdatedAt:      confirmTime,
+		MailVerifiedAt: sql.NullTime{Time: confirmTime, Valid: true},
+	})
+
+	if err != nil {
+		telemetry.Logger.Info("this is the error", "error", err)
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	if err := services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), user.ID); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	return c.views.EmailValidated(ctx)
 }

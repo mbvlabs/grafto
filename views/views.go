@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/MBvisti/grafto/routes/middleware"
 	"github.com/Masterminds/sprig/v3"
 	"github.com/labstack/echo/v4"
 	"github.com/unrolled/render"
@@ -43,9 +44,15 @@ func NewViews() Views {
 	}
 }
 
+type auth struct {
+	IsAuthenticated bool
+	IsAdmin         bool
+}
+
 type RenderOpts struct {
 	Layout string
 	Data   interface{}
+	Auth   auth
 }
 
 func (v Views) Render(w io.Writer, tmpl string, data interface{}, e echo.Context) error {
@@ -54,12 +61,27 @@ func (v Views) Render(w io.Writer, tmpl string, data interface{}, e echo.Context
 		panic("bad render opts") // TODO add fallback tmpl
 	}
 
+	authContext, ok := e.(*middleware.AuthContext)
+	if !ok {
+		renderOpts.Auth.IsAuthenticated = false
+	} else {
+		renderOpts.Auth.IsAuthenticated = authContext.GetAuthStatus()
+	}
+
+	adminContext, ok := e.(*middleware.AdminContext)
+	if !ok {
+		renderOpts.Auth.IsAdmin = false
+	} else {
+		renderOpts.Auth.IsAdmin = adminContext.GetAdminStatus()
+	}
+
 	if renderOpts.Layout != "" {
-		return v.render.HTML(w, 0, tmpl, renderOpts.Data, render.HTMLOptions{
+		return v.render.HTML(w, 0, tmpl, renderOpts, render.HTMLOptions{
 			Layout: renderOpts.Layout,
 		})
 	}
-	return v.render.HTML(w, 0, tmpl, renderOpts.Data)
+
+	return v.render.HTML(w, 0, tmpl, renderOpts)
 }
 
 type InternalServerErrData struct {

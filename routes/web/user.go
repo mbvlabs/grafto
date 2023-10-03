@@ -17,4 +17,7 @@ func (w *Web) UserRoutes() {
 	w.router.POST("/authenticate", func(c echo.Context) error {
 		return w.controllers.Authenticate(c)
 	})
+	w.router.GET("/verify-email", func(c echo.Context) error {
+		return w.controllers.VerifyEmail(c)
+	})
 }
