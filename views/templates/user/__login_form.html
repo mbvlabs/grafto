@@ -1,9 +1,9 @@
 {{ block "__login_form" . }}
 <div hx-target="this" hx-swap="outerHTML" class="p-4 sm:p-7">
-    {{ if .EmailNeedsVerification }}
+    {{ if .Data.EmailNeedsVerification }}
     <p class="my-2 text-red-600">You're email haven't been verified yet</p>
     {{ end }}
-    {{ if .CouldNotAuthenticate }}
+    {{ if .Data.CouldNotAuthenticate }}
     <p class="my-2 text-red-600">We could not authenticate you; wrong email or password.</p>
     {{ end }}
     <div class="text-center">
@@ -19,7 +19,7 @@
             class="py-3 flex items-center text-xs text-gray-400 uppercase before:flex-[1_1_0%] before:border-t before:border-gray-200 before:mr-6 after:flex-[1_1_0%] after:border-t after:border-gray-200 after:ml-6 dark:text-gray-500 dark:before:border-gray-600 dark:after:border-gray-600">
             Or</div>
         <form hx-post="/authenticate" action="/authenticate" method="post">
-            {{ .CsrfField }}
+            {{ .Data.CsrfField }}
             <div class="grid gap-y-4">
                 <!-- Form Group -->
                 <div>

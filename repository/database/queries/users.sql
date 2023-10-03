@@ -25,3 +25,9 @@ delete from users where id=$1;
 
 -- name: DoesMailExists :one
 select exists (select 1 from users where mail = $1) as does_mail_exists;
+
+-- name: ConfirmUserEmail :one
+update users
+    set updated_at=$2, mail_verified_at=$3
+where id = $1
+returning *;

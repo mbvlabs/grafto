@@ -36,8 +36,8 @@ func (c *Controller) AppHealth(ctx echo.Context) error {
 }
 
 func (c *Controller) InternalError(ctx echo.Context) error {
-	domainName := os.Getenv("DOMAIN_NAME")
-	referere := strings.Split(ctx.Request().Referer(), domainName)
+	hostName := os.Getenv("HOSt")
+	referere := strings.Split(ctx.Request().Referer(), hostName)
 
 	var from string
 	if len(referere) == 1 || referere[1] == "" {

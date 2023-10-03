@@ -12,7 +12,7 @@ type mailClient interface {
 	SendMail(ctx context.Context, payload MailPayload) error
 }
 
-//go:embed templates/*.html
+//go:embed templates/*
 var templates embed.FS
 
 type Mail struct {
@@ -25,22 +25,32 @@ func NewMail(client mailClient) Mail {
 	}
 }
 
-func (m *Mail) Send(to, from, subject, tmpl string, data interface{}) error {
-	t, err := template.ParseFS(templates, fmt.Sprintf("templates/%s.html", tmpl))
+func (m *Mail) Send(ctx context.Context, to, from, subject, tmplName string, data interface{}) error {
+	htmlFile, err := template.ParseFS(templates, fmt.Sprintf("templates/%s.html", tmplName))
 	if err != nil {
 		return err
 	}
 
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, data); err != nil {
+	var htmlBody bytes.Buffer
+	if err := htmlFile.Execute(&htmlBody, data); err != nil {
 		return err
 	}
 
-	return m.client.SendMail(context.Background(), MailPayload{
+	textFile, err := template.ParseFS(templates, fmt.Sprintf("templates/%s.txt", tmplName))
+	if err != nil {
+		return err
+	}
+
+	var textBody bytes.Buffer
+	if err := textFile.Execute(&textBody, data); err != nil {
+		return err
+	}
+
+	return m.client.SendMail(ctx, MailPayload{
 		To:       to,
 		From:     from,
 		Subject:  subject,
-		HtmlBody: tpl.String(),
-		TextBody: "ignore",
+		HtmlBody: htmlBody.String(),
+		TextBody: textBody.String(),
 	})
 }

@@ -67,22 +67,8 @@ in another.
 Visit `http://0.0.0.0:8080` to see the start page.
 
 
-## Mails
+## Mails TODO: update after switch to Maizzle
 
-For mails, this template use [mjml](https://documentation.mjml.io/) to build out responsive mails. To add a new mail,
-simply add a new file under `resources/mails/{name-of-file}.mjml`, then run (file name without extension):
-```bash
-just watch-mail {name-of-file}
-```
-
-This will watch for changes in that file, open a browser window and you can start building out your mail.
-
-Before you can start sending mails you need to provide an email client that implements the `mailClient` interface. The
-template provides an implementation for Postmark. If you need to add more functionality simply extend the interface.
-
-During the Docker build process, the `compose-emails` command will be call, which will take all files within the
-`resource/mails` folder, compile it to `html` and move it to `pkg/mail/templates` which will be embedded into the
-binary.
 
 ## Views
 

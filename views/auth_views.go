@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 )
@@ -25,14 +24,20 @@ type LoginForm struct {
 }
 
 func (v Views) LoginForm(ctx echo.Context, data LoginForm) error {
-	telemetry.Logger.Info("are we getting here")
 	return ctx.Render(http.StatusOK, "user/__login_form", RenderOpts{
-		Data:   data,
+		Data: data,
 	})
 }
 
 func (v Views) Authenticated(ctx echo.Context) error {
 	return ctx.Render(http.StatusOK, "user/__authenticated", RenderOpts{
 		Data: nil,
+	})
+}
+
+func (v Views) EmailValidated(ctx echo.Context) error {
+	return ctx.Render(http.StatusOK, "user/email_validated", RenderOpts{
+		Layout: BaseLayout,
+		Data:   nil,
 	})
 }

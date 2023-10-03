@@ -5,7 +5,7 @@ alias r := run
 
 alias wc := watch-css
 
-alias wm := watch-mail
+alias sm := serve-mails
 
 alias mm := make-migration
 alias um := up-migrations
@@ -27,12 +27,14 @@ copy-preline-to-static:
     @cp -r ./node_modules/preline/dist/ ./static/js/preline
 
 # Mails/MJML
-compile-mails:
-    ./node_modules/.bin/mjml -r ./resources/mails/*.mjml -o ./pkg/mail/templates/
+compile-mails-prod:
+    @cd resources/maizzle-mails && npm run build
 
-watch-mail name:
-    open ./pkg/mail/templates/{{name}}.html &
-    ./node_modules/.bin/mjml --watch ./resources/mails/{{name}}.mjml -o ./pkg/mail/templates/{{name}}.html
+compile-mails-dev:
+    @cd resources/maizzle-mails && npm run dev
+
+serve-mails:
+    @cd resources/maizzle-mails && npm run serve
 
 # Database 
 make-migration name:

@@ -12,16 +12,16 @@
 
     <div class="mt-5">
         <form hx-post="/user/store" action="/user/store" method="post">
-            {{ .CsrfField }}
+            {{ .Data.CsrfField }}
             <div class="grid gap-y-4">
                 <div>
                     <label for="email" class="block text-sm mb-2 dark:text-white">User name</label>
                     <div class="relative">
                         <input type="text" name="user_name"
                             class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
-                            required aria-describedby="email-error" {{ if .NameInput.OldValue }}
-                            value={{.NameInput.OldValue}} {{ end }}>
-                        {{ if .NameInput.Invalid }}
+                            required aria-describedby="email-error" {{ if .Data.NameInput.OldValue }}
+                            value={{.Data.NameInput.OldValue}} {{ end }}>
+                        {{ if .Data.NameInput.Invalid }}
                         <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
                             <svg class="h-5 w-5 text-red-500" width="16" height="16" fill="currentColor"
                                 viewBox="0 0 16 16" aria-hidden="true">
@@ -35,16 +35,16 @@
                 <div>
                     <div class="flex items center">
                         <label for="email" class="block text-sm mb-2 dark:text-white">Email address</label>
-                        {{ if .EmailInput.Invalid }}
-                        <p class="ml-2 text-sm text-red-500">{{ .EmailInput.InvalidMsg }}</p>
+                        {{ if .Data.EmailInput.Invalid }}
+                        <p class="ml-2 text-sm text-red-500">{{ .Data.EmailInput.InvalidMsg }}</p>
                         {{ end }}
                     </div>
                     <div class="relative">
                         <input type="email" name="email"
                             class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
-                            required aria-describedby="email-error" {{ if .EmailInput.OldValue }}
-                            value={{.EmailInput.OldValue}} {{ end }}>
-                        {{ if .EmailInput.Invalid }}
+                            required aria-describedby="email-error" {{ if .Data.EmailInput.OldValue }}
+                            value={{.Data.EmailInput.OldValue}} {{ end }}>
+                        {{ if .Data.EmailInput.Invalid }}
                         <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
                             <svg class="h-5 w-5 text-red-500" width="16" height="16" fill="currentColor"
                                 viewBox="0 0 16 16" aria-hidden="true">
@@ -61,7 +61,7 @@
                         <input type="password" id="password" name="password"
                             class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
                             required aria-describedby="password-error" minlength="8">
-                        {{ if .PasswordInput.Invalid }}
+                        {{ if .Data.PasswordInput.Invalid }}
                         <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
                             <svg class="h-5 w-5 text-red-500" width="16" height="16" fill="currentColor"
                                 viewBox="0 0 16 16" aria-hidden="true">
@@ -73,8 +73,8 @@
                     </div>
                 </div>
                 <div>
-                    {{ if .ConfirmPassword.Invalid }}
-                    <p class="block text-sm mb-2 dark:text-red-500">{{ .ConfirmPassword.InvalidMsg | title }}</p>
+                    {{ if .Data.ConfirmPassword.Invalid }}
+                    <p class="block text-sm mb-2 dark:text-red-500">{{ .Data.ConfirmPassword.InvalidMsg | title }}</p>
                     {{ end }}
                     <label for="confirm-password" class="block text-sm mb-2 dark:text-white">Confirm
                         Password</label>
@@ -82,7 +82,7 @@
                         <input type="password" id="confirm-password" name="confirm_password"
                             class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
                             required aria-describedby="confirm-password-error" minlength="8">
-                        {{ if .ConfirmPassword.Invalid }}
+                        {{ if .Data.ConfirmPassword.Invalid }}
                         <div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
                             <svg class="h-5 w-5 text-red-500" width="16" height="16" fill="currentColor"
                                 viewBox="0 0 16 16" aria-hidden="true">

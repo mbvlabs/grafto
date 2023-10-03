@@ -7,10 +7,39 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+const confirmUserEmail = `-- name: ConfirmUserEmail :one
+update users
+    set updated_at=$2, mail_verified_at=$3
+where id = $1
+returning id, created_at, updated_at, name, mail, mail_verified_at, password
+`
+
+type ConfirmUserEmailParams struct {
+	ID             uuid.UUID
+	UpdatedAt      time.Time
+	MailVerifiedAt sql.NullTime
+}
+
+func (q *Queries) ConfirmUserEmail(ctx context.Context, arg ConfirmUserEmailParams) (User, error) {
+	row := q.db.QueryRow(ctx, confirmUserEmail, arg.ID, arg.UpdatedAt, arg.MailVerifiedAt)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Mail,
+		&i.MailVerifiedAt,
+		&i.Password,
+	)
+	return i, err
+}
 
 const deleteUser = `-- name: DeleteUser :exec
 delete from users where id=$1

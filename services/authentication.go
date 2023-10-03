@@ -85,12 +85,13 @@ func CreateAuthenticatedSession(r *http.Request, w http.ResponseWriter, userID u
 	}
 
 	session.Options.HttpOnly = true
-	session.Options.Domain = os.Getenv("DOMAIN_NAME")
+	session.Options.Domain = os.Getenv("HOST")
 	session.Options.Secure = true
 	session.Options.MaxAge = 86400
 
 	session.Values["user_id"] = userID
 	session.Values["authenticated"] = true
+	session.Values["is_admin"] = false
 
 	return session.Save(r, w)
 }
@@ -107,4 +108,14 @@ func IsAuthenticated(r *http.Request) (bool, uuid.UUID, error) {
 	}
 
 	return session.Values["authenticated"].(bool), session.Values["user_id"].(uuid.UUID), nil
+}
+
+func IsAdmin(r *http.Request) (bool, error) {
+	gob.Register(uuid.UUID{})
+	session, err := authSessionStore.Get(r, "ua")
+	if err != nil {
+		return false, err
+	}
+
+	return session.Values["is_admin"].(bool), nil
 }
