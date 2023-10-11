@@ -36,7 +36,7 @@ func (c *Controller) AppHealth(ctx echo.Context) error {
 }
 
 func (c *Controller) InternalError(ctx echo.Context) error {
-	hostName := os.Getenv("HOSt")
+	hostName := os.Getenv("HOST")
 	referere := strings.Split(ctx.Request().Referer(), hostName)
 
 	var from string

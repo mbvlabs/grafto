@@ -53,9 +53,8 @@ reset-db:
 	@goose -dir migrations $DATABASE_KIND $DATABASE_URL reset
 
 generate-db-functions:
-	sqlc compile && sqlc generate --experimental
+	sqlc compile && sqlc generate
 
 # Application
 run:
     air -c .air.toml
-

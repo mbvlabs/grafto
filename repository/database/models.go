@@ -11,6 +11,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type Token struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	Hash      string
+	ExpiresAt time.Time
+	Scope     string
+	UserID    uuid.UUID
+}
+
 type User struct {
 	ID             uuid.UUID
 	CreatedAt      time.Time
