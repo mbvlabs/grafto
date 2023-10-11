@@ -20,4 +20,7 @@ func (w *Web) UserRoutes() {
 	w.router.GET("/verify-email", func(c echo.Context) error {
 		return w.controllers.VerifyEmail(c)
 	})
+	w.router.GET("/forgot-password", func(c echo.Context) error {
+		return w.controllers.RenderPasswordForgotForm(c)
+	})
 }
