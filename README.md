@@ -24,7 +24,7 @@ in Go.
 - [X] Add static assets (tailwind, alpine & htmx)
 - [X] Add users migration
 - [X] Add login & authentication
-- [ ] Add password reset and mail verification
+- [X] Add password reset and mail verification
 - [X] Add mail functionality
 - [ ] Add queue/job/task/option
 - [ ] Add Dockerfile
