@@ -1,82 +1,91 @@
 package tokens
 
 import (
-	"errors"
+	"crypto/hmac"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"hash"
 	"os"
 	"time"
-
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 var tokenSigningKey = []byte(os.Getenv("TOKEN_SIGNING_KEY"))
 
-type ConfirmEmailClaim struct {
-	ConfirmationID uuid.UUID `json:"confirmation_id"`
-	jwt.RegisteredClaims
+const (
+	ScopeEmailVerification = "email_verification"
+	ScopeResetPassword     = "password_reset"
+)
+
+type Manager struct {
+	hasher hash.Hash
 }
 
-func (c *ConfirmEmailClaim) GetSignedToken() (string, error) {
-	if c.ConfirmationID.String() == "" {
-		return "", errors.New("empty uuid provided ConfirmEmailClaim")
+func NewManager() *Manager {
+	h := hmac.New(sha256.New, tokenSigningKey)
+
+	return &Manager{
+		hasher: h,
 	}
-
-	exirationDate := jwt.NewNumericDate(time.Now().Add(48 * time.Hour))
-
-	claims := ConfirmEmailClaim{
-		ConfirmationID: c.ConfirmationID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: exirationDate,
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, _ := token.SignedString(tokenSigningKey)
-
-	return signedToken, nil
 }
 
-func (r *ConfirmEmailClaim) Parse(token string) (*ConfirmEmailClaim, error) {
-	parsedToken, err := jwt.ParseWithClaims(token, &ConfirmEmailClaim{}, func(token *jwt.Token) (interface{}, error) {
-		return tokenSigningKey, nil
-	})
+func (m *Manager) Hash(token string) (string, error) {
+	m.hasher.Reset()
+	m.hasher.Write([]byte(token))
+	b := m.hasher.Sum(nil)
 
-	if claims, ok := parsedToken.Claims.(*ConfirmEmailClaim); ok && parsedToken.Valid {
-		return claims, nil
-	}
-
-	return nil, err
+	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-type ResetPasswordClaim struct {
-	ResetID uuid.UUID `json:"reset_id"`
-	jwt.RegisteredClaims
-}
+func (m *Manager) GenerateToken() (plainText string, hashedToken string, err error) {
+	b := make([]byte, 32)
+	_, err = rand.Read(b)
+	if err != nil {
+		return "", "", err
+	}
+	plainText = base64.URLEncoding.EncodeToString(b)
 
-func (r *ResetPasswordClaim) Create(id uuid.UUID) string {
-	exirationDate := jwt.NewNumericDate(time.Now().Add(1 * time.Hour))
-
-	claims := ResetPasswordClaim{
-		ResetID: id,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: exirationDate,
-		},
+	hashedToken, err = m.Hash(plainText)
+	if err != nil {
+		return "", "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, _ := token.SignedString(tokenSigningKey)
-
-	return signedToken
+	return plainText, hashedToken, nil
 }
 
-func (r *ResetPasswordClaim) Parse(token string) (*ResetPasswordClaim, error) {
-	parsedToken, err := jwt.ParseWithClaims(token, &ResetPasswordClaim{}, func(token *jwt.Token) (interface{}, error) {
-		return tokenSigningKey, nil
-	})
+type Token struct {
+	scope     string
+	expiresAt time.Time
+	Hash      string
+	plainText string
+}
 
-	if claims, ok := parsedToken.Claims.(*ResetPasswordClaim); ok && parsedToken.Valid {
-		return claims, nil
+func (t *Token) GetPlainText() string {
+	return t.plainText
+}
+
+func (t *Token) GetExpirationTime() time.Time {
+	return t.expiresAt
+}
+
+func (t *Token) GetScope() string {
+	return t.scope
+}
+
+func CreateActivationToken(token, hashedToken string) Token {
+	return Token{
+		ScopeEmailVerification,
+		time.Now().Add(72 * time.Hour),
+		hashedToken,
+		token,
 	}
+}
 
-	return nil, err
+func CreateResetPasswordToken(token, hashedToken string) Token {
+	return Token{
+		ScopeResetPassword,
+		time.Now().Add(2 * time.Hour),
+		hashedToken,
+		token,
+	}
 }

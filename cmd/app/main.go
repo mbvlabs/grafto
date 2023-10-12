@@ -9,6 +9,7 @@ import (
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/telemetry"
+	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/routes"
 	"github.com/MBvisti/grafto/views"
@@ -37,7 +38,9 @@ func main() {
 	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
 
 	mailClient := mail.NewMail(&postmark)
-	controllers := controllers.NewController(*db, mailClient, v)
+	tokenManager := tokens.NewManager()
+
+	controllers := controllers.NewController(*db, mailClient, v, *tokenManager)
 
 	server := routes.NewServer(router, v, controllers, logger)
 

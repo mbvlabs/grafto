@@ -6,6 +6,8 @@ alias r := run
 alias wc := watch-css
 
 alias sm := serve-mails
+alias cmd := compile-mails-dev
+alias cmp := compile-mails-prod
 
 alias mm := make-migration
 alias um := up-migrations
@@ -26,15 +28,15 @@ watch-css:
 copy-preline-to-static:
     @cp -r ./node_modules/preline/dist/ ./static/js/preline
 
-# Mails/MJML
+# Mails
 compile-mails-prod:
-    @cd resources/maizzle-mails && npm run build
+    @cd resources/mails && npm run build
 
 compile-mails-dev:
-    @cd resources/maizzle-mails && npm run dev
+    @cd resources/mails && npm run dev
 
 serve-mails:
-    @cd resources/maizzle-mails && npm run serve
+    @cd resources/mails && npm run serve
 
 # Database 
 make-migration name:
@@ -53,9 +55,8 @@ reset-db:
 	@goose -dir migrations $DATABASE_KIND $DATABASE_URL reset
 
 generate-db-functions:
-	sqlc compile && sqlc generate --experimental
+	sqlc compile && sqlc generate
 
 # Application
 run:
     air -c .air.toml
-

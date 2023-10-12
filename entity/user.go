@@ -21,3 +21,11 @@ type NewUser struct {
 	Mail            string
 	Password        string
 }
+
+type UpdateUser struct {
+	ID              uuid.UUID
+	ConfirmPassword string
+	Password        string
+	Name            string
+	Mail            string
+}

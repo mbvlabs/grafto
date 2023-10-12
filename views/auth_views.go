@@ -35,9 +35,13 @@ func (v Views) Authenticated(ctx echo.Context) error {
 	})
 }
 
-func (v Views) EmailValidated(ctx echo.Context) error {
-	return ctx.Render(http.StatusOK, "user/email_validated", RenderOpts{
+type EmailValidationData struct {
+	TokenInvalid bool
+}
+
+func (v Views) EmailValidation(ctx echo.Context, data EmailValidationData) error {
+	return ctx.Render(http.StatusOK, "user/email_validation", RenderOpts{
 		Layout: BaseLayout,
-		Data:   nil,
+		Data:   data,
 	})
 }
