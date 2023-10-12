@@ -135,7 +135,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	}
 
 	if err := c.mail.Send(ctx.Request().Context(),
-		user.Mail, "newsletter@mortenvistisen.com", "Testing Email Confirmation", "confirm_email",
+		user.Mail, "newsletter@mortenvistisen.com", "Please confirm your email", "confirm_email",
 		mail.ConfirmPassword{
 			Token: activationToken.GetPlainText(),
 		}); err != nil {
@@ -172,7 +172,6 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	// telemetry.Logger.Info("hashed token", "hashed_token", hashedToken)
 	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -285,7 +284,7 @@ func (c *Controller) SendPasswordResetEmail(ctx echo.Context) error {
 	}
 
 	if err := c.mail.Send(ctx.Request().Context(),
-		user.Mail, "newsletter@mortenvistisen.com", "Testing password reset", "password_reset",
+		user.Mail, "newsletter@mortenvistisen.com", "Password Reset Request", "password_reset",
 		mail.ConfirmPassword{
 			Token: resetPWToken.GetPlainText(),
 		}); err != nil {
