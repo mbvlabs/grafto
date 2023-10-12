@@ -28,6 +28,8 @@ in Go.
 - [X] Add mail functionality
 - [ ] Add queue/job/task/option
 - [ ] Add Dockerfile
+- [ ] Refactor InternalError controller
+- [ ] Update InternalError path's in controllers/user.go
 - [X] Add AIR
 - [X] Add slog (and maybe tint)
 
