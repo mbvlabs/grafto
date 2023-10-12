@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/MBvisti/grafto/pkg/mail"
+	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/views"
 	"github.com/go-playground/validator/v10"
@@ -14,13 +15,14 @@ import (
 )
 
 type Controller struct {
-	db       database.Queries
-	mail     mail.Mail
-	views    views.Views
-	validate *validator.Validate
+	db         database.Queries
+	mail       mail.Mail
+	views      views.Views
+	validate   *validator.Validate
+	tknManager tokens.Manager
 }
 
-func NewController(db database.Queries, mail mail.Mail, views views.Views) Controller {
+func NewController(db database.Queries, mail mail.Mail, views views.Views, tknManager tokens.Manager) Controller {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
@@ -28,6 +30,7 @@ func NewController(db database.Queries, mail mail.Mail, views views.Views) Contr
 		mail,
 		views,
 		validate,
+		tknManager,
 	}
 }
 

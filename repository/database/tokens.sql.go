@@ -21,12 +21,12 @@ func (q *Queries) DeleteToken(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getTokenByHash = `-- name: GetTokenByHash :one
+const queryTokenByHash = `-- name: QueryTokenByHash :one
 select id, created_at, hash, expires_at, scope, user_id from tokens where hash=$1
 `
 
-func (q *Queries) GetTokenByHash(ctx context.Context, hash string) (Token, error) {
-	row := q.db.QueryRow(ctx, getTokenByHash, hash)
+func (q *Queries) QueryTokenByHash(ctx context.Context, hash string) (Token, error) {
+	row := q.db.QueryRow(ctx, queryTokenByHash, hash)
 	var i Token
 	err := row.Scan(
 		&i.ID,

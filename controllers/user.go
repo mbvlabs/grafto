@@ -108,7 +108,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.views.RegisterUserForm(ctx, viewData)
 	}
 
-	tkn, err := tokens.CreateActivationToken()
+	plainText, hashedToken, err := c.tknManager.GenerateToken()
 	if err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
@@ -117,14 +117,14 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	telemetry.Logger.Info("controller hashed", "tkn", tkn.HashedToken, "raw", tkn.GetRawToken())
+	activationToken := tokens.CreateActivationToken(plainText, hashedToken)
 
 	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
-		Hash:      tkn.HashedToken,
-		ExpiresAt: tkn.GetExpirationTime(),
-		Scope:     tkn.GetScope(),
+		Hash:      activationToken.Hash,
+		ExpiresAt: activationToken.GetExpirationTime(),
+		Scope:     activationToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -137,7 +137,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	if err := c.mail.Send(ctx.Request().Context(),
 		user.Mail, "newsletter@mortenvistisen.com", "Testing Email Confirmation", "confirm_email",
 		mail.ConfirmPassword{
-			Token: tkn.GetRawToken(),
+			Token: activationToken.GetPlainText(),
 		}); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
@@ -163,7 +163,7 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	hashedToken, err := tokens.HashToken(tkn.Token)
+	hashedToken, err := c.tknManager.Hash(tkn.Token)
 	if err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
@@ -173,7 +173,7 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 	}
 
 	// telemetry.Logger.Info("hashed token", "hashed_token", hashedToken)
-	token, err := c.db.GetTokenByHash(ctx.Request().Context(), hashedToken)
+	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return c.views.EmailValidation(ctx, views.EmailValidationData{
@@ -229,22 +229,203 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 	})
 }
 
-type PasswordResetRequestPayload struct {
-	Email string `form:"email"`
-}
-
 func (c *Controller) RenderPasswordForgotForm(ctx echo.Context) error {
 	return c.views.PasswordForgotForm(ctx)
 }
 
-// func (c *Controller) ResetPassword(ctx echo.Context) error {
-// 	var tkn PasswordResetRequestPayload
-// 	if err := ctx.Bind(&tkn); err != nil {
-// 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-// 		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+type PasswordResetRequestPayload struct {
+	Email string `form:"email"`
+}
 
-// 		return c.InternalError(ctx)
-// 	}
+func (c *Controller) SendPasswordResetEmail(ctx echo.Context) error {
+	var payload PasswordResetRequestPayload
+	if err := ctx.Bind(&payload); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create") // TODO:
 
-// 	return c.views.EmailValidation(ctx)
-// }
+		return c.InternalError(ctx)
+	}
+
+	user, err := c.db.QueryUserByMail(ctx.Request().Context(), payload.Email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return c.views.SendPasswordResetMail(ctx)
+		}
+
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create") // TODO:
+
+		return c.InternalError(ctx)
+	}
+
+	plainText, hashedToken, err := c.tknManager.GenerateToken()
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login") // TODO:
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	resetPWToken := tokens.CreateResetPasswordToken(plainText, hashedToken)
+
+	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		Hash:      resetPWToken.Hash,
+		ExpiresAt: resetPWToken.GetExpirationTime(),
+		Scope:     resetPWToken.GetScope(),
+		UserID:    user.ID,
+	}); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	if err := c.mail.Send(ctx.Request().Context(),
+		user.Mail, "newsletter@mortenvistisen.com", "Testing password reset", "password_reset",
+		mail.ConfirmPassword{
+			Token: resetPWToken.GetPlainText(),
+		}); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	return c.views.SendPasswordResetMail(ctx)
+}
+
+type ResetPasswordPayload struct {
+	Password        string `form:"password"`
+	ConfirmPassword string `form:"confirm_password"`
+	Token           string `form:"token"`
+}
+
+func (c *Controller) ResetPasswordForm(ctx echo.Context) error {
+	var verifyToken VerifyEmail
+	if err := ctx.Bind(&verifyToken); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+		return c.InternalError(ctx)
+	}
+
+	telemetry.Logger.Info("this is the token", "tkn", verifyToken.Token)
+
+	return c.views.ResetPasswordForm(ctx, views.ResetPasswordData{
+		Token:        verifyToken.Token,
+		TokenInvalid: false,
+		CsrfField:    template.HTML(csrf.TemplateField(ctx.Request())),
+	})
+}
+
+func (c *Controller) ResetPassword(ctx echo.Context) error {
+	var payload ResetPasswordPayload
+	if err := ctx.Bind(&payload); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+		return c.InternalError(ctx)
+	}
+
+	hashedToken, err := c.tknManager.Hash(payload.Token)
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			telemetry.Logger.Error("token invalid because it was not found")
+			return c.views.ResetPasswordForm(ctx, views.ResetPasswordData{
+				TokenInvalid: true,
+			})
+		}
+
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	telemetry.Logger.Info("this is token", "user_id", token.UserID)
+
+	if token.ExpiresAt.Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
+		telemetry.Logger.Error("token invalid because time or scope issue")
+		return c.views.ResetPasswordForm(ctx, views.ResetPasswordData{
+			TokenInvalid: true,
+		})
+	}
+
+	user, err := c.db.QueryUser(ctx.Request().Context(), token.UserID)
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	_, err = services.UpdateUser(ctx.Request().Context(), entity.UpdateUser{
+		Name:            user.Name,
+		Mail:            user.Mail,
+		Password:        payload.Password,
+		ConfirmPassword: payload.ConfirmPassword,
+		ID:              user.ID,
+	}, &c.db, c.validate)
+	if err != nil {
+		e, ok := err.(validator.ValidationErrors)
+		if !ok {
+			telemetry.Logger.Info("internal error", "ok", ok)
+		}
+
+		if len(e) == 0 {
+			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
+
+			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+			return c.InternalError(ctx)
+		}
+
+		viewData := views.ResetPasswordData{
+			CsrfField: template.HTML(csrf.TemplateField(ctx.Request())),
+		}
+
+		for _, validationError := range e {
+			switch validationError.StructField() {
+			case "Password":
+				viewData.PasswordInput = views.InputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			case "ConfirmPassword":
+				viewData.ConfirmPassword = views.InputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			}
+		}
+
+		return c.views.ResetPasswordForm(ctx, viewData)
+	}
+
+	if err := c.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	return c.views.ResetPasswordResponse(ctx)
+}

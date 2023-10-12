@@ -49,3 +49,37 @@ func (v Views) PasswordForgotForm(ctx echo.Context) error {
 		},
 	})
 }
+
+func (v Views) SendPasswordResetMail(ctx echo.Context) error {
+	return ctx.Render(http.StatusOK, "user/__reset_email_send", RenderOpts{
+		Data: nil,
+	})
+}
+
+type ResetPasswordData struct {
+	TokenInvalid    bool
+	Token string
+	PasswordInput   InputData
+	ConfirmPassword InputData
+	CsrfField       template.HTML
+}
+
+func (v Views) ResetPasswordForm(ctx echo.Context, data ResetPasswordData) error {
+	return ctx.Render(http.StatusOK, "user/reset_password", RenderOpts{
+		Layout: BaseLayout,
+		Data:   data,
+	})
+}
+
+// func (v Views) ResetPassword(ctx echo.Context, data ResetPasswordData) error {
+// 	return ctx.Render(http.StatusOK, "user/reset_password", RenderOpts{
+// 		Layout: BaseLayout,
+// 		Data:   data,
+// 	})
+// }
+
+func (v Views) ResetPasswordResponse(ctx echo.Context) error {
+	return ctx.Render(http.StatusOK, "user/__reset_password_response", RenderOpts{
+		Data: nil,
+	})
+}

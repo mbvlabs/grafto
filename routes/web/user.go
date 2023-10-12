@@ -23,4 +23,13 @@ func (w *Web) UserRoutes() {
 	w.router.GET("/forgot-password", func(c echo.Context) error {
 		return w.controllers.RenderPasswordForgotForm(c)
 	})
+	w.router.POST("/reset-password-request", func(c echo.Context) error {
+		return w.controllers.SendPasswordResetEmail(c)
+	})
+	w.router.GET("/reset-password", func(c echo.Context) error {
+		return w.controllers.ResetPasswordForm(c)
+	})
+	w.router.POST("/reset-password", func(c echo.Context) error {
+		return w.controllers.ResetPassword(c)
+	})
 }

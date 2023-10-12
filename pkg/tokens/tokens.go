@@ -5,10 +5,9 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	"hash"
 	"os"
 	"time"
-
-	"github.com/MBvisti/grafto/pkg/telemetry"
 )
 
 var tokenSigningKey = []byte(os.Getenv("TOKEN_SIGNING_KEY"))
@@ -18,34 +17,51 @@ const (
 	ScopeResetPassword     = "password_reset"
 )
 
-func generateToken() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(b), nil
+type Manager struct {
+	hasher hash.Hash
 }
 
-func HashToken(token string) (string, error) {
-	telemetry.Logger.Info("tokens", "token", token)
+func NewManager() *Manager {
 	h := hmac.New(sha256.New, tokenSigningKey)
-	h.Write([]byte(token))
-	b := h.Sum(nil)
-	telemetry.Logger.Info("tokens", "hashed_token", base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(b))
-	return base64.StdEncoding.WithPadding(base64.NoPadding).EncodeToString(b), nil
+
+	return &Manager{
+		hasher: h,
+	}
+}
+
+func (m *Manager) Hash(token string) (string, error) {
+	m.hasher.Reset()
+	m.hasher.Write([]byte(token))
+	b := m.hasher.Sum(nil)
+
+	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func (m *Manager) GenerateToken() (plainText string, hashedToken string, err error) {
+	b := make([]byte, 32)
+	_, err = rand.Read(b)
+	if err != nil {
+		return "", "", err
+	}
+	plainText = base64.URLEncoding.EncodeToString(b)
+
+	hashedToken, err = m.Hash(plainText)
+	if err != nil {
+		return "", "", err
+	}
+
+	return plainText, hashedToken, nil
 }
 
 type Token struct {
-	scope       string
-	expiresAt   time.Time
-	HashedToken string
-	rawToken    string
+	scope     string
+	expiresAt time.Time
+	Hash      string
+	plainText string
 }
 
-func (t *Token) GetRawToken() string {
-	return t.rawToken
+func (t *Token) GetPlainText() string {
+	return t.plainText
 }
 
 func (t *Token) GetExpirationTime() time.Time {
@@ -56,31 +72,20 @@ func (t *Token) GetScope() string {
 	return t.scope
 }
 
-func createToken(scope string, expirationTime time.Time) (Token, error) {
-	tkn, err := generateToken()
-	if err != nil {
-		return Token{}, err
-	}
-
-	hashTkn, err := HashToken(tkn)
-	if err != nil {
-		return Token{}, err
-	}
-
-	telemetry.Logger.Info("tokens", "raw", tkn, "hash", hashTkn)
-
+func CreateActivationToken(token, hashedToken string) Token {
 	return Token{
-		scope:       scope,
-		expiresAt:   expirationTime,
-		HashedToken: hashTkn,
-		rawToken:    tkn,
-	}, err
+		ScopeEmailVerification,
+		time.Now().Add(72 * time.Hour),
+		hashedToken,
+		token,
+	}
 }
 
-func CreateActivationToken() (Token, error) {
-	return createToken(ScopeEmailVerification, time.Now().Add(72*time.Hour))
-}
-
-func CreateResetPasswordToken() (Token, error) {
-	return createToken(ScopeEmailVerification, time.Now().Add(2*time.Hour))
+func CreateResetPasswordToken(token, hashedToken string) Token {
+	return Token{
+		ScopeResetPassword,
+		time.Now().Add(2 * time.Hour),
+		hashedToken,
+		token,
+	}
 }
