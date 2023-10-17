@@ -30,6 +30,7 @@ in Go.
 - [ ] Add Dockerfile
 - [ ] Refactor InternalError controller
 - [ ] Update InternalError path's in controllers/user.go
+- [ ] Flash message support
 - [X] Add AIR
 - [X] Add slog (and maybe tint)
 
