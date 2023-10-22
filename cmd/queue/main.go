@@ -3,62 +3,61 @@ package main
 import (
 	"context"
 	"os"
-	"time"
 
-	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/job"
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
+
+func worker(ctx context.Context, errChan chan error, id int, q *queue.Queue) {
+	telemetry.Logger.Info("starting queue", "number", id)
+	errChan <- q.Watch(ctx, id)
+}
 
 func main() {
 	ctx := context.Background()
 
-	conn := database.SetupDatabaseConnection(config.GetDatabaseURL())
-	db := database.New(conn)
+	config, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		panic(err)
+	}
+	config.MaxConns = 3
 
-	q := queue.NewQueue(db)
+	// Create a connection pool
+	pool, err := pgxpool.ConnectConfig(context.Background(), config)
+	if err != nil {
+		panic(err)
+	}
 
 	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
 	mailClient := mail.NewMail(&postmark)
 
-	emailJobProcessor := job.NewEmailJobProcessor(&mailClient)
-	q.RegisterHandler(emailJobProcessor)
+	// Create a channel to receive errors from goroutine
+	errCh := make(chan error)
 
 	telemetry.Logger.Info("starting queue")
-	// go func() {
-	// 	t := time.Tick(125 * time.Millisecond)
-	// 	for {
-	// 		select {
-	// 		case <-t:
-	// 			if err := q.StartScheduler(ctx); err != nil {
-	// 				panic(err)
-	// 			}
-	// 		case <-ctx.Done():
-	// 			telemetry.Logger.Info("shutting down queue")
-	// 			return
-	// 		}
-	// 	}
-	// }()
+	for i := 1; i <= 2; i++ {
+		conn, err := pool.Acquire(ctx)
+		if err != nil {
+			panic(err)
+		}
 
-	newEmailJob, _ := job.CreateEmailJobMsg(job.EmailJobMsg{
-		To:       "test",
-		From:     "test",
-		HtmlTmpl: "test",
-		TextTmpl: "test",
-	})
+		db := database.New(conn)
 
-	if err := q.Push(ctx, newEmailJob, queue.SchedulingConfiguration{
-		RepeatEvery: 0,
-		RunAt:       time.Now().Add(30 * time.Second),
-	}); err != nil {
-		telemetry.Logger.Info("failed to push job", "err", err)
-		panic(err)
+		q := queue.NewQueue(db)
+		emailJobProcessor := job.NewEmailJobProcessor(&mailClient)
+		q.RegisterHandler(emailJobProcessor)
+
+		go worker(ctx, errCh, i, q)
 	}
 
-	go q.StartScheduler(ctx)
+	err = <-errCh
+	if err != nil {
+		telemetry.Logger.Error("error in queue", "error", err)
+	}
 
 	select {}
 }

@@ -36,8 +36,8 @@ func NewQueue(storage queueStorage) *Queue {
 }
 
 // Clear implements Queuer.
-func (*Queue) Clear(ctx context.Context) error {
-	panic("unimplemented")
+func (q *Queue) Clear(ctx context.Context) error {
+	return q.storage.ClearQueue(ctx)
 }
 
 // DeleteTask implements Queuer.
@@ -67,7 +67,7 @@ func (q *Queue) pull(ctx context.Context) ([]job.Job, error) {
 	queuedJobs, err := q.storage.QueryJobs(ctx, database.QueryJobsParams{
 		State:               job.StateRunning,
 		UpdatedAt:           time.Now(),
-		Limit:               50,
+		Limit:               10,
 		InnerState:          job.StateQueued,
 		InnerScheduledFor:   time.Now(),
 		InnerFailedAttempts: int32(q.maxRetries),
@@ -120,23 +120,29 @@ func (q *Queue) RegisterHandler(processor job.Processor) {
 	q.jobProcessors[processor.Name()] = processor
 }
 
-func (q *Queue) StartScheduler(ctx context.Context) {
+func (q *Queue) Watch(ctx context.Context, queueNumber int) error {
 	for {
-		telemetry.Logger.Info("pulling jobs")
+		telemetry.Logger.Info("pulling jobs", "queue", queueNumber)
 		jobs, err := q.pull(ctx)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		for _, job := range jobs {
-			err := q.handleJob(ctx, job)
+		for _, j := range jobs {
+			err := q.handleJob(ctx, j)
 			if err != nil {
-				panic(err)
+				telemetry.Logger.Error("failed to handle job", "error", err)
+				if err := q.storage.FailJob(ctx, database.FailJobParams{
+					State:     job.StateFailed,
+					UpdatedAt: time.Now(),
+					ID:        j.ID,
+				}); err != nil {
+					return err
+				}
 			}
 		}
 
 		time.Sleep(125 * time.Millisecond)
-
 	}
 }
 
