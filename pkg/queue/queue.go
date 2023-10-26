@@ -2,9 +2,14 @@ package queue
 
 import (
 	"context"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"hash"
 	"time"
 
-	"github.com/MBvisti/grafto/pkg/job"
+	"github.com/MBvisti/grafto/pkg/jobs"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/google/uuid"
@@ -13,129 +18,179 @@ import (
 
 const DefaultMaxRetries = 5
 
+const (
+	stateRunning = 1
+	stateFailed  = 2
+	stateQueued  = 3
+)
+
 type queueStorage interface {
 	InsertJob(ctx context.Context, arg database.InsertJobParams) error
 	QueryJobs(ctx context.Context, arg database.QueryJobsParams) ([]database.Queue, error)
 	FailJob(ctx context.Context, arg database.FailJobParams) error
 	DeleteJob(ctx context.Context, id uuid.UUID) error
 	ClearQueue(ctx context.Context) error
+	CheckIfRepeatableJobExists(ctx context.Context, repeatableJobID sql.NullString) (bool, error)
+	RescheduleRepeatableJob(ctx context.Context, arg database.RescheduleRepeatableJobParams) error
 }
 
 type Queue struct {
-	maxRetries    int32
-	jobProcessors map[string]job.Processor
-	storage       queueStorage
+	maxRetries          int32
+	executors           map[string]jobs.Executor
+	repeatableExecutors map[string]jobs.RepeatableExecutor
+	storage             queueStorage
+	hasher              hash.Hash
 }
 
 func NewQueue(storage queueStorage) *Queue {
+	hasher := sha256.New()
 	return &Queue{
 		DefaultMaxRetries,
-		map[string]job.Processor{},
+		map[string]jobs.Executor{},
+		map[string]jobs.RepeatableExecutor{},
 		storage,
+		hasher,
 	}
 }
 
-// Clear implements Queuer.
 func (q *Queue) Clear(ctx context.Context) error {
 	return q.storage.ClearQueue(ctx)
 }
 
-// DeleteTask implements Queuer.
 func (q *Queue) delete(ctx context.Context, id uuid.UUID) error {
 	return q.storage.DeleteJob(ctx, id)
 }
 
-// FailTask implements Queuer.
-func (q *Queue) fail(ctx context.Context, j job.Job) error {
+func (q *Queue) fail(ctx context.Context, j jobs.Job) error {
 	params := database.FailJobParams{
 		UpdatedAt: time.Now(),
 		ID:        j.ID,
 	}
 
 	if j.FailedAttemps == q.maxRetries {
-		params.State = job.StateFailed
+		params.State = stateFailed
 	} else {
-		params.State = job.StateQueued
-		params.ScheduledFor = time.Now().Add(10 * time.Second)
+		params.State = stateQueued
+		params.ScheduledFor = time.Now().Add(1500 * time.Millisecond)
 	}
 
 	return q.storage.FailJob(ctx, params)
 }
 
-// Pull implements Queuer.
-func (q *Queue) pull(ctx context.Context) ([]job.Job, error) {
-	queuedJobs, err := q.storage.QueryJobs(ctx, database.QueryJobsParams{
-		State:               job.StateRunning,
-		UpdatedAt:           time.Now(),
+func (q *Queue) pull(ctx context.Context, pullTime time.Time) ([]database.Queue, error) {
+	return q.storage.QueryJobs(ctx, database.QueryJobsParams{
+		State:               stateRunning,
+		UpdatedAt:           pullTime,
 		Limit:               10,
-		InnerState:          job.StateQueued,
-		InnerScheduledFor:   time.Now(),
+		InnerState:          stateQueued,
+		InnerScheduledFor:   pullTime,
 		InnerFailedAttempts: int32(q.maxRetries),
 	})
-	if err != nil {
-		telemetry.Logger.Error("failed to query tasks", "error", err)
-		return nil, err
-	}
-
-	var jobs []job.Job
-	for _, queuedJob := range queuedJobs {
-		job := job.Job{
-			ID:            queuedJob.ID,
-			Instructions:  queuedJob.Message.Bytes,
-			FailedAttemps: queuedJob.FailedAttempts,
-		}
-		job.SetProcessor(queuedJob.Processor)
-
-		jobs = append(jobs, job)
-	}
-
-	return jobs, nil
 }
 
-// Push implements Queuer.
-func (q *Queue) Push(ctx context.Context, j job.Job, config SchedulingConfiguration) error {
-	// id, err := uuid.Parse(ulid.Make().String()) // TODO: handle error
-	// if err != nil {
-	// 	telemetry.Logger.Error("failed to parse uuid", "error", err)
-	// 	return err
-	// }
-
+func (q *Queue) Push(ctx context.Context, jobPayload jobs.Job) error {
 	msg := pgtype.JSONB{}
-	if err := msg.Set(j.Instructions); err != nil {
+	if err := msg.Set(jobPayload.Instructions); err != nil {
+		telemetry.Logger.Error("failed to set job instructions", "error", err)
 		return err
 	}
 
+	t := time.Now()
 	return q.storage.InsertJob(ctx, database.InsertJobParams{
-		ID:           uuid.New(),
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
-		ScheduledFor: config.RunAt,
-		State:        job.StateQueued,
+		ID:           jobPayload.ID,
+		CreatedAt:    t,
+		UpdatedAt:    t,
+		State:        stateQueued,
 		Message:      msg,
-		Processor:    j.GetProcessor(),
+		Processor:    jobPayload.GetExecutor(),
+		ScheduledFor: t.Add(1500 * time.Millisecond),
 	})
 }
 
-func (q *Queue) RegisterHandler(processor job.Processor) {
-	q.jobProcessors[processor.Name()] = processor
+func (q *Queue) RegisterExecutors(executors []jobs.Executor) {
+	for _, executor := range executors {
+		q.executors[executor.Name()] = executor
+	}
 }
 
-func (q *Queue) Watch(ctx context.Context, queueNumber int) error {
-	for {
-		telemetry.Logger.Info("pulling jobs", "queue", queueNumber)
-		jobs, err := q.pull(ctx)
+func (q *Queue) RegisterRepeatingExecutors(ctx context.Context, repeatExecutors []jobs.RepeatableExecutor) error {
+	for _, executor := range repeatExecutors {
+		q.repeatableExecutors[executor.Name()] = executor
+
+		job, err := executor.GenerateJob()
 		if err != nil {
 			return err
 		}
 
-		for _, j := range jobs {
-			err := q.handleJob(ctx, j)
+		marshaledJob, err := json.Marshal(job)
+		if err != nil {
+			return err
+		}
+
+		q.hasher.Reset()
+		q.hasher.Write(marshaledJob)
+
+		repeatJobID := fmt.Sprintf("%x", q.hasher.Sum(nil))
+
+		if exists, err := q.storage.CheckIfRepeatableJobExists(
+			ctx, sql.NullString{String: repeatJobID, Valid: true}); err != nil {
+			return err
+		} else if exists {
+			telemetry.Logger.Info("repeatable job already exists, skipping", "job", repeatJobID)
+			return nil
+		}
+
+		msg := pgtype.JSONB{}
+		if err := msg.Set(job.Instructions); err != nil {
+			telemetry.Logger.Error("failed to set job instructions", "error", err)
+			return err
+		}
+
+		err = q.storage.InsertJob(ctx, database.InsertJobParams{
+			ID:              uuid.New(),
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+			ScheduledFor:    job.ScheduledFor,
+			State:           stateQueued,
+			Message:         msg,
+			Processor:       job.GetExecutor(),
+			RepeatableJobID: sql.NullString{String: repeatJobID, Valid: true},
+		})
+		if err != nil {
+			telemetry.Logger.Error("failed to insert job", "error", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (q *Queue) Watch(ctx context.Context, queueNumber int) error {
+	telemetry.Logger.Info("starting to watch queue", "queue", queueNumber)
+	for {
+		t := time.Now()
+		queuedJobs, err := q.pull(ctx, t)
+		if err != nil {
+			return err
+		}
+
+		for _, queuedJob := range queuedJobs {
+			isRepeating := queuedJob.RepeatableJobID.Valid
+			job := jobs.Job{
+				ID:            queuedJob.ID,
+				Instructions:  queuedJob.Message.Bytes,
+				FailedAttemps: queuedJob.FailedAttempts,
+			}
+			job.SetExecutor(queuedJob.Processor)
+
+			err := q.handleJob(ctx, job, isRepeating)
 			if err != nil {
 				telemetry.Logger.Error("failed to handle job", "error", err)
+
 				if err := q.storage.FailJob(ctx, database.FailJobParams{
-					State:     job.StateFailed,
+					State:     stateFailed,
 					UpdatedAt: time.Now(),
-					ID:        j.ID,
+					ID:        job.ID,
 				}); err != nil {
 					return err
 				}
@@ -146,22 +201,32 @@ func (q *Queue) Watch(ctx context.Context, queueNumber int) error {
 	}
 }
 
-type SchedulingConfiguration struct {
-	RepeatEvery time.Duration
-	RunAt       time.Time
-}
-
-func (q *Queue) handleJob(ctx context.Context, job job.Job) error {
-	processor := q.jobProcessors[job.GetProcessor()]
-
-	if err := processor.Process(ctx, job.Instructions); err != nil {
-		telemetry.Logger.Error("failed to process job", "error", err)
-		return q.fail(ctx, job)
+func (q *Queue) handleJob(ctx context.Context, j jobs.Job, isRepeating bool) error {
+	if !isRepeating {
+		if err := q.executors[j.GetExecutor()].Process(ctx, j.Instructions); err != nil {
+			telemetry.Logger.Error("failed to process job", "error", err)
+			return q.fail(ctx, j)
+		}
 	}
 
-	if err := q.delete(ctx, job.ID); err != nil {
-		return err
+	if isRepeating {
+		if err := q.repeatableExecutors[j.GetExecutor()].Process(ctx, j.Instructions); err != nil {
+			telemetry.Logger.Error("failed to process job", "error", err)
+			return q.fail(ctx, j)
+		}
+
+		scheduledFor, err := q.repeatableExecutors[j.GetExecutor()].RescheduleJob()
+		if err != nil {
+			return err
+		}
+
+		return q.storage.RescheduleRepeatableJob(ctx, database.RescheduleRepeatableJobParams{
+			State:        stateQueued,
+			UpdatedAt:    time.Now(),
+			ScheduledFor: scheduledFor,
+			ID:           j.ID,
+		})
 	}
 
-	return nil
+	return q.delete(ctx, j.ID)
 }

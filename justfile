@@ -63,4 +63,4 @@ run:
 
 # Queue
 run-queue:
-    @go run cmd/queue/main.go
+    @go run cmd/queue_worker/main.go

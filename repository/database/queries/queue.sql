@@ -1,8 +1,8 @@
 -- name: InsertJob :exec
 insert into queue
-    (id, created_at, updated_at, scheduled_for, failed_attempts, state, message, processor)
+    (id, created_at, updated_at, failed_attempts, state, message, processor, repeatable_job_id, scheduled_for)
 values
-    ($1, $2, $3, $4, $5, $6, $7, $8);
+    ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
 -- name: QueryJobs :many
 update queue
@@ -29,3 +29,11 @@ WHERE id = $4;
 
 -- name: ClearQueue :exec
 delete from queue;
+
+-- name: CheckIfRepeatableJobExists :one
+select exists(select 1 from queue where repeatable_job_id = $1);
+
+-- name: RescheduleRepeatableJob :exec
+update queue
+    set state = $1, updated_at = $2, scheduled_for  = $3, failed_attempts = 0
+    where id = $4;

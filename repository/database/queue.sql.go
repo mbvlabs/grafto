@@ -7,11 +7,23 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
 )
+
+const checkIfRepeatableJobExists = `-- name: CheckIfRepeatableJobExists :one
+select exists(select 1 from queue where repeatable_job_id = $1)
+`
+
+func (q *Queries) CheckIfRepeatableJobExists(ctx context.Context, repeatableJobID sql.NullString) (bool, error) {
+	row := q.db.QueryRow(ctx, checkIfRepeatableJobExists, repeatableJobID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
 
 const clearQueue = `-- name: ClearQueue :exec
 delete from queue
@@ -56,20 +68,21 @@ func (q *Queries) FailJob(ctx context.Context, arg FailJobParams) error {
 
 const insertJob = `-- name: InsertJob :exec
 insert into queue
-    (id, created_at, updated_at, scheduled_for, failed_attempts, state, message, processor)
+    (id, created_at, updated_at, failed_attempts, state, message, processor, repeatable_job_id, scheduled_for)
 values
-    ($1, $2, $3, $4, $5, $6, $7, $8)
+    ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 type InsertJobParams struct {
-	ID             uuid.UUID
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	ScheduledFor   time.Time
-	FailedAttempts int32
-	State          int32
-	Message        pgtype.JSONB
-	Processor      string
+	ID              uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	FailedAttempts  int32
+	State           int32
+	Message         pgtype.JSONB
+	Processor       string
+	RepeatableJobID sql.NullString
+	ScheduledFor    time.Time
 }
 
 func (q *Queries) InsertJob(ctx context.Context, arg InsertJobParams) error {
@@ -77,11 +90,12 @@ func (q *Queries) InsertJob(ctx context.Context, arg InsertJobParams) error {
 		arg.ID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
-		arg.ScheduledFor,
 		arg.FailedAttempts,
 		arg.State,
 		arg.Message,
 		arg.Processor,
+		arg.RepeatableJobID,
+		arg.ScheduledFor,
 	)
 	return err
 }
@@ -99,7 +113,7 @@ update queue
         for update skip locked
         limit $3
     )
-returning id, created_at, updated_at, scheduled_for, failed_attempts, state, message, processor
+returning id, created_at, updated_at, scheduled_for, failed_attempts, state, message, processor, repeatable_job_id
 `
 
 type QueryJobsParams struct {
@@ -136,6 +150,7 @@ func (q *Queries) QueryJobs(ctx context.Context, arg QueryJobsParams) ([]Queue, 
 			&i.State,
 			&i.Message,
 			&i.Processor,
+			&i.RepeatableJobID,
 		); err != nil {
 			return nil, err
 		}
@@ -145,4 +160,27 @@ func (q *Queries) QueryJobs(ctx context.Context, arg QueryJobsParams) ([]Queue, 
 		return nil, err
 	}
 	return items, nil
+}
+
+const rescheduleRepeatableJob = `-- name: RescheduleRepeatableJob :exec
+update queue
+    set state = $1, updated_at = $2, scheduled_for  = $3, failed_attempts = 0
+    where id = $4
+`
+
+type RescheduleRepeatableJobParams struct {
+	State        int32
+	UpdatedAt    time.Time
+	ScheduledFor time.Time
+	ID           uuid.UUID
+}
+
+func (q *Queries) RescheduleRepeatableJob(ctx context.Context, arg RescheduleRepeatableJobParams) error {
+	_, err := q.db.Exec(ctx, rescheduleRepeatableJob,
+		arg.State,
+		arg.UpdatedAt,
+		arg.ScheduledFor,
+		arg.ID,
+	)
+	return err
 }

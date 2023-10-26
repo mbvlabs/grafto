@@ -4,13 +4,15 @@ import (
 	"context"
 	"os"
 
-	"github.com/MBvisti/grafto/pkg/job"
+	"github.com/MBvisti/grafto/pkg/jobs"
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
+
+const DefaultWorkerCount = 2
 
 func worker(ctx context.Context, errChan chan error, id int, q *queue.Queue) {
 	telemetry.Logger.Info("starting queue", "number", id)
@@ -44,12 +46,16 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-
 		db := database.New(conn)
-
 		q := queue.NewQueue(db)
-		emailJobProcessor := job.NewEmailJobProcessor(&mailClient)
-		q.RegisterHandler(emailJobProcessor)
+
+		emailJobExecutor := jobs.NewEmailJobExecutor(&mailClient)
+		weeklyStatusExecutor := jobs.NewWeeklyReportExecutor("30 9 * * 1", &mailClient, db)
+
+		q.RegisterExecutors([]jobs.Executor{emailJobExecutor})
+		if err := q.RegisterRepeatingExecutors(ctx, []jobs.RepeatableExecutor{weeklyStatusExecutor}); err != nil {
+			panic(err)
+		}
 
 		go worker(ctx, errCh, i, q)
 	}

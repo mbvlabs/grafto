@@ -9,7 +9,8 @@ create table if not exists queue (
   failed_attempts int not null,
   state int not null,
   message jsonb not null,
-  processor varchar(255) not null
+  processor varchar(255) not null,
+  repeatable_job_id text unique null
 );
 
 create index index_queue_on_scheduled_for on queue (scheduled_for);

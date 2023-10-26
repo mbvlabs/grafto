@@ -13,14 +13,15 @@ import (
 )
 
 type Queue struct {
-	ID             uuid.UUID
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	ScheduledFor   time.Time
-	FailedAttempts int32
-	State          int32
-	Message        pgtype.JSONB
-	Processor      string
+	ID              uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	ScheduledFor    time.Time
+	FailedAttempts  int32
+	State           int32
+	Message         pgtype.JSONB
+	Processor       string
+	RepeatableJobID sql.NullString
 }
 
 type Token struct {

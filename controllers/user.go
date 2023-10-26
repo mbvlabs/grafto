@@ -134,17 +134,32 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if err := c.mail.Send(ctx.Request().Context(),
-		user.Mail, "newsletter@mortenvistisen.com", "Please confirm your email", "confirm_email",
-		mail.ConfirmPassword{
-			Token: activationToken.GetPlainText(),
-		}); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+	// j, err := queue.CreateEmailJob(job.EmailJobMsg{
+	// 	To:       user.Mail,
+	// 	From:     "newsletter@mortenvistisen.com",
+	// 	TmplName: "confirm_email",
+	// 	Payload: mail.ConfirmPassword{
+	// 		Token: activationToken.GetPlainText(),
+	// 	},
+	// })
+	// if err != nil {
+	// 	ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+	// 	ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
-	}
+	// 	telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+	// 	return c.InternalError(ctx)
+	// }
+
+	// if err := c.queue.Push(ctx.Request().Context(), j, queue.SchedulingConfiguration{
+	// 	RepeatEvery: 0,
+	// 	RunAt:       time.Now().Add(10 * time.Second),
+	// }); err != nil {
+	// 	ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+	// 	ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+	// 	telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+	// 	return c.InternalError(ctx)
+	// }
 
 	return c.views.RegisteredUser(ctx)
 }
