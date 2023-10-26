@@ -1,0 +1,18 @@
+Weekly status report
+
+Update on new users
+
+http://localhost:8000
+
+Hi,
+
+a total of undefined new users have signed up this week.
+
+‍
+
+The kickstarter repository for full-stack Go apps, using your grandfather's technology.
+
+Github
+https://github.com/MBvisti/grafto
+•
+Twitter https://twitter.com/mbvisti

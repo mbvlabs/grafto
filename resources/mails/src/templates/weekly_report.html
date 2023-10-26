@@ -1,0 +1,51 @@
+---
+title: "Weekly status report"
+preheader: "Update on new users"
+bodyClass: bg-slate-50
+---
+
+<x-base>
+  <div class="bg-slate-50 sm:px-4 font-sans">
+    <table align="center">
+      <tr>
+        <td class="w-[552px] max-w-full">
+          <div class="my-12 sm:my-8 text-center">
+            <a href="{{site.url}}">
+              <img src="{{site.url}}/static/images/favicon-32x32.png" alt="Grafto">
+            </a>
+          </div>
+
+          <table class="w-full">
+            <tr>
+              <td class="p-12 sm:px-6 text-base text-slate-700 bg-white rounded shadow-sm">
+                <h1 class="m-0 mb-6 text-2xl sm:leading-8 text-black font-semibold">
+                  Hi,
+                </h1>
+
+                <p class="m-0 leading-6">
+                  a total of {{.NewUsers}} new users have signed up this week.
+                </p>
+              </td>
+            </tr>
+            <tr role="separator">
+              <td class="leading-12">&zwj;</td>
+            </tr>
+            <tr>
+              <td class="text-center text-slate-600 text-xs px-6">
+                <p class="m-0 italic">
+                  The kickstarter repository for full-stack Go apps, using your grandfather's technology.
+                </p>
+
+                <p class="cursor-default">
+                  <a href="https://github.com/MBvisti/grafto" class="text-indigo-700 [text-decoration:none] hover:![text-decoration:underline]">Github</a>
+                  &bull;
+                  <a href="https://twitter.com/mbvisti" class="text-indigo-700 [text-decoration:none] hover:![text-decoration:underline]">Twitter</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</x-base>

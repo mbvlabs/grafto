@@ -14,9 +14,8 @@ import (
 
 const DefaultWorkerCount = 2
 
-func worker(ctx context.Context, errChan chan error, id int, q *queue.Queue) {
-	telemetry.Logger.Info("starting queue", "number", id)
-	errChan <- q.Watch(ctx, id)
+func worker(ctx context.Context, errChan chan error, q *queue.Queue) {
+	errChan <- q.Watch(ctx)
 }
 
 func main() {
@@ -40,25 +39,26 @@ func main() {
 	// Create a channel to receive errors from goroutine
 	errCh := make(chan error)
 
-	telemetry.Logger.Info("starting queue")
-	for i := 1; i <= 2; i++ {
-		conn, err := pool.Acquire(ctx)
-		if err != nil {
-			panic(err)
-		}
-		db := database.New(conn)
-		q := queue.NewQueue(db)
-
-		emailJobExecutor := jobs.NewEmailJobExecutor(&mailClient)
-		weeklyStatusExecutor := jobs.NewWeeklyReportExecutor("30 9 * * 1", &mailClient, db)
-
-		q.RegisterExecutors([]jobs.Executor{emailJobExecutor})
-		if err := q.RegisterRepeatingExecutors(ctx, []jobs.RepeatableExecutor{weeklyStatusExecutor}); err != nil {
-			panic(err)
-		}
-
-		go worker(ctx, errCh, i, q)
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		panic(err)
 	}
+
+	db := database.New(conn)
+	q := queue.NewQueue(db)
+
+	emailJobExecutor := jobs.NewEmailJobExecutor(&mailClient)
+	// cron := "30 9 * * 1"
+	cron := "* * * * *"
+	weeklyStatusExecutor := jobs.NewWeeklyReportExecutor(cron, &mailClient, db)
+
+	q.RegisterExecutors([]jobs.Executor{emailJobExecutor})
+	if err := q.RegisterRepeatingExecutors(ctx, []jobs.RepeatableExecutor{weeklyStatusExecutor}); err != nil {
+		panic(err)
+	}
+
+	telemetry.Logger.Info("starting queue")
+	go worker(ctx, errCh, q)
 
 	err = <-errCh
 	if err != nil {

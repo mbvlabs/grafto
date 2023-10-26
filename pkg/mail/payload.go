@@ -11,3 +11,7 @@ type MailPayload struct {
 type ConfirmPassword struct {
 	Token string
 }
+
+type WeeklyStatusReport struct {
+	NewUsers int
+}

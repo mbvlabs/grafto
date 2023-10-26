@@ -2,11 +2,11 @@ package queue
 
 import (
 	"context"
-	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"hash"
+	"hash/fnv"
 	"time"
 
 	"github.com/MBvisti/grafto/pkg/jobs"
@@ -43,7 +43,7 @@ type Queue struct {
 }
 
 func NewQueue(storage queueStorage) *Queue {
-	hasher := sha256.New()
+	hasher := fnv.New64a()
 	return &Queue{
 		DefaultMaxRetries,
 		map[string]jobs.Executor{},
@@ -80,10 +80,10 @@ func (q *Queue) fail(ctx context.Context, j jobs.Job) error {
 func (q *Queue) pull(ctx context.Context, pullTime time.Time) ([]database.Queue, error) {
 	return q.storage.QueryJobs(ctx, database.QueryJobsParams{
 		State:               stateRunning,
-		UpdatedAt:           pullTime,
+		UpdatedAt:           time.Now(),
 		Limit:               10,
 		InnerState:          stateQueued,
-		InnerScheduledFor:   pullTime,
+		InnerScheduledFor:   time.Now(),
 		InnerFailedAttempts: int32(q.maxRetries),
 	})
 }
@@ -122,14 +122,12 @@ func (q *Queue) RegisterRepeatingExecutors(ctx context.Context, repeatExecutors 
 			return err
 		}
 
-		marshaledJob, err := json.Marshal(job)
+		marshaledJob, err := json.Marshal(job.Data.Instructions)
 		if err != nil {
 			return err
 		}
 
-		q.hasher.Reset()
 		q.hasher.Write(marshaledJob)
-
 		repeatJobID := fmt.Sprintf("%x", q.hasher.Sum(nil))
 
 		if exists, err := q.storage.CheckIfRepeatableJobExists(
@@ -141,7 +139,7 @@ func (q *Queue) RegisterRepeatingExecutors(ctx context.Context, repeatExecutors 
 		}
 
 		msg := pgtype.JSONB{}
-		if err := msg.Set(job.Instructions); err != nil {
+		if err := msg.Set(job.Data.Instructions); err != nil {
 			telemetry.Logger.Error("failed to set job instructions", "error", err)
 			return err
 		}
@@ -153,7 +151,7 @@ func (q *Queue) RegisterRepeatingExecutors(ctx context.Context, repeatExecutors 
 			ScheduledFor:    job.ScheduledFor,
 			State:           stateQueued,
 			Message:         msg,
-			Processor:       job.GetExecutor(),
+			Processor:       job.Data.GetExecutor(),
 			RepeatableJobID: sql.NullString{String: repeatJobID, Valid: true},
 		})
 		if err != nil {
@@ -165,14 +163,15 @@ func (q *Queue) RegisterRepeatingExecutors(ctx context.Context, repeatExecutors 
 	return nil
 }
 
-func (q *Queue) Watch(ctx context.Context, queueNumber int) error {
-	telemetry.Logger.Info("starting to watch queue", "queue", queueNumber)
+func (q *Queue) Watch(ctx context.Context) error {
 	for {
 		t := time.Now()
 		queuedJobs, err := q.pull(ctx, t)
 		if err != nil {
 			return err
 		}
+
+		telemetry.Logger.Info("pulled jobs", "jobs", 1 < len(queuedJobs))
 
 		for _, queuedJob := range queuedJobs {
 			isRepeating := queuedJob.RepeatableJobID.Valid

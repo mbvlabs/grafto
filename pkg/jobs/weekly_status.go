@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/adhocore/gronx"
 	"github.com/google/uuid"
@@ -52,7 +53,7 @@ func (q *WeeklyReportExecutor) GenerateJob() (RepeatableJob, error) {
 	}
 
 	return RepeatableJob{
-		Job: Job{
+		Data: Job{
 			ID:           uuid.New(),
 			Instructions: marshaledInstructions,
 			executor:     weeklyReportExecutor,
@@ -79,9 +80,10 @@ func (w *WeeklyReportExecutor) Process(ctx context.Context, msg []byte) error {
 		return err
 	}
 
+	telemetry.Logger.Info("sending weekly report to %d users", len(users))
+
 	// send email
-	return w.client.Send(
-		ctx, instructions.To, "newsletter@mortenvistisen.com", "Weekly report", "weekly_report", len(users))
+	return nil
 }
 
 // RescheduleJob implements RepeatableExecutor.

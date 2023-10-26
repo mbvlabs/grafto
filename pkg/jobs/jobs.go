@@ -19,7 +19,7 @@ type RepeatableExecutor interface {
 }
 
 type RepeatableJob struct {
-	Job
+	Data         Job
 	ScheduledFor time.Time
 }
 
