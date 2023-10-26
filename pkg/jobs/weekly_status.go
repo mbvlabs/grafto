@@ -80,7 +80,7 @@ func (w *WeeklyReportExecutor) Process(ctx context.Context, msg []byte) error {
 		return err
 	}
 
-	telemetry.Logger.Info("sending weekly report to %d users", len(users))
+	telemetry.Logger.Info("sending weekly report", "user_count", len(users))
 
 	// send email
 	return nil

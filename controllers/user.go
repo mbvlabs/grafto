@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/MBvisti/grafto/entity"
+	"github.com/MBvisti/grafto/pkg/jobs"
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
@@ -134,32 +135,29 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	// j, err := queue.CreateEmailJob(job.EmailJobMsg{
-	// 	To:       user.Mail,
-	// 	From:     "newsletter@mortenvistisen.com",
-	// 	TmplName: "confirm_email",
-	// 	Payload: mail.ConfirmPassword{
-	// 		Token: activationToken.GetPlainText(),
-	// 	},
-	// })
-	// if err != nil {
-	// 	ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-	// 	ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+	j, err := jobs.CreateEmailJob(jobs.EmailInstructions{
+		To:       user.Mail,
+		From:     "newsletter@mortenvistisen.com",
+		TmplName: "confirm_email",
+		Payload: mail.ConfirmPassword{
+			Token: activationToken.GetPlainText(),
+		},
+	})
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
-	// 	telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-	// 	return c.InternalError(ctx)
-	// }
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
 
-	// if err := c.queue.Push(ctx.Request().Context(), j, queue.SchedulingConfiguration{
-	// 	RepeatEvery: 0,
-	// 	RunAt:       time.Now().Add(10 * time.Second),
-	// }); err != nil {
-	// 	ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-	// 	ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+	if err := c.queue.Push(ctx.Request().Context(), j); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
-	// 	telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-	// 	return c.InternalError(ctx)
-	// }
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
 
 	return c.views.RegisteredUser(ctx)
 }
