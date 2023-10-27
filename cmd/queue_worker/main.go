@@ -38,15 +38,38 @@ func main() {
 
 	db := database.New(pool)
 	q := queue.NewQueue(db)
-	emailJobExecutor := jobs.NewEmailJobExecutor(&mailClient)
 
+	emailJobExecutor := jobs.NewEmailJobExecutor(&mailClient)
 	executors := map[string]jobs.Executor{
 		emailJobExecutor.Name(): emailJobExecutor,
 	}
-	repeatableExecutors := map[string]jobs.RepeatableExecutor{}
+
+	weeklyReport := jobs.NewWeeklyReportExecutor("* * * * *", &mailClient, db)
+	repeatableExecutors := map[string]jobs.RepeatableExecutor{weeklyReport.Name(): weeklyReport}
 	if err := initRepeatingJobs(ctx, q, repeatableExecutors); err != nil {
 		panic(err)
 	}
+
+	// type EmailInstructions struct {
+	// 	To       string      `json:"to"`
+	// 	From     string      `json:"from"`
+	// 	TmplName string      `json:"tmpl_name"`
+	// 	Payload  interface{} `json:"payload"`
+	// }
+	// go func() {
+	// 	inst, _ := json.Marshal(EmailInstructions{
+	// 		To:       "dsajkdlasmk",
+	// 		From:     "dkasmldmsakl",
+	// 		TmplName: "weekly_report",
+	// 		Payload:  nil,
+	// 	})
+	// 	for i := 0; i < 100; i++ {
+	// 		_ = q.Push(ctx, queue.JobPayload{
+	// 			Instructions: inst,
+	// 			Executor:     "testing",
+	// 		})
+	// 	}
+	// }()
 
 	worker := queue.NewWorker(uuid.New(), queuedJobsStream, db, executors, repeatableExecutors)
 	go worker.Handle()

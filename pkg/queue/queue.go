@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash"
 	"hash/fnv"
+	"math/rand"
 	"time"
 
 	"github.com/MBvisti/grafto/pkg/jobs"
@@ -69,6 +70,15 @@ func (q *Queue) pull(ctx context.Context, pullTime time.Time) ([]database.Job, e
 }
 
 func (q *Queue) Push(ctx context.Context, payload JobPayload) error {
+	// Seed the random number generator with the current time
+	rand.Seed(time.Now().UnixNano())
+
+	// Generate a random number between 0 and (4000 - 2000) = 2000
+	randomNumber := rand.Intn(2001)
+
+	// Add the minimum value (2000) to the random number to get a value between 2000 and 4000
+	randomNumberBetween2000And4000 := 2000 + randomNumber
+
 	t := time.Now()
 	return q.storage.InsertJob(ctx, database.InsertJobParams{
 		ID:           uuid.New(),
@@ -77,7 +87,7 @@ func (q *Queue) Push(ctx context.Context, payload JobPayload) error {
 		State:        stateQueued,
 		Instructions: payload.Instructions,
 		Executor:     payload.Executor,
-		ScheduledFor: database.ConvertTime(t.Add(2000 * time.Millisecond)),
+		ScheduledFor: database.ConvertTime(t.Add(time.Duration(randomNumberBetween2000And4000) * time.Millisecond)),
 	})
 }
 
@@ -123,6 +133,7 @@ func (q *Queue) InitilizeRepeatingJobs(ctx context.Context, repeatExecutor jobs.
 
 func (q *Queue) Watch(ctx context.Context, jobs chan<- []database.Job, errCh chan<- error) {
 	telemetry.Logger.Info("starting the watch")
+	l := 1
 	for {
 		t := time.Now()
 		queuedJobs, err := q.pull(ctx, t)
@@ -132,6 +143,9 @@ func (q *Queue) Watch(ctx context.Context, jobs chan<- []database.Job, errCh cha
 			jobs <- queuedJobs
 		}
 
-		time.Sleep(125 * time.Millisecond)
+		telemetry.Logger.Info("sending jobs to channel", "jobs", queuedJobs, "it", l)
+
+		l++
+		time.Sleep(1000 * time.Millisecond)
 	}
 }

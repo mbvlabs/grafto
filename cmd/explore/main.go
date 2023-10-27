@@ -48,10 +48,12 @@ func worker(id int, jobs chan database.Job) {
 
 func main() {
 	jobsStream := make(chan database.Job)
+	sema := make(chan struct{}, 2)
 
 	go watcher(jobsStream)
 
 	for i := 1; i <= 5; i++ {
+		sema <- struct{}{}
 		go worker(i, jobsStream)
 	}
 

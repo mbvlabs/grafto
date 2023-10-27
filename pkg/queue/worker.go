@@ -36,16 +36,24 @@ func NewWorker(
 	}
 }
 
-func (w *Worker) Handle() {
-	for {
-		jobs := <-w.jobsChan
+var Counter = 0
 
-		for _, job := range jobs {
+func (w *Worker) Handle() {
+	// semaphore := make(chan uuiiiid.UUID, 5)
+
+	for {
+		// jobs := <-w.jobsChan
+
+		for _, job := range <-w.jobsChan {
+			// semaphore <- job.ID
+
 			if job.RepeatableJobID.Valid {
+				// time.Sleep(500 * time.Millisecond)
 				if err := w.processRepeatable(job); err != nil {
 					telemetry.Logger.Error("failed to process job", "job", job.ID, "error", err)
 					continue
 				}
+				// <-semaphore
 			}
 
 			if !job.RepeatableJobID.Valid {
@@ -53,12 +61,16 @@ func (w *Worker) Handle() {
 					telemetry.Logger.Error("failed to process job", "job", job.ID, "error", err)
 					continue
 				}
+				// <-semaphore
 			}
 		}
 	}
 }
 
 func (w *Worker) processRepeatable(job database.Job) error {
+	t := time.Now()
+	telemetry.Logger.Info("call time", "now", t)
+
 	executor := w.repeatableExecutors[job.Executor]
 	err := executor.Process(context.Background(), job.Instructions)
 	if err != nil {
@@ -66,7 +78,7 @@ func (w *Worker) processRepeatable(job database.Job) error {
 		return w.failJob(context.Background(), job.ID, job.FailedAttempts)
 	}
 
-	scheduledFor, err := executor.RescheduleJob()
+	scheduledFor, err := executor.RescheduleJob(t)
 	if err != nil {
 		return w.failJob(context.Background(), job.ID, job.FailedAttempts)
 	}

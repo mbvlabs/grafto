@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/MBvisti/grafto/pkg/telemetry"
+	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/adhocore/gronx"
 	"github.com/google/uuid"
@@ -34,7 +34,7 @@ func NewWeeklyReportExecutor(cron string, client emailClient, storage storage) *
 	}
 }
 
-type WeeklyReportInstructions struct {
+type weeklyReportInstructions struct {
 	To string `json:"to"`
 }
 
@@ -45,7 +45,7 @@ func (q *WeeklyReportExecutor) GenerateJob() (RepeatableJob, error) {
 		return RepeatableJob{}, err
 	}
 
-	marshaledInstructions, err := json.Marshal(WeeklyReportInstructions{
+	marshaledInstructions, err := json.Marshal(weeklyReportInstructions{
 		To: "mbv1406@gmail.com",
 	})
 	if err != nil {
@@ -69,26 +69,26 @@ func (w *WeeklyReportExecutor) Name() string {
 
 // Process implements RepeatableExecutor.
 func (w *WeeklyReportExecutor) Process(ctx context.Context, msg []byte) error {
-	var instructions WeeklyReportInstructions
+	var instructions weeklyReportInstructions
 	if err := json.Unmarshal(msg, &instructions); err != nil {
 		return err
 	}
 
 	// get users
-	users, err := w.storage.QueryUsers(ctx)
-	if err != nil {
-		return err
-	}
-
-	telemetry.Logger.Info("sending weekly report", "user_count", len(users))
+	// users, err := w.storage.QueryUsers(ctx)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// send email
-	return nil
+	return w.client.Send(ctx, instructions.To, "newsletter@mortenvistisen.com", "test", "weekly_report", mail.WeeklyStatusReport{
+		NewUsers: 3,
+	})
 }
 
 // RescheduleJob implements RepeatableExecutor.
-func (q *WeeklyReportExecutor) RescheduleJob() (time.Time, error) {
-	return gronx.NextTick(q.schedule, true)
+func (q *WeeklyReportExecutor) RescheduleJob(now time.Time) (time.Time, error) {
+	return gronx.NextTickAfter(q.schedule, now, true)
 }
 
 var _ RepeatableExecutor = (*WeeklyReportExecutor)(nil)

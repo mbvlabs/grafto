@@ -15,7 +15,7 @@ type Executor interface {
 type RepeatableExecutor interface {
 	Executor
 	GenerateJob() (RepeatableJob, error)
-	RescheduleJob() (time.Time, error)
+	RescheduleJob(now time.Time) (time.Time, error)
 }
 
 type RepeatableJob struct {
