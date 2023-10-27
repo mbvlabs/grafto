@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
 	"errors"
 	"html/template"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"github.com/MBvisti/grafto/entity"
 	"github.com/MBvisti/grafto/pkg/jobs"
 	"github.com/MBvisti/grafto/pkg/mail"
+	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
@@ -122,9 +122,9 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 
 	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
+		CreatedAt: database.ConvertTime(time.Now()),
 		Hash:      activationToken.Hash,
-		ExpiresAt: activationToken.GetExpirationTime(),
+		ExpiresAt: database.ConvertTime(activationToken.GetExpirationTime()),
 		Scope:     activationToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {
@@ -151,7 +151,10 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if err := c.queue.Push(ctx.Request().Context(), j); err != nil {
+	if err := c.queue.Push(ctx.Request().Context(), queue.JobPayload{
+		Instructions: j.Instructions,
+		Executor:     j.GetExecutor(),
+	}); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
@@ -200,7 +203,7 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if token.ExpiresAt.Before(time.Now()) && token.Scope != tokens.ScopeEmailVerification {
+	if token.ExpiresAt.Time.Before(time.Now()) && token.Scope != tokens.ScopeEmailVerification {
 		return c.views.EmailValidation(ctx, views.EmailValidationData{
 			TokenInvalid: true,
 		})
@@ -209,8 +212,8 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 	confirmTime := time.Now()
 	user, err := c.db.ConfirmUserEmail(ctx.Request().Context(), database.ConfirmUserEmailParams{
 		ID:             token.UserID,
-		UpdatedAt:      confirmTime,
-		MailVerifiedAt: sql.NullTime{Time: confirmTime, Valid: true},
+		UpdatedAt:      database.ConvertTime(confirmTime),
+		MailVerifiedAt: database.ConvertTime(confirmTime),
 	})
 	if err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -283,9 +286,9 @@ func (c *Controller) SendPasswordResetEmail(ctx echo.Context) error {
 
 	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
+		CreatedAt: database.ConvertTime(time.Now()),
 		Hash:      resetPWToken.Hash,
-		ExpiresAt: resetPWToken.GetExpirationTime(),
+		ExpiresAt: database.ConvertTime(resetPWToken.GetExpirationTime()),
 		Scope:     resetPWToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {
@@ -371,7 +374,7 @@ func (c *Controller) ResetPassword(ctx echo.Context) error {
 
 	telemetry.Logger.Info("this is token", "user_id", token.UserID)
 
-	if token.ExpiresAt.Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
+	if token.ExpiresAt.Time.Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
 		telemetry.Logger.Error("token invalid because time or scope issue")
 		return c.views.ResetPasswordForm(ctx, views.ResetPasswordData{
 			TokenInvalid: true,

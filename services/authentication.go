@@ -70,8 +70,8 @@ func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db user
 
 	return entity.User{
 		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		CreatedAt: user.CreatedAt.Time,
+		UpdatedAt: user.UpdatedAt.Time,
 		Name:      user.Name,
 		Mail:      user.Mail,
 	}, nil

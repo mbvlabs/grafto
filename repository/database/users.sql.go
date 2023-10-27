@@ -7,10 +7,9 @@ package database
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const confirmUserEmail = `-- name: ConfirmUserEmail :one
@@ -22,8 +21,8 @@ returning id, created_at, updated_at, name, mail, mail_verified_at, password
 
 type ConfirmUserEmailParams struct {
 	ID             uuid.UUID
-	UpdatedAt      time.Time
-	MailVerifiedAt sql.NullTime
+	UpdatedAt      pgtype.Timestamptz
+	MailVerifiedAt pgtype.Timestamptz
 }
 
 func (q *Queries) ConfirmUserEmail(ctx context.Context, arg ConfirmUserEmailParams) (User, error) {
@@ -71,8 +70,8 @@ returning id, created_at, updated_at, name, mail, mail_verified_at, password
 
 type InsertUserParams struct {
 	ID        uuid.UUID
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 	Name      string
 	Mail      string
 	Password  string
@@ -179,7 +178,7 @@ returning id, created_at, updated_at, name, mail, mail_verified_at, password
 
 type UpdateUserParams struct {
 	ID        uuid.UUID
-	UpdatedAt time.Time
+	UpdatedAt pgtype.Timestamptz
 	Name      string
 	Mail      string
 	Password  string

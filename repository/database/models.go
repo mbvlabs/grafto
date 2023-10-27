@@ -6,39 +6,38 @@ package database
 
 import (
 	"database/sql"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Queue struct {
+type Job struct {
 	ID              uuid.UUID
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	ScheduledFor    time.Time
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
+	ScheduledFor    pgtype.Timestamptz
 	FailedAttempts  int32
 	State           int32
-	Message         pgtype.JSONB
-	Processor       string
+	Instructions    []byte
+	Executor        string
 	RepeatableJobID sql.NullString
 }
 
 type Token struct {
 	ID        uuid.UUID
-	CreatedAt time.Time
+	CreatedAt pgtype.Timestamptz
 	Hash      string
-	ExpiresAt time.Time
+	ExpiresAt pgtype.Timestamptz
 	Scope     string
 	UserID    uuid.UUID
 }
 
 type User struct {
 	ID             uuid.UUID
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
 	Name           string
 	Mail           string
-	MailVerifiedAt sql.NullTime
+	MailVerifiedAt pgtype.Timestamptz
 	Password       string
 }

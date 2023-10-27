@@ -9,61 +9,55 @@ import (
 	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/google/uuid"
 )
 
-const DefaultWorkerCount = 2
+const DefaultWorkerCount = 5
 
-func worker(ctx context.Context, errChan chan error, q *queue.Queue) {
-	errChan <- q.Watch(ctx)
+func initRepeatingJobs(ctx context.Context, q *queue.Queue, repeatableExecutors map[string]jobs.RepeatableExecutor) error {
+	for _, v := range repeatableExecutors {
+		err := q.InitilizeRepeatingJobs(ctx, v)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func main() {
 	ctx := context.Background()
-
-	config, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
-	if err != nil {
-		panic(err)
-	}
-	config.MaxConns = 3
+	queuedJobsStream := make(chan []database.Job)
 
 	// Create a connection pool
-	pool, err := pgxpool.ConnectConfig(context.Background(), config)
-	if err != nil {
-		panic(err)
-	}
+	pool := database.SetupDatabaseConnection(os.Getenv("DATABASE_URL"))
+	defer pool.Close()
 
 	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
 	mailClient := mail.NewMail(&postmark)
 
+	db := database.New(pool)
+	q := queue.NewQueue(db)
+	emailJobExecutor := jobs.NewEmailJobExecutor(&mailClient)
+
+	executors := map[string]jobs.Executor{
+		emailJobExecutor.Name(): emailJobExecutor,
+	}
+	repeatableExecutors := map[string]jobs.RepeatableExecutor{}
+	if err := initRepeatingJobs(ctx, q, repeatableExecutors); err != nil {
+		panic(err)
+	}
+
+	worker := queue.NewWorker(uuid.New(), queuedJobsStream, db, executors, repeatableExecutors)
+	go worker.Handle()
+
 	// Create a channel to receive errors from goroutine
 	errCh := make(chan error)
+	go func() {
+		for err := range errCh {
+			telemetry.Logger.Error("error in queue", "error", err)
+		}
+	}()
 
-	conn, err := pool.Acquire(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	db := database.New(conn)
-	q := queue.NewQueue(db)
-
-	emailJobExecutor := jobs.NewEmailJobExecutor(&mailClient)
-	// cron := "30 9 * * 1"
-	cron := "* * * * *"
-	weeklyStatusExecutor := jobs.NewWeeklyReportExecutor(cron, &mailClient, db)
-
-	q.RegisterExecutors([]jobs.Executor{emailJobExecutor})
-	if err := q.RegisterRepeatingExecutors(ctx, []jobs.RepeatableExecutor{weeklyStatusExecutor}); err != nil {
-		panic(err)
-	}
-
-	telemetry.Logger.Info("starting queue")
-	go worker(ctx, errCh, q)
-
-	err = <-errCh
-	if err != nil {
-		telemetry.Logger.Error("error in queue", "error", err)
-	}
-
-	select {}
+	q.Watch(ctx, queuedJobsStream, errCh)
 }

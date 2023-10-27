@@ -8,4 +8,31 @@ sql:
       package: "database"
       out: "repository/database"
       output_db_file_name: "database.go"
-      sql_package: "pgx/v4"
+      sql_package: "pgx/v5"
+      overrides:
+      - db_type: "uuid"
+        go_type: "github.com/google/uuid.UUID"
+      - db_type: "uuid"
+        go_type: "github.com/google/uuid.NullUUID"
+        nullable: true
+      - db_type: "text"
+        go_type: "database/sql.NullString"
+        nullable: true
+      # - db_type: "pg_catalog.timestamptz"
+      #   go_type:
+      #     import: "time"
+      #     type: "Time"
+      #     pointer: true
+      #   nullable: true
+      # - db_type: "pg_catalog.timestamp"
+      #   go_type:
+      #     import: "time"
+      #     type: "Time"
+      #     pointer: true
+      #   nullable: true
+      # - db_type: "timestamptz"
+      #   go_type:
+      #     import: "time"
+      #     type: "Time"
+      #     pointer: true
+      #   nullable: true

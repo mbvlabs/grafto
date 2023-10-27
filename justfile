@@ -64,3 +64,6 @@ run:
 # Queue
 run-queue:
     @go run cmd/queue_worker/main.go
+
+run-exp:
+    @go run cmd/explore/main.go

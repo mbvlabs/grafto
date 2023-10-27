@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 )
 
-const emailExecutorName = "email_Job_executor"
+const emailExecutorName = "testing"
+
+// const emailExecutorName = "email_Job_executor"
 
 type EmailInstructions struct {
 	To       string      `json:"to"`
@@ -51,11 +53,11 @@ func (e *EmailExecutor) Process(ctx context.Context, msg []byte) error {
 		return err
 	}
 
-	if err := e.client.Send(ctx,
-		instructions.To, instructions.From, "Please confirm your email", instructions.TmplName,
-		instructions.Payload); err != nil {
-		return err
-	}
+	// if err := e.client.Send(ctx,
+	// 	instructions.To, instructions.From, "Please confirm your email", instructions.TmplName,
+	// 	instructions.Payload); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
