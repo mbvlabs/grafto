@@ -68,9 +68,6 @@ func (w *Worker) Handle() {
 }
 
 func (w *Worker) processRepeatable(job database.Job) error {
-	t := time.Now()
-	telemetry.Logger.Info("call time", "now", t)
-
 	executor := w.repeatableExecutors[job.Executor]
 	err := executor.Process(context.Background(), job.Instructions)
 	if err != nil {
@@ -78,15 +75,10 @@ func (w *Worker) processRepeatable(job database.Job) error {
 		return w.failJob(context.Background(), job.ID, job.FailedAttempts)
 	}
 
-	scheduledFor, err := executor.RescheduleJob(t)
-	if err != nil {
-		return w.failJob(context.Background(), job.ID, job.FailedAttempts)
-	}
-
 	if err := w.storage.RescheduleRepeatableJob(context.Background(), database.RescheduleRepeatableJobParams{
 		State:        stateQueued,
 		UpdatedAt:    database.ConvertTime(time.Now()),
-		ScheduledFor: database.ConvertTime(scheduledFor),
+		ScheduledFor: database.ConvertTime(executor.RescheduleJob(job.ScheduledFor.Time)),
 		ID:           job.ID,
 	}); err != nil {
 		return w.failJob(context.Background(), job.ID, job.FailedAttempts)

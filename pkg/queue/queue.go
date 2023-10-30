@@ -143,7 +143,7 @@ func (q *Queue) Watch(ctx context.Context, jobs chan<- []database.Job, errCh cha
 			jobs <- queuedJobs
 		}
 
-		telemetry.Logger.Info("sending jobs to channel", "jobs", queuedJobs, "it", l)
+		telemetry.Logger.Info("sending jobs to channel", "count_job", len(queuedJobs), "it", l)
 
 		l++
 		time.Sleep(1000 * time.Millisecond)
