@@ -60,3 +60,7 @@ generate-db-functions:
 # Application
 run:
     air -c .air.toml
+
+# Queue
+run-queue:
+    @go run ./cmd/queue/main.go
