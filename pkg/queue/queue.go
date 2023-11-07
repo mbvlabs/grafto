@@ -70,6 +70,7 @@ func (q *Queue) Start(ctx context.Context, jobs chan<- []Job) error {
 		if err != nil {
 			return err
 		}
+
 		j := make([]Job, 0, len(queuedJobs))
 		for _, queuedJob := range queuedJobs {
 			j = append(j, Job{
