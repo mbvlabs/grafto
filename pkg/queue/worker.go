@@ -32,7 +32,7 @@ func (w *Worker) Start(ctx context.Context) {
 	for {
 		for _, job := range <-w.jobsChan {
 			executor := w.executors[job.executor]
-			if err := executor.Process(context.Background(), job.instructions); err != nil {
+			if err := executor.process(context.Background(), job.instructions); err != nil {
 				err := w.failJob(context.Background(), job.id, job.failedAttemps)
 				if err != nil {
 					telemetry.Logger.Error("could not fail job", "error", err, "job", job)

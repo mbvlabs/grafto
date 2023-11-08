@@ -5,33 +5,33 @@ import (
 	"encoding/json"
 )
 
-const emailExecutorName = "email"
+const emailExecutorName string = "email"
 
 type emailSender interface {
 	Send(ctx context.Context, to, from, subject, tmplName string, data interface{}) error
 }
 
-type EmailExecutor struct {
+type emailExecutor struct {
 	client emailSender
 	name   string
 }
 
-func NewEmailExecutor(client emailSender) *EmailExecutor {
-	return &EmailExecutor{
-		client: client,
-		name:   emailExecutorName,
+func NewEmailExecutor(client emailSender) *emailExecutor {
+	return &emailExecutor{
+		client,
+		emailExecutorName,
 	}
 }
 
-var _ Executor = (*EmailExecutor)(nil)
+var _ Executor = (*emailExecutor)(nil)
 
 // Name implements Executor.
-func (e *EmailExecutor) Name() string {
+func (e *emailExecutor) Name() string {
 	return e.name
 }
 
 // Process implements Executor.
-func (e *EmailExecutor) Process(ctx context.Context, msg []byte) error {
+func (e *emailExecutor) process(ctx context.Context, msg []byte) error {
 	var instructions EmailInstructions
 	if err := json.Unmarshal(msg, &instructions); err != nil {
 		return err

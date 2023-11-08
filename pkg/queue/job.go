@@ -7,7 +7,7 @@ import (
 )
 
 type Executor interface {
-	Process(ctx context.Context, msg []byte) error
+	process(ctx context.Context, msg []byte) error
 	Name() string
 }
 
