@@ -14,7 +14,7 @@ const (
 	stateRunning = 1
 	stateFailed  = 2
 	stateQueued  = 3
-	maxRetries   = 5 // TODO: update this in the code
+	maxRetries   = 5
 )
 
 type queueStorage interface {
