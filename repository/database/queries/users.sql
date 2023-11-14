@@ -31,3 +31,10 @@ update users
     set updated_at=$2, mail_verified_at=$3
 where id = $1
 returning *;
+
+-- name: RemoveInactiveUsers :exec
+delete 
+    from users
+where
+    mail_verified_at is null and 
+    created_at <= sqlc.arg(two_weeks_ago)::timestamptz;

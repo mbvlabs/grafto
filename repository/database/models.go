@@ -21,6 +21,7 @@ type Job struct {
 	State          int32
 	Instructions   pgtype.JSONB
 	Executor       string
+	RepeatableID   sql.NullString
 }
 
 type Token struct {

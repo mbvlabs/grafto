@@ -170,6 +170,19 @@ func (q *Queries) QueryUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const removeInactiveUsers = `-- name: RemoveInactiveUsers :exec
+delete 
+    from users
+where
+    mail_verified_at is null and 
+    created_at <= $1::timestamptz
+`
+
+func (q *Queries) RemoveInactiveUsers(ctx context.Context, twoWeeksAgo time.Time) error {
+	_, err := q.db.Exec(ctx, removeInactiveUsers, twoWeeksAgo)
+	return err
+}
+
 const updateUser = `-- name: UpdateUser :one
 update users
     set updated_at=$2, name=$3, mail=$4, password=$5

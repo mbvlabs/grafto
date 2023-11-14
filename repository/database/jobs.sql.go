@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,9 +48,9 @@ func (q *Queries) FailJob(ctx context.Context, arg FailJobParams) error {
 
 const insertJob = `-- name: InsertJob :exec
 insert into jobs
-    (id, created_at, updated_at, failed_attempts, state, instructions, scheduled_for, executor)
+    (id, created_at, updated_at, failed_attempts, state, instructions, scheduled_for, executor, repeatable_id)
 values
-    ($1, $2, $3, $4, $5, $6, $7, $8)
+    ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 type InsertJobParams struct {
@@ -61,6 +62,7 @@ type InsertJobParams struct {
 	Instructions   pgtype.JSONB
 	ScheduledFor   time.Time
 	Executor       string
+	RepeatableID   sql.NullString
 }
 
 func (q *Queries) InsertJob(ctx context.Context, arg InsertJobParams) error {
@@ -73,6 +75,7 @@ func (q *Queries) InsertJob(ctx context.Context, arg InsertJobParams) error {
 		arg.Instructions,
 		arg.ScheduledFor,
 		arg.Executor,
+		arg.RepeatableID,
 	)
 	return err
 }
@@ -90,7 +93,7 @@ update jobs
         for update skip locked
         limit $3
     )
-returning id, created_at, updated_at, scheduled_for, failed_attempts, state, instructions, executor
+returning id, created_at, updated_at, scheduled_for, failed_attempts, state, instructions, executor, repeatable_id
 `
 
 type QueryJobsParams struct {
@@ -127,6 +130,7 @@ func (q *Queries) QueryJobs(ctx context.Context, arg QueryJobsParams) ([]Job, er
 			&i.State,
 			&i.Instructions,
 			&i.Executor,
+			&i.RepeatableID,
 		); err != nil {
 			return nil, err
 		}
@@ -136,4 +140,38 @@ func (q *Queries) QueryJobs(ctx context.Context, arg QueryJobsParams) ([]Job, er
 		return nil, err
 	}
 	return items, nil
+}
+
+const repeatableJobExists = `-- name: RepeatableJobExists :one
+select exists(select 1 from jobs where repeatable_id = $1)
+`
+
+func (q *Queries) RepeatableJobExists(ctx context.Context, repeatableID sql.NullString) (bool, error) {
+	row := q.db.QueryRow(ctx, repeatableJobExists, repeatableID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const rescheduleJob = `-- name: RescheduleJob :exec
+update jobs
+    set state = $1, updated_at = $2, scheduled_for  = $3, failed_attempts = 0
+    where id = $4
+`
+
+type RescheduleJobParams struct {
+	State        int32
+	UpdatedAt    time.Time
+	ScheduledFor time.Time
+	ID           uuid.UUID
+}
+
+func (q *Queries) RescheduleJob(ctx context.Context, arg RescheduleJobParams) error {
+	_, err := q.db.Exec(ctx, rescheduleJob,
+		arg.State,
+		arg.UpdatedAt,
+		arg.ScheduledFor,
+		arg.ID,
+	)
+	return err
 }

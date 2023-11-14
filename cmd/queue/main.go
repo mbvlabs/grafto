@@ -28,10 +28,15 @@ func main() {
 		emailJobExecutor.Name(): emailJobExecutor,
 	}
 
-	j, _ := queue.CreateEmailJob(queue.EmailInstructions{})
-	q.Push(ctx, j)
+	removeInactiveUsersExecutor := queue.NewRemoveUsersExecutor("*/1 * * * *", db)
+	repeatableExecutors := map[string]queue.RepeatableExecutor{
+		removeInactiveUsersExecutor.Name(): removeInactiveUsersExecutor,
+	}
+	if err := q.InitilizeRepeatingJobs(ctx, repeatableExecutors); err != nil {
+		panic(err)
+	}
 
-	worker := queue.NewWorker(queuedJobsStream, db, executors)
+	worker := queue.NewWorker(queuedJobsStream, db, executors, repeatableExecutors)
 	go worker.Start(ctx)
 
 	q.Start(ctx, queuedJobsStream)

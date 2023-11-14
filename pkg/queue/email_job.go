@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 )
 
-const emailExecutorName string = "email"
+const emailExecutorName string = "email_executor"
 
 type emailSender interface {
 	Send(ctx context.Context, to, from, subject, tmplName string, data interface{}) error
@@ -32,7 +32,7 @@ func (e *emailExecutor) Name() string {
 
 // Process implements Executor.
 func (e *emailExecutor) process(ctx context.Context, msg []byte) error {
-	var instructions EmailInstructions
+	var instructions EmailJob
 	if err := json.Unmarshal(msg, &instructions); err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (e *emailExecutor) process(ctx context.Context, msg []byte) error {
 	return nil
 }
 
-type EmailInstructions struct {
+type EmailJob struct {
 	To       string      `json:"to"`
 	From     string      `json:"from"`
 	Subject  string      `json:"subject"`
@@ -54,11 +54,16 @@ type EmailInstructions struct {
 	Payload  interface{} `json:"payload"`
 }
 
-func CreateEmailJob(payload EmailInstructions) (*Job, error) {
+func NewEmailJob(payload EmailJob) (*Job, error) {
 	instructions, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	return createJob(instructions, emailExecutorName), nil
+	jobInstructions := JobInstructions{
+		instructions: instructions,
+		executor:     emailExecutorName,
+	}
+
+	return newJob(jobInstructions)
 }

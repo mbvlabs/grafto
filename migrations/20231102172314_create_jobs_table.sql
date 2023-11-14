@@ -8,8 +8,9 @@ create table if not exists jobs (
   scheduled_for timestamptz not null,
   failed_attempts int not null,
   state int not null,
-  instructions jsonb not null,
-  executor varchar(255) not null
+  instructions jsonb,
+  executor varchar(255) not null,
+  repeatable_id text unique null
 );
 
 create index index_jobs_on_scheduled_for on jobs (scheduled_for);

@@ -1,8 +1,8 @@
 -- name: InsertJob :exec
 insert into jobs
-    (id, created_at, updated_at, failed_attempts, state, instructions, scheduled_for, executor)
+    (id, created_at, updated_at, failed_attempts, state, instructions, scheduled_for, executor, repeatable_id)
 values
-    ($1, $2, $3, $4, $5, $6, $7, $8);
+    ($1, $2, $3, $4, $5, $6, $7, $8, $9);
 
 -- name: QueryJobs :many
 update jobs
@@ -26,3 +26,11 @@ WHERE id = $4;
 
 -- name: DeleteJob :exec
 delete from jobs where id = $1;
+
+-- name: RepeatableJobExists :one
+select exists(select 1 from jobs where repeatable_id = $1);
+
+-- name: RescheduleJob :exec
+update jobs
+    set state = $1, updated_at = $2, scheduled_for  = $3, failed_attempts = 0
+    where id = $4;
