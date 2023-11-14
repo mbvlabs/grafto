@@ -26,7 +26,7 @@ in Go.
 - [X] Add login & authentication
 - [X] Add password reset and mail verification
 - [X] Add mail functionality
-- [ ] Add queue/job/task/option
+- [X] Add queue/job/task/option
 - [ ] Add Dockerfile
 - [ ] Refactor InternalError controller
 - [ ] Update InternalError path's in controllers/user.go

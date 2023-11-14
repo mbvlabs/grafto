@@ -9,7 +9,20 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgtype"
 )
+
+type Job struct {
+	ID             uuid.UUID
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	ScheduledFor   time.Time
+	FailedAttempts int32
+	State          int32
+	Instructions   pgtype.JSONB
+	Executor       string
+	RepeatableID   sql.NullString
+}
 
 type Token struct {
 	ID        uuid.UUID
