@@ -6,6 +6,7 @@ import (
 
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/queue"
+	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 )
 
@@ -28,10 +29,7 @@ func main() {
 		emailJobExecutor.Name(): emailJobExecutor,
 	}
 
-	removeInactiveUsersExecutor := queue.NewRemoveUsersExecutor("*/1 * * * *", db)
-	repeatableExecutors := map[string]queue.RepeatableExecutor{
-		removeInactiveUsersExecutor.Name(): removeInactiveUsersExecutor,
-	}
+	repeatableExecutors := map[string]queue.RepeatableExecutor{}
 	if err := q.InitilizeRepeatingJobs(ctx, repeatableExecutors); err != nil {
 		panic(err)
 	}
@@ -39,5 +37,8 @@ func main() {
 	worker := queue.NewWorker(queuedJobsStream, db, executors, repeatableExecutors)
 	go worker.Start(ctx)
 
-	q.Start(ctx, queuedJobsStream)
+	if err := q.Start(ctx, queuedJobsStream); err != nil {
+		telemetry.Logger.ErrorContext(ctx, "watching the queue failed", "error", err)
+		panic(err)
+	}
 }

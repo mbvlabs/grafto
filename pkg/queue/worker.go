@@ -42,7 +42,6 @@ func (w *Worker) Start(ctx context.Context) {
 			}
 
 			if repeatableExecutor, ok := w.repeatableExecutor[job.executor]; ok {
-				telemetry.Logger.Info("processing repeatable job", "job", job)
 				if err := w.processRepeatable(repeatableExecutor, job); err != nil {
 					continue
 				}
