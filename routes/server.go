@@ -14,7 +14,6 @@ import (
 	"github.com/gorilla/csrf"
 
 	"github.com/MBvisti/grafto/routes/web"
-	"github.com/MBvisti/grafto/views"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,7 +26,7 @@ type Server struct {
 }
 
 func NewServer(
-	router *echo.Echo, v views.Views, controllers controllers.Controller, logger *slog.Logger) Server {
+	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger) Server {
 	api := api.NewAPI(router, controllers, logger)
 	api.SetupAPIRoutes()
 

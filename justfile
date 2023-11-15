@@ -17,6 +17,8 @@ alias rdb := reset-db
 alias gdf := generate-db-functions
 alias mpts := copy-preline-to-static
 
+alias ct := compile-templates
+
 default:
     @just --list
 
@@ -64,3 +66,7 @@ run:
 # Queue
 run-queue:
     @go run ./cmd/queue/main.go
+
+# templates
+compile-templates:
+    templ generate 
