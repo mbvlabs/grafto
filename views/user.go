@@ -77,15 +77,41 @@ func ForgottenPassword(ctx echo.Context) error {
 }
 
 func ForgottenPasswordResponse(ctx echo.Context) error {
-	return layouts.Base(templates.ForgottenPasswordResponse()).Render(extractRenderDeps(ctx))
+	return templates.ForgottenPasswordResponse().Render(extractRenderDeps(ctx))
 }
 
-func ResetPassword(ctx echo.Context) error {
-	templateData := templates.ResetPasswordFormData{}
+type ResetPasswordData struct {
+	Token        string
+	TokenInvalid bool
+	Errors       validator.ValidationErrors
+}
+
+func ResetPassword(ctx echo.Context, data ResetPasswordData) error {
+	templateData := templates.ResetPasswordFormData{
+		CsrfToken:    csrf.Token(ctx.Request()),
+		TokenInvalid: data.TokenInvalid,
+	}
+
+	if len(data.Errors) > 0 {
+		for _, validationError := range data.Errors {
+			switch validationError.StructField() {
+			case "Password":
+				templateData.Password = templates.TextInputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			case "ConfirmPassword":
+				templateData.ConfirmPassword = templates.TextInputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			}
+		}
+	}
 
 	return layouts.Base(templates.ResetPassword(templateData)).Render(extractRenderDeps(ctx))
 }
 
 func ResetPasswordResponse(ctx echo.Context) error {
-	return layouts.Base(templates.ResetPasswordResponse()).Render(extractRenderDeps(ctx))
+	return templates.ResetPasswordResponse().Render(extractRenderDeps(ctx))
 }
