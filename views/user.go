@@ -8,14 +8,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type SignupPageData struct {
+type SignupData struct {
 	PreviousNameInput  string
 	PreviousEmailInput string
 	Errors             validator.ValidationErrors
 	RenderPartial      bool
 }
 
-func SignupPage(ctx echo.Context, data SignupPageData) error {
+func Signup(ctx echo.Context, data SignupData) error {
 	templateData := templates.RegisterUserData{CsrfToken: csrf.Token(ctx.Request())}
 
 	if len(data.Errors) == 0 && data.RenderPartial {
@@ -68,57 +68,24 @@ func SignupResponse(ctx echo.Context) error {
 	return templates.UserRegisteredResponse().Render(extractRenderDeps(ctx))
 }
 
-// func RegisterUserForm(ctx echo.Context, data RegisterUserData) error {
-// 	return ctx.Render(http.StatusOK, "user/__register_form", RenderOpts{
-// 		Data: data,
-// 	})
-// }
+func ForgottenPassword(ctx echo.Context) error {
+	templateData := templates.ForgottenPasswordFormData{
+		CsrfToken: csrf.Token(ctx.Request()),
+	}
 
-// func RegisteredUser(ctx echo.Context) error {
-// 	return ctx.Render(http.StatusOK, "user/__registered", RenderOpts{
-// 		Data: nil,
-// 	})
-// }
+	return layouts.Base(templates.ForgottenPassword(templateData)).Render(extractRenderDeps(ctx))
+}
 
-// func PasswordForgotForm(ctx echo.Context) error {
-// 	return ctx.Render(http.StatusOK, "user/forgot_password", RenderOpts{
-// 		Layout: BaseLayout,
-// 		Data: Csrf{
-// 			CsrfField: template.HTML(csrf.TemplateField(ctx.Request())),
-// 		},
-// 	})
-// }
+func ForgottenPasswordResponse(ctx echo.Context) error {
+	return layouts.Base(templates.ForgottenPasswordResponse()).Render(extractRenderDeps(ctx))
+}
 
-// func SendPasswordResetMail(ctx echo.Context) error {
-// 	return ctx.Render(http.StatusOK, "user/__reset_email_send", RenderOpts{
-// 		Data: nil,
-// 	})
-// }
+func ResetPassword(ctx echo.Context) error {
+	templateData := templates.ResetPasswordFormData{}
 
-// type ResetPasswordData struct {
-// 	TokenInvalid    bool
-// 	Token           string
-// 	PasswordInput   InputData
-// 	ConfirmPassword InputData
-// 	CsrfField       template.HTML
-// }
+	return layouts.Base(templates.ResetPassword(templateData)).Render(extractRenderDeps(ctx))
+}
 
-// func ResetPasswordForm(ctx echo.Context, data ResetPasswordData) error {
-// 	return ctx.Render(http.StatusOK, "user/reset_password", RenderOpts{
-// 		Layout: BaseLayout,
-// 		Data:   data,
-// 	})
-// }
-
-// // func ResetPassword(ctx echo.Context, data ResetPasswordData) error {
-// // 	return ctx.Render(http.StatusOK, "user/reset_password", RenderOpts{
-// // 		Layout: BaseLayout,
-// // 		Data:   data,
-// // 	})
-// // }
-
-// func ResetPasswordResponse(ctx echo.Context) error {
-// 	return ctx.Render(http.StatusOK, "user/__reset_password_response", RenderOpts{
-// 		Data: nil,
-// 	})
-// }
+func ResetPasswordResponse(ctx echo.Context) error {
+	return layouts.Base(templates.ResetPasswordResponse()).Render(extractRenderDeps(ctx))
+}

@@ -17,7 +17,7 @@ import (
 
 // CreateUser method    shows the form to create the user
 func (c *Controller) CreateUser(ctx echo.Context) error {
-	return views.SignupPage(ctx, views.SignupPageData{})
+	return views.Signup(ctx, views.SignupData{})
 }
 
 type StoreUserPayload struct {
@@ -58,7 +58,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			return c.InternalError(ctx)
 		}
 
-		return views.SignupPage(ctx, views.SignupPageData{
+		return views.Signup(ctx, views.SignupData{
 			RenderPartial:      true,
 			PreviousNameInput:  payload.UserName,
 			PreviousEmailInput: payload.Mail,
