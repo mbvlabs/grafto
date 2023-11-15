@@ -116,3 +116,9 @@ func ResetPassword(ctx echo.Context, data ResetPasswordData) error {
 func ResetPasswordResponse(ctx echo.Context) error {
 	return templates.ResetPasswordResponse().Render(extractRenderDeps(ctx))
 }
+
+func VerifyEmail(ctx echo.Context, tokenInvalid bool) error {
+	return layouts.Base(templates.VerifyEmail(templates.VerifyEmailData{
+		TokenInvalid: tokenInvalid,
+	})).Render(extractRenderDeps(ctx))
+}

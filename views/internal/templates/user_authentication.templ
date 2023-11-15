@@ -311,3 +311,23 @@ templ ResetPassword(data ResetPasswordFormData) {
 		</div>
 	</div>
 }
+
+type VerifyEmailData struct {
+	TokenInvalid bool
+}
+
+templ VerifyEmail(data VerifyEmailData) {
+	<main class="w-full max-w-md mx-auto my-auto">
+		<div class="mt-7 p-8 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+			if data.TokenInvalid {
+				<p class="text-red-600">
+					Your token is not valid; please request a new one.
+				</p>
+			} else {
+				<p hx-get="/redirect?to=dashboard" hx-trigger="load delay:4s" class="text-green-600">
+					Your email has been validated; you'll be re-directed to the dashboard in 4 seconds.
+				</p>
+			}
+		</div>
+	</main>
+}

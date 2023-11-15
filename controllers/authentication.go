@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
 	"time"
 
@@ -274,4 +275,77 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 	}
 
 	return views.ResetPasswordResponse(ctx)
+}
+
+type VerifyEmail struct {
+	Token string `query:"token"`
+}
+
+// VerifyEmail method    verifies the email the user provided during signup
+func (c *Controller) VerifyEmail(ctx echo.Context) error {
+	var tkn VerifyEmail
+	if err := ctx.Bind(&tkn); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+		return c.InternalError(ctx)
+	}
+
+	hashedToken, err := c.tknManager.Hash(tkn.Token)
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return views.VerifyEmail(ctx, true)
+		}
+
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	if token.ExpiresAt.Before(time.Now()) && token.Scope != tokens.ScopeEmailVerification {
+		return views.VerifyEmail(ctx, true)
+	}
+
+	confirmTime := time.Now()
+	user, err := c.db.ConfirmUserEmail(ctx.Request().Context(), database.ConfirmUserEmailParams{
+		ID:             token.UserID,
+		UpdatedAt:      confirmTime,
+		MailVerifiedAt: sql.NullTime{Time: confirmTime, Valid: true},
+	})
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	if err := c.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	if err := services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), user.ID); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	return views.VerifyEmail(ctx, false)
 }
