@@ -90,6 +90,7 @@ func ResetPassword(ctx echo.Context, data ResetPasswordData) error {
 	templateData := templates.ResetPasswordFormData{
 		CsrfToken:    csrf.Token(ctx.Request()),
 		TokenInvalid: data.TokenInvalid,
+		ResetToken:   data.Token,
 	}
 
 	if len(data.Errors) > 0 {

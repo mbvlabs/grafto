@@ -122,8 +122,11 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 		return c.InternalError(ctx)
 	}
+	telemetry.Logger.Info("this is plaintext and hashedTkn", "ptext", plainText, "htkn", hashedToken)
 
 	resetPWToken := tokens.CreateResetPasswordToken(plainText, hashedToken)
+
+	telemetry.Logger.Info("this is resetPWtoken", "ptext", resetPWToken.GetPlainText(), "htkn", resetPWToken.Hash)
 
 	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
@@ -198,6 +201,8 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 		return c.InternalError(ctx)
 	}
+
+	telemetry.Logger.Info("this is hashed token", "htoken", hashedToken, "received_token", payload.Token)
 
 	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
