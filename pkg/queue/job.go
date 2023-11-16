@@ -56,6 +56,18 @@ type Job struct {
 	isRepeating   bool
 }
 
+func (j *Job) validate() error {
+	if len(j.instructions) == 0 {
+		return ErrInstructionsNotSet
+	}
+
+	if j.executor == "" {
+		return ErrExecutorNotSet
+	}
+
+	return nil
+}
+
 func (j *Job) Schedule(t time.Time) *Job {
 	j.scheduledFor = t
 
