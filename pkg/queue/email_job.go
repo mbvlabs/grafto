@@ -60,7 +60,7 @@ func NewEmailJob(payload EmailJob) (*Job, error) {
 		return nil, err
 	}
 
-	jobInstructions := JobInstructions{
+	jobInstructions := jobInstructions{
 		instructions: instructions,
 		executor:     emailExecutorName,
 	}

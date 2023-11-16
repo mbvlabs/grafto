@@ -25,7 +25,7 @@ func (r *removeUsersExecutor) generateJob() (RepeatableJob, error) {
 	nextSchedule := r.schedule.Next(time.Now())
 	telemetry.Logger.Info("scheduling next job", "scheduled_for", nextSchedule)
 
-	repeatableJob, err := newRepeatableJob(nextSchedule, JobInstructions{
+	repeatableJob, err := newRepeatableJob(nextSchedule, jobInstructions{
 		executor: removeUsersExecutorName,
 	})
 	if err != nil {
