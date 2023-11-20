@@ -55,6 +55,10 @@ func (q *Queue) pull(ctx context.Context) ([]database.Job, error) {
 }
 
 func (q *Queue) Push(ctx context.Context, payload *Job) error {
+	if err := payload.validate(); err != nil {
+		return err
+	}
+
 	var instructions pgtype.JSONB
 	if err := instructions.Set(payload.instructions); err != nil {
 		return err

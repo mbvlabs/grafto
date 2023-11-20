@@ -30,7 +30,7 @@ type RepeatableExecutor interface {
 
 type RepeatableJob (Job)
 
-func newRepeatableJob(scheduledFor time.Time, instructions JobInstructions) (*RepeatableJob, error) {
+func newRepeatableJob(scheduledFor time.Time, instructions jobInstructions) (*RepeatableJob, error) {
 	if instructions.executor == "" {
 		return nil, ErrExecutorNotSet
 	}
@@ -56,18 +56,30 @@ type Job struct {
 	isRepeating   bool
 }
 
+func (j *Job) validate() error {
+	if len(j.instructions) == 0 {
+		return ErrInstructionsNotSet
+	}
+
+	if j.executor == "" {
+		return ErrExecutorNotSet
+	}
+
+	return nil
+}
+
 func (j *Job) Schedule(t time.Time) *Job {
 	j.scheduledFor = t
 
 	return j
 }
 
-type JobInstructions struct {
+type jobInstructions struct {
 	instructions []byte
 	executor     string
 }
 
-func newJob(instructions JobInstructions) (*Job, error) {
+func newJob(instructions jobInstructions) (*Job, error) {
 	if len(instructions.instructions) == 0 {
 		return nil, ErrInstructionsNotSet
 	}
