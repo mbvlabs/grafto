@@ -7,13 +7,13 @@ tmp_dir = "tmp"
 
 [build]
 # Just plain old shell command. You could use `make` as well.
-cmd = "go build -o ./tmp/ ./cmd/app/main.go"
+cmd = "templ generate && go build -o ./tmp/ ./cmd/app/main.go"
 # Binary file yields from `cmd`.
 bin = "tmp/main"
 # Customize binary, can setup environment variables when run your app.
 # full_bin = "APP_ENV=dev APP_USER=air ./tmp/main"
 # Watch these filename extensions.
-include_ext = ["go", "sql", "html"]
+include_ext = ["go", "sql", "html", "templ"]
 # Ignore these filename extensions or directories.
 exclude_dir = ["tmp"]
 # Watch these directories if you specified.
