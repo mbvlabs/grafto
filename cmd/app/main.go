@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"log/slog"
@@ -8,6 +9,7 @@ import (
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/mail"
+	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
@@ -35,12 +37,17 @@ func main() {
 	conn := database.SetupDatabaseConnection(config.GetDatabaseURL())
 	db := database.New(conn)
 
+	q := queue.New(db)
+	if err := q.InitilizeRepeatingJobs(context.Background(), nil); err != nil {
+		panic(err)
+	}
+
 	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
 
 	mailClient := mail.NewMail(&postmark)
 	tokenManager := tokens.NewManager()
 
-	controllers := controllers.NewController(*db, mailClient, v, *tokenManager)
+	controllers := controllers.NewController(*db, mailClient, v, *tokenManager, *q)
 
 	server := routes.NewServer(router, v, controllers, logger)
 

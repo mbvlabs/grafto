@@ -21,18 +21,18 @@ type removeUsersExecutor struct {
 }
 
 // GenerateJob implements RepeatableExecutor.
-func (r *removeUsersExecutor) generateJob() (RepeatableJob, error) {
+func (r *removeUsersExecutor) generateJob() (repeatableJob, error) {
 	nextSchedule := r.schedule.Next(time.Now())
 	telemetry.Logger.Info("scheduling next job", "scheduled_for", nextSchedule)
 
-	repeatableJob, err := newRepeatableJob(nextSchedule, jobInstructions{
+	job, err := newRepeatableJob(nextSchedule, jobInstructions{
 		executor: removeUsersExecutorName,
 	})
 	if err != nil {
-		return RepeatableJob{}, err
+		return repeatableJob{}, err
 	}
 
-	return *repeatableJob, nil
+	return *job, nil
 }
 
 // Name implements RepeatableExecutor.

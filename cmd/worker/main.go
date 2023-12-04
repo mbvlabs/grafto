@@ -13,8 +13,6 @@ import (
 func main() {
 	ctx := context.Background()
 
-	queuedJobsStream := make(chan []queue.Job)
-
 	databaseConnection := database.SetupDatabaseConnection(os.Getenv("DATABASE_URL"))
 	defer databaseConnection.Close(ctx)
 
@@ -22,7 +20,6 @@ func main() {
 	mailClient := mail.NewMail(&postmark)
 
 	db := database.New(databaseConnection)
-	q := queue.New(db)
 
 	emailJobExecutor := queue.NewEmailExecutor(&mailClient)
 	executors := map[string]queue.Executor{
@@ -30,14 +27,11 @@ func main() {
 	}
 
 	repeatableExecutors := map[string]queue.RepeatableExecutor{}
-	if err := q.InitilizeRepeatingJobs(ctx, repeatableExecutors); err != nil {
-		panic(err)
-	}
 
-	worker := queue.NewWorker(queuedJobsStream, db, executors, repeatableExecutors)
-	go worker.Start(ctx)
+	worker := queue.NewWorker(db, executors, repeatableExecutors)
+	go worker.Process(ctx)
 
-	if err := q.Start(ctx, queuedJobsStream); err != nil {
+	if err := worker.WatchQueue(ctx); err != nil {
 		telemetry.Logger.ErrorContext(ctx, "watching the queue failed", "error", err)
 		panic(err)
 	}

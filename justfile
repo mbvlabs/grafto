@@ -62,5 +62,5 @@ run:
     air -c .air.toml
 
 # Queue
-run-queue:
-    @go run ./cmd/queue/main.go
+run-worker:
+    @go run ./cmd/worker/main.go
