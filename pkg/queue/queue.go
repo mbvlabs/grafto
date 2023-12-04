@@ -54,10 +54,8 @@ func (q *Queue) pull(ctx context.Context) ([]database.Job, error) {
 	})
 }
 
-func (q *Queue) Push(ctx context.Context, payload *Job) error {
-	if err := payload.validate(); err != nil {
-		return err
-	}
+func (q *Queue) Push(ctx context.Context, fn jobCreator) error {
+	payload := fn.build()
 
 	var instructions pgtype.JSONB
 	if err := instructions.Set(payload.instructions); err != nil {
@@ -115,28 +113,4 @@ func (q *Queue) InitilizeRepeatingJobs(ctx context.Context, executors map[string
 	}
 
 	return nil
-}
-
-func (q *Queue) Start(ctx context.Context, jobs chan<- []Job) error {
-	telemetry.Logger.Info("starting to watch the queue")
-
-	for {
-		queuedJobs, err := q.pull(ctx)
-		if err != nil {
-			return err
-		}
-
-		j := make([]Job, 0, len(queuedJobs))
-		for _, queuedJob := range queuedJobs {
-			j = append(j, Job{
-				id:            queuedJob.ID,
-				instructions:  queuedJob.Instructions.Bytes,
-				executor:      queuedJob.Executor,
-				failedAttemps: queuedJob.FailedAttempts,
-			})
-		}
-		jobs <- j
-
-		time.Sleep(125 * time.Millisecond)
-	}
 }

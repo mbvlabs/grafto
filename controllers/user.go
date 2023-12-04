@@ -5,6 +5,7 @@ import (
 
 	"github.com/MBvisti/grafto/entity"
 	"github.com/MBvisti/grafto/pkg/mail"
+	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
@@ -91,11 +92,15 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if err := c.mail.Send(ctx.Request().Context(),
-		user.Mail, "newsletter@mortenvistisen.com", "Please confirm your email", "confirm_email",
-		mail.ConfirmPassword{
+	emailJob, err := queue.NewEmailJob(
+		user.Mail, "newsletter@mortenvistisen.com", "please confirm your email", "confirm_email", mail.ConfirmPassword{
 			Token: activationToken.GetPlainText(),
-		}); err != nil {
+		})
+	if err != nil {
+		return err
+	}
+
+	if err := c.queue.Push(ctx.Request().Context(), emailJob); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 

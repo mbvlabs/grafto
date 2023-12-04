@@ -63,9 +63,9 @@ generate-db-functions:
 run:
     air -c .air.toml
 
-# Queue
-run-queue:
-    @go run ./cmd/queue/main.go
+# Worker
+run-worker:
+    @go run ./cmd/worker/main.go
 
 # templates
 compile-templates:

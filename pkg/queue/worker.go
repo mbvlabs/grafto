@@ -10,20 +10,23 @@ import (
 )
 
 type workerStorage interface {
+	QueryJobs(ctx context.Context, params database.QueryJobsParams) ([]database.Job, error)
 	FailJob(ctx context.Context, arg database.FailJobParams) error
 	DeleteJob(ctx context.Context, id uuid.UUID) error
 	RescheduleJob(ctx context.Context, arg database.RescheduleJobParams) error
 }
 
 type Worker struct {
-	jobsChan           chan []Job
+	jobsChan           chan []job
 	storage            workerStorage
 	executors          map[string]Executor
 	repeatableExecutor map[string]RepeatableExecutor
 }
 
-func NewWorker(jobsChan chan []Job, storage workerStorage, executors map[string]Executor,
+func NewWorker(storage workerStorage, executors map[string]Executor,
 	repeatableExecutor map[string]RepeatableExecutor) *Worker {
+	jobsChan := make(chan []job)
+
 	return &Worker{
 		jobsChan,
 		storage,
@@ -32,7 +35,39 @@ func NewWorker(jobsChan chan []Job, storage workerStorage, executors map[string]
 	}
 }
 
-func (w *Worker) Start(ctx context.Context) {
+func (w *Worker) WatchQueue(ctx context.Context) error {
+	telemetry.Logger.Info("starting to watch the queue")
+
+	for {
+		queuedJobs, err := w.storage.QueryJobs(ctx, database.QueryJobsParams{
+			State:               stateRunning,
+			UpdatedAt:           time.Now(),
+			Limit:               50,
+			InnerState:          stateQueued,
+			InnerScheduledFor:   time.Now(),
+			InnerFailedAttempts: int32(maxRetries),
+		})
+
+		if err != nil {
+			return err
+		}
+
+		j := make([]job, 0, len(queuedJobs))
+		for _, queuedJob := range queuedJobs {
+			j = append(j, job{
+				id:            queuedJob.ID,
+				instructions:  queuedJob.Instructions.Bytes,
+				executor:      queuedJob.Executor,
+				failedAttemps: queuedJob.FailedAttempts,
+			})
+		}
+		w.jobsChan <- j
+
+		time.Sleep(125 * time.Millisecond)
+	}
+}
+
+func (w *Worker) Process(ctx context.Context) {
 	for {
 		for _, job := range <-w.jobsChan {
 			if executor, ok := w.executors[job.executor]; ok {
@@ -50,26 +85,8 @@ func (w *Worker) Start(ctx context.Context) {
 	}
 }
 
-func (w *Worker) processRepeatable(executor RepeatableExecutor, job Job) error {
-	err := executor.process(context.Background(), job.instructions)
-	if err != nil {
-		telemetry.Logger.Error("failed to process job", "job", job.id, "error", err)
-		return w.failJob(context.Background(), job.id, job.failedAttemps)
-	}
-
-	if err := w.storage.RescheduleJob(context.Background(), database.RescheduleJobParams{
-		State:        stateQueued,
-		UpdatedAt:    time.Now(),
-		ScheduledFor: executor.nextRun(time.Now()),
-		ID:           job.id,
-	}); err != nil {
-		return w.failJob(context.Background(), job.id, job.failedAttemps)
-	}
-
-	return nil
-}
-
-func (w *Worker) processOneOff(executor Executor, job Job) error {
+func (w *Worker) processOneOff(executor Executor, job job) error {
+	telemetry.Logger.Info("starting to process one-off job", "job", job, "executor", executor.Name())
 	if err := executor.process(context.Background(), job.instructions); err != nil {
 		err := w.failJob(context.Background(), job.id, job.failedAttemps)
 		if err != nil {
@@ -83,6 +100,28 @@ func (w *Worker) processOneOff(executor Executor, job Job) error {
 		return err
 	}
 
+	telemetry.Logger.Info("finished processing job", "job", job, "executor", executor.Name())
+	return nil
+}
+
+func (w *Worker) processRepeatable(executor RepeatableExecutor, job job) error {
+	telemetry.Logger.Info("starting to process repeatable job", "job_id", job.id, "executor", executor.Name())
+
+	if err := executor.process(context.Background(), job.instructions); err != nil {
+		telemetry.Logger.Error("failed to process job", "job_id", job.id, "error", err)
+		return w.failJob(context.Background(), job.id, job.failedAttemps)
+	}
+
+	if err := w.storage.RescheduleJob(context.Background(), database.RescheduleJobParams{
+		State:        stateQueued,
+		UpdatedAt:    time.Now(),
+		ScheduledFor: executor.nextRun(time.Now()),
+		ID:           job.id,
+	}); err != nil {
+		return w.failJob(context.Background(), job.id, job.failedAttemps)
+	}
+
+	telemetry.Logger.Info("finished processing repeatable job", "job", job, "executor", executor.Name())
 	return nil
 }
 

@@ -22,15 +22,20 @@ type Executor interface {
 	Name() string
 }
 
+type jobCreator interface {
+	Schedule(t time.Time) error
+	build() *job
+}
+
 type RepeatableExecutor interface {
 	Executor
-	generateJob() (RepeatableJob, error)
+	generateJob() (repeatableJob, error)
 	nextRun(t time.Time) time.Time
 }
 
-type RepeatableJob (Job)
+type repeatableJob (job)
 
-func newRepeatableJob(scheduledFor time.Time, instructions jobInstructions) (*RepeatableJob, error) {
+func newRepeatableJob(scheduledFor time.Time, instructions jobInstructions) (*repeatableJob, error) {
 	if instructions.executor == "" {
 		return nil, ErrExecutorNotSet
 	}
@@ -39,7 +44,7 @@ func newRepeatableJob(scheduledFor time.Time, instructions jobInstructions) (*Re
 		return nil, ErrPastTime
 	}
 
-	return &RepeatableJob{
+	return &repeatableJob{
 		id:           uuid.New(),
 		instructions: instructions.instructions,
 		executor:     instructions.executor,
@@ -47,7 +52,7 @@ func newRepeatableJob(scheduledFor time.Time, instructions jobInstructions) (*Re
 	}, nil
 }
 
-type Job struct {
+type job struct {
 	id            uuid.UUID
 	instructions  []byte
 	executor      string
@@ -56,30 +61,12 @@ type Job struct {
 	isRepeating   bool
 }
 
-func (j *Job) validate() error {
-	if len(j.instructions) == 0 {
-		return ErrInstructionsNotSet
-	}
-
-	if j.executor == "" {
-		return ErrExecutorNotSet
-	}
-
-	return nil
-}
-
-func (j *Job) Schedule(t time.Time) *Job {
-	j.scheduledFor = t
-
-	return j
-}
-
 type jobInstructions struct {
 	instructions []byte
 	executor     string
 }
 
-func newJob(instructions jobInstructions) (*Job, error) {
+func newJob(instructions jobInstructions) (*job, error) {
 	if len(instructions.instructions) == 0 {
 		return nil, ErrInstructionsNotSet
 	}
@@ -88,7 +75,7 @@ func newJob(instructions jobInstructions) (*Job, error) {
 		return nil, ErrExecutorNotSet
 	}
 
-	job := &Job{
+	job := &job{
 		id:           uuid.New(),
 		instructions: instructions.instructions,
 		executor:     instructions.executor,
