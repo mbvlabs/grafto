@@ -29,7 +29,7 @@ func main() {
 	repeatableExecutors := map[string]queue.RepeatableExecutor{}
 
 	worker := queue.NewWorker(db, executors, repeatableExecutors)
-	go worker.ProcessQueue(ctx)
+	go worker.Process(ctx)
 
 	if err := worker.WatchQueue(ctx); err != nil {
 		telemetry.Logger.ErrorContext(ctx, "watching the queue failed", "error", err)

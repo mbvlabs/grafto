@@ -67,7 +67,7 @@ func (w *Worker) WatchQueue(ctx context.Context) error {
 	}
 }
 
-func (w *Worker) ProcessQueue(ctx context.Context) {
+func (w *Worker) Process(ctx context.Context) {
 	for {
 		for _, job := range <-w.jobsChan {
 			if executor, ok := w.executors[job.executor]; ok {
