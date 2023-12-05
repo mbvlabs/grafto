@@ -18,7 +18,7 @@ import (
 
 // CreateUser method    shows the form to create the user
 func (c *Controller) CreateUser(ctx echo.Context) error {
-	return views.Signup(ctx, views.SignupData{})
+	return views.SignupPage(ctx, views.SignupPageData{})
 }
 
 type StoreUserPayload struct {
@@ -47,10 +47,6 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	if err != nil {
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {
-			telemetry.Logger.Info("internal error", "ok", ok)
-		}
-
-		if len(e) == 0 {
 			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
 
 			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -59,10 +55,21 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			return c.InternalError(ctx)
 		}
 
-		return views.Signup(ctx, views.SignupData{
-			RenderPartial:      true,
+		telemetry.Logger.Info("there was an error", "e", e)
+
+		// if len(e) == 0 {
+		// 	telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
+
+		// 	ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		// 	ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+		// 	return c.InternalError(ctx)
+		// }
+
+		return views.SignupPage(ctx, views.SignupPageData{
 			PreviousNameInput:  payload.UserName,
 			PreviousEmailInput: payload.Mail,
+			Errors:             e,
 		})
 	}
 
@@ -97,7 +104,11 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			Token: activationToken.GetPlainText(),
 		})
 	if err != nil {
-		return err
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
 	}
 
 	if err := c.queue.Push(ctx.Request().Context(), emailJob); err != nil {
@@ -108,7 +119,9 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.SignupResponse(ctx)
+	return views.SignupPage(ctx, views.SignupPageData{
+		WasSuccessful: true,
+	})
 }
 
 // func (c *Controller) RenderPasswordForgotForm(ctx echo.Context) error {

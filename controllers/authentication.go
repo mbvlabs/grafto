@@ -19,14 +19,7 @@ import (
 )
 
 func (c *Controller) CreateAuthenticatedSession(ctx echo.Context) error {
-	shouldSwap := false
-	if ctx.QueryParam("should_swap") == "true" {
-		shouldSwap = true
-	}
-
-	return views.LoginPage(ctx, views.LoginPageData{
-		RenderPartial: shouldSwap,
-	})
+	return views.LoginPage(ctx, views.LoginPageData{})
 }
 
 type UserLoginPayload struct {
@@ -52,9 +45,7 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		}, &c.db)
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		responseData := views.LoginPageData{
-			RenderPartial: true,
-		}
+		responseData := views.LoginPageData{}
 
 		switch err {
 		case services.ErrPasswordNotMatch:
@@ -77,16 +68,15 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.LoginResponse(ctx)
+	return views.LoginPage(ctx, views.LoginPageData{
+		CouldNotAuthenticate: false,
+		EmailNotVerified:     false,
+		WasSuccess:           true,
+	})
 }
 
 func (c *Controller) CreatePasswordReset(ctx echo.Context) error {
-	// shouldSwap := false
-	// if ctx.QueryParam("should_swap") == "true" {
-	// 	shouldSwap = true
-	// }
-
-	return views.ForgottenPassword(ctx)
+	return views.ForgottenPasswordPage(ctx, false)
 }
 
 type StorePasswordResetPayload struct {
@@ -106,7 +96,7 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 	user, err := c.db.QueryUserByMail(ctx.Request().Context(), payload.Mail)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return views.ForgottenPasswordResponse(ctx)
+			return views.ForgottenPasswordPage(ctx, false)
 		}
 
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -123,11 +113,8 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 		return c.InternalError(ctx)
 	}
-	telemetry.Logger.Info("this is plaintext and hashedTkn", "ptext", plainText, "htkn", hashedToken)
 
 	resetPWToken := tokens.CreateResetPasswordToken(plainText, hashedToken)
-
-	telemetry.Logger.Info("this is resetPWtoken", "ptext", resetPWToken.GetPlainText(), "htkn", resetPWToken.Hash)
 
 	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
@@ -156,7 +143,7 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.ForgottenPasswordResponse(ctx)
+	return views.ForgottenPasswordPage(ctx, false)
 }
 
 type PasswordResetToken struct {
@@ -172,9 +159,7 @@ func (c *Controller) CreateResetPassword(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	telemetry.Logger.Info("this is the token", "tkn", passwordResetToken.Token)
-
-	return views.ResetPassword(ctx, views.ResetPasswordData{
+	return views.ResetPasswordPage(ctx, views.ResetPasswordData{
 		Token: passwordResetToken.Token,
 	})
 }
@@ -203,13 +188,11 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	telemetry.Logger.Info("this is hashed token", "htoken", hashedToken, "received_token", payload.Token)
-
 	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			telemetry.Logger.Error("token invalid because it was not found")
-			return views.ResetPassword(ctx, views.ResetPasswordData{
+			return views.ResetPasswordPage(ctx, views.ResetPasswordData{
 				TokenInvalid: true,
 			})
 		}
@@ -223,7 +206,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 
 	if token.ExpiresAt.Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
 		telemetry.Logger.Error("token invalid because time or scope issue")
-		return views.ResetPassword(ctx, views.ResetPasswordData{
+		return views.ResetPasswordPage(ctx, views.ResetPasswordData{
 			TokenInvalid: true,
 		})
 	}
@@ -259,10 +242,9 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 			return c.InternalError(ctx)
 		}
 
-		return views.ResetPassword(ctx, views.ResetPasswordData{
-			Token:        payload.Token,
-			TokenInvalid: false,
-			Errors:       e,
+		return views.ResetPasswordPage(ctx, views.ResetPasswordData{
+			Token:  payload.Token,
+			Errors: e,
 		})
 	}
 
@@ -274,7 +256,9 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.ResetPasswordResponse(ctx)
+	return views.ResetPasswordPage(ctx, views.ResetPasswordData{
+		WasSuccess: true,
+	})
 }
 
 type VerifyEmail struct {

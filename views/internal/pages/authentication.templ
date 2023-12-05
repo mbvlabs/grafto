@@ -1,0 +1,322 @@
+package pages
+
+import "github.com/MBvisti/grafto/views/internal/components"
+
+type Login struct {
+	EmailNotVerified     bool
+	CouldNotAuthenticate bool
+	CsrfToken            string
+}
+
+templ (l Login) Form() {
+	<div hx-target="this" hx-swap="outerHTML">
+		<div
+ 			class="py-3 flex items-center text-xs uppercase before:flex-[1_1_0%] before:border-t before:mr-6 
+                    after:flex-[1_1_0%] after:border-t after:ml-6 text-gray-200 before:border-gray-600 
+                    after:border-gray-600"
+		>
+			Or
+		</div>
+		<form hx-post="/login" action="/authenticate" method="post">
+			@components.CsrfField(l.CsrfToken)
+			<div class="grid gap-y-4">
+				<div>
+					<label for="email" class="block text-sm mb-2 text-white">Email address</label>
+					<div class="relative">
+						<input
+ 							id="email"
+ 							type="email"
+ 							name="email"
+ 							class="border py-3 px-4 block w-full rounded-md text-sm focus:border-blue-500 
+                                    focus:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+ 							required
+ 							aria-describedby="email-error"
+						/>
+					</div>
+					<p class="hidden text-xs text-red-600 mt-2" id="email-error">
+						Please include a valid email
+						address so we can get back to you
+					</p>
+				</div>
+				<div>
+					<div class="flex justify-between items-center">
+						<label for="password" class="block text-sm mb-2 text-white">Password</label>
+						<a
+ 							class="text-sm text-blue-600 decoration-2 hover:underline font-medium"
+ 							href="/forgot-password"
+						>Forgot password?</a>
+					</div>
+					<div class="relative">
+						<input
+ 							type="password"
+ 							id="password"
+ 							name="password"
+ 							class="border py-3 px-4 block w-full rounded-md text-sm focus:border-blue-500 
+                                    focus:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+ 							required
+ 							aria-describedby="password-error"
+						/>
+						<div class="hidden absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
+							<svg
+ 								class="h-5 w-5 text-red-500"
+ 								width="16"
+ 								height="16"
+ 								fill="currentColor"
+ 								viewBox="0 0 16 16"
+ 								aria-hidden="true"
+							>
+								<path
+ 									d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 
+                                            0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+								></path>
+							</svg>
+						</div>
+					</div>
+					<p class="hidden text-xs text-red-600 mt-2" id="password-error">8+ characters required</p>
+				</div>
+				<div class="flex items-center">
+					<div class="flex">
+						<input
+ 							id="remember-me"
+ 							name="remember_me"
+ 							type="checkbox"
+ 							class="shrink-0 mt-0.5 rounded text-blue-600 pointer-events-none 
+                                    focus:ring-blue-500 bg-gray-800 border-gray-700 checked:bg-blue-500 
+                                    checked:border-blue-500 focus:ring-offset-gray-800"
+						/>
+					</div>
+					<div class="ml-3">
+						<label for="remember-me" class="text-sm text-white">Remember me</label>
+					</div>
+				</div>
+				<button
+ 					type="submit"
+ 					class="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border 
+                            border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none 
+                            focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm focus:ring-offset-gray-800"
+				>
+					Sign in
+				</button>
+			</div>
+		</form>
+	</div>
+}
+
+templ (l Login) Response() {
+	<div hx-get="/redirect?to=dashboard" hx-trigger="load delay:1s" class="m-20 flex flex-col">
+		<h2 hx-target="closest div" class="text-green-400">
+			Authenticated, you'll be re-directed in 2 secs
+		</h2>
+	</div>
+}
+
+templ (l Login) Page() {
+	<main class="w-full max-w-md mx-auto my-auto">
+		<div class="mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
+			<div class="p-4 sm:p-7">
+				if l.EmailNotVerified {
+					<p class="my-2 text-red-600">You're email haven't been verified yet</p>
+				}
+				if l.CouldNotAuthenticate {
+					<p class="my-2 text-red-600">We could not authenticate you; wrong email or password.</p>
+				}
+				<div class="text-center">
+					<h1 class="block text-2xl font-bold text-white">Login</h1>
+					<p class="mt-2 text-sm text-gray-400">
+						Don't have an account yet?
+						<a
+ 							class="text-blue-600 decoration-2 hover:underline font-medium"
+ 							href="/user/create"
+						>
+							Register here
+						</a>
+					</p>
+				</div>
+				@l.Form()
+			</div>
+		</div>
+	</main>
+}
+
+type ForgottenPassword struct {
+	CsrfToken string
+}
+
+templ (f ForgottenPassword) Form() {
+	<form hx-post="/forgot-password">
+		@components.CsrfField(f.CsrfToken)
+		<div class="grid gap-y-4">
+			<div>
+				<label for="email" class="block text-sm mb-2 text-white">Email address</label>
+				<div class="relative">
+					<input
+ 						type="email"
+ 						id="email"
+ 						name="email"
+ 						class="py-3 px-4 block w-full rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 
+                            bg-gray-800 border border-gray-700 text-gray-400"
+ 						required
+ 						aria-describedby="email-error"
+					/>
+					<div class="hidden absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
+						<svg
+ 							class="h-5 w-5 text-red-500"
+ 							width="16"
+ 							height="16"
+ 							fill="currentColor"
+ 							viewBox="0 0 16 16"
+ 							aria-hidden="true"
+						>
+							<path
+ 								d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 
+                                0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+							></path>
+						</svg>
+					</div>
+				</div>
+			</div>
+			<button
+ 				type="submit"
+ 				class="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent 
+                    font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 
+                    focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm focus:ring-offset-gray-800"
+			>
+				Reset password
+			</button>
+		</div>
+	</form>
+}
+
+templ (f ForgottenPassword) Response() {
+	<div class="m-20 flex flex-col mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
+		<h2 hx-target="closest div" class="text-green-400">
+			A link has been sent to the provided email to reset your password.
+		</h2>
+	</div>
+}
+
+templ (f ForgottenPassword) Page() {
+	<main class="w-full max-w-md mx-auto my-auto">
+		<div hx-target="this" hx-swap="outerHTML" class="mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
+			<div class="text-center mt-7">
+				<h1 class="block text-2xl font-bold text-white">Forgot password?</h1>
+			</div>
+			<div class="p-4 sm:p-7">
+				@f.Form()
+			</div>
+		</div>
+	</main>
+}
+
+type ResetPassword struct {
+	CsrfToken       string
+	ResetToken      string
+	TokenInvalid    bool
+	Password        TextInputData
+	ConfirmPassword TextInputData
+}
+
+templ (r ResetPassword) Form() {
+	<form hx-post="/reset-password">
+		@components.CsrfField(r.CsrfToken)
+		<input type="hidden" name="token" value={ r.ResetToken }/>
+		<div class="grid gap-y-4">
+			<div>
+				<label for="password" class="block text-sm mb-2 text-white">Password</label>
+				<div class="relative">
+					<input
+ 						type="password"
+ 						id="password"
+ 						name="password"
+ 						class="py-3 px-4 block w-full border rounded-md text-sm focus:border-blue-500 
+                            focus:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+ 						required
+ 						aria-describedby="password-error"
+ 						minlength="8"
+					/>
+					if r.Password.Invalid {
+						<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
+							<svg
+ 								class="h-5 w-5 text-red-500"
+ 								width="16"
+ 								height="16"
+ 								fill="currentColor"
+ 								viewBox="0 0 16 16"
+ 								aria-hidden="true"
+							>
+								<path
+ 									d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+								></path>
+							</svg>
+						</div>
+					}
+				</div>
+			</div>
+			<div>
+				if r.ConfirmPassword.Invalid {
+					<p class="block text-sm mb-2 text-red-500">{ r.ConfirmPassword.InvalidMsg }</p>
+				}
+				<label for="confirm-password" class="block text-sm mb-2 text-white">
+					Confirm
+					Password
+				</label>
+				<div class="relative">
+					<input
+ 						type="password"
+ 						id="confirm-password"
+ 						name="confirm_password"
+ 						class="py-3 px-4 block w-full border rounded-md text-sm focus:border-blue-500 
+                            focus:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+ 						required
+ 						aria-describedby="confirm-password-error"
+ 						minlength="8"
+					/>
+					if r.ConfirmPassword.Invalid {
+						<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
+							<svg
+ 								class="h-5 w-5 text-red-500"
+ 								width="16"
+ 								height="16"
+ 								fill="currentColor"
+ 								viewBox="0 0 16 16"
+ 								aria-hidden="true"
+							>
+								<path
+ 									d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 
+                                        0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+								></path>
+							</svg>
+						</div>
+					}
+				</div>
+			</div>
+			<button
+ 				type="submit"
+ 				class="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent 
+                    font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 
+                    focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm focus:ring-offset-gray-800"
+			>
+				Reset password
+			</button>
+		</div>
+	</form>
+}
+
+templ (r ResetPassword) Response() {
+	<div class="m-20 flex flex-col">
+		<h2 hx-target="closest div" class="text-green-400">
+			Your password has been reset.
+		</h2>
+	</div>
+}
+
+templ (r ResetPassword) Page() {
+	<div hx-target="this" hx-swap="outerHTML" class="p-4 sm:p-7">
+		if r.TokenInvalid {
+			<p>yoyoyoyyo token no bueno</p>
+		}
+		<div class="mt-5">
+			@r.Form()
+		</div>
+	</div>
+}

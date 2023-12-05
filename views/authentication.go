@@ -1,58 +1,84 @@
 package views
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/MBvisti/grafto/views/internal/layouts"
+	"github.com/MBvisti/grafto/views/internal/pages"
+	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/csrf"
+	"github.com/labstack/echo/v4"
+)
 
 type LoginPageData struct {
 	CouldNotAuthenticate bool
 	EmailNotVerified     bool
-	RenderPartial        bool
+	WasSuccess           bool //TODO: not really too keen on this naming, revisit
 }
 
 func LoginPage(ctx echo.Context, data LoginPageData) error {
-	//	return ctx.Render(http.StatusOK, "user/login", RenderOpts{
-	//		Layout: BaseLayout,
-	//		Data: LoginForm{
-	//			CsrfField: template.HTML(csrf.TemplateField(ctx.Request())),
-	//		},
-	//	})
-	return nil
+	login := pages.Login{
+		EmailNotVerified:     data.EmailNotVerified,
+		CouldNotAuthenticate: data.CouldNotAuthenticate,
+		CsrfToken:            csrf.Token(ctx.Request()),
+	}
+
+	if !data.WasSuccess {
+		return layouts.Base(login.Page()).Render(extractRenderDeps(ctx))
+	}
+
+	if data.CouldNotAuthenticate || data.EmailNotVerified {
+		return layouts.Base(login.Form()).Render(extractRenderDeps(ctx))
+	}
+
+	return layouts.Base(login.Response()).Render(extractRenderDeps(ctx))
 }
 
-func LoginResponse(ctx echo.Context) error {
-	//	return ctx.Render(http.StatusOK, "user/login", RenderOpts{
-	//		Layout: BaseLayout,
-	//		Data: LoginForm{
-	//			CsrfField: template.HTML(csrf.TemplateField(ctx.Request())),
-	//		},
-	//	})
-	return nil
+func ForgottenPasswordPage(ctx echo.Context, wasSuccess bool) error {
+	forgottenPW := pages.ForgottenPassword{
+		CsrfToken: csrf.Token(ctx.Request()),
+	}
+
+	if wasSuccess {
+		layouts.Base(forgottenPW.Response()).Render(extractRenderDeps(ctx))
+	}
+
+	return layouts.Base(forgottenPW.Page()).Render(extractRenderDeps(ctx))
 }
 
-// type LoginForm struct {
-// 	EmailNeedsVerification bool
-// 	CouldNotAuthenticate   bool
-// 	CsrfField              template.HTML
-// }
+type ResetPasswordData struct {
+	Token        string
+	TokenInvalid bool
+	Errors       validator.ValidationErrors
+	WasSuccess   bool
+}
 
-// func LoginForm(ctx echo.Context, data LoginForm) error {
-// 	return ctx.Render(http.StatusOK, "user/__login_form", RenderOpts{
-// 		Data: data,
-// 	})
-// }
+func ResetPasswordPage(ctx echo.Context, data ResetPasswordData) error {
+	resetPassword := pages.ResetPassword{
+		CsrfToken:    csrf.Token(ctx.Request()),
+		TokenInvalid: data.TokenInvalid,
+		ResetToken:   data.Token,
+	}
 
-// func Authenticated(ctx echo.Context) error {
-// 	return ctx.Render(http.StatusOK, "user/__authenticated", RenderOpts{
-// 		Data: nil,
-// 	})
-// }
+	if !data.WasSuccess {
+		return layouts.Base(resetPassword.Page()).Render(extractRenderDeps(ctx))
+	}
 
-// type EmailValidationData struct {
-// 	TokenInvalid bool
-// }
+	if len(data.Errors) > 0 {
+		for _, validationError := range data.Errors {
+			switch validationError.StructField() {
+			case "Password":
+				resetPassword.Password = pages.TextInputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			case "ConfirmPassword":
+				resetPassword.ConfirmPassword = pages.TextInputData{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			}
+		}
+		return layouts.Base(resetPassword.Form()).Render(extractRenderDeps(ctx))
+	}
 
-// func EmailValidation(ctx echo.Context, data EmailValidationData) error {
-// 	return ctx.Render(http.StatusOK, "user/email_validation", RenderOpts{
-// 		Layout: BaseLayout,
-// 		Data:   data,
-// 	})
-// }
+	return layouts.Base(resetPassword.Response()).Render(extractRenderDeps(ctx))
+}
