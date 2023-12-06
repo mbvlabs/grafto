@@ -31,6 +31,7 @@ in Go.
 - [ ] Refactor InternalError controller
 - [ ] Update InternalError path's in controllers/user.go
 - [ ] Add support for flash messages
+- [X] Switch templates to templ
 - [X] Add AIR
 - [X] Add slog (and maybe tint)
 
@@ -44,6 +45,7 @@ Make sure you've the following dependencies installed:
 - [Justfile](https://github.com/casey/just)
 - [Docker](https://docs.docker.com/get-docker/) | optional
 - [sqlc 1.22.0](https://github.com/kyleconroy/sqlc)
+- [templ](https://templ.guide/)
 
 Next, run the cmd below to have your `.env` files ready:
 ```bash
