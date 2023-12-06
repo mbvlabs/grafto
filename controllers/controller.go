@@ -18,20 +18,18 @@ import (
 type Controller struct {
 	db         database.Queries
 	mail       mail.Mail
-	views      views.Views
 	validate   *validator.Validate
 	tknManager tokens.Manager
 	queue      queue.Queue
 }
 
 func NewController(
-	db database.Queries, mail mail.Mail, views views.Views, tknManager tokens.Manager, queue queue.Queue) Controller {
+	db database.Queries, mail mail.Mail, tknManager tokens.Manager, queue queue.Queue) Controller {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
 		db,
 		mail,
-		views,
 		validate,
 		tknManager,
 		queue,
@@ -53,7 +51,7 @@ func (c *Controller) InternalError(ctx echo.Context) error {
 		from = referere[1]
 	}
 
-	return c.views.InternalServerErr(ctx, views.InternalServerErrData{
+	return views.InternalServerErr(ctx, views.InternalServerErrData{
 		FromLocation: from,
 	})
 }

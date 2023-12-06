@@ -8,6 +8,11 @@ type MailPayload struct {
 	TextBody string
 }
 
+type ForgottonPassword struct {
+	SiteUrl string
+	Token   string
+}
+
 type ConfirmPassword struct {
 	Token string
 }

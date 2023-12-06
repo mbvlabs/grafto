@@ -14,17 +14,13 @@ import (
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/routes"
-	"github.com/MBvisti/grafto/views"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	slogecho "github.com/samber/slog-echo"
 )
 
 func main() {
-	v := views.NewViews()
-
 	router := echo.New()
-	router.Renderer = v
 
 	logger := telemetry.SetupLogger()
 
@@ -47,9 +43,9 @@ func main() {
 	mailClient := mail.NewMail(&postmark)
 	tokenManager := tokens.NewManager()
 
-	controllers := controllers.NewController(*db, mailClient, v, *tokenManager, *q)
+	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q)
 
-	server := routes.NewServer(router, v, controllers, logger)
+	server := routes.NewServer(router, controllers, logger)
 
 	server.Start()
 }

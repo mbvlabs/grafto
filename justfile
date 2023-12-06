@@ -17,6 +17,8 @@ alias rdb := reset-db
 alias gdf := generate-db-functions
 alias mpts := copy-preline-to-static
 
+alias ct := compile-templates
+
 default:
     @just --list
 
@@ -61,6 +63,10 @@ generate-db-functions:
 run:
     air -c .air.toml
 
-# Queue
+# Worker
 run-worker:
     @go run ./cmd/worker/main.go
+
+# templates
+compile-templates:
+    templ generate 

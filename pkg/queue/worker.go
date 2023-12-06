@@ -86,29 +86,29 @@ func (w *Worker) Process(ctx context.Context) {
 }
 
 func (w *Worker) processOneOff(executor Executor, job job) error {
-	telemetry.Logger.Info("starting to process one-off job", "job", job, "executor", executor.Name())
+	telemetry.Logger.Info("starting to process one-off job", "id", job.id, "executor", executor.Name())
 	if err := executor.process(context.Background(), job.instructions); err != nil {
 		err := w.failJob(context.Background(), job.id, job.failedAttemps)
 		if err != nil {
-			telemetry.Logger.Error("could not fail job", "error", err, "job", job)
+			telemetry.Logger.Error("could not fail job", "error", err, "id", job.id)
 			return err
 		}
 	}
 
 	if err := w.storage.DeleteJob(context.Background(), job.id); err != nil {
-		telemetry.Logger.Error("could not delete job", "error", err, "job", job)
+		telemetry.Logger.Error("could not delete job", "error", err, "id", job.id)
 		return err
 	}
 
-	telemetry.Logger.Info("finished processing job", "job", job, "executor", executor.Name())
+	telemetry.Logger.Info("finished processing job", "id", job.id, "executor", executor.Name())
 	return nil
 }
 
 func (w *Worker) processRepeatable(executor RepeatableExecutor, job job) error {
-	telemetry.Logger.Info("starting to process repeatable job", "job_id", job.id, "executor", executor.Name())
+	telemetry.Logger.Info("starting to process repeatable job", "id", job.id, "executor", executor.Name())
 
 	if err := executor.process(context.Background(), job.instructions); err != nil {
-		telemetry.Logger.Error("failed to process job", "job_id", job.id, "error", err)
+		telemetry.Logger.Error("failed to process job", "id", job.id, "error", err)
 		return w.failJob(context.Background(), job.id, job.failedAttemps)
 	}
 
@@ -121,7 +121,7 @@ func (w *Worker) processRepeatable(executor RepeatableExecutor, job job) error {
 		return w.failJob(context.Background(), job.id, job.failedAttemps)
 	}
 
-	telemetry.Logger.Info("finished processing repeatable job", "job", job, "executor", executor.Name())
+	telemetry.Logger.Info("finished processing repeatable job", "id", job.id, "executor", executor.Name())
 	return nil
 }
 

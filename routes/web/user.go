@@ -11,25 +11,28 @@ func (w *Web) UserRoutes() {
 	w.router.POST("/user/store", func(c echo.Context) error {
 		return w.controllers.StoreUser(c)
 	})
+
 	w.router.GET("/login", func(c echo.Context) error {
-		return w.controllers.Login(c)
+		return w.controllers.CreateAuthenticatedSession(c)
 	})
-	w.router.POST("/authenticate", func(c echo.Context) error {
-		return w.controllers.Authenticate(c)
+	w.router.POST("/login", func(c echo.Context) error {
+		return w.controllers.StoreAuthenticatedSession(c)
 	})
+
 	w.router.GET("/verify-email", func(c echo.Context) error {
 		return w.controllers.VerifyEmail(c)
 	})
+
 	w.router.GET("/forgot-password", func(c echo.Context) error {
-		return w.controllers.RenderPasswordForgotForm(c)
+		return w.controllers.CreatePasswordReset(c)
 	})
-	w.router.POST("/reset-password-request", func(c echo.Context) error {
-		return w.controllers.SendPasswordResetEmail(c)
+	w.router.POST("/forgot-password", func(c echo.Context) error {
+		return w.controllers.StorePasswordReset(c)
 	})
 	w.router.GET("/reset-password", func(c echo.Context) error {
-		return w.controllers.ResetPasswordForm(c)
+		return w.controllers.CreateResetPassword(c)
 	})
 	w.router.POST("/reset-password", func(c echo.Context) error {
-		return w.controllers.ResetPassword(c)
+		return w.controllers.StoreResetPassword(c)
 	})
 }
