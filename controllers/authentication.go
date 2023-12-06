@@ -76,7 +76,7 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 }
 
 func (c *Controller) CreatePasswordReset(ctx echo.Context) error {
-	return views.ForgottenPasswordPage(ctx, false)
+	return views.ForgottenPasswordPage(ctx, views.ForgottenPasswordPageData{})
 }
 
 type StorePasswordResetPayload struct {
@@ -96,7 +96,9 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 	user, err := c.db.QueryUserByMail(ctx.Request().Context(), payload.Mail)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return views.ForgottenPasswordPage(ctx, false)
+			return views.ForgottenPasswordPage(ctx, views.ForgottenPasswordPageData{
+				RenderSuccessResponse: true,
+			})
 		}
 
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -143,7 +145,9 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.ForgottenPasswordPage(ctx, false)
+	return views.ForgottenPasswordPage(ctx, views.ForgottenPasswordPageData{
+		RenderSuccessResponse: true,
+	})
 }
 
 type PasswordResetToken struct {

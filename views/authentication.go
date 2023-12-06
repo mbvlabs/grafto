@@ -1,6 +1,7 @@
 package views
 
 import (
+	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/views/internal/layouts"
 	"github.com/MBvisti/grafto/views/internal/pages"
 	"github.com/go-playground/validator/v10"
@@ -32,13 +33,17 @@ func LoginPage(ctx echo.Context, data LoginPageData) error {
 	return layouts.Base(login.Response()).Render(extractRenderDeps(ctx))
 }
 
-func ForgottenPasswordPage(ctx echo.Context, wasSuccess bool) error {
+type ForgottenPasswordPageData struct {
+	RenderSuccessResponse bool
+}
+
+func ForgottenPasswordPage(ctx echo.Context, data ForgottenPasswordPageData) error {
 	forgottenPW := pages.ForgottenPassword{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}
 
-	if wasSuccess {
-		layouts.Base(forgottenPW.Response()).Render(extractRenderDeps(ctx))
+	if data.RenderSuccessResponse {
+		return forgottenPW.Response().Render(extractRenderDeps(ctx))
 	}
 
 	return layouts.Base(forgottenPW.Page()).Render(extractRenderDeps(ctx))
@@ -58,8 +63,15 @@ func ResetPasswordPage(ctx echo.Context, data ResetPasswordData) error {
 		ResetToken:   data.Token,
 	}
 
-	if !data.WasSuccess {
+	hasErrors := len(data.Errors) > 0
+
+	if !data.WasSuccess && !hasErrors && !data.TokenInvalid {
 		return layouts.Base(resetPassword.Page()).Render(extractRenderDeps(ctx))
+	}
+
+	telemetry.Logger.Info("status", "success", data.WasSuccess, "errors", hasErrors, "token", data.TokenInvalid)
+	if !data.WasSuccess && !hasErrors && data.TokenInvalid {
+		return resetPassword.Page().Render(extractRenderDeps(ctx))
 	}
 
 	if len(data.Errors) > 0 {
@@ -77,8 +89,8 @@ func ResetPasswordPage(ctx echo.Context, data ResetPasswordData) error {
 				}
 			}
 		}
-		return layouts.Base(resetPassword.Form()).Render(extractRenderDeps(ctx))
+		return resetPassword.Page().Render(extractRenderDeps(ctx))
 	}
 
-	return layouts.Base(resetPassword.Response()).Render(extractRenderDeps(ctx))
+	return resetPassword.Response().Render(extractRenderDeps(ctx))
 }

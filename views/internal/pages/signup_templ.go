@@ -192,7 +192,7 @@ func (s Signup) Form() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</label><div class=\"relative\"><input type=\"password\" id=\"password\" name=\"password\" class=\"py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400\" required aria-describedby=\"password-error\" minlength=\"8\"> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</label><div class=\"relative\"><input type=\"password\" id=\"password\" name=\"password\" class=\"py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400\" required aria-describedby=\"password-error\" minlength=\"8\"> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

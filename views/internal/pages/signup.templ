@@ -25,8 +25,11 @@ templ (s Signup) Form() {
 			<h1 class="block text-2xl font-bold text-white">Register User</h1>
 			<p class="mt-2 text-sm text-gray-400">
 				Already have an account?
-				<a class="text-blue-600 decoration-2 hover:underline font-medium" 
-                    hx-get="/login" hx-replace-url="true">
+				<a
+ 					class="text-blue-600 decoration-2 hover:underline font-medium"
+ 					hx-get="/login"
+ 					hx-replace-url="true"
+				>
 					Sign in here
 				</a>
 			</p>
@@ -98,7 +101,7 @@ templ (s Signup) Form() {
  								type="password"
  								id="password"
  								name="password"
- 								class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+ 								class="py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
  								required
  								aria-describedby="password-error"
  								minlength="8"
