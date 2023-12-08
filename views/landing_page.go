@@ -6,6 +6,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func HomeIndex(ctx echo.Context) error {
-	return layouts.Base(pages.HomeIndex()).Render(extractRenderDeps(ctx))
+func LandingPage(ctx echo.Context) error {
+	return layouts.Base(pages.LandingPage()).Render(extractRenderDeps(ctx))
 }

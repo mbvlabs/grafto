@@ -5,6 +5,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (c *Controller) HomeIndex(ctx echo.Context) error {
-	return views.HomeIndex(ctx)
+func (c *Controller) LandingPage(ctx echo.Context) error {
+	return views.LandingPage(ctx)
 }
