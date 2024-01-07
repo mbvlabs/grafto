@@ -13,8 +13,7 @@ import (
 func main() {
 	ctx := context.Background()
 
-	databaseConnection := database.SetupDatabaseConnection(os.Getenv("DATABASE_URL"))
-	defer databaseConnection.Close(ctx)
+	databaseConnection := database.SetupDatabasePool(ctx, os.Getenv("DATABASE_URL"))
 
 	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
 	mailClient := mail.NewMail(&postmark)

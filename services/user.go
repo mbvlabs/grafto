@@ -67,8 +67,8 @@ func NewUser(
 
 	user, err := db.InsertUser(ctx, database.InsertUserParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
+		UpdatedAt: database.ConvertToPGTimestamptz(time.Now()),
 		Name:      newUserData.Name,
 		Mail:      newUserData.Mail,
 		Password:  hashedPassword,
@@ -80,8 +80,8 @@ func NewUser(
 
 	return entity.User{
 		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		CreatedAt: database.ConvertFromPGTimestamptzToTime(user.CreatedAt),
+		UpdatedAt: database.ConvertFromPGTimestamptzToTime(user.UpdatedAt),
 		Name:      user.Name,
 		Mail:      user.Mail,
 	}, nil
@@ -126,7 +126,7 @@ func UpdateUser(
 	telemetry.Logger.Info("this is id", "id", data.ID)
 
 	updatedUser, err := db.UpdateUser(ctx, database.UpdateUserParams{
-		UpdatedAt: time.Now(),
+		UpdatedAt: database.ConvertToPGTimestamptz(time.Now()),
 		Name:      data.Name,
 		Mail:      data.Mail,
 		Password:  hashedPassword,
@@ -139,8 +139,8 @@ func UpdateUser(
 
 	return entity.User{
 		ID:        updatedUser.ID,
-		CreatedAt: updatedUser.CreatedAt,
-		UpdatedAt: updatedUser.UpdatedAt,
+		CreatedAt: database.ConvertFromPGTimestamptzToTime(updatedUser.CreatedAt),
+		UpdatedAt: database.ConvertFromPGTimestamptzToTime(updatedUser.UpdatedAt),
 		Name:      updatedUser.Name,
 		Mail:      updatedUser.Mail,
 	}, nil

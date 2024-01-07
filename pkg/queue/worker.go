@@ -39,12 +39,13 @@ func (w *Worker) WatchQueue(ctx context.Context) error {
 	telemetry.Logger.Info("starting to watch the queue")
 
 	for {
+		now := time.Now()
 		queuedJobs, err := w.storage.QueryJobs(ctx, database.QueryJobsParams{
 			State:               stateRunning,
-			UpdatedAt:           time.Now(),
+			UpdatedAt:           database.ConvertToPGTimestamptz(now),
 			Limit:               50,
 			InnerState:          stateQueued,
-			InnerScheduledFor:   time.Now(),
+			InnerScheduledFor:   database.ConvertToPGTimestamptz(now),
 			InnerFailedAttempts: int32(maxRetries),
 		})
 
@@ -56,7 +57,7 @@ func (w *Worker) WatchQueue(ctx context.Context) error {
 		for _, queuedJob := range queuedJobs {
 			j = append(j, job{
 				id:            queuedJob.ID,
-				instructions:  queuedJob.Instructions.Bytes,
+				instructions:  queuedJob.Instructions,
 				executor:      queuedJob.Executor,
 				failedAttemps: queuedJob.FailedAttempts,
 			})
@@ -114,8 +115,8 @@ func (w *Worker) processRepeatable(executor RepeatableExecutor, job job) error {
 
 	if err := w.storage.RescheduleJob(context.Background(), database.RescheduleJobParams{
 		State:        stateQueued,
-		UpdatedAt:    time.Now(),
-		ScheduledFor: executor.nextRun(time.Now()),
+		UpdatedAt:    database.ConvertToPGTimestamptz(time.Now()),
+		ScheduledFor: database.ConvertToPGTimestamptz(executor.nextRun(time.Now())),
 		ID:           job.id,
 	}); err != nil {
 		return w.failJob(context.Background(), job.id, job.failedAttemps)
@@ -126,8 +127,10 @@ func (w *Worker) processRepeatable(executor RepeatableExecutor, job job) error {
 }
 
 func (w *Worker) failJob(ctx context.Context, id uuid.UUID, failedAttemps int32) error {
+	now := time.Now()
+
 	params := database.FailJobParams{
-		UpdatedAt: time.Now(),
+		UpdatedAt: database.ConvertToPGTimestamptz(now),
 		ID:        id,
 	}
 
@@ -135,7 +138,7 @@ func (w *Worker) failJob(ctx context.Context, id uuid.UUID, failedAttemps int32)
 		params.State = stateFailed
 	} else {
 		params.State = stateQueued
-		params.ScheduledFor = time.Now().Add(1500 * time.Millisecond)
+		params.ScheduledFor = database.ConvertToPGTimestamptz(now.Add(1500 * time.Millisecond))
 	}
 
 	return w.storage.FailJob(context.Background(), params)

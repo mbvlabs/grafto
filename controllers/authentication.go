@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
 	"errors"
 	"time"
 
@@ -120,9 +119,9 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 
 	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
+		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
 		Hash:      resetPWToken.Hash,
-		ExpiresAt: resetPWToken.GetExpirationTime(),
+		ExpiresAt: database.ConvertToPGTimestamptz(resetPWToken.GetExpirationTime()),
 		Scope:     resetPWToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {
@@ -208,7 +207,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if token.ExpiresAt.Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
+	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
 		telemetry.Logger.Error("token invalid because time or scope issue")
 		return views.ResetPasswordPage(ctx, views.ResetPasswordData{
 			TokenInvalid: true,
@@ -301,15 +300,15 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if token.ExpiresAt.Before(time.Now()) && token.Scope != tokens.ScopeEmailVerification {
+	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeEmailVerification {
 		return views.VerifyEmail(ctx, true)
 	}
 
 	confirmTime := time.Now()
 	user, err := c.db.ConfirmUserEmail(ctx.Request().Context(), database.ConfirmUserEmailParams{
 		ID:             token.UserID,
-		UpdatedAt:      confirmTime,
-		MailVerifiedAt: sql.NullTime{Time: confirmTime, Valid: true},
+		UpdatedAt:      database.ConvertToPGTimestamptz(confirmTime),
+		MailVerifiedAt: database.ConvertToPGTimestamptz(confirmTime),
 	})
 	if err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")

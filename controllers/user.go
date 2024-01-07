@@ -86,9 +86,9 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 
 	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
+		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
 		Hash:      activationToken.Hash,
-		ExpiresAt: activationToken.GetExpirationTime(),
+		ExpiresAt: database.ConvertToPGTimestamptz(activationToken.GetExpirationTime()),
 		Scope:     activationToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {

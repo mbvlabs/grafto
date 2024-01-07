@@ -8,4 +8,25 @@ sql:
       package: "database"
       out: "repository/database"
       output_db_file_name: "database.go"
-      sql_package: "pgx/v4"
+      sql_package: "pgx/v5"
+      overrides:
+        - db_type: "pg_catalog.bool"
+          go_type: "database/sql.NullBool"
+          nullable: true
+        - db_type: "pg_catalog.float8"
+          go_type: "database/sql.NullFloat64"
+          nullable: true
+        - db_type: "pg_catalog.int4"
+          go_type: "database/sql.NullInt32"
+          nullable: true
+        - db_type: "pg_catalog.int8"
+          go_type: "database/sql.NullInt64"
+          nullable: true
+        - db_type: "pg_catalog.varchar"
+          go_type: "database/sql.NullString"
+          nullable: true
+        - db_type: "text"
+          go_type: "database/sql.NullString"
+          nullable: true
+        - db_type: "uuid"
+          go_type: "github.com/google/uuid.UUID"
