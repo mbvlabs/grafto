@@ -10,6 +10,7 @@ import (
 	"github.com/MBvisti/grafto/entity"
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/telemetry"
+	"github.com/MBvisti/grafto/repository/database"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v4"
@@ -70,8 +71,8 @@ func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db user
 
 	return entity.User{
 		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		CreatedAt: database.ConvertFromPGTimestamptzToTime(user.CreatedAt),
+		UpdatedAt: database.ConvertFromPGTimestamptzToTime(user.UpdatedAt),
 		Name:      user.Name,
 		Mail:      user.Mail,
 	}, nil
@@ -85,7 +86,7 @@ func CreateAuthenticatedSession(r *http.Request, w http.ResponseWriter, userID u
 	}
 
 	session.Options.HttpOnly = true
-	session.Options.Domain = os.Getenv("HOST")
+	session.Options.Domain = os.Getenv("APP_HOST")
 	session.Options.Secure = true
 	session.Options.MaxAge = 86400
 

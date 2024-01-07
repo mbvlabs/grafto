@@ -11,7 +11,6 @@ import (
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
 )
 
 const (
@@ -44,12 +43,14 @@ func New(storage queueStorage) *Queue {
 }
 
 func (q *Queue) pull(ctx context.Context) ([]database.Job, error) {
+	now := time.Now()
+
 	return q.storage.QueryJobs(ctx, database.QueryJobsParams{
 		State:               stateRunning,
-		UpdatedAt:           time.Now(),
+		UpdatedAt:           database.ConvertToPGTimestamptz(now),
 		Limit:               50,
 		InnerState:          stateQueued,
-		InnerScheduledFor:   time.Now(),
+		InnerScheduledFor:   database.ConvertToPGTimestamptz(now),
 		InnerFailedAttempts: int32(q.maxRetries),
 	})
 }
@@ -57,19 +58,16 @@ func (q *Queue) pull(ctx context.Context) ([]database.Job, error) {
 func (q *Queue) Push(ctx context.Context, fn jobCreator) error {
 	payload := fn.build()
 
-	var instructions pgtype.JSONB
-	if err := instructions.Set(payload.instructions); err != nil {
-		return err
-	}
+	now := time.Now()
 
 	return q.storage.InsertJob(ctx, database.InsertJobParams{
 		ID:           uuid.New(),
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		CreatedAt:    database.ConvertToPGTimestamptz(now),
+		UpdatedAt:    database.ConvertToPGTimestamptz(now),
 		State:        stateQueued,
-		Instructions: instructions,
+		Instructions: payload.instructions,
 		Executor:     payload.executor,
-		ScheduledFor: payload.scheduledFor,
+		ScheduledFor: database.ConvertToPGTimestamptz(payload.scheduledFor),
 	})
 }
 
@@ -77,11 +75,6 @@ func (q *Queue) InitilizeRepeatingJobs(ctx context.Context, executors map[string
 	for name, executor := range executors {
 		job, err := executor.generateJob()
 		if err != nil {
-			return err
-		}
-
-		var instructions pgtype.JSONB
-		if err := instructions.Set(job.instructions); err != nil {
 			return err
 		}
 
@@ -96,13 +89,15 @@ func (q *Queue) InitilizeRepeatingJobs(ctx context.Context, executors map[string
 			return nil
 		}
 
+		now := time.Now()
+
 		err = q.storage.InsertJob(ctx, database.InsertJobParams{
 			ID:           uuid.New(),
-			CreatedAt:    time.Now(),
-			UpdatedAt:    time.Now(),
-			ScheduledFor: job.scheduledFor,
+			CreatedAt:    database.ConvertToPGTimestamptz(now),
+			UpdatedAt:    database.ConvertToPGTimestamptz(now),
+			ScheduledFor: database.ConvertToPGTimestamptz(job.scheduledFor),
 			State:        stateQueued,
-			Instructions: instructions,
+			Instructions: job.instructions,
 			Executor:     name,
 			RepeatableID: sql.NullString{String: repeatJobID, Valid: true},
 		})
