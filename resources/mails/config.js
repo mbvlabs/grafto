@@ -14,7 +14,7 @@
 module.exports = {
   locals: {
     site: {
-      url: process.env.SCHEME + process.env.HOST,
+      url: process.env.APP_SCHEME + "://" + process.env.APP_HOST,
       name: process.env.PROJECT_NAME,
     }
   },
