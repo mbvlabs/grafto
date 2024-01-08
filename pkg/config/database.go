@@ -9,10 +9,3 @@ type configDatabase struct {
 	DatabaseKind string `env:"DB_KIND"`
 	SSL_MODE     string `env:"DB_SSL_MODE"`
 }
-
-// func GetDatabaseURL() string {
-// 	return fmt.Sprintf("%s://%s:%s@%s:%s/%s",
-// 		config.database.databaseKind, config.database.user, config.database.password, config.database.host, config.database.port,
-// 		config.database.name,
-// 	)
-// }
