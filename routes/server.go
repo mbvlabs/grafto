@@ -59,13 +59,13 @@ func NewServer(
 }
 
 func (s *Server) Start() {
-	csrf := csrf.Protect(
-		[]byte(os.Getenv("CSRF_TOKEN")), csrf.Secure(false), csrf.CookieName("_csrf"), csrf.FieldName("_csrf"))
+	isProduction := os.Getenv("ENVIRONMENT") == "production"
 
 	slog.Info("starting server on", "host", s.host, "port", s.port)
 	srv := http.Server{
-		Addr:         fmt.Sprintf("%v:%v", s.host, s.port),
-		Handler:      csrf(s.router),
+		Addr: fmt.Sprintf("%v:%v", s.host, s.port),
+		Handler: csrf.Protect(
+			[]byte(os.Getenv("CSRF_TOKEN")), csrf.Secure(isProduction))(s.router),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
