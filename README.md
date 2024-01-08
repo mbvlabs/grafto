@@ -27,7 +27,7 @@ in Go.
 - [X] Add password reset and mail verification
 - [X] Add mail functionality
 - [X] Add queue/job/task/option
-- [ ] Add Dockerfile
+- [X] Add Dockerfile
 - [ ] Refactor InternalError controller
 - [ ] Update InternalError path's in controllers/user.go
 - [ ] Add support for flash messages
