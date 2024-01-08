@@ -1,4 +1,4 @@
-package pages
+package types
 
 type TextInputData struct {
 	Invalid    bool

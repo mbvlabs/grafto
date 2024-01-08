@@ -11,6 +11,7 @@ import (
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
+	"github.com/MBvisti/grafto/views/authentication"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
@@ -18,7 +19,7 @@ import (
 )
 
 func (c *Controller) CreateAuthenticatedSession(ctx echo.Context) error {
-	return views.LoginPage(ctx, views.LoginPageData{})
+	return authentication.LoginPage(authentication.LoginPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type UserLoginPayload struct {
@@ -44,7 +45,7 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		}, &c.db)
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		responseData := views.LoginPageData{}
+		responseData := authentication.LoginPageProps{}
 
 		switch err {
 		case services.ErrPasswordNotMatch:
@@ -56,7 +57,7 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		default:
 			return err
 		}
-		return views.LoginPage(ctx, responseData)
+		return authentication.LoginPage(authentication.LoginPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), authenticatedUser.ID); err != nil {
@@ -67,15 +68,11 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.LoginPage(ctx, views.LoginPageData{
-		CouldNotAuthenticate: false,
-		EmailNotVerified:     false,
-		WasSuccess:           true,
-	})
+	return authentication.LoginPage(authentication.LoginPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 func (c *Controller) CreatePasswordReset(ctx echo.Context) error {
-	return views.ForgottenPasswordPage(ctx, views.ForgottenPasswordPageData{})
+	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type StorePasswordResetPayload struct {
@@ -95,9 +92,7 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 	user, err := c.db.QueryUserByMail(ctx.Request().Context(), payload.Mail)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return views.ForgottenPasswordPage(ctx, views.ForgottenPasswordPageData{
-				RenderSuccessResponse: true,
-			})
+			return authentication.ForgottenPasswordPage(authentication.ForgottenPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 		}
 
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -144,9 +139,7 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.ForgottenPasswordPage(ctx, views.ForgottenPasswordPageData{
-		RenderSuccessResponse: true,
-	})
+	return authentication.ForgottenPasswordPage(authentication.ForgottenPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type PasswordResetToken struct {
@@ -162,9 +155,7 @@ func (c *Controller) CreateResetPassword(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.ResetPasswordPage(ctx, views.ResetPasswordData{
-		Token: passwordResetToken.Token,
-	})
+	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type ResetPasswordPayload struct {
@@ -195,9 +186,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			telemetry.Logger.Error("token invalid because it was not found")
-			return views.ResetPasswordPage(ctx, views.ResetPasswordData{
-				TokenInvalid: true,
-			})
+			return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 		}
 
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -209,9 +198,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 
 	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
 		telemetry.Logger.Error("token invalid because time or scope issue")
-		return views.ResetPasswordPage(ctx, views.ResetPasswordData{
-			TokenInvalid: true,
-		})
+		return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := c.db.QueryUser(ctx.Request().Context(), token.UserID)
@@ -245,10 +232,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 			return c.InternalError(ctx)
 		}
 
-		return views.ResetPasswordPage(ctx, views.ResetPasswordData{
-			Token:  payload.Token,
-			Errors: e,
-		})
+		return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := c.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
@@ -259,9 +243,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.ResetPasswordPage(ctx, views.ResetPasswordData{
-		WasSuccess: true,
-	})
+	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type VerifyEmail struct {
@@ -290,7 +272,7 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return views.VerifyEmail(ctx, true)
+			return authentication.VerifyEmailPage(true, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 		}
 
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -301,7 +283,7 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 	}
 
 	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeEmailVerification {
-		return views.VerifyEmail(ctx, true)
+		return authentication.VerifyEmailPage(true, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	confirmTime := time.Now()
@@ -334,5 +316,5 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.VerifyEmail(ctx, false)
+	return authentication.VerifyEmailPage(false, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }

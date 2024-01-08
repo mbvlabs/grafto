@@ -11,6 +11,7 @@ import (
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
+	"github.com/MBvisti/grafto/views/authentication"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -18,7 +19,7 @@ import (
 
 // CreateUser method    shows the form to create the user
 func (c *Controller) CreateUser(ctx echo.Context) error {
-	return views.SignupPage(ctx, views.SignupPageData{})
+	return authentication.SignupPage(authentication.SignupFormProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type StoreUserPayload struct {
@@ -66,11 +67,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		// 	return c.InternalError(ctx)
 		// }
 
-		return views.SignupPage(ctx, views.SignupPageData{
-			PreviousNameInput:  payload.UserName,
-			PreviousEmailInput: payload.Mail,
-			Errors:             e,
-		})
+		return authentication.SignupPage(authentication.SignupFormProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	plainText, hashedToken, err := c.tknManager.GenerateToken()
@@ -119,9 +116,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return views.SignupPage(ctx, views.SignupPageData{
-		WasSuccessful: true,
-	})
+	return authentication.SignupPage(authentication.SignupFormProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 // func (c *Controller) RenderPasswordForgotForm(ctx echo.Context) error {

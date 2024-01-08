@@ -6,5 +6,5 @@ import (
 )
 
 func (c *Controller) LandingPage(ctx echo.Context) error {
-	return views.LandingPage(ctx)
+	return views.HomePage().Render(views.ExtractRenderDeps(ctx))
 }

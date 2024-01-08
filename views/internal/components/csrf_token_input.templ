@@ -1,5 +1,9 @@
 package components
 
+func Csrf() string {
+	return ""
+}
+
 templ CsrfField(csrfToken string) {
 	<input type="hidden" name="_csrf" value={ csrfToken }/>
 }
