@@ -8,40 +8,7 @@
 
 
 <url>
-  <loc>https://mortenvistisen.com/</loc>
+  <loc>http://0.0.0.0:8000/</loc>
   <lastmod>2024-01-03T09:43:09+00:00</lastmod>
   <priority>1.00</priority>
 </url>
-<url>
-  <loc>https://mortenvistisen.com/newsletter</loc>
-  <lastmod>2024-01-03T09:43:09+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://mortenvistisen.com/projects</loc>
-  <lastmod>2024-01-03T09:43:09+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://mortenvistisen.com/about</loc>
-  <lastmod>2024-01-03T09:43:09+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://mortenvistisen.com/posts/how-to-build-a-simple-blog-using-rust</loc>
-  <lastmod>2024-01-03T09:43:09+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://mortenvistisen.com/posts/integration-tests-with-docker-and-go</loc>
-  <lastmod>2024-01-03T09:43:09+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-<url>
-  <loc>https://mortenvistisen.com/posts/practical-approach-to-structuring-go-apps</loc>
-  <lastmod>2024-01-03T09:43:09+00:00</lastmod>
-  <priority>0.80</priority>
-</url>
-
-
-</urlset>

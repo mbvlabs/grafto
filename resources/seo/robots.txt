@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.mortenvistisen.com/sitemap.xml
+Sitemap: http://0.0.0.0:8000/sitemap.xml
