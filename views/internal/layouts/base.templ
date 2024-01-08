@@ -1,0 +1,20 @@
+package layouts
+
+import ( 
+	"github.com/MBvisti/grafto/views/internal/components" 
+)
+
+
+templ Base(head templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en" class="h-full">
+		@head
+		<body class="container mx-auto h-full bg-gray-800">
+			@components.Nav()
+			{ children... }
+			<script src="/static/js/htmx.min.js"></script>
+			<script src="/static/js/alpine.js"></script>
+			<script src="/static/js/preline/preline.js"></script>
+		</body>
+	</html>
+}

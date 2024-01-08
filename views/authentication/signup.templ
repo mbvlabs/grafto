@@ -1,16 +1,25 @@
-package pages
+package authentication
 
-import "github.com/MBvisti/grafto/views/internal/components"
+import (
+	"github.com/MBvisti/grafto/views/internal/types"
+	"github.com/MBvisti/grafto/views/internal/components"
+	"github.com/MBvisti/grafto/views/internal/layouts"
+	"github.com/MBvisti/grafto/views"
+)
 
-type Signup struct {
-	NameInput       TextInputData
-	EmailInput      TextInputData
-	PasswordInput   TextInputData
-	ConfirmPassword TextInputData
+func returnCsrfField(tkn string) templ.Component {
+    return components.CsrfField(tkn)
+}
+
+type SignupFormProps struct {
+	NameInput       types.TextInputData
+	EmailInput      types.TextInputData
+	PasswordInput   types.TextInputData
+	ConfirmPassword types.TextInputData
 	CsrfToken       string
 }
 
-templ (s Signup) Successful() {
+templ SignupSuccess() {
 	<div class="m-20 flex flex-col">
 		<h2 hx-target="closest div" class="text-green-400">
 			User registered.
@@ -19,7 +28,7 @@ templ (s Signup) Successful() {
 	</div>
 }
 
-templ (s Signup) Form() {
+templ SignupForm(data SignupFormProps) {
 	<div hx-target="this" hx-swap="outerHTML" class="p-4 sm:p-7">
 		<div class="text-center">
 			<h1 class="block text-2xl font-bold text-white">Register User</h1>
@@ -36,7 +45,7 @@ templ (s Signup) Form() {
 		</div>
 		<div class="mt-5">
 			<form hx-post="/user/store" action="/user/store" method="post">
-				@components.CsrfField(s.CsrfToken)
+				@returnCsrfField(data.CsrfToken)
 				<div class="grid gap-y-4">
 					<div>
 						<label for="email" class="block text-sm mb-2 text-white">User name</label>
@@ -47,9 +56,9 @@ templ (s Signup) Form() {
  								class="py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
  								required
  								aria-describedby="email-error"
- 								value={ s.NameInput.Value }
+ 								value={ data.NameInput.Value }
 							/>
-							if s.NameInput.Invalid {
+							if data.NameInput.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
 									<svg class="h-5 w-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
 										<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"></path>
@@ -61,9 +70,9 @@ templ (s Signup) Form() {
 					<div>
 						<div class="flex items center">
 							<label for="email" class="block text-sm mb-2 text-white">Email address</label>
-							if s.EmailInput.Invalid {
+							if data.EmailInput.Invalid {
 								<p class="ml-2 text-sm text-red-500">
-									{ s.EmailInput.InvalidMsg }
+									{ data.EmailInput.InvalidMsg }
 								</p>
 							}
 						</div>
@@ -74,9 +83,9 @@ templ (s Signup) Form() {
  								class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
  								required
  								aria-describedby="email-error"
- 								value={ s.EmailInput.Value }
+ 								value={ data.EmailInput.Value }
 							/>
-							if s.EmailInput.Invalid {
+							if data.EmailInput.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
 									<svg
  										class="h-5 w-5 text-red-500"
@@ -106,7 +115,7 @@ templ (s Signup) Form() {
  								aria-describedby="password-error"
  								minlength="8"
 							/>
-							if s.PasswordInput.Invalid {
+							if data.PasswordInput.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
 									<svg
  										class="h-5 w-5 text-red-500"
@@ -125,8 +134,8 @@ templ (s Signup) Form() {
 						</div>
 					</div>
 					<div>
-						if s.ConfirmPassword.Invalid {
-							<p class="block text-sm mb-2 text-red-500">{ s.ConfirmPassword.InvalidMsg }</p>
+						if data.ConfirmPassword.Invalid {
+							<p class="block text-sm mb-2 text-red-500">{ data.ConfirmPassword.InvalidMsg }</p>
 						}
 						<label for="confirm-password" class="block text-sm mb-2 text-white">
 							Confirm
@@ -142,7 +151,7 @@ templ (s Signup) Form() {
  								aria-describedby="confirm-password-error"
  								minlength="8"
 							/>
-							if s.ConfirmPassword.Invalid {
+							if data.ConfirmPassword.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
 									<svg
  										class="h-5 w-5 text-red-500"
@@ -173,30 +182,12 @@ templ (s Signup) Form() {
 	</div>
 }
 
-templ (s Signup) Page() {
+templ SignupPage(data SignupFormProps, head views.Head) {
+	@layouts.Base(head.Build()) {
 	<main class="w-full max-w-md mx-auto my-auto">
 		<div class="mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
-			@s.Form()
+			@SignupForm(data)
 		</div>
 	</main>
 }
-
-type VerifyEmail struct {
-	TokenInvalid bool
-}
-
-templ (v VerifyEmail) Page() {
-	<main class="w-full max-w-md mx-auto my-auto">
-		<div class="mt-7 p-8 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
-			if v.TokenInvalid {
-				<p class="text-red-600">
-					Your token is not valid; please request a new one.
-				</p>
-			} else {
-				<p hx-get="/redirect?to=dashboard" hx-trigger="load delay:4s" class="text-green-600">
-					Your email has been validated; you'll be re-directed to the dashboard in 4 seconds.
-				</p>
-			}
-		</div>
-	</main>
 }

@@ -6,5 +6,5 @@ import (
 )
 
 func (c *Controller) DashboardIndex(ctx echo.Context) error {
-	return views.Dashboard(ctx)
+	return views.DashboardPage().Render(views.ExtractRenderDeps(ctx))
 }
