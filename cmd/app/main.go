@@ -30,7 +30,7 @@ func main() {
 	router.Use(slogecho.New(logger))
 	router.Use(middleware.Recover())
 
-	conn := database.SetupDatabasePool(context.Background(), config.GetDatabaseURL())
+	conn := database.SetupDatabasePool(context.Background(), config.Cfg.GetDatabaseURL())
 	db := database.New(conn)
 
 	q := queue.New(db)

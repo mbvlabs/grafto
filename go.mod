@@ -41,6 +41,7 @@ require (
 )
 
 require (
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/gorilla/csrf v1.7.1
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/labstack/echo/v4 v4.11.1
