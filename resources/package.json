@@ -1,0 +1,30 @@
+{
+  "name": "grafto",
+  "version": "1.0.0",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "serve-mails": "maizzle serve",
+    "dev-mails": "cd mails && maizzle build",
+    "build-mails": "cd mails && maizzle build production",
+    "watch-css": "npx tailwindcss -c ./tailwind/config.js -i ./tailwind/base.css -o ../static/css/output.css --watch",
+    "build-css": "npx tailwindcss -c ./tailwind/config.js -i ./tailwind/base.css -o ../static/css/output.css --minify"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MBvisti/grafto.git"
+  },
+  "dependencies": {
+    "@maizzle/framework": "latest",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "mjml": "^4.14.1",
+    "preline": "^2.0.0",
+    "tailwindcss-box-shadow": "^2.0.0",
+    "tailwindcss-email-variants": "^2.0.0",
+    "tailwindcss-mso": "^1.3.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.6"
+  }
+}

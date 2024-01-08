@@ -24,21 +24,21 @@ default:
 
 # CSS
 watch-css:
-    npx tailwindcss -i ./resources/css/base.css -o ./static/css/output.css --watch
+    @cd resources && npm run watch-css
 
 # Preline
 copy-preline-to-static:
-    @cp -r ./node_modules/preline/dist/ ./static/js/preline
+    @cp -r ./resources/node_modules/preline/dist/ ./static/js/preline
 
 # Mails
 compile-mails-prod:
-    @cd resources/mails && npm run build
+    @cd resources && npm run build-mails
 
 compile-mails-dev:
-    @cd resources/mails && npm run dev
+    @cd resources && npm run dev-mails
 
 serve-mails:
-    @cd resources/mails && npm run serve
+    @cd resources && npm run serve-mails
 
 # Database 
 make-migration name:

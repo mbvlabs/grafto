@@ -13,21 +13,21 @@ bin = "tmp/main"
 # Customize binary, can setup environment variables when run your app.
 # full_bin = "APP_ENV=dev APP_USER=air ./tmp/main"
 # Watch these filename extensions.
-include_ext = ["go", "sql", "html", "templ"]
-# Ignore these filename extensions or directories.
-exclude_dir = ["tmp"]
+include_ext = ["go", "templ"]
+ # Ignore these filename extensions or directories.
+exclude_dir = ["tmp", "static"]
 # Watch these directories if you specified.
-include_dir = []
+include_dir = [""]
 # Watch these files.
 include_file = []
 # Exclude files.
 exclude_file = []
 # Exclude specific regular expressions.
-exclude_regex = ["_test\\.go"]
+exclude_regex = ["_test\\.go", ".*_templ.go"]
 # Exclude unchanged files.
-exclude_unchanged = true
+exclude_unchanged = false
 # Follow symlink for directories
-follow_symlink = true
+follow_symlink = false
 # This log file places in your tmp_dir.
 log = "air.log"
 # Poll files for changes instead of using fsnotify.
