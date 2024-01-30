@@ -2,6 +2,7 @@ set dotenv-load
 
 # alias
 alias r := run
+alias rw := run-worker
 
 alias wc := watch-css
 
@@ -14,10 +15,11 @@ alias um := up-migrations
 alias dm := down-migrations
 alias dmt := down-migrations-to
 alias rdb := reset-db
+
 alias gdf := generate-db-functions
-alias mpts := copy-preline-to-static
 
 alias ct := compile-templates
+alias ft := fmt-templates
 
 default:
     @just --list
@@ -25,10 +27,6 @@ default:
 # CSS
 watch-css:
     @cd resources && npm run watch-css
-
-# Preline
-copy-preline-to-static:
-    @cp -r ./resources/node_modules/preline/dist/ ./static/js/preline
 
 # Mails
 compile-mails-prod:
@@ -70,3 +68,6 @@ run-worker:
 # templates
 compile-templates:
     templ generate 
+
+fmt-templates:
+    templ fmt ./views/ . 

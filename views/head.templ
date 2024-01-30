@@ -1,8 +1,8 @@
 package views
 
 type MetaContent struct {
-	Content string
-	Name string
+	Content  string
+	Name     string
 	Property string
 }
 
@@ -11,8 +11,8 @@ type Head struct {
 	Description string
 	Image       string
 	Slug        string
-	MetaType        string
-	ExtraMeta []MetaContent
+	MetaType    string
+	ExtraMeta   []MetaContent
 }
 
 func (h Head) Default() Head {
@@ -25,47 +25,47 @@ func (h Head) Default() Head {
 }
 
 templ (h Head) Build() {
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<meta name="twitter:card" content="summary_large_image"/>
-			<meta name="twitter:creator" content="@MBvisti"/>
-			<title>
-				if h.Title == "" {
-						Grafto
-				} else  {
-					 { h.Title } | Grafto
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta name="twitter:card" content="summary_large_image"/>
+		<meta name="twitter:creator" content="@MBvisti"/>
+		<title>
+			if h.Title == "" {
+				Grafto
+			} else {
+				{ h.Title } | Grafto
+			}
+		</title>
+		<link href="/static/css/output.css" rel="stylesheet"/>
+		<link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png"/>
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png"/>
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png"/>
+		<meta property="og:type" content={ h.MetaType }/>
+		<meta property="og:title" content={ h.Title }/>
+		<meta property="og:description" content={ h.Description }/>
+		<meta property="og:url" content={ h.Slug }/>
+		<meta property="og:site_name" content="Grafto"/>
+		if h.Image != "" {
+			<meta property="og:image" content={ h.Image }/>
+		}
+		for _, extraMeta := range h.ExtraMeta {
+			<meta
+				if extraMeta.Name != "" {
+					name={ extraMeta.Name }
 				}
-			</title>
-			<link href="/static/css/output.css" rel="stylesheet"/>
-			<link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png"/>
-			<link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png"/>
-			<link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png"/>
-			<meta property="og:type" content={ h.MetaType } />
-			<meta property="og:title" content={ h.Title } />
-			<meta property="og:description" content={ h.Description } />
-			<meta property="og:url" content={ h.Slug } />
-			<meta property="og:site_name" content="Grafto" />
-			if h.Image != "" {
-				<meta property="og:image" content={ h.Image } />
-			}
-			for _, extraMeta := range h.ExtraMeta {
-				<meta 
-					if extraMeta.Name != "" {
-						name={ extraMeta.Name }
-					} 
-					if extraMeta.Property != "" {
-						property={ extraMeta.Property }
-					}
-					if extraMeta.Content != "" {
-						content={ extraMeta.Content }
-					}
-				/>
-			}
-			<meta name="description" content={ h.Description } />
-			<link
- 				rel="canonical"
- 				href={ h.Slug }
+				if extraMeta.Property != "" {
+					property={ extraMeta.Property }
+				}
+				if extraMeta.Content != "" {
+					content={ extraMeta.Content }
+				}
 			/>
-		</head>
+		}
+		<meta name="description" content={ h.Description }/>
+		<link
+			rel="canonical"
+			href={ h.Slug }
+		/>
+	</head>
 }
