@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"log/slog"
 
 	"github.com/MBvisti/grafto/controllers"
+	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/routes/api"
 	"github.com/gorilla/csrf"
 
@@ -23,27 +23,18 @@ type Server struct {
 	port   string
 	api    api.API
 	web    web.Web
+	cfg    config.Cfg
 }
 
 func NewServer(
-	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger) Server {
+	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger, cfg config.Cfg) Server {
 	api := api.NewAPI(router, controllers, logger)
 	api.SetupAPIRoutes()
 
 	web := web.NewWeb(router, controllers)
 	web.SetupWebRoutes()
 
-	host := os.Getenv("SERVER_HOST")
-	if host == "" {
-		panic("server host env variable empty")
-	}
-
-	port := os.Getenv("SERVER_PORT")
-	if host == "" {
-		panic("server port env variable empty")
-	}
-
-	if os.Getenv("ENV") == "development" {
+	if cfg.App.Environment == "development" {
 		router.Debug = true
 	}
 
@@ -51,21 +42,22 @@ func NewServer(
 
 	return Server{
 		router,
-		host,
-		port,
+		cfg.App.ServerHost,
+		cfg.App.ServerPort,
 		api,
 		web,
+		cfg,
 	}
 }
 
 func (s *Server) Start() {
-	isProduction := os.Getenv("ENVIRONMENT") == "production"
+	isProduction := s.cfg.App.Environment == "production"
 
 	slog.Info("starting server on", "host", s.host, "port", s.port)
 	srv := http.Server{
 		Addr: fmt.Sprintf("%v:%v", s.host, s.port),
 		Handler: csrf.Protect(
-			[]byte(os.Getenv("CSRF_TOKEN")), csrf.Secure(isProduction))(s.router),
+			[]byte(s.cfg.Auth.CsrfToken), csrf.Secure(isProduction))(s.router),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}

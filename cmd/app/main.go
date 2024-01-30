@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"os"
 
 	"log/slog"
 
@@ -23,14 +22,15 @@ func main() {
 	router := echo.New()
 
 	logger := telemetry.SetupLogger()
-
 	slog.SetDefault(logger)
+
+	cfg := config.New()
 
 	// Middleware
 	router.Use(slogecho.New(logger))
 	router.Use(middleware.Recover())
 
-	conn := database.SetupDatabasePool(context.Background(), config.Cfg.GetDatabaseURL())
+	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
 	db := database.New(conn)
 
 	q := queue.New(db)
@@ -38,14 +38,14 @@ func main() {
 		panic(err)
 	}
 
-	postmark := mail.NewPostmark(os.Getenv("POSTMARK_API_TOKEN"))
+	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 
 	mailClient := mail.NewMail(&postmark)
-	tokenManager := tokens.NewManager()
+	tokenManager := tokens.NewManager(cfg.Auth.TokenSigningKey)
 
-	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q)
+	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q, cfg)
 
-	server := routes.NewServer(router, controllers, logger)
+	server := routes.NewServer(router, controllers, logger, cfg)
 
 	server.Start()
 }

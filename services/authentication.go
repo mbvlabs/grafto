@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/MBvisti/grafto/entity"
-	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/google/uuid"
@@ -18,11 +17,11 @@ import (
 )
 
 var (
-	passwordPepper   = config.Cfg.GetPwdPepper()
+	// passwordPepper   = config.Cfg.GetPwdPepper()
 	authSessionStore = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")), []byte(os.Getenv("SESSION_ENCRYPTION_KEY")))
 )
 
-func hashAndPepperPassword(password string) (string, error) {
+func hashAndPepperPassword(password, passwordPepper string) (string, error) {
 	passwordBytes := []byte(password + passwordPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
 	if err != nil {
@@ -37,7 +36,7 @@ type validatePasswordPayload struct {
 	password       string
 }
 
-func validatePassword(data validatePasswordPayload) error {
+func validatePassword(data validatePasswordPayload, passwordPepper string) error {
 	return bcrypt.CompareHashAndPassword([]byte(data.hashedpassword), []byte(data.password+passwordPepper))
 }
 
@@ -46,7 +45,7 @@ type AuthenticateUserPayload struct {
 	Password string
 }
 
-func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db userDatabase) (entity.User, error) {
+func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db userDatabase, passwordPepper string) (entity.User, error) {
 	user, err := db.QueryUserByMail(ctx, data.Email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -64,7 +63,7 @@ func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db user
 	err = validatePassword(validatePasswordPayload{
 		hashedpassword: user.Password,
 		password:       data.Password,
-	})
+	}, passwordPepper)
 	if err != nil {
 		return entity.User{}, ErrPasswordNotMatch
 	}

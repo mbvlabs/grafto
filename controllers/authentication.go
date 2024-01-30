@@ -42,7 +42,7 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		ctx.Request().Context(), services.AuthenticateUserPayload{
 			Email:    payload.Mail,
 			Password: payload.Password,
-		}, &c.db)
+		}, &c.db, c.cfg.Auth.PasswordPepper)
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 		responseData := authentication.LoginPageProps{}
@@ -216,7 +216,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
 		ID:              user.ID,
-	}, &c.db, c.validate)
+	}, &c.db, c.validate, c.cfg.Auth.PasswordPepper)
 	if err != nil {
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {

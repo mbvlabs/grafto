@@ -6,11 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"hash"
-	"os"
 	"time"
 )
-
-var tokenSigningKey = []byte(os.Getenv("TOKEN_SIGNING_KEY"))
 
 const (
 	ScopeEmailVerification = "email_verification"
@@ -21,11 +18,11 @@ type Manager struct {
 	hasher hash.Hash
 }
 
-func NewManager() *Manager {
-	h := hmac.New(sha256.New, tokenSigningKey)
+func NewManager(tokenSigningKey string) *Manager {
+	h := hmac.New(sha256.New, []byte(tokenSigningKey))
 
 	return &Manager{
-		hasher: h,
+		h,
 	}
 }
 
