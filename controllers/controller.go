@@ -3,9 +3,9 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
+	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/tokens"
@@ -21,10 +21,11 @@ type Controller struct {
 	validate   *validator.Validate
 	tknManager tokens.Manager
 	queue      queue.Queue
+	cfg        config.Cfg
 }
 
 func NewController(
-	db database.Queries, mail mail.Mail, tknManager tokens.Manager, queue queue.Queue) Controller {
+	db database.Queries, mail mail.Mail, tknManager tokens.Manager, queue queue.Queue, cfg config.Cfg) Controller {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
@@ -33,6 +34,7 @@ func NewController(
 		validate,
 		tknManager,
 		queue,
+		cfg,
 	}
 }
 
@@ -41,8 +43,7 @@ func (c *Controller) AppHealth(ctx echo.Context) error {
 }
 
 func (c *Controller) InternalError(ctx echo.Context) error {
-	hostName := os.Getenv("HOST")
-	referere := strings.Split(ctx.Request().Referer(), hostName)
+	referere := strings.Split(ctx.Request().Referer(), c.cfg.App.ServerHost)
 
 	var from string
 	if len(referere) == 1 || referere[1] == "" {

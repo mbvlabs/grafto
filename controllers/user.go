@@ -44,7 +44,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		Mail:            payload.Mail,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
-	}, &c.db, c.validate)
+	}, &c.db, c.validate, c.cfg.Auth.PasswordPepper)
 	if err != nil {
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {

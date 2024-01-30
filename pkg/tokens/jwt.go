@@ -13,7 +13,7 @@ type ConfirmEmailClaim struct {
 	jwt.RegisteredClaims
 }
 
-func (c *ConfirmEmailClaim) GetSignedJWT() (string, error) {
+func (c *ConfirmEmailClaim) GetSignedJWT(tokenSigningKey string) (string, error) {
 	if c.ConfirmationID.String() == "" {
 		return "", errors.New("empty uuid provided ConfirmEmailClaim")
 	}
@@ -33,7 +33,7 @@ func (c *ConfirmEmailClaim) GetSignedJWT() (string, error) {
 	return signedToken, nil
 }
 
-func (r *ConfirmEmailClaim) ParseJWT(token string) (*ConfirmEmailClaim, error) {
+func (r *ConfirmEmailClaim) ParseJWT(token, tokenSigningKey string) (*ConfirmEmailClaim, error) {
 	parsedToken, err := jwt.ParseWithClaims(token, &ConfirmEmailClaim{}, func(token *jwt.Token) (interface{}, error) {
 		return tokenSigningKey, nil
 	})
@@ -50,7 +50,7 @@ type ResetPasswordClaim struct {
 	jwt.RegisteredClaims
 }
 
-func (r *ResetPasswordClaim) Create(id uuid.UUID) string {
+func (r *ResetPasswordClaim) Create(id uuid.UUID, tokenSigningKey string) string {
 	exirationDate := jwt.NewNumericDate(time.Now().Add(1 * time.Hour))
 
 	claims := ResetPasswordClaim{
@@ -66,7 +66,7 @@ func (r *ResetPasswordClaim) Create(id uuid.UUID) string {
 	return signedToken
 }
 
-func (r *ResetPasswordClaim) Parse(token string) (*ResetPasswordClaim, error) {
+func (r *ResetPasswordClaim) Parse(token, tokenSigningKey string) (*ResetPasswordClaim, error) {
 	parsedToken, err := jwt.ParseWithClaims(token, &ResetPasswordClaim{}, func(token *jwt.Token) (interface{}, error) {
 		return tokenSigningKey, nil
 	})
