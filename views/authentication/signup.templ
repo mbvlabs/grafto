@@ -8,7 +8,7 @@ import (
 )
 
 func returnCsrfField(tkn string) templ.Component {
-    return components.CsrfField(tkn)
+	return components.CsrfField(tkn)
 }
 
 type SignupFormProps struct {
@@ -35,9 +35,9 @@ templ SignupForm(data SignupFormProps) {
 			<p class="mt-2 text-sm text-gray-400">
 				Already have an account?
 				<a
- 					class="text-blue-600 decoration-2 hover:underline font-medium"
- 					hx-get="/login"
- 					hx-replace-url="true"
+					class="text-blue-600 decoration-2 hover:underline font-medium"
+					hx-get="/login"
+					hx-replace-url="true"
 				>
 					Sign in here
 				</a>
@@ -51,12 +51,12 @@ templ SignupForm(data SignupFormProps) {
 						<label for="email" class="block text-sm mb-2 text-white">User name</label>
 						<div class="relative">
 							<input
- 								type="text"
- 								name="user_name"
- 								class="py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
- 								required
- 								aria-describedby="email-error"
- 								value={ data.NameInput.Value }
+								type="text"
+								name="user_name"
+								class="py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+								required
+								aria-describedby="email-error"
+								value={ data.NameInput.Value }
 							/>
 							if data.NameInput.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
@@ -78,25 +78,25 @@ templ SignupForm(data SignupFormProps) {
 						</div>
 						<div class="relative">
 							<input
- 								type="email"
- 								name="email"
- 								class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
- 								required
- 								aria-describedby="email-error"
- 								value={ data.EmailInput.Value }
+								type="email"
+								name="email"
+								class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+								required
+								aria-describedby="email-error"
+								value={ data.EmailInput.Value }
 							/>
 							if data.EmailInput.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
 									<svg
- 										class="h-5 w-5 text-red-500"
- 										width="16"
- 										height="16"
- 										fill="currentColor"
- 										viewBox="0 0 16 16"
- 										aria-hidden="true"
+										class="h-5 w-5 text-red-500"
+										width="16"
+										height="16"
+										fill="currentColor"
+										viewBox="0 0 16 16"
+										aria-hidden="true"
 									>
 										<path
- 											d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+											d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
 										></path>
 									</svg>
 								</div>
@@ -107,26 +107,26 @@ templ SignupForm(data SignupFormProps) {
 						<label for="password" class="block text-sm mb-2 text-white">Password</label>
 						<div class="relative">
 							<input
- 								type="password"
- 								id="password"
- 								name="password"
- 								class="py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
- 								required
- 								aria-describedby="password-error"
- 								minlength="8"
+								type="password"
+								id="password"
+								name="password"
+								class="py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+								required
+								aria-describedby="password-error"
+								minlength="8"
 							/>
 							if data.PasswordInput.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
 									<svg
- 										class="h-5 w-5 text-red-500"
- 										width="16"
- 										height="16"
- 										fill="currentColor"
- 										viewBox="0 0 16 16"
- 										aria-hidden="true"
+										class="h-5 w-5 text-red-500"
+										width="16"
+										height="16"
+										fill="currentColor"
+										viewBox="0 0 16 16"
+										aria-hidden="true"
 									>
 										<path
- 											d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+											d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
 										></path>
 									</svg>
 								</div>
@@ -143,26 +143,26 @@ templ SignupForm(data SignupFormProps) {
 						</label>
 						<div class="relative">
 							<input
- 								type="password"
- 								id="confirm-password"
- 								name="confirm_password"
- 								class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
- 								required
- 								aria-describedby="confirm-password-error"
- 								minlength="8"
+								type="password"
+								id="confirm-password"
+								name="confirm_password"
+								class="py-3 px-4 block w-full border border-gray-200 rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400"
+								required
+								aria-describedby="confirm-password-error"
+								minlength="8"
 							/>
 							if data.ConfirmPassword.Invalid {
 								<div class="absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
 									<svg
- 										class="h-5 w-5 text-red-500"
- 										width="16"
- 										height="16"
- 										fill="currentColor"
- 										viewBox="0 0 16 16"
- 										aria-hidden="true"
+										class="h-5 w-5 text-red-500"
+										width="16"
+										height="16"
+										fill="currentColor"
+										viewBox="0 0 16 16"
+										aria-hidden="true"
 									>
 										<path
- 											d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+											d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
 										></path>
 									</svg>
 								</div>
@@ -170,8 +170,8 @@ templ SignupForm(data SignupFormProps) {
 						</div>
 					</div>
 					<button
- 						type="submit"
- 						class="py-3 px-4 inline-flex jstify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focs:outline-none focs:ring-2 focs:ring-blue-500 focs:ring-offset-2 transition-all text-sm focs:ring-offset-gray-800"
+						type="submit"
+						class="py-3 px-4 inline-flex jstify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focs:outline-none focs:ring-2 focs:ring-blue-500 focs:ring-offset-2 transition-all text-sm focs:ring-offset-gray-800"
 					>
 						Sign
 						up
@@ -184,10 +184,10 @@ templ SignupForm(data SignupFormProps) {
 
 templ SignupPage(data SignupFormProps, head views.Head) {
 	@layouts.Base(head.Build()) {
-	<main class="w-full max-w-md mx-auto my-auto">
-		<div class="mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
-			@SignupForm(data)
-		</div>
-	</main>
-}
+		<main class="w-full max-w-md mx-auto my-auto">
+			<div class="mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
+				@SignupForm(data)
+			</div>
+		</main>
+	}
 }
