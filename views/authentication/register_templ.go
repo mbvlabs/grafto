@@ -12,24 +12,18 @@ import "bytes"
 
 import (
 	"github.com/MBvisti/grafto/views"
-	"github.com/MBvisti/grafto/views/internal/components"
 	"github.com/MBvisti/grafto/views/internal/layouts"
-	"github.com/MBvisti/grafto/views/internal/types"
 )
 
-func returnCsrfField(tkn string) templ.Component {
-	return components.CsrfField(tkn)
-}
-
-type SignupFormProps struct {
-	NameInput       types.TextInputData
-	EmailInput      types.TextInputData
-	PasswordInput   types.TextInputData
-	ConfirmPassword types.TextInputData
+type RegisterFormProps struct {
+	NameInput       views.InputElementError
+	EmailInput      views.InputElementError
+	PasswordInput   views.InputElementError
+	ConfirmPassword views.InputElementError
 	CsrfToken       string
 }
 
-func SignupSuccess() templ.Component {
+func RegisterResponse() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -53,7 +47,7 @@ func SignupSuccess() templ.Component {
 	})
 }
 
-func SignupForm(data SignupFormProps) templ.Component {
+func RegisterForm(data RegisterFormProps) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -66,7 +60,7 @@ func SignupForm(data SignupFormProps) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"p-4 sm:p-7\"><div class=\"text-center\"><h1 class=\"block text-2xl font-bold text-white\">Register USER</h1><p class=\"mt-2 text-sm text-gray-400\">Already have an account? <a class=\"text-blue-600 decoration-2 hover:underline font-medium\" hx-get=\"/login\" hx-replace-url=\"true\">Sign in here</a></p></div><div class=\"mt-5\"><form hx-post=\"/user/store\" action=\"/user/store\" method=\"post\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"p-4 sm:p-7\"><div class=\"text-center\"><h1 class=\"block text-2xl font-bold text-white\">Register User</h1><p class=\"mt-2 text-sm text-gray-400\">Already have an account? <a class=\"text-blue-600 decoration-2 hover:underline font-medium\" hx-get=\"/login\" hx-replace-url=\"true\">Sign in here</a></p></div><div class=\"mt-5\"><form hx-post=\"/register\" method=\"post\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -74,20 +68,25 @@ func SignupForm(data SignupFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"grid gap-y-4\"><div><label for=\"email\" class=\"block text-sm mb-2 text-white\">User name</label><div class=\"relative\"><input type=\"text\" name=\"user_name\" class=\"py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400\" required aria-describedby=\"email-error\" value=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(data.NameInput.Value))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"grid gap-y-4\"><div><label for=\"email\" class=\"block text-sm mb-2 text-white\">User name</label><div class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if data.NameInput.Invalid {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3\"><svg class=\"h-5 w-5 text-red-500\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z\"></path></svg></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input type=\"text\" name=\"user_name\" class=\"py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400\" required aria-describedby=\"email-error\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(data.NameInput.OldValue))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3\"><svg class=\"h-5 w-5 text-red-500\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z\"></path></svg></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input type=\"text\" name=\"user_name\" class=\"py-3 px-4 block w-full border rounded-md text-sm focs:border-blue-500 focs:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400\" required aria-describedby=\"email-error\"><div class=\"absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3\"><svg class=\"h-5 w-5 text-red-500\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z\"></path></svg></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -104,7 +103,7 @@ func SignupForm(data SignupFormProps) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.EmailInput.InvalidMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/signup.templ`, Line: 74, Col: 37}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/register.templ`, Line: 81, Col: 37}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -155,7 +154,7 @@ func SignupForm(data SignupFormProps) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(data.ConfirmPassword.InvalidMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/signup.templ`, Line: 137, Col: 83}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/register.templ`, Line: 144, Col: 83}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -187,7 +186,7 @@ func SignupForm(data SignupFormProps) templ.Component {
 	})
 }
 
-func SignupPage(data SignupFormProps, head views.Head) templ.Component {
+func RegisterPage(data RegisterFormProps, head views.Head) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -210,7 +209,7 @@ func SignupPage(data SignupFormProps, head views.Head) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = SignupForm(data).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = RegisterForm(data).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

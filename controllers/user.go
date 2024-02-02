@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"time"
 
 	"github.com/MBvisti/grafto/entity"
@@ -14,12 +15,15 @@ import (
 	"github.com/MBvisti/grafto/views/authentication"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 )
 
 // CreateUser method    shows the form to create the user
 func (c *Controller) CreateUser(ctx echo.Context) error {
-	return authentication.SignupPage(authentication.SignupFormProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.RegisterPage(authentication.RegisterFormProps{
+		CsrfToken: csrf.Token(ctx.Request()),
+	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type StoreUserPayload struct {
@@ -56,18 +60,59 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			return c.InternalError(ctx)
 		}
 
-		telemetry.Logger.Info("there was an error", "e", e)
+		if len(e) == 0 {
+			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
 
-		// if len(e) == 0 {
-		// 	telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
+			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
 
-		// 	ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		// 	ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+			return c.InternalError(ctx)
+		}
 
-		// 	return c.InternalError(ctx)
-		// }
+		props := authentication.RegisterFormProps{
+			NameInput: views.TextInputData{
+				OldValue: payload.UserName,
+			},
+			EmailInput: views.TextInputData{
+				OldValue: payload.Mail,
+			},
+			CsrfToken: csrf.Token(ctx.Request()),
+		}
 
-		return authentication.SignupPage(authentication.SignupFormProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+		for _, validationError := range e {
+			switch validationError.StructField() {
+			case "Name":
+				props.NameInput = views.TextInputData{
+					InputError: views.InputError{
+						Invalid:    true,
+						InvalidMsg: validationError.Param(),
+					},
+				}
+			case "Mail":
+				props.EmailInput = views.TextInputData{
+					InputError: views.InputError{
+						Invalid:    true,
+						InvalidMsg: validationError.Param(),
+					},
+				}
+			case "Password", "ConfirmPassword":
+				props.PasswordInput = views.TextInputData{
+					InputError: views.InputError{
+						Invalid:    true,
+						InvalidMsg: validationError.Param(),
+					},
+				}
+				props.ConfirmPassword = views.TextInputData{
+					InputError: views.InputError{
+						Invalid:    true,
+						InvalidMsg: validationError.Param(),
+					},
+				}
+			}
+		}
+
+		log.Println("this is the props", props)
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	plainText, hashedToken, err := c.tknManager.GenerateToken()
@@ -116,7 +161,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return authentication.SignupPage(authentication.SignupFormProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.RegisterResponse().Render(views.ExtractRenderDeps(ctx))
 }
 
 // func (c *Controller) RenderPasswordForgotForm(ctx echo.Context) error {

@@ -47,13 +47,13 @@ rerun = false
 # Delay after each executions
 rerun_delay = 500
 # Add additional arguments when running binary (bin/full_bin). Will run './tmp/main hello world'.
-args_bin = ["hello", "world"]
+# args_bin = ["hello", "world"]
 
 [log]
 # Show log time
 time = true
 # Only show main log (silences watcher, build, runner)
-main_only = false
+main_only = true
 
 [color]
 # Customize each part's color. If no color found, use the raw app log.

@@ -2,6 +2,7 @@
 module.exports = {
   content: [
     "../views/**/*.templ",
+    "../views/**/*.go",
   ],
   darkMode: 'class',
   daisyui: {
