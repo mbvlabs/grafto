@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 
 	"time"
 
@@ -25,7 +26,7 @@ type newUserValidation struct {
 	ConfirmPassword string `validate:"required,gte=8"`
 	Name            string `validate:"required,gte=2"`
 	Mail            string `validate:"required,email"`
-	MailRegistered  bool   `validate:"ne=true"` // TODO: why does this fail with 'required'?
+	MailRegistered  bool   `validate:"required,ne=true"` // TODO: why does this fail with 'required'?
 	Password        string `validate:"required,gte=8"`
 }
 
@@ -44,6 +45,8 @@ func NewUser(
 		telemetry.Logger.Error("could not check if email exists", "error", err)
 		return entity.User{}, err
 	}
+	log.Print("############################")
+	log.Print(mailAlreadyRegistered)
 
 	v.RegisterStructValidation(passwordMatchValidation, newUserValidation{})
 

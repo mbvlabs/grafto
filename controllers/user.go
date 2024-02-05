@@ -70,10 +70,10 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		}
 
 		props := authentication.RegisterFormProps{
-			NameInput: views.TextInputData{
+			NameInput: views.InputElementError{
 				OldValue: payload.UserName,
 			},
-			EmailInput: views.TextInputData{
+			EmailInput: views.InputElementError{
 				OldValue: payload.Mail,
 			},
 			CsrfToken: csrf.Token(ctx.Request()),
@@ -82,36 +82,29 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		for _, validationError := range e {
 			switch validationError.StructField() {
 			case "Name":
-				props.NameInput = views.TextInputData{
-					InputError: views.InputError{
-						Invalid:    true,
-						InvalidMsg: validationError.Param(),
-					},
+				props.NameInput = views.InputElementError{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
 				}
-			case "Mail":
-				props.EmailInput = views.TextInputData{
-					InputError: views.InputError{
-						Invalid:    true,
-						InvalidMsg: validationError.Param(),
-					},
+			case "MailRegistered":
+				props.EmailInput = views.InputElementError{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
 				}
 			case "Password", "ConfirmPassword":
-				props.PasswordInput = views.TextInputData{
-					InputError: views.InputError{
-						Invalid:    true,
-						InvalidMsg: validationError.Param(),
-					},
+				props.PasswordInput = views.InputElementError{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
 				}
-				props.ConfirmPassword = views.TextInputData{
-					InputError: views.InputError{
-						Invalid:    true,
-						InvalidMsg: validationError.Param(),
-					},
+				props.ConfirmPassword = views.InputElementError{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
 				}
 			}
 		}
 
-		log.Println("this is the props", props)
+		log.Print("############################################")
+		log.Printf("%+v", props.EmailInput.Invalid)
 		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
