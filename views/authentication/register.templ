@@ -63,6 +63,7 @@ templ inputField(inputType, name, oldValue string, isRequired, hasError bool, ) 
 	}
 }
 
+// maybe add some response headers to navigate this?
 templ RegisterForm(data RegisterFormProps) {
 	<div hx-target="this" hx-swap="outerHTML" class="p-4 sm:p-7">
 		<div class="text-center">
@@ -71,8 +72,7 @@ templ RegisterForm(data RegisterFormProps) {
 				Already have an account?
 				<a
 					class="text-blue-600 decoration-2 hover:underline font-medium"
-					hx-get="/login"
-					hx-replace-url="true"
+					href="/login"
 				>
 					Sign in
 				</a>

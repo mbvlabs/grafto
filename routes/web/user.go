@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (w *Web) UserRoutes() {
+func (w *Web) AuthRoutes() {
 	w.router.GET("/register", func(c echo.Context) error {
 		return w.controllers.CreateUser(c)
 	})

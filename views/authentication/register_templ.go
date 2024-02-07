@@ -187,6 +187,7 @@ func inputField(inputType, name, oldValue string, isRequired, hasError bool) tem
 	})
 }
 
+// maybe add some response headers to navigate this?
 func RegisterForm(data RegisterFormProps) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
@@ -200,7 +201,7 @@ func RegisterForm(data RegisterFormProps) templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"p-4 sm:p-7\"><div class=\"text-center\"><h1 class=\"block text-2xl font-bold text-white\">Register User</h1><p class=\"mt-2 text-sm text-gray-400\">Already have an account? <a class=\"text-blue-600 decoration-2 hover:underline font-medium\" hx-get=\"/login\" hx-replace-url=\"true\">Sign in</a></p></div><div class=\"mt-5\"><form hx-post=\"/register\" method=\"post\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"p-4 sm:p-7\"><div class=\"text-center\"><h1 class=\"block text-2xl font-bold text-white\">Register User</h1><p class=\"mt-2 text-sm text-gray-400\">Already have an account? <a class=\"text-blue-600 decoration-2 hover:underline font-medium\" href=\"/login\">Sign in</a></p></div><div class=\"mt-5\"><form hx-post=\"/register\" method=\"post\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -19,8 +19,7 @@ func NewWeb(router *echo.Echo, controllers controllers.Controller) Web {
 
 func (w *Web) SetupWebRoutes() {
 	w.UtilityRoutes()
-
 	w.LandingPageRoutes()
-	w.UserRoutes()
+	w.AuthRoutes()
 	w.DashboardRoutes()
 }
