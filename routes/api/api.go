@@ -2,7 +2,6 @@ package api
 
 import (
 	"log/slog"
-	"time"
 
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/labstack/echo/v4"
@@ -25,7 +24,6 @@ func NewAPI(router *echo.Echo, controllers controllers.Controller, logger *slog.
 
 func (a *API) SetupAPIRoutes() {
 	a.router.GET("/health", func(c echo.Context) error {
-		time.Sleep(10 * time.Second)
 		return a.controllers.AppHealth(c)
 	})
 }
