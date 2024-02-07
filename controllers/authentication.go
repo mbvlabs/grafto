@@ -14,12 +14,15 @@ import (
 	"github.com/MBvisti/grafto/views/authentication"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
 
 func (c *Controller) CreateAuthenticatedSession(ctx echo.Context) error {
-	return authentication.LoginPage(authentication.LoginPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.LoginPage(authentication.LoginPageProps{
+		CsrfToken: csrf.Token(ctx.Request()),
+	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type UserLoginPayload struct {
@@ -31,11 +34,9 @@ type UserLoginPayload struct {
 func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 	var payload UserLoginPayload
 	if err := ctx.Bind(&payload); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not parse UserLoginPayload", "error", err)
 
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	authenticatedUser, err := services.AuthenticateUser(
@@ -44,31 +45,28 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 			Password: payload.Password,
 		}, &c.db, c.cfg.Auth.PasswordPepper)
 	if err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		responseData := authentication.LoginPageProps{}
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not authenticate user", "error", err)
+
+		errMsg := "An error occurred while trying to authenticate you. Please try again."
 
 		switch err {
-		case services.ErrPasswordNotMatch:
-			responseData.CouldNotAuthenticate = true
-		case services.ErrUserNotExist:
-			responseData.CouldNotAuthenticate = true
+		case services.ErrPasswordNotMatch, services.ErrUserNotExist:
+			errMsg = "The password you entered is incorrect."
 		case services.ErrEmailNotValidated:
-			responseData.EmailNotVerified = true
-		default:
-			return err
+			errMsg = "You need to verify your email before you can log in. Please check your inbox for a verification email."
 		}
-		return authentication.LoginPage(authentication.LoginPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+		return authentication.LoginForm(csrf.Token(ctx.Request()), authentication.LoginFormProps{
+			HasError: true,
+			ErrMsg:   errMsg,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), authenticatedUser.ID); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	return authentication.LoginPage(authentication.LoginPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.LoginResponse(false).Render(views.ExtractRenderDeps(ctx))
 }
 
 func (c *Controller) CreatePasswordReset(ctx echo.Context) error {

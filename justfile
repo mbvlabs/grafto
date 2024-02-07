@@ -40,19 +40,19 @@ serve-mails:
 
 # Database 
 make-migration name:
-	@goose -dir migrations $DATABASE_KIND $DATABASE_URL create {{name}} sql
+	@goose -dir migrations $DB_KIND $DATABASE_URL create {{name}} sql
 
 up-migrations:
-	@goose -dir migrations $DATABASE_KIND $DATABASE_URL up
+	@goose -dir migrations $DB_KIND $DATABASE_URL up
 
 down-migrations:
-	@goose -dir migrations $DATABASE_KIND $DATABASE_URL down
+	@goose -dir migrations $DB_KIND $DATABASE_URL down
 
 down-migrations-to version:
-	@goose -dir migrations $DATABASE_KIND $DATABASE_URL down-to {{version}}
+	@goose -dir migrations $DB_KIND $DATABASE_URL down-to {{version}}
 
 reset-db:
-	@goose -dir migrations $DATABASE_KIND $DATABASE_URL reset
+	@goose -dir migrations $DB_KIND $DATABASE_URL reset
 
 generate-db-functions:
 	sqlc compile && sqlc generate

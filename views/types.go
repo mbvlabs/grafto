@@ -1,7 +1,7 @@
 package views
 
-type InputData struct {
+type InputElementError struct {
 	Invalid    bool
 	InvalidMsg string
-	OldValue   any
+	OldValue   string
 }

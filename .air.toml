@@ -39,7 +39,7 @@ delay = 500 # ms
 # Stop running old binary when build errors occur.
 stop_on_error = true
 # Send Interrupt signal before killing process (windows does not support this feature)
-send_interrupt = false
+send_interrupt = true
 # Delay after sending Interrupt signal
 kill_delay = 500 # ms
 # Rerun binary or not
@@ -47,13 +47,13 @@ rerun = false
 # Delay after each executions
 rerun_delay = 500
 # Add additional arguments when running binary (bin/full_bin). Will run './tmp/main hello world'.
-args_bin = ["hello", "world"]
+# args_bin = ["hello", "world"]
 
 [log]
 # Show log time
 time = true
 # Only show main log (silences watcher, build, runner)
-main_only = false
+main_only = true
 
 [color]
 # Customize each part's color. If no color found, use the raw app log.

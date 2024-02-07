@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"log/slog"
@@ -24,6 +27,7 @@ type Server struct {
 	api    api.API
 	web    web.Web
 	cfg    config.Cfg
+	srv    *http.Server
 }
 
 func NewServer(
@@ -40,29 +44,47 @@ func NewServer(
 
 	router.Static("/static", "static")
 
-	return Server{
-		router,
-		cfg.App.ServerHost,
-		cfg.App.ServerPort,
-		api,
-		web,
-		cfg,
-	}
-}
+	host := cfg.App.ServerHost
+	port := cfg.App.ServerPort
+	isProduction := cfg.App.Environment == "production"
 
-func (s *Server) Start() {
-	isProduction := s.cfg.App.Environment == "production"
-
-	slog.Info("starting server on", "host", s.host, "port", s.port)
-	srv := http.Server{
-		Addr: fmt.Sprintf("%v:%v", s.host, s.port),
+	srv := &http.Server{
+		Addr: fmt.Sprintf("%v:%v", host, port),
 		Handler: csrf.Protect(
-			[]byte(s.cfg.Auth.CsrfToken), csrf.Secure(isProduction))(s.router),
+			[]byte(cfg.Auth.CsrfToken), csrf.Secure(isProduction))(router),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+	return Server{
+		router,
+		host,
+		port,
+		api,
+		web,
+		cfg,
+		srv,
+	}
+}
+
+func (s *Server) Start() {
+	slog.Info("starting server on", "host", s.host, "port", s.port)
+
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM)
+	defer stop()
+	// Start server
+	go func() {
+		if err := s.srv.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+	}()
+
+	<-ctx.Done()
+
+	// ctxWTO, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// defer cancel()
+	//
+	if err := s.srv.Shutdown(ctx); err != nil {
 		log.Fatal(err)
 	}
 }
