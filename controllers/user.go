@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"time"
 
 	"github.com/MBvisti/grafto/entity"
@@ -37,10 +36,8 @@ type StoreUserPayload struct {
 func (c *Controller) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
 
-		return c.InternalError(ctx)
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := services.NewUser(ctx.Request().Context(), entity.NewUser{
@@ -50,23 +47,18 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		ConfirmPassword: payload.ConfirmPassword,
 	}, &c.db, c.validate, c.cfg.Auth.PasswordPepper)
 	if err != nil {
+		telemetry.Logger.Info("error", "err", err)
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {
 			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
 
-			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
-
-			return c.InternalError(ctx)
+			return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 		}
 
 		if len(e) == 0 {
 			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
 
-			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
-
-			return c.InternalError(ctx)
+			return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 		}
 
 		props := authentication.RegisterFormProps{
@@ -82,15 +74,11 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		for _, validationError := range e {
 			switch validationError.StructField() {
 			case "Name":
-				props.NameInput = views.InputElementError{
-					Invalid:    true,
-					InvalidMsg: validationError.Param(),
-				}
+				props.NameInput.Invalid = true
+				props.NameInput.InvalidMsg = validationError.Param()
 			case "MailRegistered":
-				props.EmailInput = views.InputElementError{
-					Invalid:    true,
-					InvalidMsg: validationError.Param(),
-				}
+				props.EmailInput.Invalid = true
+				props.EmailInput.InvalidMsg = validationError.Param()
 			case "Password", "ConfirmPassword":
 				props.PasswordInput = views.InputElementError{
 					Invalid:    true,
@@ -103,18 +91,14 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			}
 		}
 
-		log.Print("############################################")
-		log.Printf("%+v", props.EmailInput.Invalid)
 		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	plainText, hashedToken, err := c.tknManager.GenerateToken()
 	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	activationToken := tokens.CreateActivationToken(plainText, hashedToken)
@@ -127,11 +111,9 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		Scope:     activationToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	emailJob, err := queue.NewEmailJob(
@@ -139,22 +121,18 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			Token: activationToken.GetPlainText(),
 		})
 	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := c.queue.Push(ctx.Request().Context(), emailJob); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	return authentication.RegisterResponse().Render(views.ExtractRenderDeps(ctx))
+	return authentication.RegisterResponse("You're now registered", "You should receive an email soon to validate your account.", false).Render(views.ExtractRenderDeps(ctx))
 }
 
 // func (c *Controller) RenderPasswordForgotForm(ctx echo.Context) error {

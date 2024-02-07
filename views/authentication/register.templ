@@ -13,12 +13,31 @@ type RegisterFormProps struct {
 	CsrfToken       string
 }
 
-templ RegisterResponse() {
+templ RegisterResponse(title, message string, hasError bool) {
 	<div class="m-20 flex flex-col">
-		<h2 hx-target="closest div" class="text-green-400">
-			User registered.
+		<h2
+			hx-target="closest div"
+			if hasError {
+				class="text-lg text-red-500"
+			} else {
+				class="text-lg text-green-400"
+			}
+		>
+			{ title }
 		</h2>
-		<p class="text-sm text-green-400">Remember to confirm your email.</p>
+		<p
+			if hasError {
+				class="text-sm text-red-500"
+			} else {
+				class="text-sm text-green-400"
+			}
+		>{ message }</p>
+		if hasError {
+			<a
+				href="/register"
+				class="btn btn-accent mt-4 text-sm font-medium"
+			>Try again</a>
+		}
 	</div>
 }
 
@@ -31,7 +50,7 @@ templ inputField(inputType, name, oldValue string, isRequired, hasError bool, ) 
 			required
 		}
 		aria-describedby="email-error"
-		if hasError {
+		if oldValue != "" {
 			value={ oldValue }
 		}
 	/>
@@ -55,7 +74,7 @@ templ RegisterForm(data RegisterFormProps) {
 					hx-get="/login"
 					hx-replace-url="true"
 				>
-					Sign in here
+					Sign in
 				</a>
 			</p>
 		</div>
@@ -152,8 +171,7 @@ templ RegisterForm(data RegisterFormProps) {
 						type="submit"
 						class="py-3 px-4 inline-flex jstify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focs:outline-none focs:ring-2 focs:ring-blue-500 focs:ring-offset-2 transition-all text-sm focs:ring-offset-gray-800"
 					>
-						Sign
-						up
+						Register
 					</button>
 				</div>
 			</form>

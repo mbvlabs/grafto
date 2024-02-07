@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 
 	"time"
 
@@ -26,7 +25,7 @@ type newUserValidation struct {
 	ConfirmPassword string `validate:"required,gte=8"`
 	Name            string `validate:"required,gte=2"`
 	Mail            string `validate:"required,email"`
-	MailRegistered  bool   `validate:"required,ne=true"` // TODO: why does this fail with 'required'?
+	MailRegistered  bool   `validate:"ne=true"`
 	Password        string `validate:"required,gte=8"`
 }
 
@@ -45,8 +44,6 @@ func NewUser(
 		telemetry.Logger.Error("could not check if email exists", "error", err)
 		return entity.User{}, err
 	}
-	log.Print("############################")
-	log.Print(mailAlreadyRegistered)
 
 	v.RegisterStructValidation(passwordMatchValidation, newUserValidation{})
 
@@ -126,7 +123,6 @@ func UpdateUser(
 		telemetry.Logger.Error("error hashing and peppering password", "error", err)
 		return entity.User{}, err
 	}
-	telemetry.Logger.Info("this is id", "id", data.ID)
 
 	updatedUser, err := db.UpdateUser(ctx, database.UpdateUserParams{
 		UpdatedAt: database.ConvertToPGTimestamptz(time.Now()),
