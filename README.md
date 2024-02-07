@@ -1,7 +1,8 @@
-## |WIP| Grafto - full-stack web development in Go
-The kickstarter repository for full-stack Go apps, using your grandfather's technology.
+# Grafto - full-stack web dev in Go
 
-Still work in progress
+The kickstarter repository for full-stack Go apps using your grandfather's technology.
+
+Quick heads-up, this is still work in progress so expect lots of changes to come.
 
 ## Aim
 
@@ -16,24 +17,11 @@ It's important to note that there currently exists a much more feature complete 
 This is not an attempt at replacing that, but rather offer another approach and view to full-stack web development
 in Go.
 
-## Things left TODO
-- [X] Implement view layer
-- [X] Implement repository layer
-- [X] Implement controller layer
-- [X] Implement router layer
-- [X] Add static assets (tailwind, alpine & htmx)
-- [X] Add users migration
-- [X] Add login & authentication
-- [X] Add password reset and mail verification
-- [X] Add mail functionality
-- [X] Add queue/job/task/option
-- [X] Add Dockerfile
+## Things left TODOs
+
 - [ ] Refactor InternalError controller
 - [ ] Update InternalError path's in controllers/user.go
 - [ ] Add support for flash messages
-- [X] Switch templates to templ
-- [X] Add AIR
-- [X] Add slog (and maybe tint)
 
 ## Getting started
 
@@ -69,18 +57,4 @@ just watch-css
 ``` 
 in another.
 
-Visit `http://0.0.0.0:8080` to see the start page.
-
-
-## Mails TODO: update after switch to Maizzle
-
-
-## Views
-
-You can define `partials`, either using `unrolled/render`'s `partial_name-current_tmpl_name` or the one built in with
-Go's template library, using `define`. A `define` can be reused throughout the templates by using either `template` or
-`block`. Those two are effectively the same, but `block` lets you define a fallback. If you create a file under `partials/`
-and put the content inside a `define`, you can use it anywhere by doing `template name`. (TODO look up why) Using 
-`unrolled/render`, the `block` override only works when its defined inside a template __not__ in a layout file. I.e.
-creating a `block` inside `layouts/base.html` will not be overridable. If you add a `block` to a `define` you can use 
-that to add additional elements.
+Visit `http://0.0.0.0:8000` to see the start page.
