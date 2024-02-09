@@ -47,7 +47,7 @@ func ForgottenPasswordForm(csrfToken string) templ.Component {
 	})
 }
 
-func ForgottenPasswordResetSuccess() templ.Component {
+func ForgottenPasswordSuccess(hasError bool) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -60,7 +60,22 @@ func ForgottenPasswordResetSuccess() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"p-20 flex flex-col mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700\"><h2 hx-target=\"closest div\" class=\"text-green-400\">A link has been sent to the provided email to reset your password.</h2></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"p-20 flex flex-col mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if hasError {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h2 hx-target=\"closest div\" class=\"text-red-400\">An error occurred while trying to send the reset link. Please try again.</h2>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h2 hx-target=\"closest div\" class=\"text-green-400\">A link has been sent to the provided email to reset your password.</h2>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
