@@ -68,6 +68,7 @@ func (w *Worker) WatchQueue(ctx context.Context) error {
 	}
 }
 
+// SOMETHING HERE
 func (w *Worker) Process(ctx context.Context) {
 	for {
 		for _, job := range <-w.jobsChan {
