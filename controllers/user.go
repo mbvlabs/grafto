@@ -9,7 +9,6 @@ import (
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
-	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
 	"github.com/MBvisti/grafto/views/authentication"
 	"github.com/go-playground/validator/v10"
@@ -40,12 +39,12 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := services.NewUser(ctx.Request().Context(), entity.NewUser{
+	user, err := c.services.NewUser(ctx.Request().Context(), entity.NewUser{
 		Name:            payload.UserName,
 		Mail:            payload.Mail,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
-	}, &c.db, c.validate, c.cfg.Auth.PasswordPepper)
+	}, c.cfg.Auth.PasswordPepper)
 	if err != nil {
 		telemetry.Logger.Info("error", "err", err)
 		e, ok := err.(validator.ValidationErrors)

@@ -39,11 +39,11 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	authenticatedUser, err := services.AuthenticateUser(
+	authenticatedUser, err := c.services.AuthenticateUser(
 		ctx.Request().Context(), services.AuthenticateUserPayload{
 			Email:    payload.Mail,
 			Password: payload.Password,
-		}, &c.db, c.cfg.Auth.PasswordPepper)
+		}, c.cfg.Auth.PasswordPepper)
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not authenticate user", "error", err)
 
@@ -193,13 +193,13 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	_, err = services.UpdateUser(ctx.Request().Context(), entity.UpdateUser{
+	_, err = c.services.UpdateUser(ctx.Request().Context(), entity.UpdateUser{
 		Name:            user.Name,
 		Mail:            user.Mail,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
 		ID:              user.ID,
-	}, &c.db, c.validate, c.cfg.Auth.PasswordPepper)
+	}, c.cfg.Auth.PasswordPepper)
 	if err != nil {
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {

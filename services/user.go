@@ -13,14 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type userDatabase interface {
-	InsertUser(ctx context.Context, arg database.InsertUserParams) (database.User, error)
-	DoesMailExists(ctx context.Context, mail string) (bool, error)
-	QueryUserByMail(ctx context.Context, mail string) (database.User, error)
-	QueryUser(ctx context.Context, id uuid.UUID) (database.User, error)
-	UpdateUser(ctx context.Context, arg database.UpdateUserParams) (database.User, error)
-}
-
 type newUserValidation struct {
 	ConfirmPassword string `validate:"required,gte=8"`
 	Name            string `validate:"required,gte=2"`
@@ -37,15 +29,15 @@ func passwordMatchValidation(sl validator.StructLevel) {
 	}
 }
 
-func NewUser(
-	ctx context.Context, data entity.NewUser, db userDatabase, v *validator.Validate, passwordPepper string) (entity.User, error) {
-	mailAlreadyRegistered, err := db.DoesMailExists(ctx, data.Mail)
+func (s *Services) NewUser(
+	ctx context.Context, data entity.NewUser, passwordPepper string) (entity.User, error) {
+	mailAlreadyRegistered, err := s.db.DoesMailExists(ctx, data.Mail)
 	if err != nil {
 		telemetry.Logger.Error("could not check if email exists", "error", err)
 		return entity.User{}, err
 	}
 
-	v.RegisterStructValidation(passwordMatchValidation, newUserValidation{})
+	s.validator.RegisterStructValidation(passwordMatchValidation, newUserValidation{})
 
 	newUserData := newUserValidation{
 		ConfirmPassword: data.ConfirmPassword,
@@ -55,7 +47,7 @@ func NewUser(
 		Password:        data.Password,
 	}
 
-	if err := v.Struct(newUserData); err != nil {
+	if err := s.validator.Struct(newUserData); err != nil {
 		return entity.User{}, err
 	}
 
@@ -65,7 +57,7 @@ func NewUser(
 		return entity.User{}, err
 	}
 
-	user, err := db.InsertUser(ctx, database.InsertUserParams{
+	user, err := s.db.InsertUser(ctx, database.InsertUserParams{
 		ID:        uuid.New(),
 		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
 		UpdatedAt: database.ConvertToPGTimestamptz(time.Now()),
@@ -102,10 +94,10 @@ func resetPasswordMatchValidation(sl validator.StructLevel) {
 	}
 }
 
-func UpdateUser(
-	ctx context.Context, data entity.UpdateUser, db userDatabase, v *validator.Validate, passwordPepper string) (entity.User, error) {
+func (s *Services) UpdateUser(
+	ctx context.Context, data entity.UpdateUser, passwordPepper string) (entity.User, error) {
 
-	v.RegisterStructValidation(resetPasswordMatchValidation, updateUserValidation{})
+	s.validator.RegisterStructValidation(resetPasswordMatchValidation, updateUserValidation{})
 
 	validatedData := updateUserValidation{
 		ConfirmPassword: data.ConfirmPassword,
@@ -114,7 +106,7 @@ func UpdateUser(
 		Mail:            data.Mail,
 	}
 
-	if err := v.Struct(validatedData); err != nil {
+	if err := s.validator.Struct(validatedData); err != nil {
 		return entity.User{}, err
 	}
 
@@ -124,7 +116,7 @@ func UpdateUser(
 		return entity.User{}, err
 	}
 
-	updatedUser, err := db.UpdateUser(ctx, database.UpdateUserParams{
+	updatedUser, err := s.db.UpdateUser(ctx, database.UpdateUserParams{
 		UpdatedAt: database.ConvertToPGTimestamptz(time.Now()),
 		Name:      data.Name,
 		Mail:      data.Mail,

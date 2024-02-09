@@ -12,14 +12,12 @@ import (
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
-	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
 type Controller struct {
 	db         database.Queries
 	mail       mail.Mail
-	validate   *validator.Validate
 	tknManager tokens.Manager
 	queue      queue.Queue
 	cfg        config.Cfg
@@ -28,12 +26,10 @@ type Controller struct {
 
 func NewController(
 	db database.Queries, mail mail.Mail, tknManager tokens.Manager, queue queue.Queue, cfg config.Cfg, services services.Services) Controller {
-	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
 		db,
 		mail,
-		validate,
 		tknManager,
 		queue,
 		cfg,

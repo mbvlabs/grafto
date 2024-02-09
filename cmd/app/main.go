@@ -16,6 +16,7 @@ import (
 	"github.com/MBvisti/grafto/server"
 	mw "github.com/MBvisti/grafto/server/middleware"
 	"github.com/MBvisti/grafto/services"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -49,7 +50,8 @@ func main() {
 
 	authSessionStore := sessions.NewCookieStore([]byte(cfg.Auth.SessionKey), []byte(cfg.Auth.SessionEncryptionKey))
 
-	services := services.NewServices(authSessionStore)
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	services := services.NewServices(authSessionStore, *db, validate)
 
 	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q, cfg, services)
 

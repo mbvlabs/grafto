@@ -1,13 +1,21 @@
 package services
 
-import "github.com/gorilla/sessions"
+import (
+	"github.com/MBvisti/grafto/repository/database"
+	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/sessions"
+)
 
 type Services struct {
 	authSessionStore *sessions.CookieStore
+	db               database.Queries
+	validator        *validator.Validate
 }
 
-func NewServices(authSessionStore *sessions.CookieStore) Services {
+func NewServices(authSessionStore *sessions.CookieStore, db database.Queries, v *validator.Validate) Services {
 	return Services{
 		authSessionStore,
+		db,
+		v,
 	}
 }
