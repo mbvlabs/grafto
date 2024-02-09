@@ -13,6 +13,8 @@ import (
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/routes"
+	"github.com/MBvisti/grafto/server"
+	mw "github.com/MBvisti/grafto/server/middleware"
 	"github.com/MBvisti/grafto/services"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
@@ -51,7 +53,12 @@ func main() {
 
 	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q, cfg, services)
 
-	server := routes.NewServer(router, controllers, logger, cfg, services)
+	serverMW := mw.NewMiddleware(services)
+
+	routes := routes.NewRoutes(controllers, serverMW, cfg)
+	router = routes.SetupRoutes()
+
+	server := server.NewServer(router, controllers, logger, cfg, services)
 
 	server.Start()
 }
