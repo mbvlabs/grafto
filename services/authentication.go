@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
-	"log"
 	"net/http"
 	"os"
 
@@ -83,9 +82,6 @@ func (s *Services) CreateAuthenticatedSession(r *http.Request, w http.ResponseWr
 	session.Options.Domain = os.Getenv("APP_HOST")
 	session.Options.Secure = true
 	session.Options.MaxAge = 86400
-
-	log.Print("YOYOOYOYOY")
-	log.Print(session.Options.Domain)
 
 	session.Values["user_id"] = userID
 	session.Values["authenticated"] = true
