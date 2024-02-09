@@ -117,7 +117,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	}
 
 	emailJob, err := queue.NewEmailJob(
-		user.Mail, "newsletter@mortenvistisen.com", "please confirm your email", "confirm_email", mail.ConfirmPassword{
+		user.Mail, "info@mortenvistisen.com", "please confirm your email", "confirm_email", mail.ConfirmPassword{
 			Token: activationToken.GetPlainText(),
 		})
 	if err != nil {

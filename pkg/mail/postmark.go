@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -44,8 +45,10 @@ func (p *Postmark) SendMail(ctx context.Context, payload MailPayload) error {
 		To:       payload.To,
 		Subject:  payload.Subject,
 		HtmlBody: payload.HtmlBody,
+		TextBody: payload.TextBody,
 	})
 	if err != nil {
+		slog.Error("could not marshal email payload", "error", err)
 		return err
 	}
 
@@ -59,14 +62,17 @@ func (p *Postmark) SendMail(ctx context.Context, payload MailPayload) error {
 
 	res, err := p.client.Do(req)
 	if err != nil {
+		slog.Error("could not send email", "error", err)
 		return err
 	}
 
 	if res.StatusCode == http.StatusUnauthorized {
+		slog.Error("received unauthorized status code", "error", err)
 		return ErrNotAuthorized
 	}
 
 	if res.StatusCode != http.StatusOK {
+		slog.Error("received non ok status code", "error", err, "status", res.StatusCode)
 		return ErrCouldNotSend
 	}
 

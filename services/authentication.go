@@ -11,14 +11,8 @@ import (
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	// passwordPepper   = config.Cfg.GetPwdPepper()
-	authSessionStore = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")), []byte(os.Getenv("SESSION_ENCRYPTION_KEY")))
 )
 
 func hashAndPepperPassword(password, passwordPepper string) (string, error) {
@@ -77,9 +71,9 @@ func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db user
 	}, nil
 }
 
-func CreateAuthenticatedSession(r *http.Request, w http.ResponseWriter, userID uuid.UUID) error {
+func (s *Services) CreateAuthenticatedSession(r *http.Request, w http.ResponseWriter, userID uuid.UUID) error {
 	gob.Register(uuid.UUID{})
-	session, err := authSessionStore.Get(r, "ua")
+	session, err := s.authSessionStore.Get(r, "ua")
 	if err != nil {
 		return err
 	}
@@ -96,9 +90,9 @@ func CreateAuthenticatedSession(r *http.Request, w http.ResponseWriter, userID u
 	return session.Save(r, w)
 }
 
-func IsAuthenticated(r *http.Request) (bool, uuid.UUID, error) {
+func (s *Services) IsAuthenticated(r *http.Request) (bool, uuid.UUID, error) {
 	gob.Register(uuid.UUID{})
-	session, err := authSessionStore.Get(r, "ua")
+	session, err := s.authSessionStore.Get(r, "ua")
 	if err != nil {
 		return false, uuid.UUID{}, err
 	}
@@ -110,9 +104,9 @@ func IsAuthenticated(r *http.Request) (bool, uuid.UUID, error) {
 	return session.Values["authenticated"].(bool), session.Values["user_id"].(uuid.UUID), nil
 }
 
-func IsAdmin(r *http.Request) (bool, error) {
+func (s *Services) IsAdmin(r *http.Request) (bool, error) {
 	gob.Register(uuid.UUID{})
-	session, err := authSessionStore.Get(r, "ua")
+	session, err := s.authSessionStore.Get(r, "ua")
 	if err != nil {
 		return false, err
 	}

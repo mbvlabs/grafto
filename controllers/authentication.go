@@ -61,7 +61,7 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	if err := services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), authenticatedUser.ID); err != nil {
+	if err := c.services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), authenticatedUser.ID); err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
 	}
@@ -306,7 +306,7 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if err := services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), user.ID); err != nil {
+	if err := c.services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), user.ID); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 

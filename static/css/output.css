@@ -1459,6 +1459,10 @@ html {
   margin-top: 1rem;
 }
 
+.mt-44 {
+  margin-top: 11rem;
+}
+
 .mt-5 {
   margin-top: 1.25rem;
 }
@@ -1693,6 +1697,11 @@ html {
   line-height: 2rem;
 }
 
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+}
+
 .text-lg {
   font-size: 1.125rem;
   line-height: 1.75rem;
@@ -1768,6 +1777,11 @@ html {
 .text-red-600 {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity));
+}
+
+.text-secondary {
+  --tw-text-opacity: 1;
+  color: var(--fallback-s,oklch(var(--s)/var(--tw-text-opacity)));
 }
 
 .text-white {

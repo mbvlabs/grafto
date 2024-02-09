@@ -9,6 +9,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type Middleware struct {
+	services services.Services
+}
+
+func NewMiddleware(services services.Services) Middleware {
+	return Middleware{services}
+}
+
 type AuthContext struct {
 	echo.Context
 	userID          uuid.UUID
@@ -31,9 +39,9 @@ func (a *AdminContext) GetAdminStatus() bool {
 	return a.isAdmin
 }
 
-func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Middleware) AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		authenticated, userID, err := services.IsAuthenticated(c.Request())
+		authenticated, userID, err := m.services.IsAuthenticated(c.Request())
 		if err != nil {
 			telemetry.Logger.Error("could not get authenticated status", "error", err)
 			return c.Redirect(http.StatusPermanentRedirect, "/500")
@@ -48,9 +56,9 @@ func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func AdminOnly(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Middleware) AdminOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		isAdmin, err := services.IsAdmin(c.Request())
+		isAdmin, err := m.services.IsAdmin(c.Request())
 		if err != nil {
 			return c.Redirect(http.StatusPermanentRedirect, "/500")
 		}

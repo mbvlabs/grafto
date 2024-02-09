@@ -14,6 +14,8 @@ import (
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/routes/api"
+	"github.com/MBvisti/grafto/routes/middleware"
+	"github.com/MBvisti/grafto/services"
 	"github.com/gorilla/csrf"
 
 	"github.com/MBvisti/grafto/routes/web"
@@ -31,11 +33,13 @@ type Server struct {
 }
 
 func NewServer(
-	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger, cfg config.Cfg) Server {
+	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger, cfg config.Cfg, services services.Services) Server {
 	api := api.NewAPI(router, controllers, logger)
 	api.SetupAPIRoutes()
 
-	web := web.NewWeb(router, controllers)
+	middleware := middleware.NewMiddleware(services)
+
+	web := web.NewWeb(router, controllers, middleware)
 	web.SetupWebRoutes()
 
 	if cfg.App.Environment == "development" {

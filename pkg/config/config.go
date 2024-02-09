@@ -28,7 +28,7 @@ func New() Cfg {
 	}
 
 	externalProviders := ExternalProviders{}
-	if err := env.Parse(&appCfg); err != nil {
+	if err := env.Parse(&externalProviders); err != nil {
 		panic(err)
 	}
 
