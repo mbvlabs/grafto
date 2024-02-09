@@ -13,14 +13,13 @@ import "bytes"
 import (
 	"github.com/MBvisti/grafto/views"
 	"github.com/MBvisti/grafto/views/internal/layouts"
-	"github.com/MBvisti/grafto/views/internal/types"
 )
 
 type ResetPasswordFormProps struct {
 	CsrfToken       string
 	ResetToken      string
-	Password        types.TextInputData
-	ConfirmPassword types.TextInputData
+	Password        views.InputElementError
+	ConfirmPassword views.InputElementError
 }
 
 func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
@@ -36,7 +35,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/reset-password\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"text-center mt-7\"><h1 class=\"block text-2xl font-bold text-white\">Reset your password</h1><div class=\"p-4 sm:p-7\"><form hx-post=\"/reset-password\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -74,7 +73,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(props.ConfirmPassword.InvalidMsg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 53, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 55, Col: 84}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -95,7 +94,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><button type=\"submit\" class=\"py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent \n                    font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 \n                    focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm focus:ring-offset-gray-800\">Reset password</button></div></form>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><button type=\"submit\" class=\"py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent \n                    font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 \n                    focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm focus:ring-offset-gray-800\">Reset password</button></div></form></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -106,7 +105,12 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 	})
 }
 
-func ResetPasswordSuccess() templ.Component {
+type ResetPasswordResponseProps struct {
+	HasError bool
+	Msg      string
+}
+
+func ResetPasswordResponse(props ResetPasswordResponseProps) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -119,7 +123,35 @@ func ResetPasswordSuccess() templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"w-full max-w-md mx-auto my-auto p-20 flex flex-col mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700\"><h2 hx-target=\"closest div\" class=\"text-green-400\">Your password has been reset.</h2></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"w-full max-w-md mx-auto my-auto p-20 flex flex-col mt-bg-gray-800\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if props.HasError {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h2 hx-target=\"closest div\" class=\"text-red-400\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.Msg)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 113, Col: 15}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</h2>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h2 hx-target=\"closest div\" class=\"text-green-400\">Your password has been reset.</h2>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -132,7 +164,8 @@ func ResetPasswordSuccess() templ.Component {
 
 type ResetPasswordPageProps struct {
 	TokenInvalid bool
-	FormProps    ResetPasswordFormProps
+	CsrfToken    string
+	ResetToken   string
 }
 
 func ResetPasswordPage(props ResetPasswordPageProps, head views.Head) templ.Component {
@@ -143,18 +176,18 @@ func ResetPasswordPage(props ResetPasswordPageProps, head views.Head) templ.Comp
 			defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var5 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var6 := templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 			if !templ_7745c5c3_IsBuffer {
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main hx-target=\"this\" hx-swap=\"outerHTML\" class=\"w-full max-w-md mx-auto my-auto\"><div class=\"mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700\"><div class=\"text-center mt-7\"><h1 class=\"block text-2xl font-bold text-white\">Reset your password</h1></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main class=\"w-full max-w-md mx-auto my-auto\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -164,15 +197,18 @@ func ResetPasswordPage(props ResetPasswordPageProps, head views.Head) templ.Comp
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"p-4 sm:p-7\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = ResetPasswordForm(props.FormProps).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = ResetPasswordForm(ResetPasswordFormProps{
+				CsrfToken:  props.CsrfToken,
+				ResetToken: props.ResetToken,
+			}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></main>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -181,7 +217,7 @@ func ResetPasswordPage(props ResetPasswordPageProps, head views.Head) templ.Comp
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = layouts.Base(head.Build()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layouts.Base(head.Build()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var6), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

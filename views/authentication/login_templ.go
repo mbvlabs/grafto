@@ -111,7 +111,7 @@ func LoginForm(csrfToken string, props LoginFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><button type=\"submit\" class=\"py-3 px-4 inline-flex jstify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focs:outline-none focs:ring-2 focs:ring-blue-500 focs:ring-offset-2 transition-all text-sm focs:ring-offset-gray-800\">Login</button></div></form></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"my-2 w-full flex items-center justify-between\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text mr-4\">Remember me</span> <input type=\"checkbox\" class=\"checkbox\"></label></div><a class=\"text-blue-600 decoration-2 hover:underline font-medium\" href=\"/forgot-password\">Forgotten password?</a></div><button type=\"submit\" class=\"py-3 px-4 inline-flex jstify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focs:outline-none focs:ring-2 focs:ring-blue-500 focs:ring-offset-2 transition-all text-sm focs:ring-offset-gray-800\">Login</button></div></form></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

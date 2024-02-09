@@ -15,7 +15,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -70,7 +70,9 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 }
 
 func (c *Controller) CreatePasswordReset(ctx echo.Context) error {
-	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ForgottenPasswordPage(authentication.ForgottenPasswordPageProps{
+		CsrfToken: csrf.Token(ctx.Request()),
+	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type StorePasswordResetPayload struct {
@@ -80,32 +82,22 @@ type StorePasswordResetPayload struct {
 func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := c.db.QueryUserByMail(ctx.Request().Context(), payload.Mail)
 	if err != nil {
+		failureOccurred := true
 		if errors.Is(err, pgx.ErrNoRows) {
-			return authentication.ForgottenPasswordPage(authentication.ForgottenPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+			failureOccurred = false
 		}
 
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create") // TODO:
-
-		return c.InternalError(ctx)
+		return authentication.ForgottenPasswordSuccess(failureOccurred).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	plainText, hashedToken, err := c.tknManager.GenerateToken()
 	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login") // TODO:
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	resetPWToken := tokens.CreateResetPasswordToken(plainText, hashedToken)
@@ -118,26 +110,18 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		Scope:     resetPWToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := c.mail.Send(ctx.Request().Context(),
-		user.Mail, "newsletter@mortenvistisen.com", "Password Reset Request", "password_reset",
+		user.Mail, "info@mortenvistisen.com", "Password Reset Request", "password_reset",
 		mail.ConfirmPassword{
 			Token: resetPWToken.GetPlainText(),
 		}); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	return authentication.ForgottenPasswordPage(authentication.ForgottenPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ForgottenPasswordSuccess(false).Render(views.ExtractRenderDeps(ctx))
 }
 
 type PasswordResetToken struct {
@@ -147,13 +131,13 @@ type PasswordResetToken struct {
 func (c *Controller) CreateResetPassword(ctx echo.Context) error {
 	var passwordResetToken PasswordResetToken
 	if err := ctx.Bind(&passwordResetToken); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
-
 		return c.InternalError(ctx)
 	}
 
-	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{
+		ResetToken: passwordResetToken.Token,
+		CsrfToken:  csrf.Token(ctx.Request()),
+	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type ResetPasswordPayload struct {
@@ -165,47 +149,49 @@ type ResetPasswordPayload struct {
 func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
-
-		return c.InternalError(ctx)
+		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+			HasError: true,
+			Msg:      "An error occurred while trying to reset your password. Please try again.",
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	hashedToken, err := c.tknManager.Hash(payload.Token)
 	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+			HasError: true,
+			Msg:      "An error occurred while trying to reset your password. Please try again.",
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			telemetry.Logger.Error("token invalid because it was not found")
-			return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+			return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+				HasError: true,
+				Msg:      "The token is invalid. Please request a new one.",
+			}).Render(views.ExtractRenderDeps(ctx))
 		}
 
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+			HasError: true,
+			Msg:      "An error occurred while trying to reset your password. Please try again.",
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
-		telemetry.Logger.Error("token invalid because time or scope issue")
-		return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+		// TODO let the user know that the token has expired
+		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+			HasError: true,
+			Msg:      "The token has expired. Please request a new one.",
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := c.db.QueryUser(ctx.Request().Context(), token.UserID)
 	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+			HasError: true,
+			Msg:      "An error occurred while trying to reset your password. Please try again.",
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	_, err = services.UpdateUser(ctx.Request().Context(), entity.UpdateUser{
@@ -222,15 +208,32 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}
 
 		if len(e) == 0 {
-			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
-
-			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
-
-			return c.InternalError(ctx)
+			return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+				HasError: true,
+				Msg:      "An error occurred while trying to reset your password. Please try again.",
+			}).Render(views.ExtractRenderDeps(ctx))
 		}
 
-		return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+		props := authentication.ResetPasswordFormProps{
+			CsrfToken:  csrf.Token(ctx.Request()),
+			ResetToken: token.Hash,
+		}
+
+		for _, validationError := range e {
+			switch validationError.StructField() {
+			case "Password", "ConfirmPassword":
+				props.Password = views.InputElementError{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+				props.ConfirmPassword = views.InputElementError{
+					Invalid:    true,
+					InvalidMsg: validationError.Param(),
+				}
+			}
+		}
+
+		return authentication.ResetPasswordForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := c.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
@@ -241,7 +244,9 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
+		HasError: false,
+	}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type VerifyEmail struct {
