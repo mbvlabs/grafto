@@ -13,6 +13,8 @@ import (
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/routes"
+	"github.com/MBvisti/grafto/services"
+	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	slogecho "github.com/samber/slog-echo"
@@ -43,9 +45,13 @@ func main() {
 	mailClient := mail.NewMail(&postmark)
 	tokenManager := tokens.NewManager(cfg.Auth.TokenSigningKey)
 
-	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q, cfg)
+	authSessionStore := sessions.NewCookieStore([]byte(cfg.Auth.SessionKey), []byte(cfg.Auth.SessionEncryptionKey))
 
-	server := routes.NewServer(router, controllers, logger, cfg)
+	services := services.NewServices(authSessionStore)
+
+	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q, cfg, services)
+
+	server := routes.NewServer(router, controllers, logger, cfg, services)
 
 	server.Start()
 }

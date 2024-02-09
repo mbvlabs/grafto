@@ -10,6 +10,7 @@ import (
 	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
+	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -22,10 +23,11 @@ type Controller struct {
 	tknManager tokens.Manager
 	queue      queue.Queue
 	cfg        config.Cfg
+	services   services.Services
 }
 
 func NewController(
-	db database.Queries, mail mail.Mail, tknManager tokens.Manager, queue queue.Queue, cfg config.Cfg) Controller {
+	db database.Queries, mail mail.Mail, tknManager tokens.Manager, queue queue.Queue, cfg config.Cfg, services services.Services) Controller {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
@@ -35,6 +37,7 @@ func NewController(
 		tknManager,
 		queue,
 		cfg,
+		services,
 	}
 }
 
@@ -52,9 +55,10 @@ func (c *Controller) InternalError(ctx echo.Context) error {
 		from = referere[1]
 	}
 
-	return views.InternalServerErr(ctx, views.InternalServerErrData{
-		FromLocation: from,
-	})
+	return views.InternalServerError(views.Head{
+		Title:       "Internal Server Error",
+		Description: "An error occurred while processing your request",
+	}, from).Render(views.ExtractRenderDeps(ctx))
 }
 
 func (c *Controller) Redirect(ctx echo.Context) error {
