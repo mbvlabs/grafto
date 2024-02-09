@@ -179,7 +179,6 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 	}
 
 	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
-		// TODO let the user know that the token has expired
 		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
 			HasError: true,
 			Msg:      "The token has expired. Please request a new one.",
