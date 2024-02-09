@@ -27,12 +27,14 @@ func NewRoutes(ctrl controllers.Controller, mw middleware.Middleware, cfg config
 		router:      router,
 		controllers: ctrl,
 		middleware:  mw,
+		cfg:         cfg,
 	}
 }
 
 func (r *Routes) web() {
 	authRoutes(r.router, r.controllers, r.middleware)
 	errorRoutes(r.router, r.controllers, r.middleware)
+	dashboardRoutes(r.router, r.controllers, r.middleware)
 	appRoutes(r.router, r.controllers)
 }
 
@@ -52,6 +54,14 @@ func appRoutes(router *echo.Echo, ctrl controllers.Controller) {
 	router.GET("/", func(c echo.Context) error {
 		return ctrl.LandingPage(c)
 	})
+}
+
+func dashboardRoutes(router *echo.Echo, ctrl controllers.Controller, mw middleware.Middleware) {
+	dashboardRouter := router.Group("/dashboard")
+
+	dashboardRouter.GET("", func(c echo.Context) error {
+		return ctrl.DashboardIndex(c)
+	}, mw.AuthOnly)
 }
 
 func errorRoutes(router *echo.Echo, ctrl controllers.Controller, mw middleware.Middleware) {
