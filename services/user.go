@@ -5,8 +5,6 @@ import (
 
 	"time"
 
-	"github.com/go-playground/validator/v10"
-
 	"github.com/MBvisti/grafto/entity"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
@@ -21,14 +19,6 @@ type newUserValidation struct {
 	Password        string `validate:"required,gte=8"`
 }
 
-func passwordMatchValidation(sl validator.StructLevel) {
-	data := sl.Current().Interface().(newUserValidation)
-
-	if data.ConfirmPassword != data.Password {
-		sl.ReportError(data.ConfirmPassword, "", "ConfirmPassword", "", "confirm password must match password")
-	}
-}
-
 func (s *Services) NewUser(
 	ctx context.Context, data entity.NewUser, passwordPepper string) (entity.User, error) {
 	mailAlreadyRegistered, err := s.db.DoesMailExists(ctx, data.Mail)
@@ -36,8 +26,6 @@ func (s *Services) NewUser(
 		telemetry.Logger.Error("could not check if email exists", "error", err)
 		return entity.User{}, err
 	}
-
-	s.validator.RegisterStructValidation(passwordMatchValidation, newUserValidation{})
 
 	newUserData := newUserValidation{
 		ConfirmPassword: data.ConfirmPassword,
@@ -86,18 +74,8 @@ type updateUserValidation struct {
 	Mail            string `validate:"required,email"`
 }
 
-func resetPasswordMatchValidation(sl validator.StructLevel) {
-	data := sl.Current().Interface().(updateUserValidation)
-
-	if data.ConfirmPassword != data.Password {
-		sl.ReportError(data.ConfirmPassword, "", "ConfirmPassword", "", "confirm password must match password")
-	}
-}
-
 func (s *Services) UpdateUser(
 	ctx context.Context, data entity.UpdateUser, passwordPepper string) (entity.User, error) {
-
-	s.validator.RegisterStructValidation(resetPasswordMatchValidation, updateUserValidation{})
 
 	validatedData := updateUserValidation{
 		ConfirmPassword: data.ConfirmPassword,

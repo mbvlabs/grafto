@@ -13,9 +13,11 @@ type Services struct {
 }
 
 func NewServices(authSessionStore *sessions.CookieStore, db database.Queries, v *validator.Validate) Services {
+	validator := registerStructValidations(v)
+
 	return Services{
 		authSessionStore,
 		db,
-		v,
+		validator,
 	}
 }
