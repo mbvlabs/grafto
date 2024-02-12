@@ -15,9 +15,9 @@ import (
 )
 
 /*
-ClientCfg is a thin wrapper around river.Config that provides a couple of defaults. It increases JobTimeout to 5 minutes, and uses the logger from telemetry.SetupLogger. It also sets the default queue to have a maximum of 100 workers.
+clientCfg is a thin wrapper around river.Config that provides a couple of defaults. It increases JobTimeout to 5 minutes, and uses the logger from telemetry.SetupLogger. It also sets the default queue to have a maximum of 100 workers.
 */
-type ClientCfg struct {
+type clientCfg struct {
 	errorHandler      river.ErrorHandler
 	fetchCooldown     time.Duration
 	fetchPollInterval time.Duration
@@ -28,58 +28,61 @@ type ClientCfg struct {
 	workers           *river.Workers
 }
 
-type ClientCfgOpts func(cfg *ClientCfg)
+type ClientCfgOpts func(cfg *clientCfg)
 
 func WithErrorHandler(handler river.ErrorHandler) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.errorHandler = handler
 	}
 }
 
 func WithFetchCooldown(cooldown time.Duration) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.fetchCooldown = cooldown
 	}
 }
 
 func WithFetchPollInterval(interval time.Duration) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.fetchPollInterval = interval
 	}
 }
 
 func WithJobTimeout(timeout time.Duration) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.jobTimeout = timeout
 	}
 }
 
 func WithLogger(logger *slog.Logger) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.logger = logger
 	}
 }
 
 func WithPeriodicJobs(jobs []*river.PeriodicJob) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.periodicJobs = jobs
 	}
 }
 
 func WithQueues(queues map[string]river.QueueConfig) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.queues = queues
 	}
 }
 
 func WithWorkers(workers *river.Workers) ClientCfgOpts {
-	return func(cfg *ClientCfg) {
+	return func(cfg *clientCfg) {
 		cfg.workers = workers
 	}
 }
 
+/*
+NewClient creates a new river.Client with the provided workers and options. It uses the provided pool to connect to the database. It panics if no workers are provided. It uses some defaults for error handling, fetch cooldown, fetch poll interval, job timeout, and logger.
+*/
 func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] {
-	cfg := &ClientCfg{
+	cfg := &clientCfg{
 		errorHandler:      nil,
 		fetchCooldown:     100 * time.Millisecond,
 		fetchPollInterval: 1 * time.Second,
@@ -113,6 +116,7 @@ func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] 
 	return riverClient
 }
 
+// MailErrorHandler is an implementation of river.ErrorHandler that sends an email when an error occurs.
 type MailErrorHandler struct {
 	logger     *slog.Logger
 	mailClient *mail.Mail

@@ -13,6 +13,7 @@ import (
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
+	"github.com/MBvisti/grafto/repository/database"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 )
@@ -26,41 +27,46 @@ func main() {
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 	mailClient := mail.NewMail(&postmark)
 
-	dbPool, err := pgxpool.New(context.Background(), cfg.Db.GetQueueUrlString())
+	queueDbPool, err := pgxpool.New(context.Background(), cfg.Db.GetQueueUrlString())
 	if err != nil {
 		panic(err)
 	}
 
-	if err := dbPool.Ping(ctx); err != nil {
+	if err := queueDbPool.Ping(ctx); err != nil {
 		panic(err)
 	}
+
+	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
+	db := database.New(conn)
 
 	jobStarted := make(chan struct{})
 
 	workers := river.NewWorkers()
+
 	if err := river.AddWorkerSafely(workers, &queue.EmailJobWorker{
 		Sender: &mailClient,
 	}); err != nil {
 		panic("handle this error")
 	}
-	mailErrorHandler := queue.NewMailErrorHandler(telemetry.SetupLogger(), &mailClient, "info@mortenvistisen.com", "job.error@mortenvistisen.com")
-	riverClient := queue.NewClient(dbPool, queue.WithWorkers(workers), queue.WithErrorHandler(mailErrorHandler), queue.WithLogger(logger))
 
-	_, err = riverClient.Insert(ctx, queue.EmailJobArgs{
-		To:       "mbv@mortenvistisen.com",
-		From:     "info@mortenvistisen.com",
-		Subject:  "testing river",
-		TmplName: "confirm_email",
-		Payload:  nil,
-	}, &river.InsertOpts{
-		Queue:       "",
-		ScheduledAt: time.Now(),
-		Tags:        []string{},
-		UniqueOpts:  river.UniqueOpts{},
-	})
-	if err != nil {
-		panic(err)
+	if err := river.AddWorkerSafely(workers, &queue.RemoveUnverifiedUsersJobWorker{
+		Storage: db,
+	}); err != nil {
+		panic("handle this error")
 	}
+
+	periodicJobs := []*river.PeriodicJob{
+		river.NewPeriodicJob(
+			river.PeriodicInterval(5*time.Minute),
+			func() (river.JobArgs, *river.InsertOpts) {
+				return queue.RemoveUnverifiedUsersJobArgs{}, nil
+			},
+			&river.PeriodicJobOpts{RunOnStart: true},
+		),
+	}
+
+	mailErrorHandler := queue.NewMailErrorHandler(telemetry.SetupLogger(), &mailClient, "info@mortenvistisen.com", "job.error@mortenvistisen.com")
+	riverClient := queue.NewClient(queueDbPool, queue.WithWorkers(workers), queue.WithErrorHandler(mailErrorHandler), queue.WithLogger(logger), queue.WithPeriodicJobs(periodicJobs))
 
 	if err := riverClient.Start(ctx); err != nil {
 		panic(err)

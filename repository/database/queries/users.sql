@@ -32,7 +32,7 @@ update users
 where id = $1
 returning *;
 
--- name: RemoveInactiveUsers :exec
+-- name: RemoveUnverifiedUsers :exec
 delete 
     from users
 where

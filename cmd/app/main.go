@@ -36,11 +36,6 @@ func main() {
 	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
 	db := database.New(conn)
 
-	// q := queue.New(db)
-	// if err := q.InitilizeRepeatingJobs(context.Background(), nil); err != nil {
-	// 	panic(err)
-	// }
-
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 
 	mailClient := mail.NewMail(&postmark)

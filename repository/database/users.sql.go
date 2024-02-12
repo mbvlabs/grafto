@@ -169,7 +169,7 @@ func (q *Queries) QueryUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
-const removeInactiveUsers = `-- name: RemoveInactiveUsers :exec
+const removeUnverifiedUsers = `-- name: RemoveUnverifiedUsers :exec
 delete 
     from users
 where
@@ -177,8 +177,8 @@ where
     created_at <= $1::timestamptz
 `
 
-func (q *Queries) RemoveInactiveUsers(ctx context.Context, twoWeeksAgo pgtype.Timestamptz) error {
-	_, err := q.db.Exec(ctx, removeInactiveUsers, twoWeeksAgo)
+func (q *Queries) RemoveUnverifiedUsers(ctx context.Context, twoWeeksAgo pgtype.Timestamptz) error {
+	_, err := q.db.Exec(ctx, removeUnverifiedUsers, twoWeeksAgo)
 	return err
 }
 
