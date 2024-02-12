@@ -8,7 +8,6 @@ import (
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/mail"
-	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
@@ -37,10 +36,10 @@ func main() {
 	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
 	db := database.New(conn)
 
-	q := queue.New(db)
-	if err := q.InitilizeRepeatingJobs(context.Background(), nil); err != nil {
-		panic(err)
-	}
+	// q := queue.New(db)
+	// if err := q.InitilizeRepeatingJobs(context.Background(), nil); err != nil {
+	// 	panic(err)
+	// }
 
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 
@@ -51,7 +50,7 @@ func main() {
 
 	services := services.NewServices(authSessionStore)
 
-	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q, cfg, services)
+	controllers := controllers.NewController(*db, mailClient, *tokenManager, cfg, services)
 
 	serverMW := mw.NewMiddleware(services)
 

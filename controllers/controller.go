@@ -7,7 +7,6 @@ import (
 
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/mail"
-	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/MBvisti/grafto/services"
@@ -21,13 +20,12 @@ type Controller struct {
 	mail       mail.Mail
 	validate   *validator.Validate
 	tknManager tokens.Manager
-	queue      queue.Queue
 	cfg        config.Cfg
 	services   services.Services
 }
 
 func NewController(
-	db database.Queries, mail mail.Mail, tknManager tokens.Manager, queue queue.Queue, cfg config.Cfg, services services.Services) Controller {
+	db database.Queries, mail mail.Mail, tknManager tokens.Manager, cfg config.Cfg, services services.Services) Controller {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
@@ -35,7 +33,6 @@ func NewController(
 		mail,
 		validate,
 		tknManager,
-		queue,
 		cfg,
 		services,
 	}
