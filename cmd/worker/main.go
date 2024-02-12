@@ -59,8 +59,7 @@ func main() {
 		),
 	}
 
-	mailErrorHandler := queue.NewMailErrorHandler(telemetry.SetupLogger(), &mailClient, cfg.App.DefaultSenderSignature, "job.error@grafto.com")
-	riverClient := queue.NewClient(queueDbPool, queue.WithWorkers(workers), queue.WithErrorHandler(mailErrorHandler), queue.WithLogger(logger), queue.WithPeriodicJobs(periodicJobs))
+	riverClient := queue.NewClient(queueDbPool, queue.WithWorkers(workers), queue.WithLogger(logger), queue.WithPeriodicJobs(periodicJobs))
 
 	if err := riverClient.Start(ctx); err != nil {
 		panic(err)

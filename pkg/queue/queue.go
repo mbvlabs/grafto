@@ -83,7 +83,6 @@ NewClient creates a new river.Client with the provided workers and options. It u
 */
 func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] {
 	cfg := &clientCfg{
-		errorHandler:      nil,
 		fetchCooldown:     100 * time.Millisecond,
 		fetchPollInterval: 1 * time.Second,
 		jobTimeout:        5 * time.Minute,
