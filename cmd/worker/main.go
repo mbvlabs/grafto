@@ -41,18 +41,12 @@ func main() {
 
 	jobStarted := make(chan struct{})
 
-	workers := river.NewWorkers()
-
-	if err := river.AddWorkerSafely(workers, &queue.EmailJobWorker{
-		Sender: &mailClient,
-	}); err != nil {
-		panic("handle this error")
-	}
-
-	if err := river.AddWorkerSafely(workers, &queue.RemoveUnverifiedUsersJobWorker{
-		Storage: db,
-	}); err != nil {
-		panic("handle this error")
+	workers, err := queue.SetupWorkers(queue.WorkerDependencies{
+		Db:         db,
+		MailClient: mailClient,
+	})
+	if err != nil {
+		panic(err)
 	}
 
 	periodicJobs := []*river.PeriodicJob{
@@ -65,7 +59,7 @@ func main() {
 		),
 	}
 
-	mailErrorHandler := queue.NewMailErrorHandler(telemetry.SetupLogger(), &mailClient, "info@mortenvistisen.com", "job.error@mortenvistisen.com")
+	mailErrorHandler := queue.NewMailErrorHandler(telemetry.SetupLogger(), &mailClient, cfg.App.DefaultSenderSignature, "job.error@grafto.com")
 	riverClient := queue.NewClient(queueDbPool, queue.WithWorkers(workers), queue.WithErrorHandler(mailErrorHandler), queue.WithLogger(logger), queue.WithPeriodicJobs(periodicJobs))
 
 	if err := riverClient.Start(ctx); err != nil {
