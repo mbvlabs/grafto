@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/MBvisti/grafto/entity"
+	"github.com/MBvisti/grafto/pkg/mail"
+	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
@@ -114,21 +116,20 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	// emailJob, err := queue.NewEmailJob(
-	// 	user.Mail, "info@mortenvistisen.com", "please confirm your email", "confirm_email", mail.ConfirmPassword{
-	// 		Token: activationToken.GetPlainText(),
-	// 	})
-	// if err != nil {
-	// 	telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
+		To:       user.Mail,
+		From:     "info@mortenvistisen.com",
+		Subject:  "please confirm your email",
+		TmplName: "confirm_email",
+		Payload: mail.ConfirmPassword{
+			Token: activationToken.GetPlainText(),
+		},
+	}, nil)
+	if err != nil {
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-	// 	return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
-	// }
-
-	// if err := c.queue.Push(ctx.Request().Context(), emailJob); err != nil {
-	// 	telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-
-	// 	return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
-	// }
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+	}
 
 	return authentication.RegisterResponse("You're now registered", "You should receive an email soon to validate your account.", false).Render(views.ExtractRenderDeps(ctx))
 }

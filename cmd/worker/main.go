@@ -59,7 +59,8 @@ func main() {
 		),
 	}
 
-	riverClient := queue.NewClient(queueDbPool, queue.WithWorkers(workers), queue.WithLogger(logger), queue.WithPeriodicJobs(periodicJobs))
+	q := map[string]river.QueueConfig{river.QueueDefault: {MaxWorkers: 100}}
+	riverClient := queue.NewClient(queueDbPool, queue.WithQueues(q), queue.WithWorkers(workers), queue.WithLogger(logger), queue.WithPeriodicJobs(periodicJobs))
 
 	if err := riverClient.Start(ctx); err != nil {
 		panic(err)

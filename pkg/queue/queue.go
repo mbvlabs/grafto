@@ -24,7 +24,7 @@ type clientCfg struct {
 	jobTimeout        time.Duration
 	logger            *slog.Logger
 	periodicJobs      []*river.PeriodicJob
-	queues            map[string]river.QueueConfig
+	queues            *map[string]river.QueueConfig
 	workers           *river.Workers
 }
 
@@ -68,7 +68,7 @@ func WithPeriodicJobs(jobs []*river.PeriodicJob) ClientCfgOpts {
 
 func WithQueues(queues map[string]river.QueueConfig) ClientCfgOpts {
 	return func(cfg *clientCfg) {
-		cfg.queues = queues
+		cfg.queues = &queues
 	}
 }
 
@@ -79,7 +79,7 @@ func WithWorkers(workers *river.Workers) ClientCfgOpts {
 }
 
 /*
-NewClient creates a new river.Client with the provided workers and options. It uses the provided pool to connect to the database. It panics if no workers are provided. It uses some defaults for error handling, fetch cooldown, fetch poll interval, job timeout, and logger.
+NewClient creates a new river.Client. It uses the provided pool to connect to the database. It uses some defaults for error handling, fetch cooldown, fetch poll interval, job timeout, and logger. For a 'read only'client, omit providing a queue.
 */
 func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] {
 	cfg := &clientCfg{
@@ -87,27 +87,27 @@ func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] 
 		fetchPollInterval: 1 * time.Second,
 		jobTimeout:        5 * time.Minute,
 		logger:            telemetry.SetupLogger(),
-		queues:            map[string]river.QueueConfig{river.QueueDefault: {MaxWorkers: 100}},
 	}
 
 	for _, opt := range opts {
 		opt(cfg)
 	}
 
-	if cfg.workers == nil {
-		panic("no workers provided; queue will not process jobs")
-	}
-
-	riverClient, err := river.NewClient(riverpgxv5.New(pool), &river.Config{
+	riverCfg := &river.Config{
 		ErrorHandler:      cfg.errorHandler,
 		FetchCooldown:     cfg.fetchCooldown,
 		FetchPollInterval: cfg.fetchCooldown,
 		JobTimeout:        cfg.jobTimeout,
 		Logger:            cfg.logger,
 		PeriodicJobs:      cfg.periodicJobs,
-		Queues:            cfg.queues,
-		Workers:           cfg.workers,
-	})
+	}
+
+	if cfg.queues != nil {
+		riverCfg.Queues = *cfg.queues
+		riverCfg.Workers = cfg.workers
+	}
+
+	riverClient, err := river.NewClient(riverpgxv5.New(pool), riverCfg)
 	if err != nil {
 		panic(err)
 	}

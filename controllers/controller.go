@@ -12,20 +12,23 @@ import (
 	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/riverqueue/river"
 )
 
 type Controller struct {
-	db         database.Queries
-	mail       mail.Mail
-	validate   *validator.Validate
-	tknManager tokens.Manager
-	cfg        config.Cfg
-	services   services.Services
+	db          database.Queries
+	mail        mail.Mail
+	validate    *validator.Validate
+	tknManager  tokens.Manager
+	cfg         config.Cfg
+	services    services.Services
+	queueClient *river.Client[pgx.Tx]
 }
 
 func NewController(
-	db database.Queries, mail mail.Mail, tknManager tokens.Manager, cfg config.Cfg, services services.Services) Controller {
+	db database.Queries, mail mail.Mail, tknManager tokens.Manager, cfg config.Cfg, services services.Services, qc *river.Client[pgx.Tx]) Controller {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
@@ -35,6 +38,7 @@ func NewController(
 		tknManager,
 		cfg,
 		services,
+		qc,
 	}
 }
 

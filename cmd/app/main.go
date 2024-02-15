@@ -8,6 +8,7 @@ import (
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/mail"
+	"github.com/MBvisti/grafto/pkg/queue"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
@@ -16,12 +17,14 @@ import (
 	mw "github.com/MBvisti/grafto/server/middleware"
 	"github.com/MBvisti/grafto/services"
 	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	slogecho "github.com/samber/slog-echo"
 )
 
 func main() {
+	ctx := context.Background()
 	router := echo.New()
 
 	logger := telemetry.SetupLogger()
@@ -43,9 +46,20 @@ func main() {
 
 	authSessionStore := sessions.NewCookieStore([]byte(cfg.Auth.SessionKey), []byte(cfg.Auth.SessionEncryptionKey))
 
+	queueDbPool, err := pgxpool.New(context.Background(), cfg.Db.GetQueueUrlString())
+	if err != nil {
+		panic(err)
+	}
+
+	if err := queueDbPool.Ping(ctx); err != nil {
+		panic(err)
+	}
+
+	riverClient := queue.NewClient(queueDbPool, queue.WithLogger(logger))
+
 	services := services.NewServices(authSessionStore)
 
-	controllers := controllers.NewController(*db, mailClient, *tokenManager, cfg, services)
+	controllers := controllers.NewController(*db, mailClient, *tokenManager, cfg, services, riverClient)
 
 	serverMW := mw.NewMiddleware(services)
 
