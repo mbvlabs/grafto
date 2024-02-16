@@ -1,12 +1,18 @@
 package views
 
+import (
+	"github.com/MBvisti/grafto/views/internal/layouts"
+)
+
 templ DashboardPage() {
-	<div class="mx-0">
-		<h1>
-			Dashboard
-		</h1>
-		<p>
-			Dashboard content
-		</p>
-	</div>
+	@layouts.Dashboard() {
+		<main class="container mx-auto">
+			<h1>
+				Dashboard
+			</h1>
+			<p>
+				Dashboard content
+			</p>
+		</main>
+	}
 }
