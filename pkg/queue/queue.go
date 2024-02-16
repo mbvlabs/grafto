@@ -79,7 +79,7 @@ func WithWorkers(workers *river.Workers) ClientCfgOpts {
 }
 
 /*
-NewClient creates a new river.Client. It uses the provided pool to connect to the database. It uses some defaults for error handling, fetch cooldown, fetch poll interval, job timeout, and logger. For a 'read only'client, omit the queue.
+NewClient creates a new river.Client. It uses the provided pool to connect to the database. It uses some defaults for error handling, fetch cooldown, fetch poll interval, job timeout, and logger. For a 'read only' client, omit the queue.
 */
 func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] {
 	cfg := &clientCfg{
