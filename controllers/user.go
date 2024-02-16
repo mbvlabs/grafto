@@ -118,7 +118,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 
 	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
 		To:       user.Mail,
-		From:     "info@mortenvistisen.com",
+		From:     c.cfg.App.DefaultSenderSignature,
 		Subject:  "please confirm your email",
 		TmplName: "confirm_email",
 		Payload: mail.ConfirmPassword{
