@@ -114,7 +114,7 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 	}
 
 	if err := c.mail.Send(ctx.Request().Context(),
-		user.Mail, "info@mortenvistisen.com", "Password Reset Request", "password_reset",
+		user.Mail, c.cfg.App.DefaultSenderSignature, "Password Reset Request", "password_reset",
 		mail.ConfirmPassword{
 			Token: resetPWToken.GetPlainText(),
 		}); err != nil {
