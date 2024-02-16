@@ -51,7 +51,7 @@ func main() {
 
 	periodicJobs := []*river.PeriodicJob{
 		river.NewPeriodicJob(
-			river.PeriodicInterval(5*time.Minute),
+			river.PeriodicInterval(24*time.Hour),
 			func() (river.JobArgs, *river.InsertOpts) {
 				return queue.RemoveUnverifiedUsersJobArgs{}, nil
 			},
