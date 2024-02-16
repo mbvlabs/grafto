@@ -43,7 +43,7 @@ func NewController(
 }
 
 func (c *Controller) AppHealth(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, []byte("app is healthy and running"))
+	return ctx.JSON(http.StatusOK, "app is healthy and running")
 }
 
 func (c *Controller) InternalError(ctx echo.Context) error {

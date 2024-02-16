@@ -6,8 +6,8 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/MBvisti/grafto/controllers"
@@ -51,9 +51,6 @@ func NewServer(
 func (s *Server) Start() {
 	slog.Info("starting server on", "host", s.host, "port", s.port)
 
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM)
-	defer stop()
-
 	// Start server
 	go func() {
 		if err := s.srv.ListenAndServe(); err != http.ErrServerClosed {
@@ -61,12 +58,20 @@ func (s *Server) Start() {
 		}
 	}()
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
 	<-ctx.Done()
 
-	ctxWithtimeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	toCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := s.srv.Shutdown(ctxWithtimeout); err != nil {
+	log.Print("initiating shutdown")
+	err := s.srv.Shutdown(toCtx)
+	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Print("shutdown complete")
 }
