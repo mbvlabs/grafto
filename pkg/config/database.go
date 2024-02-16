@@ -18,3 +18,10 @@ func (d Database) GetUrlString() string {
 		d.Name, d.SSL_MODE,
 	)
 }
+
+func (d Database) GetQueueUrlString() string {
+	return fmt.Sprintf("%s://%s:%s@%s:%s/%s?search_path=%s",
+		d.DatabaseKind, d.User, d.Password, d.Host, d.Port,
+		d.Name, "queue",
+	)
+}

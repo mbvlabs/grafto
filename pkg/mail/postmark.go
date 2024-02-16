@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"time"
@@ -72,7 +73,12 @@ func (p *Postmark) SendMail(ctx context.Context, payload MailPayload) error {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		slog.Error("received non ok status code", "error", err, "status", res.StatusCode)
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+
+		slog.Error("received non ok status code", "error", err, "status", res.StatusCode, "body", string(body))
 		return ErrCouldNotSend
 	}
 

@@ -17,12 +17,14 @@ import (
 	mw "github.com/MBvisti/grafto/server/middleware"
 	"github.com/MBvisti/grafto/services"
 	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	slogecho "github.com/samber/slog-echo"
 )
 
 func main() {
+	ctx := context.Background()
 	router := echo.New()
 
 	logger := telemetry.SetupLogger()
@@ -37,11 +39,6 @@ func main() {
 	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
 	db := database.New(conn)
 
-	q := queue.New(db)
-	if err := q.InitilizeRepeatingJobs(context.Background(), nil); err != nil {
-		panic(err)
-	}
-
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 
 	mailClient := mail.NewMail(&postmark)
@@ -49,9 +46,20 @@ func main() {
 
 	authSessionStore := sessions.NewCookieStore([]byte(cfg.Auth.SessionKey), []byte(cfg.Auth.SessionEncryptionKey))
 
+	queueDbPool, err := pgxpool.New(context.Background(), cfg.Db.GetQueueUrlString())
+	if err != nil {
+		panic(err)
+	}
+
+	if err := queueDbPool.Ping(ctx); err != nil {
+		panic(err)
+	}
+
+	riverClient := queue.NewClient(queueDbPool, queue.WithLogger(logger))
+
 	services := services.NewServices(authSessionStore)
 
-	controllers := controllers.NewController(*db, mailClient, *tokenManager, *q, cfg, services)
+	controllers := controllers.NewController(*db, mailClient, *tokenManager, cfg, services, riverClient)
 
 	serverMW := mw.NewMiddleware(services)
 

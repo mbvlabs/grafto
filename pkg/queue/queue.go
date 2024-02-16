@@ -2,110 +2,166 @@ package queue
 
 import (
 	"context"
-	"database/sql"
-	"fmt"
-	"hash"
-	"hash/fnv"
+	"log/slog"
 	"time"
 
+	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/telemetry"
-	"github.com/MBvisti/grafto/repository/database"
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivertype"
 )
 
-const (
-	stateRunning = 1
-	stateFailed  = 2
-	stateQueued  = 3
-	maxRetries   = 5
-)
-
-type queueStorage interface {
-	QueryJobs(ctx context.Context, params database.QueryJobsParams) ([]database.Job, error)
-	InsertJob(ctx context.Context, params database.InsertJobParams) error
-	RepeatableJobExists(ctx context.Context, repeatableID sql.NullString) (bool, error)
+/*
+clientCfg is a thin wrapper around river.Config that provides a couple of defaults. It increases JobTimeout to 5 minutes, and uses the logger from telemetry.SetupLogger. It also sets the default queue to have a maximum of 100 workers.
+*/
+type clientCfg struct {
+	errorHandler      river.ErrorHandler
+	fetchCooldown     time.Duration
+	fetchPollInterval time.Duration
+	jobTimeout        time.Duration
+	logger            *slog.Logger
+	periodicJobs      []*river.PeriodicJob
+	queues            *map[string]river.QueueConfig
+	workers           *river.Workers
 }
 
-type Queue struct {
-	storage    queueStorage
-	maxRetries int
-	hasher     hash.Hash
-}
+type ClientCfgOpts func(cfg *clientCfg)
 
-func New(storage queueStorage) *Queue {
-	hasher := fnv.New64a()
-
-	return &Queue{
-		storage,
-		maxRetries,
-		hasher,
+func WithErrorHandler(handler river.ErrorHandler) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.errorHandler = handler
 	}
 }
 
-func (q *Queue) pull(ctx context.Context) ([]database.Job, error) {
-	now := time.Now()
-
-	return q.storage.QueryJobs(ctx, database.QueryJobsParams{
-		State:               stateRunning,
-		UpdatedAt:           database.ConvertToPGTimestamptz(now),
-		Limit:               50,
-		InnerState:          stateQueued,
-		InnerScheduledFor:   database.ConvertToPGTimestamptz(now),
-		InnerFailedAttempts: int32(q.maxRetries),
-	})
+func WithFetchCooldown(cooldown time.Duration) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.fetchCooldown = cooldown
+	}
 }
 
-func (q *Queue) Push(ctx context.Context, fn jobCreator) error {
-	payload := fn.build()
-
-	now := time.Now()
-
-	return q.storage.InsertJob(ctx, database.InsertJobParams{
-		ID:           uuid.New(),
-		CreatedAt:    database.ConvertToPGTimestamptz(now),
-		UpdatedAt:    database.ConvertToPGTimestamptz(now),
-		State:        stateQueued,
-		Instructions: payload.instructions,
-		Executor:     payload.executor,
-		ScheduledFor: database.ConvertToPGTimestamptz(payload.scheduledFor),
-	})
+func WithFetchPollInterval(interval time.Duration) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.fetchPollInterval = interval
+	}
 }
 
-func (q *Queue) InitilizeRepeatingJobs(ctx context.Context, executors map[string]RepeatableExecutor) error {
-	for name, executor := range executors {
-		job, err := executor.generateJob()
-		if err != nil {
-			return err
-		}
+func WithJobTimeout(timeout time.Duration) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.jobTimeout = timeout
+	}
+}
 
-		q.hasher.Write(job.instructions)
-		repeatJobID := fmt.Sprintf("%x", q.hasher.Sum(nil))
+func WithLogger(logger *slog.Logger) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.logger = logger
+	}
+}
 
-		if exists, err := q.storage.RepeatableJobExists(
-			ctx, sql.NullString{String: repeatJobID, Valid: true}); err != nil {
-			return err
-		} else if exists {
-			telemetry.Logger.Info("repeatable job already exists, skipping", "job", repeatJobID)
-			return nil
-		}
+func WithPeriodicJobs(jobs []*river.PeriodicJob) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.periodicJobs = jobs
+	}
+}
 
-		now := time.Now()
+func WithQueues(queues map[string]river.QueueConfig) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.queues = &queues
+	}
+}
 
-		err = q.storage.InsertJob(ctx, database.InsertJobParams{
-			ID:           uuid.New(),
-			CreatedAt:    database.ConvertToPGTimestamptz(now),
-			UpdatedAt:    database.ConvertToPGTimestamptz(now),
-			ScheduledFor: database.ConvertToPGTimestamptz(job.scheduledFor),
-			State:        stateQueued,
-			Instructions: job.instructions,
-			Executor:     name,
-			RepeatableID: sql.NullString{String: repeatJobID, Valid: true},
-		})
-		if err != nil {
-			telemetry.Logger.Error("failed to insert job", "error", err)
-			return err
-		}
+func WithWorkers(workers *river.Workers) ClientCfgOpts {
+	return func(cfg *clientCfg) {
+		cfg.workers = workers
+	}
+}
+
+/*
+NewClient creates a new river.Client. It uses the provided pool to connect to the database. It uses some defaults for error handling, fetch cooldown, fetch poll interval, job timeout, and logger. For a 'read only' client, omit the queue.
+*/
+func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] {
+	cfg := &clientCfg{
+		fetchCooldown:     100 * time.Millisecond,
+		fetchPollInterval: 1 * time.Second,
+		jobTimeout:        5 * time.Minute,
+		logger:            telemetry.SetupLogger(),
 	}
 
-	return nil
+	for _, opt := range opts {
+		opt(cfg)
+	}
+
+	riverCfg := &river.Config{
+		ErrorHandler:      cfg.errorHandler,
+		FetchCooldown:     cfg.fetchCooldown,
+		FetchPollInterval: cfg.fetchCooldown,
+		JobTimeout:        cfg.jobTimeout,
+		Logger:            cfg.logger,
+		PeriodicJobs:      cfg.periodicJobs,
+	}
+
+	if cfg.queues != nil {
+		riverCfg.Queues = *cfg.queues
+		riverCfg.Workers = cfg.workers
+	}
+
+	riverClient, err := river.NewClient(riverpgxv5.New(pool), riverCfg)
+	if err != nil {
+		panic(err)
+	}
+
+	return riverClient
 }
+
+// MailErrorHandler is an implementation of river.ErrorHandler that sends an email when an error occurs.
+type MailErrorHandler struct {
+	logger     *slog.Logger
+	mailClient *mail.Mail
+	to         string
+	from       string
+}
+
+func NewMailErrorHandler(logger *slog.Logger, mailClient *mail.Mail, baseSenderSignature, receiverMail string) *MailErrorHandler {
+	return &MailErrorHandler{
+		logger:     logger,
+		from:       baseSenderSignature,
+		to:         receiverMail,
+		mailClient: mailClient,
+	}
+}
+
+// HandleError implements river.ErrorHandler.
+func (m *MailErrorHandler) HandleError(ctx context.Context, job *rivertype.JobRow, err error) *river.ErrorHandlerResult {
+	m.logger.Error("error handling job", "error", err, "job_kind", job.Kind)
+
+	if err := m.mailClient.Send(ctx, m.to, m.from, "Error handling job", "job_error", mail.FailedJob{
+		ID:    job.ID,
+		Kind:  job.Kind,
+		Error: err.Error(),
+	}); err != nil {
+		m.logger.Error("error sending mail", "error", err)
+		return &river.ErrorHandlerResult{}
+	}
+
+	return &river.ErrorHandlerResult{}
+}
+
+// HandlePanic implements river.ErrorHandler.
+func (m *MailErrorHandler) HandlePanic(ctx context.Context, job *rivertype.JobRow, panicVal any) *river.ErrorHandlerResult {
+	m.logger.Error("panic handling job", "panic", panicVal, "job_kind", job.Kind)
+
+	if err := m.mailClient.Send(ctx, m.to, m.from, "Error handling job", "job_error", mail.FailedJob{
+		ID:    job.ID,
+		Kind:  job.Kind,
+		Error: "panic: " + panicVal.(string),
+	}); err != nil {
+		m.logger.Error("error sending mail", "error", err)
+		return &river.ErrorHandlerResult{}
+	}
+
+	return &river.ErrorHandlerResult{}
+}
+
+var _ river.ErrorHandler = (*MailErrorHandler)(nil)

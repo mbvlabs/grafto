@@ -2,95 +2,31 @@ package queue
 
 import (
 	"context"
-	"encoding/json"
-	"time"
+
+	"github.com/riverqueue/river"
 )
 
-const emailExecutorName string = "email_executor"
+const emailJobKind string = "email_job"
 
-type emailSender interface {
-	Send(ctx context.Context, to, from, subject, tmplName string, data interface{}) error
-}
-
-type emailExecutor struct {
-	client emailSender
-	name   string
-}
-
-func NewEmailExecutor(client emailSender) *emailExecutor {
-	return &emailExecutor{
-		client,
-		emailExecutorName,
-	}
-}
-
-// Name implements Executor.
-func (e *emailExecutor) Name() string {
-	return e.name
-}
-
-// Process implements Executor.
-func (e *emailExecutor) process(ctx context.Context, msg []byte) error {
-	var instructions emailJob
-	if err := json.Unmarshal(msg, &instructions); err != nil {
-		return err
-	}
-
-	if err := e.client.Send(
-		ctx, instructions.To, instructions.From, instructions.Subject, instructions.TmplName,
-		instructions.Payload); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var _ Executor = (*emailExecutor)(nil)
-
-type emailJob struct {
+type EmailJobArgs struct {
 	To       string      `json:"to"`
 	From     string      `json:"from"`
 	Subject  string      `json:"subject"`
 	TmplName string      `json:"tmpl_name"`
 	Payload  interface{} `json:"payload"`
-	job      *job
 }
 
-var _ jobCreator = (*emailJob)(nil)
+func (EmailJobArgs) Kind() string { return emailJobKind }
 
-func NewEmailJob(to, from, subject, tmplName string, payload any) (*emailJob, error) {
-	ej := emailJob{
-		To:       to,
-		From:     from,
-		Subject:  subject,
-		TmplName: tmplName,
-		Payload:  payload,
-	}
-
-	instructions, err := json.Marshal(ej)
-	if err != nil {
-		return nil, err
-	}
-
-	job, err := newJob(jobInstructions{
-		instructions: instructions,
-		executor:     emailExecutorName,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	ej.job = job
-
-	return &ej, nil
+type emailSender interface {
+	Send(ctx context.Context, to, from, subject, tmplName string, data interface{}) error
 }
 
-func (e *emailJob) Schedule(t time.Time) error {
-	// check if t is in the past
-	e.job.scheduledFor = t
-	return nil
+type EmailJobWorker struct {
+	Sender emailSender
+	river.WorkerDefaults[EmailJobArgs]
 }
 
-func (e *emailJob) build() *job {
-	return e.job
+func (w *EmailJobWorker) Work(ctx context.Context, job *river.Job[EmailJobArgs]) error {
+	return w.Sender.Send(ctx, job.Args.To, job.Args.From, job.Args.Subject, job.Args.TmplName, job.Args.Payload)
 }

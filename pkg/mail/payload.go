@@ -16,3 +16,9 @@ type ForgottonPassword struct {
 type ConfirmPassword struct {
 	Token string
 }
+
+type FailedJob struct {
+	ID    int64
+	Kind  string
+	Error string
+}

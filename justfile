@@ -21,6 +21,8 @@ alias gdf := generate-db-functions
 alias ct := compile-templates
 alias ft := fmt-templates
 
+alias rm := river-migrate-up
+
 default:
     @just --list
 
@@ -71,3 +73,7 @@ compile-templates:
 
 fmt-templates:
     templ fmt ./views/ . 
+
+# river
+river-migrate-up:
+	river migrate-up --database-url $QUEUE_DATABASE_URL

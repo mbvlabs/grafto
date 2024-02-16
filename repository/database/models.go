@@ -5,23 +5,9 @@
 package database
 
 import (
-	"database/sql"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-type Job struct {
-	ID             uuid.UUID
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
-	ScheduledFor   pgtype.Timestamptz
-	FailedAttempts int32
-	State          int32
-	Instructions   []byte
-	Executor       string
-	RepeatableID   sql.NullString
-}
 
 type Token struct {
 	ID        uuid.UUID

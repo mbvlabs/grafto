@@ -116,17 +116,16 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	emailJob, err := queue.NewEmailJob(
-		user.Mail, "info@mortenvistisen.com", "please confirm your email", "confirm_email", mail.ConfirmPassword{
+	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
+		To:       user.Mail,
+		From:     "info@mortenvistisen.com",
+		Subject:  "please confirm your email",
+		TmplName: "confirm_email",
+		Payload: mail.ConfirmPassword{
 			Token: activationToken.GetPlainText(),
-		})
+		},
+	}, nil)
 	if err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
-	}
-
-	if err := c.queue.Push(ctx.Request().Context(), emailJob); err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
 		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
