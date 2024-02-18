@@ -22,6 +22,7 @@ func NewRoutes(ctrl controllers.Controller, mw middleware.Middleware, cfg config
 	}
 
 	router.Static("/static", "static")
+	router.Use(mw.RegisterUserContext)
 
 	return &Routes{
 		router:      router,

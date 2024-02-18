@@ -10,13 +10,11 @@ import "context"
 import "io"
 import "bytes"
 
-import (
-	"github.com/MBvisti/grafto/server/middleware"
-)
+import "github.com/MBvisti/grafto/server/middleware"
 
 func extractAuthStatus(ctx context.Context) bool {
-	if authCtx, ok := ctx.Value(middleware.AuthContext{}).(middleware.AuthContext); ok {
-		return authCtx.GetAuthStatus()
+	if userCtx, ok := ctx.Value(middleware.UserContext{}).(*middleware.UserContext); ok {
+		return userCtx.GetAuthStatus()
 	}
 
 	return false
@@ -41,6 +39,11 @@ func Nav() templ.Component {
 		}
 		if extractAuthStatus(ctx) {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a class=\"font-medium text-gray-400 hover:text-gray-500\" href=\"/user/logout\">logout</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a class=\"font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600\" href=\"/login\">Login</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

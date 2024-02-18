@@ -1,12 +1,10 @@
 package components
 
-import (
-	"github.com/MBvisti/grafto/server/middleware"
-)
+import "github.com/MBvisti/grafto/server/middleware"
 
 func extractAuthStatus(ctx context.Context) bool {
-	if authCtx, ok := ctx.Value(middleware.AuthContext{}).(middleware.AuthContext); ok {
-		return authCtx.GetAuthStatus()
+	if userCtx, ok := ctx.Value(middleware.UserContext{}).(*middleware.UserContext); ok {
+		return userCtx.GetAuthStatus()
 	}
 
 	return false
@@ -30,6 +28,8 @@ templ Nav() {
 					<a class="font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href="/about">About</a>
 					if  extractAuthStatus(ctx) {
 						<a class="font-medium text-gray-400 hover:text-gray-500" href="/user/logout">logout</a>
+					} else {
+						<a class="font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href="/login">Login</a>
 					}
 				</div>
 			</div>
