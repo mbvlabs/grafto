@@ -6,9 +6,9 @@ import (
 
 templ Base(head templ.Component) {
 	<!DOCTYPE html>
-	<html lang="en" class="h-full">
+	<html lang="en">
 		@head
-		<body class="container mx-auto h-full bg-gray-800">
+		<body class="min-h-[100vh] flex flex-col bg-gray-800">
 			@components.Nav()
 			{ children... }
 			<script src="/static/js/htmx.min.js"></script>

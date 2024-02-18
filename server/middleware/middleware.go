@@ -18,17 +18,17 @@ func NewMiddleware(aSS *sessions.CookieStore) Middleware {
 	return Middleware{aSS}
 }
 
-type AuthContext struct {
+type UserContext struct {
 	echo.Context
-	userID          uuid.UUID
-	isAuthenticated bool
+	UserID          uuid.UUID
+	IsAuthenticated bool
 }
 
-func (a *AuthContext) GetID() uuid.UUID {
-	return a.userID
+func (u *UserContext) GetID() uuid.UUID {
+	return u.UserID
 }
-func (a *AuthContext) GetAuthStatus() bool {
-	return a.isAuthenticated
+func (u *UserContext) GetAuthStatus() bool {
+	return u.IsAuthenticated
 }
 
 type AdminContext struct {
@@ -49,11 +49,29 @@ func (m *Middleware) AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		if authenticated {
-			ctx := &AuthContext{c, userID, true}
+			ctx := &UserContext{c, userID, true}
 			return next(ctx)
 		} else {
 			return c.Redirect(http.StatusPermanentRedirect, "/login")
 		}
+	}
+}
+
+func (m *Middleware) RegisterUserContext(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		authenticated, userID, err := services.IsAuthenticated(c.Request(), m.authSessionStore)
+		if err != nil {
+			telemetry.Logger.Error("could not get authenticated status", "error", err)
+			return c.Redirect(http.StatusPermanentRedirect, "/500")
+		}
+
+		authContext := &UserContext{
+			c,
+			userID,
+			authenticated,
+		}
+
+		return next(authContext)
 	}
 }
 
