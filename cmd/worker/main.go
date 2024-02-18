@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/MBvisti/grafto/pkg/config"
-	"github.com/MBvisti/grafto/pkg/mail"
-	"github.com/MBvisti/grafto/pkg/queue"
-	"github.com/MBvisti/grafto/pkg/telemetry"
-	"github.com/MBvisti/grafto/repository/database"
+	"github.com/mbv-labs/grafto/pkg/config"
+	"github.com/mbv-labs/grafto/pkg/mail"
+	"github.com/mbv-labs/grafto/pkg/queue"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
+	"github.com/mbv-labs/grafto/repository/database"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 )

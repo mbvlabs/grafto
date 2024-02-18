@@ -10,7 +10,7 @@ import "context"
 import "io"
 import "bytes"
 
-import "github.com/MBvisti/grafto/server/middleware"
+import "github.com/mbv-labs/grafto/server/middleware"
 
 func extractAuthStatus(ctx context.Context) bool {
 	if userCtx, ok := ctx.Value(middleware.UserContext{}).(*middleware.UserContext); ok {

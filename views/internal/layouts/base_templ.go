@@ -11,7 +11,7 @@ import "io"
 import "bytes"
 
 import (
-	"github.com/MBvisti/grafto/views/internal/components"
+	"github.com/mbv-labs/grafto/views/internal/components"
 )
 
 func Base(head templ.Component) templ.Component {

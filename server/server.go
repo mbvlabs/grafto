@@ -10,8 +10,8 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/MBvisti/grafto/controllers"
-	"github.com/MBvisti/grafto/pkg/config"
+	"github.com/mbv-labs/grafto/controllers"
+	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 )

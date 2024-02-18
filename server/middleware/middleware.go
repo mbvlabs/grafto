@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/MBvisti/grafto/pkg/telemetry"
-	"github.com/MBvisti/grafto/services"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
+	"github.com/mbv-labs/grafto/services"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"

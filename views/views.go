@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/MBvisti/grafto/server/middleware"
+	"github.com/mbv-labs/grafto/server/middleware"
 	"github.com/labstack/echo/v4"
 )
 

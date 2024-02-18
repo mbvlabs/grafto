@@ -7,9 +7,9 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
-	"github.com/MBvisti/grafto/entity"
-	"github.com/MBvisti/grafto/pkg/telemetry"
-	"github.com/MBvisti/grafto/repository/database"
+	"github.com/mbv-labs/grafto/entity"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
+	"github.com/mbv-labs/grafto/repository/database"
 	"github.com/google/uuid"
 )
 
