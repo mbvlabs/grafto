@@ -5,12 +5,13 @@ import (
 	"encoding/gob"
 	"errors"
 	"net/http"
-	"os"
 
 	"github.com/MBvisti/grafto/entity"
+	"github.com/MBvisti/grafto/pkg/config"
 	"github.com/MBvisti/grafto/pkg/telemetry"
 	"github.com/MBvisti/grafto/repository/database"
 	"github.com/google/uuid"
+	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -71,15 +72,11 @@ func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db user
 	}, nil
 }
 
-func (s *Services) CreateAuthenticatedSession(r *http.Request, w http.ResponseWriter, userID uuid.UUID) error {
+func CreateAuthenticatedSession(session sessions.Session, userID uuid.UUID, cfg config.Cfg) *sessions.Session {
 	gob.Register(uuid.UUID{})
-	session, err := s.authSessionStore.Get(r, "ua")
-	if err != nil {
-		return err
-	}
 
 	session.Options.HttpOnly = true
-	session.Options.Domain = os.Getenv("APP_HOST")
+	session.Options.Domain = cfg.App.ServerHost
 	session.Options.Secure = true
 	session.Options.MaxAge = 86400
 
@@ -87,12 +84,12 @@ func (s *Services) CreateAuthenticatedSession(r *http.Request, w http.ResponseWr
 	session.Values["authenticated"] = true
 	session.Values["is_admin"] = false
 
-	return session.Save(r, w)
+	return &session
 }
 
-func (s *Services) IsAuthenticated(r *http.Request) (bool, uuid.UUID, error) {
+func IsAuthenticated(r *http.Request, authStore *sessions.CookieStore) (bool, uuid.UUID, error) {
 	gob.Register(uuid.UUID{})
-	session, err := s.authSessionStore.Get(r, "ua")
+	session, err := authStore.Get(r, "ua")
 	if err != nil {
 		return false, uuid.UUID{}, err
 	}
@@ -104,9 +101,9 @@ func (s *Services) IsAuthenticated(r *http.Request) (bool, uuid.UUID, error) {
 	return session.Values["authenticated"].(bool), session.Values["user_id"].(uuid.UUID), nil
 }
 
-func (s *Services) IsAdmin(r *http.Request) (bool, error) {
+func IsAdmin(r *http.Request, authStore *sessions.CookieStore) (bool, error) {
 	gob.Register(uuid.UUID{})
-	session, err := s.authSessionStore.Get(r, "ua")
+	session, err := authStore.Get(r, "ua")
 	if err != nil {
 		return false, err
 	}

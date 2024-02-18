@@ -9,26 +9,28 @@ import (
 	"github.com/MBvisti/grafto/pkg/mail"
 	"github.com/MBvisti/grafto/pkg/tokens"
 	"github.com/MBvisti/grafto/repository/database"
-	"github.com/MBvisti/grafto/services"
 	"github.com/MBvisti/grafto/views"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/riverqueue/river"
 )
 
 type Controller struct {
-	db          database.Queries
-	mail        mail.Mail
-	validate    *validator.Validate
-	tknManager  tokens.Manager
-	cfg         config.Cfg
-	services    services.Services
-	queueClient *river.Client[pgx.Tx]
+	db               database.Queries
+	mail             mail.Mail
+	validate         *validator.Validate
+	tknManager       tokens.Manager
+	cfg              config.Cfg
+	queueClient      *river.Client[pgx.Tx]
+	authSessionStore *sessions.CookieStore
 }
 
 func NewController(
-	db database.Queries, mail mail.Mail, tknManager tokens.Manager, cfg config.Cfg, services services.Services, qc *river.Client[pgx.Tx]) Controller {
+	db database.Queries, mail mail.Mail, tknManager tokens.Manager, cfg config.Cfg, qc *river.Client[pgx.Tx],
+	authSessionStore *sessions.CookieStore,
+) Controller {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	return Controller{
@@ -37,8 +39,8 @@ func NewController(
 		validate,
 		tknManager,
 		cfg,
-		services,
 		qc,
+		authSessionStore,
 	}
 }
 

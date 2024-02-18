@@ -61,9 +61,22 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	if err := c.services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), authenticatedUser.ID); err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
+	session, err := c.authSessionStore.Get(ctx.Request(), "ua")
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not get auth session", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	authSession := services.CreateAuthenticatedSession(*session, authenticatedUser.ID, c.cfg)
+	if err := authSession.Save(ctx.Request(), ctx.Response()); err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not save auth session", "error", err)
+		return c.InternalError(ctx)
 	}
 
 	return authentication.LoginResponse(false).Render(views.ExtractRenderDeps(ctx))
@@ -310,7 +323,17 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if err := c.services.CreateAuthenticatedSession(ctx.Request(), ctx.Response(), user.ID); err != nil {
+	session, err := c.authSessionStore.Get(ctx.Request(), "ua")
+	if err != nil {
+		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		return c.InternalError(ctx)
+	}
+
+	authSession := services.CreateAuthenticatedSession(*session, user.ID, c.cfg)
+	if err := authSession.Save(ctx.Request(), ctx.Response()); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 

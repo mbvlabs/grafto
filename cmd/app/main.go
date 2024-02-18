@@ -15,7 +15,6 @@ import (
 	"github.com/MBvisti/grafto/routes"
 	"github.com/MBvisti/grafto/server"
 	mw "github.com/MBvisti/grafto/server/middleware"
-	"github.com/MBvisti/grafto/services"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
@@ -57,16 +56,14 @@ func main() {
 
 	riverClient := queue.NewClient(queueDbPool, queue.WithLogger(logger))
 
-	services := services.NewServices(authSessionStore)
+	controllers := controllers.NewController(*db, mailClient, *tokenManager, cfg, riverClient, authSessionStore)
 
-	controllers := controllers.NewController(*db, mailClient, *tokenManager, cfg, services, riverClient)
-
-	serverMW := mw.NewMiddleware(services)
+	serverMW := mw.NewMiddleware(authSessionStore)
 
 	routes := routes.NewRoutes(controllers, serverMW, cfg)
 	router = routes.SetupRoutes()
 
-	server := server.NewServer(router, controllers, logger, cfg, services)
+	server := server.NewServer(router, controllers, logger, cfg)
 
 	server.Start()
 }
