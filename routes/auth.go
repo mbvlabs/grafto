@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/MBvisti/grafto/controllers"
-	"github.com/MBvisti/grafto/server/middleware"
+	"github.com/mbv-labs/grafto/controllers"
+	"github.com/mbv-labs/grafto/server/middleware"
 	"github.com/labstack/echo/v4"
 )
 

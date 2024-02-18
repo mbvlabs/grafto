@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/MBvisti/grafto/pkg/mail"
-	"github.com/MBvisti/grafto/pkg/telemetry"
+	"github.com/mbv-labs/grafto/pkg/mail"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
