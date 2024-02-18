@@ -12,7 +12,6 @@ import (
 
 	"github.com/MBvisti/grafto/controllers"
 	"github.com/MBvisti/grafto/pkg/config"
-	"github.com/MBvisti/grafto/services"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 )
@@ -26,7 +25,7 @@ type Server struct {
 }
 
 func NewServer(
-	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger, cfg config.Cfg, services services.Services) Server {
+	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger, cfg config.Cfg) Server {
 	host := cfg.App.ServerHost
 	port := cfg.App.ServerPort
 	isProduction := cfg.App.Environment == "production"
