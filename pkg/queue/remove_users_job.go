@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/MBvisti/grafto/repository/database"
+	"github.com/mbv-labs/grafto/repository/database"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/riverqueue/river"
 )

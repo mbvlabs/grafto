@@ -1,8 +1,8 @@
 package queue
 
 import (
-	"github.com/MBvisti/grafto/pkg/mail"
-	"github.com/MBvisti/grafto/repository/database"
+	"github.com/mbv-labs/grafto/pkg/mail"
+	"github.com/mbv-labs/grafto/repository/database"
 	"github.com/riverqueue/river"
 )
 

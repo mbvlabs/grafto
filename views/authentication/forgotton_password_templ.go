@@ -11,8 +11,8 @@ import "io"
 import "bytes"
 
 import (
-	"github.com/MBvisti/grafto/views"
-	"github.com/MBvisti/grafto/views/internal/layouts"
+	"github.com/mbv-labs/grafto/views"
+	"github.com/mbv-labs/grafto/views/internal/layouts"
 )
 
 func ForgottenPasswordForm(csrfToken string) templ.Component {

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/MBvisti/grafto/views"
+	"github.com/mbv-labs/grafto/views"
 	"github.com/labstack/echo/v4"
 )
 

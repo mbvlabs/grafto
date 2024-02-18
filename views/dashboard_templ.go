@@ -11,7 +11,7 @@ import "io"
 import "bytes"
 
 import (
-	"github.com/MBvisti/grafto/views/internal/layouts"
+	"github.com/mbv-labs/grafto/views/internal/layouts"
 )
 
 func DashboardPage() templ.Component {
