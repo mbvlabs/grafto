@@ -76,7 +76,7 @@ func CreateAuthenticatedSession(session sessions.Session, userID uuid.UUID, cfg 
 	gob.Register(uuid.UUID{})
 
 	session.Options.HttpOnly = true
-	session.Options.Domain = cfg.App.ServerHost
+	session.Options.Domain = cfg.App.AppHost
 	session.Options.Secure = true
 	session.Options.MaxAge = 86400
 
