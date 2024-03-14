@@ -39,8 +39,8 @@ func main() {
 	db := database.New(conn)
 
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
-
 	mailClient := mail.NewMail(&postmark)
+
 	tokenManager := tokens.NewManager(cfg.Auth.TokenSigningKey)
 
 	authSessionStore := sessions.NewCookieStore([]byte(cfg.Auth.SessionKey), []byte(cfg.Auth.SessionEncryptionKey))

@@ -1,0 +1,23 @@
+Hi there,
+
+thanks for signing up. 
+
+Before you can get started we need you to confirm your email. 
+
+Please click the link below to do so:
+
+‍
+
+Confirm email address →
+
+{{ .ConfirmLink }}
+
+‍
+
+If you did not sign up for this account, you can ignore the email and we'll automatically delete your information in 24 hours.
+
+Or, you can click the button below:
+
+Remove email address →
+
+{{ .UnsubscribeLink }}

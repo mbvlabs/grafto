@@ -47,4 +47,5 @@ require (
 	github.com/samber/slog-echo v1.2.1
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/sys v0.15.0 // indirect
+	rogchap.com/v8go v0.9.0
 )
