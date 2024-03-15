@@ -1,0 +1,34 @@
+package templates
+
+import (
+	"fmt"
+	"text/template"
+)
+
+const backgroundJobErrorTmplName = "background_job_error_email"
+
+type BackgroundJobErrorMail struct{}
+
+var _ MailTemplateHandler = (*BackgroundJobErrorMail)(nil)
+
+func (b *BackgroundJobErrorMail) GenerateTextVersion() (string, error) {
+	textFile, err := template.ParseFS(textTemplates, fmt.Sprintf("%s.txt", backgroundJobErrorTmplName))
+	if err != nil {
+		return "", err
+	}
+
+	var textBody bytes.Buffer
+	if err := textFile.Execute(&textBody, BackgroundJobErrorMail{}); err != nil {
+		return "", err
+	}
+
+	return textBody.String(), nil
+}
+
+func (b *BackgroundJobErrorMail) Render(ctx context.Context, w io.Writer) error {
+	return b.template().Render(ctx, w)
+}
+
+templ (b *BackgroundJobErrorMail) template() {
+	<div></div>
+}

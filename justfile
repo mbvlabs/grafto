@@ -21,6 +21,8 @@ alias ft := fmt-templates
 
 alias rm := river-migrate-up
 
+alias ex := explore
+
 default:
     @just --list
 
@@ -69,3 +71,7 @@ fmt-templates:
 # river
 river-migrate-up:
 	river migrate-up --database-url $QUEUE_DATABASE_URL
+
+# exploration
+explore:
+    @go ru ./cmd/explore/main.go

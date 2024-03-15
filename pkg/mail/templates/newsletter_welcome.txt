@@ -1,0 +1,28 @@
+Thanks for joining our newsletter!
+
+Grafto ( https://mbv-labs.com )
+
+******************
+Welcome!
+******************
+
+Thanks for joining our newsletter. We're super excited to share our process with Grafto with you. To receive these updates, we need you to confirm your mail:
+
+Confirm your mail: ( {{ .ConfirmationLink }} )
+
+If you have any questions, feel free to email our customer success team ( support@mbv-labs.com ). (We're lightning quick at replying.)
+
+Thanks,
+MBV and the Grafto team
+
+If you’re having trouble with the button above, copy and paste the URL below into your web browser.
+
+{{ .ConfirmationLink }}
+
+If you didn't signup for Grafto, or want to stop receiving these emails, click here:
+
+{{ .UnsubscribeLink }}
+
+mbv labs
+
+CPH Denmark

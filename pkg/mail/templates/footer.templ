@@ -1,19 +1,29 @@
 package templates
 
-templ baseFooterContent(unsubscribeLink string) {
-	<tr>
-		<td class="content-block" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
-			<span class="apple-link" style="color: #9a9ea6; font-size: 16px; text-align: center;">This week on Reddit; A mbv labs product.</span>
-			<br/>
-			Didn't subscribe? <a href={ templ.SafeURL(unsubscribeLink) } style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>.
-		</td>
-	</tr>
-}
-
-templ footer() {
-	<div class="footer" style="clear: both; padding-top: 24px; text-align: center; width: 100%;">
-		<table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
-			{ children... }
+templ footer(unsubscribeLink string) {
+	<td>
+		<table class="email-footer" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
+			<tr>
+				<td>
+					<p class="f-fallback sub">
+						If you didn't signup for Grafto, or want to stop receiving these emails, click here:
+					</p>
+					<p class="f-fallback sub">
+						<a href={ templ.SafeURL(unsubscribeLink) } class="f-fallback sub" target="_blank">Unsubscribe me!</a>
+					</p>
+				</td>
+			</tr>
 		</table>
-	</div>
+		<table class="email-footer" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
+			<tr>
+				<td>
+					<p class="f-fallback sub align-center">
+						mbv labs, inc.
+						<br/>
+						Cph, Denmark
+					</p>
+				</td>
+			</tr>
+		</table>
+	</td>
 }

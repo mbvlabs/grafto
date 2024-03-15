@@ -5,8 +5,8 @@ import (
 	"context"
 
 	"github.com/mbv-labs/grafto/pkg/mail/templates"
+	"github.com/vanng822/go-premailer/premailer"
 )
-
 
 type mailClient interface {
 	SendMail(ctx context.Context, payload MailPayload) error
@@ -22,9 +22,25 @@ func NewMail(client mailClient) Mail {
 	}
 }
 
-func (m *Mail) Send(ctx context.Context, to, from, subject string, tmpl templates.MailTemplateHandler) error {
+func (m *Mail) Send(
+	ctx context.Context,
+	to,
+	from,
+	subject string,
+	tmpl templates.MailTemplateHandler,
+) error {
 	var html bytes.Buffer
 	if err := tmpl.Render(context.Background(), &html); err != nil {
+		return err
+	}
+
+	premailer, err := premailer.NewPremailerFromString(html.String(), premailer.NewOptions())
+	if err != nil {
+		return err
+	}
+
+	inlineHtml, err := premailer.Transform()
+	if err != nil {
 		return err
 	}
 
@@ -33,12 +49,11 @@ func (m *Mail) Send(ctx context.Context, to, from, subject string, tmpl template
 		return err
 	}
 
-
 	return m.client.SendMail(ctx, MailPayload{
 		To:       to,
 		From:     from,
 		Subject:  subject,
-		HtmlBody: html.String(),
+		HtmlBody: inlineHtml,
 		TextBody: text,
 	})
 }
