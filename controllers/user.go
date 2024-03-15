@@ -1,10 +1,15 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
+	"github.com/gorilla/csrf"
+	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/entity"
-	"github.com/mbv-labs/grafto/pkg/mail"
+	"github.com/mbv-labs/grafto/pkg/mail/templates"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
@@ -12,10 +17,6 @@ import (
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
-	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
-	"github.com/gorilla/csrf"
-	"github.com/labstack/echo/v4"
 )
 
 // CreateUser method    shows the form to create the user
@@ -36,7 +37,6 @@ type StoreUserPayload struct {
 func (c *Controller) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
-
 		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
 
@@ -115,15 +115,34 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 
 		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
+	userSignupMail := templates.UserSignupWelcomeMail{
+		ConfirmationLink: fmt.Sprintf(
+			"%s://%s/verify-email?token=%s",
+			c.cfg.App.AppScheme,
+			c.cfg.App.AppHost,
+			activationToken.GetPlainText(),
+		),
+		UnsubscribeLink: "", // TODO implement
+	}
+	textVersion, err := userSignupMail.GenerateTextVersion()
+	if err != nil {
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+	}
+	htmlVersion, err := userSignupMail.GenerateHtmlVersion()
+	if err != nil {
+		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+	}
 
 	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
-		To:       user.Mail,
-		From:     c.cfg.App.DefaultSenderSignature,
-		Subject:  "please confirm your email",
-		TmplName: "confirm_email",
-		Payload: mail.ConfirmPassword{
-			Token: activationToken.GetPlainText(),
-		},
+		To:          user.Mail,
+		From:        c.cfg.App.DefaultSenderSignature,
+		Subject:     "Thanks for signing up!",
+		TextVersion: textVersion,
+		HtmlVersion: htmlVersion,
 	}, nil)
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)

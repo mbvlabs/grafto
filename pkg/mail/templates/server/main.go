@@ -13,14 +13,15 @@ func main() {
 	http.Handle("/password-reset-mail", templ.Handler(&templates.PasswordResetMail{
 		ResetPasswordLink: "https://mortenvistisen.com",
 		UnsubscribeLink:   "https://mortenvistisen.com",
-		BrowserName:       "Chrome",
-		OperatingSystem:   "Windows",
 	}))
+
 	http.Handle("/background-job-mail", templ.Handler(&templates.BackgroundJobErrorMail{}))
+
 	http.Handle("/user-signup-welcome-mail", templ.Handler(&templates.UserSignupWelcomeMail{
 		ConfirmationLink: "https://mortenvistisen.com",
 		UnsubscribeLink:  "https://mortenvistisen.com",
 	}))
+
 	http.Handle("/newsletter-welcome", templ.Handler(&templates.NewsletterWelcomeMail{
 		ConfirmationLink: "https://mortenvistisen.com",
 		UnsubscribeLink:  "https://mortenvistisen.com",

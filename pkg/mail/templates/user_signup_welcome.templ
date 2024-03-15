@@ -3,9 +3,10 @@ package templates
 import (
 	"fmt"
 	"text/template"
+	"github.com/vanng822/go-premailer/premailer"
 )
 
-const userSignupTmplName = "user_signup_email"
+const userSignupTmplName = "user_signup_welcome"
 
 type UserSignupWelcomeMail struct {
 	ConfirmationLink string
@@ -21,11 +22,33 @@ func (u UserSignupWelcomeMail) GenerateTextVersion() (string, error) {
 	}
 
 	var textBody bytes.Buffer
-	if err := textFile.Execute(&textBody, UserSignupWelcomeMail{}); err != nil {
+	if err := textFile.Execute(&textBody, UserSignupWelcomeMail{
+		ConfirmationLink: u.ConfirmationLink,
+		UnsubscribeLink:  u.UnsubscribeLink,
+	}); err != nil {
 		return "", err
 	}
 
 	return textBody.String(), nil
+}
+
+func (u UserSignupWelcomeMail) GenerateHtmlVersion() (string, error) {
+	var html bytes.Buffer
+	if err := u.template().Render(context.Background(), &html); err != nil {
+		return "", err
+	}
+
+	premailer, err := premailer.NewPremailerFromString(html.String(), premailer.NewOptions())
+	if err != nil {
+		return "", err
+	}
+
+	inlineHtml, err := premailer.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return inlineHtml, nil
 }
 
 func (u UserSignupWelcomeMail) Render(ctx context.Context, w io.Writer) error {

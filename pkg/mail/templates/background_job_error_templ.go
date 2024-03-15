@@ -12,16 +12,27 @@ import "bytes"
 
 import (
 	"fmt"
+	"github.com/riverqueue/river/rivertype"
 	"text/template"
+	"time"
+
+	"github.com/vanng822/go-premailer/premailer"
 )
 
 const backgroundJobErrorTmplName = "background_job_error_email"
 
-type BackgroundJobErrorMail struct{}
+type BackgroundJobErrorMail struct {
+	JobID           int64
+	AttemptedAt     time.Time
+	Kind            string
+	MetaData        string
+	Err             error
+	AttemptedErrors []rivertype.AttemptError
+}
 
 var _ MailTemplateHandler = (*BackgroundJobErrorMail)(nil)
 
-func (b *BackgroundJobErrorMail) GenerateTextVersion() (string, error) {
+func (b BackgroundJobErrorMail) GenerateTextVersion() (string, error) {
 	textFile, err := template.ParseFS(textTemplates, fmt.Sprintf("%s.txt", backgroundJobErrorTmplName))
 	if err != nil {
 		return "", err
@@ -35,7 +46,26 @@ func (b *BackgroundJobErrorMail) GenerateTextVersion() (string, error) {
 	return textBody.String(), nil
 }
 
-func (b *BackgroundJobErrorMail) Render(ctx context.Context, w io.Writer) error {
+func (b BackgroundJobErrorMail) GenerateHtmlVersion() (string, error) {
+	var html bytes.Buffer
+	if err := b.template().Render(context.Background(), &html); err != nil {
+		return "", err
+	}
+
+	premailer, err := premailer.NewPremailerFromString(html.String(), premailer.NewOptions())
+	if err != nil {
+		return "", err
+	}
+
+	inlineHtml, err := premailer.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return inlineHtml, nil
+}
+
+func (b BackgroundJobErrorMail) Render(ctx context.Context, w io.Writer) error {
 	return b.template().Render(ctx, w)
 }
 

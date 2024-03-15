@@ -13,6 +13,8 @@ import "bytes"
 import (
 	"fmt"
 	"text/template"
+
+	"github.com/vanng822/go-premailer/premailer"
 )
 
 const passwordResetTmplName = "password_reset_email"
@@ -20,13 +22,11 @@ const passwordResetTmplName = "password_reset_email"
 type PasswordResetMail struct {
 	ResetPasswordLink string
 	UnsubscribeLink   string
-	BrowserName       string
-	OperatingSystem   string
 }
 
 var _ MailTemplateHandler = (*PasswordResetMail)(nil)
 
-func (p *PasswordResetMail) GenerateTextVersion() (string, error) {
+func (p PasswordResetMail) GenerateTextVersion() (string, error) {
 	textFile, err := template.ParseFS(textTemplates, fmt.Sprintf("%s.txt", passwordResetTmplName))
 	if err != nil {
 		return "", err
@@ -40,8 +40,27 @@ func (p *PasswordResetMail) GenerateTextVersion() (string, error) {
 	return textBody.String(), nil
 }
 
-func (n *PasswordResetMail) Render(ctx context.Context, w io.Writer) error {
-	return n.template().Render(ctx, w)
+func (p PasswordResetMail) GenerateHtmlVersion() (string, error) {
+	var html bytes.Buffer
+	if err := p.template().Render(context.Background(), &html); err != nil {
+		return "", err
+	}
+
+	premailer, err := premailer.NewPremailerFromString(html.String(), premailer.NewOptions())
+	if err != nil {
+		return "", err
+	}
+
+	inlineHtml, err := premailer.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return inlineHtml, nil
+}
+
+func (p PasswordResetMail) Render(ctx context.Context, w io.Writer) error {
+	return p.template().Render(ctx, w)
 }
 
 func (n PasswordResetMail) template() templ.Component {
@@ -66,42 +85,16 @@ func (n PasswordResetMail) template() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"f-fallback button button--green\" target=\"_blank\">Reset your password</a></td></tr></table></td></tr></table><p>For security, this request was received from a ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"f-fallback button button--green\" target=\"_blank\">Reset your password</a></td></tr></table></td></tr></table><p>If you did not request a password reset, please ignore this email or  <a href=\"support@mbv-labs.com\">contact support</a> you have questions.</p><p>Thanks,<br>The Grafto team</p><!-- Sub copy --><table class=\"body-sub\" role=\"presentation\"><tr><td><p class=\"f-fallback sub\">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p><p class=\"f-fallback sub\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(n.OperatingSystem)
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(n.ResetPasswordLink)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `password_reset.templ`, Line: 513, Col: 80}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/mail/templates/password_reset.templ`, Line: 545, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" device using ")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(n.BrowserName)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `password_reset.templ`, Line: 513, Col: 111}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(". If you did not request a password reset, please ignore this email or  <a href=\"support@mbv-labs.com\">contact support</a> you have questions.</p><p>Thanks,<br>The Grafto team</p><!-- Sub copy --><table class=\"body-sub\" role=\"presentation\"><tr><td><p class=\"f-fallback sub\">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p><p class=\"f-fallback sub\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(n.ResetPasswordLink)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `password_reset.templ`, Line: 527, Col: 63}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

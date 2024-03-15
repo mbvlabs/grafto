@@ -74,4 +74,4 @@ river-migrate-up:
 
 # exploration
 explore:
-    @go ru ./cmd/explore/main.go
+    @go run ./cmd/explore/main.go

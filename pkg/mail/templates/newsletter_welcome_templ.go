@@ -13,6 +13,8 @@ import "bytes"
 import (
 	"fmt"
 	"text/template"
+
+	"github.com/vanng822/go-premailer/premailer"
 )
 
 const newsletterWelcomeTmplName = "newsletter_welcome_email"
@@ -31,11 +33,33 @@ func (n NewsletterWelcomeMail) GenerateTextVersion() (string, error) {
 	}
 
 	var textBody bytes.Buffer
-	if err := textFile.Execute(&textBody, NewsletterWelcomeMail{}); err != nil {
+	if err := textFile.Execute(&textBody, NewsletterWelcomeMail{
+		ConfirmationLink: n.ConfirmationLink,
+		UnsubscribeLink:  n.UnsubscribeLink,
+	}); err != nil {
 		return "", err
 	}
 
 	return textBody.String(), nil
+}
+
+func (n NewsletterWelcomeMail) GenerateHtmlVersion() (string, error) {
+	var html bytes.Buffer
+	if err := n.template().Render(context.Background(), &html); err != nil {
+		return "", err
+	}
+
+	premailer, err := premailer.NewPremailerFromString(html.String(), premailer.NewOptions())
+	if err != nil {
+		return "", err
+	}
+
+	inlineHtml, err := premailer.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return inlineHtml, nil
 }
 
 func (n NewsletterWelcomeMail) Render(ctx context.Context, w io.Writer) error {
@@ -71,7 +95,7 @@ func (n NewsletterWelcomeMail) template() templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(n.ConfirmationLink)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `newsletter_welcome.templ`, Line: 529, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/mail/templates/newsletter_welcome.templ`, Line: 553, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

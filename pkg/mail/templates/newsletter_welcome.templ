@@ -3,6 +3,8 @@ package templates
 import (
 	"fmt"
 	"text/template"
+
+	"github.com/vanng822/go-premailer/premailer"
 )
 
 const newsletterWelcomeTmplName = "newsletter_welcome_email"
@@ -21,11 +23,33 @@ func (n NewsletterWelcomeMail) GenerateTextVersion() (string, error) {
 	}
 
 	var textBody bytes.Buffer
-	if err := textFile.Execute(&textBody, NewsletterWelcomeMail{}); err != nil {
+	if err := textFile.Execute(&textBody, NewsletterWelcomeMail{
+		ConfirmationLink: n.ConfirmationLink,
+		UnsubscribeLink:  n.UnsubscribeLink,
+	}); err != nil {
 		return "", err
 	}
 
 	return textBody.String(), nil
+}
+
+func (n NewsletterWelcomeMail) GenerateHtmlVersion() (string, error) {
+	var html bytes.Buffer
+	if err := n.template().Render(context.Background(), &html); err != nil {
+		return "", err
+	}
+
+	premailer, err := premailer.NewPremailerFromString(html.String(), premailer.NewOptions())
+	if err != nil {
+		return "", err
+	}
+
+	inlineHtml, err := premailer.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return inlineHtml, nil
 }
 
 func (n NewsletterWelcomeMail) Render(ctx context.Context, w io.Writer) error {

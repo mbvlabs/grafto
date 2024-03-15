@@ -12,10 +12,11 @@ import "bytes"
 
 import (
 	"fmt"
+	"github.com/vanng822/go-premailer/premailer"
 	"text/template"
 )
 
-const userSignupTmplName = "user_signup_email"
+const userSignupTmplName = "user_signup_welcome"
 
 type UserSignupWelcomeMail struct {
 	ConfirmationLink string
@@ -31,11 +32,33 @@ func (u UserSignupWelcomeMail) GenerateTextVersion() (string, error) {
 	}
 
 	var textBody bytes.Buffer
-	if err := textFile.Execute(&textBody, UserSignupWelcomeMail{}); err != nil {
+	if err := textFile.Execute(&textBody, UserSignupWelcomeMail{
+		ConfirmationLink: u.ConfirmationLink,
+		UnsubscribeLink:  u.UnsubscribeLink,
+	}); err != nil {
 		return "", err
 	}
 
 	return textBody.String(), nil
+}
+
+func (u UserSignupWelcomeMail) GenerateHtmlVersion() (string, error) {
+	var html bytes.Buffer
+	if err := u.template().Render(context.Background(), &html); err != nil {
+		return "", err
+	}
+
+	premailer, err := premailer.NewPremailerFromString(html.String(), premailer.NewOptions())
+	if err != nil {
+		return "", err
+	}
+
+	inlineHtml, err := premailer.Transform()
+	if err != nil {
+		return "", err
+	}
+
+	return inlineHtml, nil
 }
 
 func (u UserSignupWelcomeMail) Render(ctx context.Context, w io.Writer) error {
@@ -71,7 +94,7 @@ func (u UserSignupWelcomeMail) template() templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(u.ConfirmationLink)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `user_signup_welcome.templ`, Line: 529, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/mail/templates/user_signup_welcome.templ`, Line: 552, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {

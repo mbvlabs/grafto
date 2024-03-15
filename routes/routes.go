@@ -1,10 +1,10 @@
 package routes
 
 import (
+	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/controllers"
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/server/middleware"
-	"github.com/labstack/echo/v4"
 )
 
 type Routes struct {
@@ -34,7 +34,7 @@ func NewRoutes(ctrl controllers.Controller, mw middleware.Middleware, cfg config
 
 func (r *Routes) web() {
 	authRoutes(r.router, r.controllers, r.middleware)
-	errorRoutes(r.router, r.controllers, r.middleware)
+	errorRoutes(r.router, r.controllers)
 	dashboardRoutes(r.router, r.controllers, r.middleware)
 	appRoutes(r.router, r.controllers)
 }
@@ -65,7 +65,7 @@ func dashboardRoutes(router *echo.Echo, ctrl controllers.Controller, mw middlewa
 	}, mw.AuthOnly)
 }
 
-func errorRoutes(router *echo.Echo, ctrl controllers.Controller, mw middleware.Middleware) {
+func errorRoutes(router *echo.Echo, ctrl controllers.Controller) {
 	router.GET("/400", func(c echo.Context) error {
 		return ctrl.InternalError(c)
 	})
