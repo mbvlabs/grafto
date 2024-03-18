@@ -47,7 +47,7 @@ require (
 require (
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/gorilla/csrf v1.7.1
-	github.com/jackc/pgx/v5 v5.5.2
+	github.com/jackc/pgx/v5 v5.5.4
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/pkg/errors v0.9.1
 	github.com/samber/slog-echo v1.2.1
