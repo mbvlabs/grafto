@@ -4,6 +4,14 @@ import (
 	"context"
 )
 
+type MailPayload struct {
+	To       string
+	From     string
+	Subject  string
+	HtmlBody string
+	TextBody string
+}
+
 type mailClient interface {
 	SendMail(ctx context.Context, payload MailPayload) error
 }

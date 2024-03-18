@@ -115,6 +115,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 
 		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
 	}
+
 	userSignupMail := templates.UserSignupWelcomeMail{
 		ConfirmationLink: fmt.Sprintf(
 			"%s://%s/verify-email?token=%s",
@@ -122,7 +123,6 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			c.cfg.App.AppHost,
 			activationToken.GetPlainText(),
 		),
-		UnsubscribeLink: "", // TODO implement
 	}
 	textVersion, err := userSignupMail.GenerateTextVersion()
 	if err != nil {

@@ -6,11 +6,13 @@ require (
 	github.com/a-h/templ v0.2.543
 	github.com/go-playground/validator/v10 v10.15.4
 	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/golang-module/carbon/v2 v2.3.10
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.1
 	github.com/lmittmann/tint v1.0.1
 	github.com/riverqueue/river v0.0.18
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.0.18
+	github.com/vanng822/go-premailer v1.20.2
 	golang.org/x/crypto v0.17.0
 )
 
@@ -21,7 +23,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-module/carbon/v2 v2.3.10 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -37,7 +38,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vanng822/css v1.0.1 // indirect
-	github.com/vanng822/go-premailer v1.20.2 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
@@ -53,5 +53,4 @@ require (
 	github.com/samber/slog-echo v1.2.1
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
 	golang.org/x/sys v0.15.0 // indirect
-	rogchap.com/v8go v0.9.0
 )

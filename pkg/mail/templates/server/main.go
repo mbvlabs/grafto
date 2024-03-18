@@ -42,7 +42,6 @@ func main() {
 
 	http.Handle("/user-signup-welcome-mail", templ.Handler(&templates.UserSignupWelcomeMail{
 		ConfirmationLink: "https://mortenvistisen.com",
-		UnsubscribeLink:  "https://mortenvistisen.com",
 	}))
 
 	http.Handle("/newsletter-welcome", templ.Handler(&templates.NewsletterWelcomeMail{
