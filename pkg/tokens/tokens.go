@@ -81,7 +81,7 @@ func CreateActivationToken(token, hashedToken string) Token {
 func CreateResetPasswordToken(token, hashedToken string) Token {
 	return Token{
 		ScopeResetPassword,
-		time.Now().Add(2 * time.Hour),
+		time.Now().Add(24 * time.Hour),
 		hashedToken,
 		token,
 	}

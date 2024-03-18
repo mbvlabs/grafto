@@ -7,8 +7,6 @@ alias rw := run-worker
 alias wc := watch-css
 
 alias sm := serve-mails
-alias cmd := compile-mails-dev
-alias cmp := compile-mails-prod
 
 alias mm := make-migration
 alias um := up-migrations
@@ -23,6 +21,8 @@ alias ft := fmt-templates
 
 alias rm := river-migrate-up
 
+alias ex := explore
+
 default:
     @just --list
 
@@ -31,14 +31,8 @@ watch-css:
     @cd resources && npm run watch-css
 
 # Mails
-compile-mails-prod:
-    @cd resources && npm run build-mails
-
-compile-mails-dev:
-    @cd resources && npm run dev-mails
-
 serve-mails:
-    @cd resources && npm run serve-mails
+    @cd ./pkg/mail/templates && wgo -file=.go -file=.templ -xfile=_templ.go templ generate :: go run ./server/main.go
 
 # Database 
 make-migration name:
@@ -77,3 +71,7 @@ fmt-templates:
 # river
 river-migrate-up:
 	river migrate-up --database-url $QUEUE_DATABASE_URL
+
+# exploration
+explore:
+    @go run ./cmd/explore/main.go

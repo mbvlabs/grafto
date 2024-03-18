@@ -2,21 +2,23 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
+	"github.com/gorilla/csrf"
+	"github.com/jackc/pgx/v5"
+	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/entity"
-	"github.com/mbv-labs/grafto/pkg/mail"
+	"github.com/mbv-labs/grafto/pkg/mail/templates"
+	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
 	"github.com/mbv-labs/grafto/repository/database"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
-	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
-	"github.com/gorilla/csrf"
-	"github.com/jackc/pgx/v5"
-	"github.com/labstack/echo/v4"
 )
 
 func (c *Controller) CreateAuthenticatedSession(ctx echo.Context) error {
@@ -126,11 +128,34 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	if err := c.mail.Send(ctx.Request().Context(),
-		user.Mail, c.cfg.App.DefaultSenderSignature, "Password Reset Request", "password_reset",
-		mail.ConfirmPassword{
-			Token: resetPWToken.GetPlainText(),
-		}); err != nil {
+	// TODO fix this error flow
+	pwResetMail := &templates.PasswordResetMail{
+		ResetPasswordLink: fmt.Sprintf(
+			"%s://%s/reset-password?token=%s",
+			c.cfg.App.AppScheme,
+			c.cfg.App.AppHost,
+			resetPWToken.GetPlainText(),
+		),
+		UnsubscribeLink: "", // TODO implement
+	}
+
+	textVersion, err := pwResetMail.GenerateTextVersion()
+	if err != nil {
+		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+	}
+	htmlVersion, err := pwResetMail.GenerateHtmlVersion()
+	if err != nil {
+		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+	}
+
+	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
+		To:          user.Mail,
+		From:        c.cfg.App.DefaultSenderSignature,
+		Subject:     "Password Reset Request",
+		TextVersion: textVersion,
+		HtmlVersion: htmlVersion,
+	}, nil)
+	if err != nil {
 		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
