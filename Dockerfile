@@ -1,8 +1,12 @@
 FROM node:18.16.1 AS build-resources
 
-ENV CI=true
-ENV APP_HOST=0.0.0.0:8000
-ENV APP_SCHEME=http
+ARG app_host=0.0.0.0:8000
+ARG app_scheme=http
+ARG is_ci=true
+
+ENV CI=$is_ci
+ENV APP_HOST=$app_host
+ENV APP_SCHEME=$app_scheme
 
 WORKDIR /
 
@@ -13,7 +17,7 @@ COPY static static
 
 RUN cd resources && npm ci
 
-FROM golang:1.21 AS build-go
+FROM golang:1.22 AS build-go
 
 ENV CI=true
 WORKDIR /

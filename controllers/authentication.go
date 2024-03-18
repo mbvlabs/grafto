@@ -136,7 +136,6 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 			c.cfg.App.AppHost,
 			resetPWToken.GetPlainText(),
 		),
-		UnsubscribeLink: "", // TODO implement
 	}
 
 	textVersion, err := pwResetMail.GenerateTextVersion()
