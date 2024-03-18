@@ -16,6 +16,7 @@ COPY pkg/mail pkg/mail
 COPY static static
 
 RUN cd resources && npm ci
+RUN cd resources && npm run build-css
 
 FROM golang:1.22 AS build-go
 
