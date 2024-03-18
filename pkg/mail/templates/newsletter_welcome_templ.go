@@ -95,7 +95,7 @@ func (n NewsletterWelcomeMail) template() templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(n.ConfirmationLink)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/mail/templates/newsletter_welcome.templ`, Line: 553, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `newsletter_welcome.templ`, Line: 553, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -105,7 +105,7 @@ func (n NewsletterWelcomeMail) template() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = footer(n.UnsubscribeLink).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = footer(unsubscribeUrl(n.UnsubscribeLink)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

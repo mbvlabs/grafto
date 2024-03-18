@@ -1,1 +1,17 @@
-TODO
+Background job failed.
+
+Grafto ( https://mbv-labs.com )
+
+************************
+A background job failed
+************************
+
+Job ID: {{ job.JobID }}
+
+Failed at: {{ job.AttemptedAt }}
+
+Reason: {{ job.Error }}
+
+mbv labs
+
+CPH Denmark
