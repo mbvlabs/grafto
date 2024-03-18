@@ -10,7 +10,6 @@ const userSignupTmplName = "user_signup_welcome"
 
 type UserSignupWelcomeMail struct {
 	ConfirmationLink string
-	UnsubscribeLink  string
 }
 
 var _ MailTemplateHandler = (*UserSignupWelcomeMail)(nil)
@@ -24,7 +23,6 @@ func (u UserSignupWelcomeMail) GenerateTextVersion() (string, error) {
 	var textBody bytes.Buffer
 	if err := textFile.Execute(&textBody, UserSignupWelcomeMail{
 		ConfirmationLink: u.ConfirmationLink,
-		UnsubscribeLink:  u.UnsubscribeLink,
 	}); err != nil {
 		return "", err
 	}
@@ -563,7 +561,7 @@ templ (u UserSignupWelcomeMail) template() {
 								</td>
 							</tr>
 							<tr>
-								@footer(unsubscribeUrl(u.UnsubscribeLink))
+								@footer(nil)
 							</tr>
 						</table>
 					</td>
