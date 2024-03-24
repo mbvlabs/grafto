@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
-
 	"log/slog"
 
+	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/mbv-labs/grafto/controllers"
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/mail"
@@ -15,10 +18,6 @@ import (
 	"github.com/mbv-labs/grafto/routes"
 	"github.com/mbv-labs/grafto/server"
 	mw "github.com/mbv-labs/grafto/server/middleware"
-	"github.com/gorilla/sessions"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	slogecho "github.com/samber/slog-echo"
 )
 
@@ -43,7 +42,10 @@ func main() {
 
 	tokenManager := tokens.NewManager(cfg.Auth.TokenSigningKey)
 
-	authSessionStore := sessions.NewCookieStore([]byte(cfg.Auth.SessionKey), []byte(cfg.Auth.SessionEncryptionKey))
+	authSessionStore := sessions.NewCookieStore(
+		[]byte(cfg.Auth.SessionKey),
+		[]byte(cfg.Auth.SessionEncryptionKey),
+	)
 
 	queueDbPool, err := pgxpool.New(context.Background(), cfg.Db.GetQueueUrlString())
 	if err != nil {
@@ -56,7 +58,14 @@ func main() {
 
 	riverClient := queue.NewClient(queueDbPool, queue.WithLogger(logger))
 
-	controllers := controllers.NewController(*db, mailClient, *tokenManager, cfg, riverClient, authSessionStore)
+	controllers := controllers.NewController(
+		*db,
+		mailClient,
+		*tokenManager,
+		cfg,
+		riverClient,
+		authSessionStore,
+	)
 
 	serverMW := mw.NewMiddleware(authSessionStore)
 

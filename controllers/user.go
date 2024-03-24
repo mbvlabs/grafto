@@ -37,7 +37,8 @@ type StoreUserPayload struct {
 func (c *Controller) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := services.NewUser(ctx.Request().Context(), entity.NewUser{
@@ -50,15 +51,27 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 		telemetry.Logger.Info("error", "err", err)
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {
-			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
+			telemetry.Logger.WarnContext(
+				ctx.Request().Context(),
+				"an unrecoverable error occurred",
+				"error",
+				err,
+			)
 
-			return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+			return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+				Render(views.ExtractRenderDeps(ctx))
 		}
 
 		if len(e) == 0 {
-			telemetry.Logger.WarnContext(ctx.Request().Context(), "an unrecoverable error occurred", "error", err)
+			telemetry.Logger.WarnContext(
+				ctx.Request().Context(),
+				"an unrecoverable error occurred",
+				"error",
+				err,
+			)
 
-			return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+			return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+				Render(views.ExtractRenderDeps(ctx))
 		}
 
 		props := authentication.RegisterFormProps{
@@ -98,7 +111,8 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	activationToken := tokens.CreateActivationToken(plainText, hashedToken)
@@ -113,7 +127,8 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	}); err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	userSignupMail := templates.UserSignupWelcomeMail{
@@ -128,13 +143,15 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 	htmlVersion, err := userSignupMail.GenerateHtmlVersion()
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
@@ -147,8 +164,10 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	return authentication.RegisterResponse("You're now registered", "You should receive an email soon to validate your account.", false).Render(views.ExtractRenderDeps(ctx))
+	return authentication.RegisterResponse("You're now registered", "You should receive an email soon to validate your account.", false).
+		Render(views.ExtractRenderDeps(ctx))
 }

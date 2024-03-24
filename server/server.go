@@ -10,10 +10,10 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/mbv-labs/grafto/controllers"
-	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
+	"github.com/mbv-labs/grafto/controllers"
+	"github.com/mbv-labs/grafto/pkg/config"
 )
 
 type Server struct {
@@ -25,7 +25,11 @@ type Server struct {
 }
 
 func NewServer(
-	router *echo.Echo, controllers controllers.Controller, logger *slog.Logger, cfg config.Cfg) Server {
+	router *echo.Echo,
+	controllers controllers.Controller,
+	logger *slog.Logger,
+	cfg config.Cfg,
+) Server {
 	host := cfg.App.ServerHost
 	port := cfg.App.ServerPort
 	isProduction := cfg.App.Environment == "production"

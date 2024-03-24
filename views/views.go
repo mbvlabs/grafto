@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/mbv-labs/grafto/server/middleware"
 	"github.com/labstack/echo/v4"
+	"github.com/mbv-labs/grafto/server/middleware"
 )
 
 func setUserCtx(ctx echo.Context) context.Context {

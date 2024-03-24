@@ -36,7 +36,12 @@ type UserLoginPayload struct {
 func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 	var payload UserLoginPayload
 	if err := ctx.Bind(&payload); err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not parse UserLoginPayload", "error", err)
+		telemetry.Logger.ErrorContext(
+			ctx.Request().Context(),
+			"could not parse UserLoginPayload",
+			"error",
+			err,
+		)
 
 		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
 	}
@@ -47,7 +52,12 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 			Password: payload.Password,
 		}, &c.db, c.cfg.Auth.PasswordPepper)
 	if err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not authenticate user", "error", err)
+		telemetry.Logger.ErrorContext(
+			ctx.Request().Context(),
+			"could not authenticate user",
+			"error",
+			err,
+		)
 
 		errMsg := "An error occurred while trying to authenticate you. Please try again."
 
@@ -68,7 +78,12 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not get auth session", "error", err)
+		telemetry.Logger.ErrorContext(
+			ctx.Request().Context(),
+			"could not get auth session",
+			"error",
+			err,
+		)
 		return c.InternalError(ctx)
 	}
 
@@ -77,7 +92,12 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not save auth session", "error", err)
+		telemetry.Logger.ErrorContext(
+			ctx.Request().Context(),
+			"could not save auth session",
+			"error",
+			err,
+		)
 		return c.InternalError(ctx)
 	}
 
@@ -107,7 +127,8 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 			failureOccurred = false
 		}
 
-		return authentication.ForgottenPasswordSuccess(failureOccurred).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordSuccess(failureOccurred).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	plainText, hashedToken, err := c.tknManager.GenerateToken()
@@ -215,7 +236,8 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeResetPassword {
+	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) &&
+		token.Scope != tokens.ScopeResetPassword {
 		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
 			HasError: true,
 			Msg:      "The token has expired. Please request a new one.",
@@ -311,7 +333,8 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return authentication.VerifyEmailPage(true, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+			return authentication.VerifyEmailPage(true, views.Head{}).
+				Render(views.ExtractRenderDeps(ctx))
 		}
 
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
@@ -321,8 +344,10 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) && token.Scope != tokens.ScopeEmailVerification {
-		return authentication.VerifyEmailPage(true, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) &&
+		token.Scope != tokens.ScopeEmailVerification {
+		return authentication.VerifyEmailPage(true, views.Head{}).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	confirmTime := time.Now()

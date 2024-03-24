@@ -34,9 +34,13 @@ func (c *ConfirmEmailClaim) GetSignedJWT(tokenSigningKey string) (string, error)
 }
 
 func (r *ConfirmEmailClaim) ParseJWT(token, tokenSigningKey string) (*ConfirmEmailClaim, error) {
-	parsedToken, err := jwt.ParseWithClaims(token, &ConfirmEmailClaim{}, func(token *jwt.Token) (interface{}, error) {
-		return tokenSigningKey, nil
-	})
+	parsedToken, err := jwt.ParseWithClaims(
+		token,
+		&ConfirmEmailClaim{},
+		func(token *jwt.Token) (interface{}, error) {
+			return tokenSigningKey, nil
+		},
+	)
 
 	if claims, ok := parsedToken.Claims.(*ConfirmEmailClaim); ok && parsedToken.Valid {
 		return claims, nil
@@ -67,9 +71,13 @@ func (r *ResetPasswordClaim) Create(id uuid.UUID, tokenSigningKey string) string
 }
 
 func (r *ResetPasswordClaim) Parse(token, tokenSigningKey string) (*ResetPasswordClaim, error) {
-	parsedToken, err := jwt.ParseWithClaims(token, &ResetPasswordClaim{}, func(token *jwt.Token) (interface{}, error) {
-		return tokenSigningKey, nil
-	})
+	parsedToken, err := jwt.ParseWithClaims(
+		token,
+		&ResetPasswordClaim{},
+		func(token *jwt.Token) (interface{}, error) {
+			return tokenSigningKey, nil
+		},
+	)
 
 	if claims, ok := parsedToken.Claims.(*ResetPasswordClaim); ok && parsedToken.Valid {
 		return claims, nil

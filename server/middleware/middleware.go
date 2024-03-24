@@ -3,11 +3,11 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/services"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
+	"github.com/mbv-labs/grafto/services"
 )
 
 type Middleware struct {
@@ -27,6 +27,7 @@ type UserContext struct {
 func (u *UserContext) GetID() uuid.UUID {
 	return u.UserID
 }
+
 func (u *UserContext) GetAuthStatus() bool {
 	return u.IsAuthenticated
 }
