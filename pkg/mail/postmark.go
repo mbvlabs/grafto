@@ -53,7 +53,11 @@ func (p *Postmark) SendMail(ctx context.Context, payload MailPayload) error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/email", p.baseUrl), bytes.NewBuffer(byt))
+	req, err := http.NewRequest(
+		http.MethodPost,
+		fmt.Sprintf("%s/email", p.baseUrl),
+		bytes.NewBuffer(byt),
+	)
 	if err != nil {
 		return err
 	}
@@ -78,7 +82,15 @@ func (p *Postmark) SendMail(ctx context.Context, payload MailPayload) error {
 			return err
 		}
 
-		slog.Error("received non ok status code", "error", err, "status", res.StatusCode, "body", string(body))
+		slog.Error(
+			"received non ok status code",
+			"error",
+			err,
+			"status",
+			res.StatusCode,
+			"body",
+			string(body),
+		)
 		return ErrCouldNotSend
 	}
 

@@ -6,13 +6,13 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/google/uuid"
+	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5"
 	"github.com/mbv-labs/grafto/entity"
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/repository/database"
-	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
-	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -32,7 +32,10 @@ type validatePasswordPayload struct {
 }
 
 func validatePassword(data validatePasswordPayload, passwordPepper string) error {
-	return bcrypt.CompareHashAndPassword([]byte(data.hashedpassword), []byte(data.password+passwordPepper))
+	return bcrypt.CompareHashAndPassword(
+		[]byte(data.hashedpassword),
+		[]byte(data.password+passwordPepper),
+	)
 }
 
 type AuthenticateUserPayload struct {
@@ -40,7 +43,12 @@ type AuthenticateUserPayload struct {
 	Password string
 }
 
-func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db userDatabase, passwordPepper string) (entity.User, error) {
+func AuthenticateUser(
+	ctx context.Context,
+	data AuthenticateUserPayload,
+	db userDatabase,
+	passwordPepper string,
+) (entity.User, error) {
 	user, err := db.QueryUserByMail(ctx, data.Email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -72,7 +80,11 @@ func AuthenticateUser(ctx context.Context, data AuthenticateUserPayload, db user
 	}, nil
 }
 
-func CreateAuthenticatedSession(session sessions.Session, userID uuid.UUID, cfg config.Cfg) *sessions.Session {
+func CreateAuthenticatedSession(
+	session sessions.Session,
+	userID uuid.UUID,
+	cfg config.Cfg,
+) *sessions.Session {
 	gob.Register(uuid.UUID{})
 
 	session.Options.HttpOnly = true

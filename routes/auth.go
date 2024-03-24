@@ -1,12 +1,16 @@
 package routes
 
 import (
+	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/controllers"
 	"github.com/mbv-labs/grafto/server/middleware"
-	"github.com/labstack/echo/v4"
 )
 
-func authRoutes(router *echo.Echo, controllers controllers.Controller, middleware middleware.Middleware) {
+func authRoutes(
+	router *echo.Echo,
+	controllers controllers.Controller,
+	middleware middleware.Middleware,
+) {
 	router.GET("/register", func(c echo.Context) error {
 		return controllers.CreateUser(c)
 	})
