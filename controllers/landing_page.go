@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/mbv-labs/grafto/views"
 	"github.com/labstack/echo/v4"
+	"github.com/mbv-labs/grafto/views"
 )
 
 func (c *Controller) LandingPage(ctx echo.Context) error {

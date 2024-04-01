@@ -9,17 +9,24 @@ import (
 const emailJobKind string = "email_job"
 
 type EmailJobArgs struct {
-	To       string      `json:"to"`
-	From     string      `json:"from"`
-	Subject  string      `json:"subject"`
-	TmplName string      `json:"tmpl_name"`
-	Payload  interface{} `json:"payload"`
+	To          string `json:"to"`
+	From        string `json:"from"`
+	Subject     string `json:"subject"`
+	TextVersion string `json:"text_version"`
+	HtmlVersion string `json:"html_version"`
 }
 
 func (EmailJobArgs) Kind() string { return emailJobKind }
 
 type emailSender interface {
-	Send(ctx context.Context, to, from, subject, tmplName string, data interface{}) error
+	Send(
+		ctx context.Context,
+		to,
+		from,
+		subject,
+		textVersion,
+		htmlVersion string,
+	) error
 }
 
 type EmailJobWorker struct {
@@ -28,5 +35,12 @@ type EmailJobWorker struct {
 }
 
 func (w *EmailJobWorker) Work(ctx context.Context, job *river.Job[EmailJobArgs]) error {
-	return w.Sender.Send(ctx, job.Args.To, job.Args.From, job.Args.Subject, job.Args.TmplName, job.Args.Payload)
+	return w.Sender.Send(
+		ctx,
+		job.Args.To,
+		job.Args.From,
+		job.Args.Subject,
+		job.Args.TextVersion,
+		job.Args.HtmlVersion,
+	)
 }

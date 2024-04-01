@@ -2,13 +2,15 @@ package queue
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
-	"github.com/mbv-labs/grafto/pkg/mail"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/mbv-labs/grafto/pkg/mail"
+	"github.com/mbv-labs/grafto/pkg/mail/templates"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivertype"
@@ -123,7 +125,11 @@ type MailErrorHandler struct {
 	from       string
 }
 
-func NewMailErrorHandler(logger *slog.Logger, mailClient *mail.Mail, baseSenderSignature, receiverMail string) *MailErrorHandler {
+func NewMailErrorHandler(
+	logger *slog.Logger,
+	mailClient *mail.Mail,
+	baseSenderSignature, receiverMail string,
+) *MailErrorHandler {
 	return &MailErrorHandler{
 		logger:     logger,
 		from:       baseSenderSignature,
@@ -133,14 +139,34 @@ func NewMailErrorHandler(logger *slog.Logger, mailClient *mail.Mail, baseSenderS
 }
 
 // HandleError implements river.ErrorHandler.
-func (m *MailErrorHandler) HandleError(ctx context.Context, job *rivertype.JobRow, err error) *river.ErrorHandlerResult {
+func (m *MailErrorHandler) HandleError(
+	ctx context.Context,
+	job *rivertype.JobRow,
+	err error,
+) *river.ErrorHandlerResult {
 	m.logger.Error("error handling job", "error", err, "job_kind", job.Kind)
 
-	if err := m.mailClient.Send(ctx, m.to, m.from, "Error handling job", "job_error", mail.FailedJob{
-		ID:    job.ID,
-		Kind:  job.Kind,
-		Error: err.Error(),
-	}); err != nil {
+	backgroundJobErrorMail := &templates.BackgroundJobErrorMail{
+		JobID:           job.ID,
+		AttemptedAt:     *job.AttemptedAt,
+		Kind:            job.Kind,
+		MetaData:        string(job.Metadata),
+		Err:             err,
+		AttemptedErrors: job.Errors,
+	}
+	html, err := backgroundJobErrorMail.GenerateHtmlVersion()
+	if err != nil {
+		m.logger.Error("error generating html mail version", "error", err)
+		return &river.ErrorHandlerResult{}
+	}
+
+	text, err := backgroundJobErrorMail.GenerateTextVersion()
+	if err != nil {
+		m.logger.Error("error generating text mail version", "error", err)
+		return &river.ErrorHandlerResult{}
+	}
+
+	if err := m.mailClient.Send(ctx, m.to, m.from, "Handling job resulted in panic", text, html); err != nil {
 		m.logger.Error("error sending mail", "error", err)
 		return &river.ErrorHandlerResult{}
 	}
@@ -149,14 +175,34 @@ func (m *MailErrorHandler) HandleError(ctx context.Context, job *rivertype.JobRo
 }
 
 // HandlePanic implements river.ErrorHandler.
-func (m *MailErrorHandler) HandlePanic(ctx context.Context, job *rivertype.JobRow, panicVal any) *river.ErrorHandlerResult {
+func (m *MailErrorHandler) HandlePanic(
+	ctx context.Context,
+	job *rivertype.JobRow,
+	panicVal any,
+) *river.ErrorHandlerResult {
 	m.logger.Error("panic handling job", "panic", panicVal, "job_kind", job.Kind)
 
-	if err := m.mailClient.Send(ctx, m.to, m.from, "Error handling job", "job_error", mail.FailedJob{
-		ID:    job.ID,
-		Kind:  job.Kind,
-		Error: "panic: " + panicVal.(string),
-	}); err != nil {
+	backgroundJobErrorMail := &templates.BackgroundJobErrorMail{
+		JobID:           job.ID,
+		AttemptedAt:     *job.AttemptedAt,
+		Kind:            job.Kind,
+		MetaData:        string(job.Metadata),
+		Err:             fmt.Errorf("%v", panicVal),
+		AttemptedErrors: job.Errors,
+	}
+	html, err := backgroundJobErrorMail.GenerateHtmlVersion()
+	if err != nil {
+		m.logger.Error("error generating html mail version", "error", err)
+		return &river.ErrorHandlerResult{}
+	}
+
+	text, err := backgroundJobErrorMail.GenerateTextVersion()
+	if err != nil {
+		m.logger.Error("error generating text mail version", "error", err)
+		return &river.ErrorHandlerResult{}
+	}
+
+	if err := m.mailClient.Send(ctx, m.to, m.from, "Handling job resulted in panic", text, html); err != nil {
 		m.logger.Error("error sending mail", "error", err)
 		return &river.ErrorHandlerResult{}
 	}

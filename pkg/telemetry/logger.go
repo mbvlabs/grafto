@@ -1,10 +1,9 @@
 package telemetry
 
 import (
+	"log/slog"
 	"os"
 	"time"
-
-	"log/slog"
 
 	"github.com/lmittmann/tint"
 )
@@ -20,5 +19,4 @@ func SetupLogger() *slog.Logger {
 			AddSource:  true,
 		}),
 	)
-
 }

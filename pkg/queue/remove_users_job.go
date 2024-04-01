@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/mbv-labs/grafto/repository/database"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/mbv-labs/grafto/repository/database"
 	"github.com/riverqueue/river"
 )
 
@@ -33,6 +33,12 @@ type RemoveUnverifiedUsersJobWorker struct {
 	river.WorkerDefaults[RemoveUnverifiedUsersJobArgs]
 }
 
-func (w *RemoveUnverifiedUsersJobWorker) Work(ctx context.Context, job *river.Job[RemoveUnverifiedUsersJobArgs]) error {
-	return w.Storage.RemoveUnverifiedUsers(ctx, database.ConvertToPGTimestamptz(time.Now().AddDate(0, 0, -14)))
+func (w *RemoveUnverifiedUsersJobWorker) Work(
+	ctx context.Context,
+	job *river.Job[RemoveUnverifiedUsersJobArgs],
+) error {
+	return w.Storage.RemoveUnverifiedUsers(
+		ctx,
+		database.ConvertToPGTimestamptz(time.Now().AddDate(0, 0, -14)),
+	)
 }

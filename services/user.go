@@ -2,15 +2,14 @@ package services
 
 import (
 	"context"
-
 	"time"
 
 	"github.com/go-playground/validator/v10"
 
+	"github.com/google/uuid"
 	"github.com/mbv-labs/grafto/entity"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/repository/database"
-	"github.com/google/uuid"
 )
 
 type userDatabase interface {
@@ -33,12 +32,23 @@ func passwordMatchValidation(sl validator.StructLevel) {
 	data := sl.Current().Interface().(newUserValidation)
 
 	if data.ConfirmPassword != data.Password {
-		sl.ReportError(data.ConfirmPassword, "", "ConfirmPassword", "", "confirm password must match password")
+		sl.ReportError(
+			data.ConfirmPassword,
+			"",
+			"ConfirmPassword",
+			"",
+			"confirm password must match password",
+		)
 	}
 }
 
 func NewUser(
-	ctx context.Context, data entity.NewUser, db userDatabase, v *validator.Validate, passwordPepper string) (entity.User, error) {
+	ctx context.Context,
+	data entity.NewUser,
+	db userDatabase,
+	v *validator.Validate,
+	passwordPepper string,
+) (entity.User, error) {
 	mailAlreadyRegistered, err := db.DoesMailExists(ctx, data.Mail)
 	if err != nil {
 		telemetry.Logger.Error("could not check if email exists", "error", err)
@@ -98,13 +108,23 @@ func resetPasswordMatchValidation(sl validator.StructLevel) {
 	data := sl.Current().Interface().(updateUserValidation)
 
 	if data.ConfirmPassword != data.Password {
-		sl.ReportError(data.ConfirmPassword, "", "ConfirmPassword", "", "confirm password must match password")
+		sl.ReportError(
+			data.ConfirmPassword,
+			"",
+			"ConfirmPassword",
+			"",
+			"confirm password must match password",
+		)
 	}
 }
 
 func UpdateUser(
-	ctx context.Context, data entity.UpdateUser, db userDatabase, v *validator.Validate, passwordPepper string) (entity.User, error) {
-
+	ctx context.Context,
+	data entity.UpdateUser,
+	db userDatabase,
+	v *validator.Validate,
+	passwordPepper string,
+) (entity.User, error) {
 	v.RegisterStructValidation(resetPasswordMatchValidation, updateUserValidation{})
 
 	validatedData := updateUserValidation{
