@@ -1,7 +1,8 @@
 set dotenv-load
 
 # alias
-alias r := run
+alias ra := run-app
+alias rt := run-app-template
 alias rw := run-worker
 
 alias wc := watch-css
@@ -54,8 +55,11 @@ generate-db-functions:
 	sqlc compile && sqlc generate
 
 # Application
-run:
-    air -c .air.toml
+run-app:
+    wgo run -exit -verbose -xdir cmd/worker -xdir cmd/explore -xdir resources -xfile=_templ.go -file=.go -file=.css -file=.js  ./cmd/app/main.go
+
+run-app-template:
+    templ generate --watch --cmd="just run-app"
 
 # Worker
 run-worker:
