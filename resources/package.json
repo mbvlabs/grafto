@@ -1,22 +1,22 @@
 {
-  "name": "grafto",
-  "version": "1.0.0",
-  "author": "",
-  "license": "ISC",
-  "scripts": {
-    "watch-css": "npx tailwindcss -c ./tailwind/config.js -i ./tailwind/base.css -o ../static/css/output.css --watch",
-    "build-css": "npx tailwindcss -c ./tailwind/config.js -i ./tailwind/base.css -o ../static/css/output.css --minify"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MBvisti/grafto.git"
-  },
-  "dependencies": {
-    "@tailwindcss/forms": "^0.5.7",
-    "@tailwindcss/typography": "^0.5.10"
-  },
-  "devDependencies": {
-    "daisyui": "^4.6.0",
-    "tailwindcss": "^3.3.6"
-  }
+	"name": "grafto",
+	"version": "1.0.0",
+	"author": "",
+	"license": "ISC",
+	"scripts": {
+		"watch-css": "tailwind -c ./tailwind/config.js -i ./tailwind/base.css -o ../static/css/output.css --watch",
+		"build-css": "npx tailwindcss -c ./tailwind/config.js -i ./tailwind/base.css -o ../static/css/output.css --minify"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MBvisti/grafto.git"
+	},
+	"dependencies": {
+		"@tailwindcss/forms": "^0.5.7",
+		"@tailwindcss/typography": "^0.5.10"
+	},
+	"devDependencies": {
+		"daisyui": "^4.6.0",
+		"tailwindcss": "^3.3.6"
+	}
 }
