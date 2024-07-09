@@ -10,8 +10,9 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.1
 	github.com/lmittmann/tint v1.0.1
-	github.com/riverqueue/river v0.0.18
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.0.18
+	github.com/riverqueue/river v0.9.0
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.9.0
+	github.com/riverqueue/river/rivertype v0.9.0
 	github.com/vanng822/go-premailer v1.20.2
 	golang.org/x/crypto v0.17.0
 )
@@ -32,22 +33,21 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/oklog/ulid/v2 v2.1.0 // indirect
-	github.com/riverqueue/river/riverdriver v0.0.18 // indirect
+	github.com/riverqueue/river/riverdriver v0.9.0 // indirect
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vanng822/css v1.0.1 // indirect
 	golang.org/x/net v0.19.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 )
 
 require (
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/gorilla/csrf v1.7.1
-	github.com/jackc/pgx/v5 v5.5.4
+	github.com/jackc/pgx/v5 v5.6.0
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/pkg/errors v0.9.1
 	github.com/samber/slog-echo v1.2.1

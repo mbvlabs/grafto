@@ -8,8 +8,11 @@ alias wc := watch-css
 
 alias sm := serve-mails
 
-alias mm := make-migration
+alias cm := create-migration
+alias ms := migration-status
 alias um := up-migrations
+alias umbo := up-migrations-by-one
+alias umt := up-migrations-to
 alias dm := down-migrations
 alias dmt := down-migrations-to
 alias rdb := reset-db
@@ -35,11 +38,20 @@ serve-mails:
     @cd ./pkg/mail/templates && wgo -file=.go -file=.templ -xfile=_templ.go templ generate :: go run ./server/main.go
 
 # Database 
-make-migration name:
+create-migration name:
 	@goose -dir migrations $DB_KIND $DATABASE_URL create {{name}} sql
+
+migration-status:
+	@goose -dir migrations $DB_KIND $DATABASE_URL status
 
 up-migrations:
 	@goose -dir migrations $DB_KIND $DATABASE_URL up
+
+up-migrations-by-one:
+	@goose -dir migrations $DB_KIND $DATABASE_URL up-by-one
+
+up-migrations-to version:
+	@goose -dir migrations $DB_KIND $DATABASE_URL up-to {{version}}
 
 down-migrations:
 	@goose -dir migrations $DB_KIND $DATABASE_URL down
