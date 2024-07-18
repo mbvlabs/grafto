@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/gorilla/sessions"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mbv-labs/grafto/controllers"
@@ -22,7 +21,6 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
 	router := echo.New()
 
 	logger := telemetry.SetupLogger()
@@ -47,16 +45,7 @@ func main() {
 		[]byte(cfg.Auth.SessionEncryptionKey),
 	)
 
-	queueDbPool, err := pgxpool.New(context.Background(), cfg.Db.GetQueueUrlString())
-	if err != nil {
-		panic(err)
-	}
-
-	if err := queueDbPool.Ping(ctx); err != nil {
-		panic(err)
-	}
-
-	riverClient := queue.NewClient(queueDbPool, queue.WithLogger(logger))
+	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 
 	controllers := controllers.NewController(
 		*db,
