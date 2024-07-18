@@ -13,7 +13,7 @@ require (
 	github.com/riverqueue/river v0.0.18
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.0.18
 	github.com/vanng822/go-premailer v1.20.2
-	golang.org/x/crypto v0.17.0
+	golang.org/x/crypto v0.21.0
 )
 
 require (
@@ -38,7 +38,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vanng822/css v1.0.1 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
@@ -52,5 +52,5 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/samber/slog-echo v1.2.1
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 )
