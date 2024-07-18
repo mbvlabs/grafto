@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/mail"
 	"github.com/mbv-labs/grafto/pkg/queue"
@@ -26,15 +25,6 @@ func main() {
 
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 	mailClient := mail.NewMail(&postmark)
-
-	queueDbPool, err := pgxpool.New(context.Background(), cfg.Db.GetQueueUrlString())
-	if err != nil {
-		panic(err)
-	}
-
-	if err := queueDbPool.Ping(ctx); err != nil {
-		panic(err)
-	}
 
 	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
 	db := database.New(conn)
@@ -61,7 +51,7 @@ func main() {
 
 	q := map[string]river.QueueConfig{river.QueueDefault: {MaxWorkers: 100}}
 	riverClient := queue.NewClient(
-		queueDbPool,
+		conn,
 		queue.WithQueues(q),
 		queue.WithWorkers(workers),
 		queue.WithLogger(logger),
