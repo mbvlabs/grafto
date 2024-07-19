@@ -19,7 +19,7 @@ func authRoutes(
 	})
 
 	router.GET("/login", func(c echo.Context) error {
-		return controllers.CreateAuthenticatedSession(c)
+		return controllers.Login(c)
 	})
 	router.POST("/login", func(c echo.Context) error {
 		return controllers.StoreAuthenticatedSession(c)

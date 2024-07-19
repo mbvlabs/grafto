@@ -4,10 +4,12 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mbv-labs/grafto/controllers"
+	"github.com/mbv-labs/grafto/models"
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/mail"
 	"github.com/mbv-labs/grafto/pkg/queue"
@@ -17,6 +19,7 @@ import (
 	"github.com/mbv-labs/grafto/routes"
 	"github.com/mbv-labs/grafto/server"
 	mw "github.com/mbv-labs/grafto/server/middleware"
+	"github.com/mbv-labs/grafto/services"
 	slogecho "github.com/samber/slog-echo"
 )
 
@@ -45,18 +48,25 @@ func main() {
 		[]byte(cfg.Auth.SessionEncryptionKey),
 	)
 
+	validator := validator.New()
+
+	authSvc := services.NewAuth(db, authSessionStore, cfg)
+	userModelSvc := models.NewUserService(db, authSvc, validator)
+
 	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 
 	controllers := controllers.NewController(
 		*db,
 		mailClient,
+		userModelSvc,
+		authSvc,
 		*tokenManager,
 		cfg,
 		riverClient,
 		authSessionStore,
 	)
 
-	serverMW := mw.NewMiddleware(authSessionStore)
+	serverMW := mw.NewMiddleware(authSvc)
 
 	routes := routes.NewRoutes(controllers, serverMW, cfg)
 	router = routes.SetupRoutes()

@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/entity"
+	"github.com/mbv-labs/grafto/models"
 	"github.com/mbv-labs/grafto/pkg/mail/templates"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
@@ -21,7 +21,7 @@ import (
 	"github.com/mbv-labs/grafto/views/authentication"
 )
 
-func (c *Controller) CreateAuthenticatedSession(ctx echo.Context) error {
+func (c *Controller) Login(ctx echo.Context) error {
 	return authentication.LoginPage(authentication.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
@@ -46,12 +46,11 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	authenticatedUser, err := services.AuthenticateUser(
-		ctx.Request().Context(), services.AuthenticateUserPayload{
-			Email:    payload.Mail,
-			Password: payload.Password,
-		}, &c.db, c.cfg.Auth.PasswordPepper)
-	if err != nil {
+	if err := c.authSvc.AuthenticateUser(
+		ctx.Request().Context(),
+		payload.Mail,
+		payload.Password,
+	); err != nil {
 		telemetry.Logger.ErrorContext(
 			ctx.Request().Context(),
 			"could not authenticate user",
@@ -73,32 +72,14 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	session, err := c.authSessionStore.Get(ctx.Request(), "ua")
+	user, err := c.userModel.ByEmail(ctx.Request().Context(), payload.Mail)
 	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(
-			ctx.Request().Context(),
-			"could not get auth session",
-			"error",
-			err,
-		)
 		return c.InternalError(ctx)
 	}
 
-	authSession := services.CreateAuthenticatedSession(*session, authenticatedUser.ID, c.cfg)
-	if err := authSession.Save(ctx.Request(), ctx.Response()); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(
-			ctx.Request().Context(),
-			"could not save auth session",
-			"error",
-			err,
-		)
-		return c.InternalError(ctx)
+	_, err = c.authSvc.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
+	if err != nil {
+		return err
 	}
 
 	return authentication.LoginResponse(false).Render(views.ExtractRenderDeps(ctx))
@@ -252,13 +233,11 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	_, err = services.UpdateUser(ctx.Request().Context(), entity.UpdateUser{
-		Name:            user.Name,
-		Mail:            user.Mail,
-		Password:        payload.Password,
-		ConfirmPassword: payload.ConfirmPassword,
-		ID:              user.ID,
-	}, &c.db, c.validate, c.cfg.Auth.PasswordPepper)
+	_, err = c.userModel.UpdateUser(ctx.Request().Context(), models.UpdateUserValidation{
+		ID:   user.ID,
+		Name: user.Name,
+		Mail: user.Mail,
+	})
 	if err != nil {
 		e, ok := err.(validator.ValidationErrors)
 		if !ok {
@@ -372,21 +351,8 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	session, err := c.authSessionStore.Get(ctx.Request(), "ua")
+	_, err = c.authSvc.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
 	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
-	}
-
-	authSession := services.CreateAuthenticatedSession(*session, user.ID, c.cfg)
-	if err := authSession.Save(ctx.Request(), ctx.Response()); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 		return c.InternalError(ctx)
 	}
 
