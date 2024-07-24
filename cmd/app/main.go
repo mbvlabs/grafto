@@ -49,6 +49,7 @@ func main() {
 	)
 
 	validator := validator.New()
+	validator.RegisterStructValidation(models.PasswordMatchValidation, models.NewUserValidation{})
 
 	authSvc := services.NewAuth(db, authSessionStore, cfg)
 	userModelSvc := models.NewUserService(db, authSvc, validator)

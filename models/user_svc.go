@@ -80,8 +80,6 @@ func (us UserService) New(
 		return User{}, err
 	}
 
-	// us.validator.RegisterStructValidation(passwordMatchValidation, newUserValidation{})
-
 	newUserData := NewUserValidation{
 		ConfirmPassword: data.ConfirmPassword,
 		Name:            data.Name,
@@ -132,8 +130,6 @@ func (us UserService) UpdateUser(
 	ctx context.Context,
 	data UpdateUserValidation,
 ) (User, error) {
-	// v.RegisterStructValidation(ResetPasswordMatchValidation, UpdateUserValidation{})
-
 	validatedData := UpdateUserValidation{
 		Name: data.Name,
 		Mail: data.Mail,
