@@ -1,56 +1,38 @@
 package middleware
 
 import (
+	"log/slog"
 	"net/http"
 
-	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/services"
 )
 
 type Middleware struct {
-	authSessionStore *sessions.CookieStore
+	authSvc services.Auth
 }
 
-func NewMiddleware(aSS *sessions.CookieStore) Middleware {
-	return Middleware{aSS}
-}
-
-type UserContext struct {
-	echo.Context
-	UserID          uuid.UUID
-	IsAuthenticated bool
-}
-
-func (u *UserContext) GetID() uuid.UUID {
-	return u.UserID
-}
-
-func (u *UserContext) GetAuthStatus() bool {
-	return u.IsAuthenticated
-}
-
-type AdminContext struct {
-	echo.Context
-	isAdmin bool
-}
-
-func (a *AdminContext) GetAdminStatus() bool {
-	return a.isAdmin
+func NewMiddleware(authSvc services.Auth) Middleware {
+	return Middleware{authSvc}
 }
 
 func (m *Middleware) AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		authenticated, userID, err := services.IsAuthenticated(c.Request(), m.authSessionStore)
+		sess, err := m.authSvc.GetUserSession(c.Request())
 		if err != nil {
-			telemetry.Logger.Error("could not get authenticated status", "error", err)
-			return c.Redirect(http.StatusPermanentRedirect, "/500")
+			slog.ErrorContext(
+				c.Request().Context(),
+				"could not get user session",
+				"error",
+				err,
+			)
+
+			return c.Redirect(http.StatusPermanentRedirect, "/login")
 		}
 
-		if authenticated {
-			ctx := &UserContext{c, userID, true}
+		if sess.Authenticated {
+			ctx := &UserContext{c, sess.ID, true}
 			return next(ctx)
 		} else {
 			return c.Redirect(http.StatusPermanentRedirect, "/login")
@@ -60,16 +42,16 @@ func (m *Middleware) AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (m *Middleware) RegisterUserContext(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		authenticated, userID, err := services.IsAuthenticated(c.Request(), m.authSessionStore)
+		sess, err := m.authSvc.GetUserSession(c.Request())
 		if err != nil {
-			telemetry.Logger.Error("could not get authenticated status", "error", err)
+			telemetry.Logger.Error("could not get authenticated user session", "error", err)
 			return c.Redirect(http.StatusPermanentRedirect, "/500")
 		}
 
 		authContext := &UserContext{
 			c,
-			userID,
-			authenticated,
+			sess.ID,
+			sess.Authenticated,
 		}
 
 		return next(authContext)
@@ -78,12 +60,12 @@ func (m *Middleware) RegisterUserContext(next echo.HandlerFunc) echo.HandlerFunc
 
 func (m *Middleware) AdminOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		isAdmin, err := services.IsAdmin(c.Request(), m.authSessionStore)
+		sess, err := m.authSvc.GetUserSession(c.Request())
 		if err != nil {
 			return c.Redirect(http.StatusPermanentRedirect, "/500")
 		}
 
-		ctx := &AdminContext{c, isAdmin}
+		ctx := &AdminContext{c, sess.IsAdmin}
 		return next(ctx)
 	}
 }

@@ -8,13 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/entity"
+	"github.com/mbv-labs/grafto/models"
 	"github.com/mbv-labs/grafto/pkg/mail/templates"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
 	"github.com/mbv-labs/grafto/repository/database"
-	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
 )
@@ -41,12 +40,12 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := services.NewUser(ctx.Request().Context(), entity.NewUser{
+	user, err := c.userModel.New(ctx.Request().Context(), models.NewUserValidation{
 		Name:            payload.UserName,
 		Mail:            payload.Mail,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
-	}, &c.db, c.validate, c.cfg.Auth.PasswordPepper)
+	})
 	if err != nil {
 		telemetry.Logger.Info("error", "err", err)
 		e, ok := err.(validator.ValidationErrors)
