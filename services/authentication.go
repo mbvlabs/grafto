@@ -8,14 +8,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
+	"github.com/mbv-labs/grafto/models"
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/repository/database"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type authStorage interface {
-	QueryUserByMail(ctx context.Context, mail string) (database.User, error)
+	QueryUserByEmail(ctx context.Context, mail string) (models.User, error)
 }
 
 type Auth struct {
@@ -56,7 +56,7 @@ func (a Auth) AuthenticateUser(
 	email string,
 	password string,
 ) error {
-	user, err := a.storage.QueryUserByMail(ctx, email)
+	user, err := a.storage.QueryUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return ErrUserNotExist
@@ -66,7 +66,7 @@ func (a Auth) AuthenticateUser(
 		return err
 	}
 
-	if verifiedAt := user.MailVerifiedAt; !verifiedAt.Valid {
+	if verifiedAt := user.EmailVerifiedAt; verifiedAt.IsZero() {
 		return ErrEmailNotValidated
 	}
 

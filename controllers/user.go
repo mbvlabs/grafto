@@ -13,7 +13,7 @@ import (
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
-	"github.com/mbv-labs/grafto/repository/database"
+	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
 )
@@ -154,7 +154,7 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 	}
 
 	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
-		To:          user.Mail,
+		To:          user.Email,
 		From:        c.cfg.App.DefaultSenderSignature,
 		Subject:     "Thanks for signing up!",
 		TextVersion: textVersion,

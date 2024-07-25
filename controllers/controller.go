@@ -13,7 +13,7 @@ import (
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/mail"
 	"github.com/mbv-labs/grafto/pkg/tokens"
-	"github.com/mbv-labs/grafto/repository/database"
+	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/riverqueue/river"

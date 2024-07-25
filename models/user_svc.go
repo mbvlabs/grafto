@@ -2,20 +2,20 @@ package models
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/repository/database"
 )
 
 type userStorage interface {
-	InsertUser(ctx context.Context, arg database.InsertUserParams) (database.User, error)
-	DoesMailExists(ctx context.Context, mail string) (bool, error)
-	QueryUserByMail(ctx context.Context, mail string) (database.User, error)
-	QueryUser(ctx context.Context, id uuid.UUID) (database.User, error)
-	UpdateUser(ctx context.Context, arg database.UpdateUserParams) (database.User, error)
+	InsertUser(ctx context.Context, arg User, hashedPassword string) (User, error)
+	QueryUserByEmail(ctx context.Context, mail string) (User, error)
+	QueryUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	UpdateUser(ctx context.Context, arg User) (User, error)
 }
 
 type authService interface {
@@ -55,27 +55,20 @@ func PasswordMatchValidation(sl validator.StructLevel) {
 }
 
 func (us UserService) ByEmail(ctx context.Context, email string) (User, error) {
-	user, err := us.storage.QueryUserByMail(ctx, email)
+	user, err := us.storage.QueryUserByEmail(ctx, email)
 	if err != nil {
 		return User{}, err
 	}
 
-	return User{
-		ID:             user.ID,
-		CreatedAt:      database.ConvertFromPGTimestamptzToTime(user.CreatedAt),
-		UpdatedAt:      database.ConvertFromPGTimestamptzToTime(user.UpdatedAt),
-		Name:           user.Name,
-		Mail:           user.Mail,
-		MailVerifiedAt: database.ConvertFromPGTimestamptzToTime(user.MailVerifiedAt),
-	}, nil
+	return user, nil
 }
 
 func (us UserService) New(
 	ctx context.Context,
 	data NewUserValidation,
 ) (User, error) {
-	mailAlreadyRegistered, err := us.storage.DoesMailExists(ctx, data.Mail)
-	if err != nil {
+	user, err := us.storage.QueryUserByEmail(ctx, data.Mail)
+	if err != nil && errors.Is(err, pgx.ErrNoRows) {
 		telemetry.Logger.Error("could not check if email exists", "error", err)
 		return User{}, err
 	}
@@ -84,7 +77,7 @@ func (us UserService) New(
 		ConfirmPassword: data.ConfirmPassword,
 		Name:            data.Name,
 		Mail:            data.Mail,
-		MailRegistered:  mailAlreadyRegistered,
+		MailRegistered:  user.Email != "",
 		Password:        data.Password,
 	}
 
@@ -98,26 +91,20 @@ func (us UserService) New(
 		return User{}, err
 	}
 
-	user, err := us.storage.InsertUser(ctx, database.InsertUserParams{
+	t := time.Now()
+	newUser, err := us.storage.InsertUser(ctx, User{
 		ID:        uuid.New(),
-		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
-		UpdatedAt: database.ConvertToPGTimestamptz(time.Now()),
+		CreatedAt: t,
+		UpdatedAt: t,
 		Name:      newUserData.Name,
-		Mail:      newUserData.Mail,
-		Password:  hashedPassword,
-	})
+		Email:     newUserData.Mail,
+	}, hashedPassword)
 	if err != nil {
 		telemetry.Logger.Error("could not insert user", "error", err)
 		return User{}, err
 	}
 
-	return User{
-		ID:        user.ID,
-		CreatedAt: database.ConvertFromPGTimestamptzToTime(user.CreatedAt),
-		UpdatedAt: database.ConvertFromPGTimestamptzToTime(user.UpdatedAt),
-		Name:      user.Name,
-		Mail:      user.Mail,
-	}, nil
+	return newUser, nil
 }
 
 type UpdateUserValidation struct {
@@ -139,22 +126,16 @@ func (us UserService) UpdateUser(
 		return User{}, err
 	}
 
-	updatedUser, err := us.storage.UpdateUser(ctx, database.UpdateUserParams{
-		UpdatedAt: database.ConvertToPGTimestamptz(time.Now()),
-		Name:      data.Name,
-		Mail:      data.Mail,
-		ID:        data.ID,
+	updatedUser, err := us.storage.UpdateUser(ctx, User{
+		ID:        validatedData.ID,
+		UpdatedAt: time.Now(),
+		Name:      validatedData.Name,
+		Email:     validatedData.Mail,
 	})
 	if err != nil {
 		telemetry.Logger.Error("could not insert user", "error", err)
 		return User{}, err
 	}
 
-	return User{
-		ID:        updatedUser.ID,
-		CreatedAt: database.ConvertFromPGTimestamptzToTime(updatedUser.CreatedAt),
-		UpdatedAt: database.ConvertFromPGTimestamptzToTime(updatedUser.UpdatedAt),
-		Name:      updatedUser.Name,
-		Mail:      updatedUser.Mail,
-	}, nil
+	return updatedUser, nil
 }
