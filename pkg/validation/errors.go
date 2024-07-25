@@ -9,5 +9,4 @@ var (
 	ErrValueTooShort            = errors.New("value is too short")
 	ErrValueTooLong             = errors.New("value is too long")
 	ErrPasswordDontMatchConfirm = errors.New("the two passwords must match")
-	ErrMustBeTrue               = errors.New("value must be true")
 )
