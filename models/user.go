@@ -14,3 +14,7 @@ type User struct {
 	Email           string
 	EmailVerifiedAt time.Time
 }
+
+func (u User) IsVerified() bool {
+	return !u.EmailVerifiedAt.IsZero()
+}

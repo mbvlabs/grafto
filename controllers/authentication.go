@@ -233,10 +233,11 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	_, err = c.userModel.UpdateUser(ctx.Request().Context(), models.UpdateUserValidation{
-		ID:   user.ID,
-		Name: user.Name,
-		Mail: user.Mail,
+	_, err = c.userModel.Update(ctx.Request().Context(), models.UpdateUserData{
+		ID:        user.ID,
+		UpdatedAt: time.Now(),
+		Name:      user.Name,
+		Email:     user.Mail,
 	})
 	if err != nil {
 		e, ok := err.(validator.ValidationErrors)

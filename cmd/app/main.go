@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -57,11 +56,8 @@ func main() {
 		[]byte(cfg.Auth.SessionEncryptionKey),
 	)
 
-	validator := validator.New()
-	validator.RegisterStructValidation(models.PasswordMatchValidation, models.NewUserValidation{})
-
 	authSvc := services.NewAuth(psql, authSessionStore, cfg)
-	userModelSvc := models.NewUserService(psql, authSvc, validator)
+	userModelSvc := models.NewUserService(psql, authSvc)
 
 	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 

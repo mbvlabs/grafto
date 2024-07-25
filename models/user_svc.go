@@ -5,10 +5,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
+	"github.com/mbv-labs/grafto/pkg/validation"
 )
 
 type userStorage interface {
@@ -23,35 +23,12 @@ type authService interface {
 }
 
 type UserService struct {
-	storage   userStorage
-	authSvc   authService
-	validator *validator.Validate
+	storage userStorage
+	authSvc authService
 }
 
-func NewUserService(storage userStorage, authSvc authService, v *validator.Validate) UserService {
-	return UserService{storage, authSvc, v}
-}
-
-type NewUserValidation struct {
-	ConfirmPassword string `validate:"required,gte=8"`
-	Name            string `validate:"required,gte=2"`
-	Mail            string `validate:"required,email"`
-	MailRegistered  bool   `validate:"ne=true"`
-	Password        string `validate:"required,gte=8"`
-}
-
-func PasswordMatchValidation(sl validator.StructLevel) {
-	data := sl.Current().Interface().(NewUserValidation)
-
-	if data.ConfirmPassword != data.Password {
-		sl.ReportError(
-			data.ConfirmPassword,
-			"",
-			"ConfirmPassword",
-			"",
-			"confirm password must match password",
-		)
-	}
+func NewUserService(storage userStorage, authSvc authService) UserService {
+	return UserService{storage, authSvc}
 }
 
 func (us UserService) ByEmail(ctx context.Context, email string) (User, error) {
@@ -63,41 +40,63 @@ func (us UserService) ByEmail(ctx context.Context, email string) (User, error) {
 	return user, nil
 }
 
+type CreateUserData struct {
+	ID              uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	Name            string
+	Email           string
+	Password        string
+	ConfirmPassword string
+}
+
+var createUserValidations = func(confirm string) map[string][]validation.Rule {
+	return map[string][]validation.Rule{
+		"ID":        {validation.RequiredRule},
+		"CreatedAt": {validation.RequiredRule},
+		"Name": {
+			validation.RequiredRule,
+			validation.MinLengthRule(2),
+			validation.MaxLengthRule(25),
+		},
+		"Email": {validation.RequiredRule, validation.ValidEmailRule},
+		"Password": {
+			validation.RequiredRule,
+			validation.MinLengthRule(6),
+			validation.PasswordMatchConfirmRule(confirm),
+		},
+	}
+}
+
 func (us UserService) New(
 	ctx context.Context,
-	data NewUserValidation,
+	data CreateUserData,
 ) (User, error) {
-	user, err := us.storage.QueryUserByEmail(ctx, data.Mail)
+	if err := validation.ValidateStruct(data, createUserValidations(data.ConfirmPassword)); err != nil {
+		return User{}, errors.Join(ErrFailValidation, err)
+	}
+
+	_, err := us.storage.QueryUserByEmail(ctx, data.Email)
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
-		telemetry.Logger.Error("could not check if email exists", "error", err)
+		telemetry.Logger.Error("could not query user by email", "error", err)
 		return User{}, err
 	}
-
-	newUserData := NewUserValidation{
-		ConfirmPassword: data.ConfirmPassword,
-		Name:            data.Name,
-		Mail:            data.Mail,
-		MailRegistered:  user.Email != "",
-		Password:        data.Password,
+	if err == nil {
+		return User{}, ErrUserAlreadyExists
 	}
 
-	if err := us.validator.Struct(newUserData); err != nil {
-		return User{}, err
-	}
-
-	hashedPassword, err := us.authSvc.HashAndPepperPassword(newUserData.Password)
+	hashedPassword, err := us.authSvc.HashAndPepperPassword(data.Password)
 	if err != nil {
 		telemetry.Logger.Error("error hashing and peppering password", "error", err)
 		return User{}, err
 	}
 
-	t := time.Now()
 	newUser, err := us.storage.InsertUser(ctx, User{
 		ID:        uuid.New(),
-		CreatedAt: t,
-		UpdatedAt: t,
-		Name:      newUserData.Name,
-		Email:     newUserData.Mail,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+		Name:      data.Name,
+		Email:     data.Email,
 	}, hashedPassword)
 	if err != nil {
 		telemetry.Logger.Error("could not insert user", "error", err)
@@ -107,30 +106,39 @@ func (us UserService) New(
 	return newUser, nil
 }
 
-type UpdateUserValidation struct {
-	ID   uuid.UUID `validate:"required"`
-	Name string    `validate:"required,gte=2"`
-	Mail string    `validate:"required,email"`
+type UpdateUserData struct {
+	ID        uuid.UUID
+	UpdatedAt time.Time
+	Name      string
+	Email     string
 }
 
-func (us UserService) UpdateUser(
-	ctx context.Context,
-	data UpdateUserValidation,
-) (User, error) {
-	validatedData := UpdateUserValidation{
-		Name: data.Name,
-		Mail: data.Mail,
+var updateUserValidations = func() map[string][]validation.Rule {
+	return map[string][]validation.Rule{
+		"ID":        {validation.RequiredRule},
+		"UpdatedAt": {validation.RequiredRule},
+		"Name": {
+			validation.RequiredRule,
+			validation.MinLengthRule(2),
+			validation.MaxLengthRule(25),
+		},
+		"Email": {validation.RequiredRule, validation.ValidEmailRule},
 	}
+}
 
-	if err := us.validator.Struct(validatedData); err != nil {
-		return User{}, err
+func (us UserService) Update(
+	ctx context.Context,
+	data UpdateUserData,
+) (User, error) {
+	if err := validation.ValidateStruct(data, updateUserValidations()); err != nil {
+		return User{}, errors.Join(ErrFailValidation, err)
 	}
 
 	updatedUser, err := us.storage.UpdateUser(ctx, User{
-		ID:        validatedData.ID,
-		UpdatedAt: time.Now(),
-		Name:      validatedData.Name,
-		Email:     validatedData.Mail,
+		ID:        data.ID,
+		UpdatedAt: data.UpdatedAt,
+		Name:      data.Name,
+		Email:     data.Email,
 	})
 	if err != nil {
 		telemetry.Logger.Error("could not insert user", "error", err)
