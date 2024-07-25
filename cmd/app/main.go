@@ -15,7 +15,8 @@ import (
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
-	"github.com/mbv-labs/grafto/repository/database"
+	"github.com/mbv-labs/grafto/repository/psql"
+	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/routes"
 	"github.com/mbv-labs/grafto/server"
 	mw "github.com/mbv-labs/grafto/server/middleware"
@@ -35,8 +36,16 @@ func main() {
 	router.Use(slogecho.New(logger))
 	router.Use(middleware.Recover())
 
-	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
+	conn, err := psql.CreatePooledConnection(
+		context.Background(),
+		cfg.Db.GetUrlString(),
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	db := database.New(conn)
+	psql := psql.NewPostgres(conn)
 
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 	mailClient := mail.NewMail(&postmark)
@@ -51,8 +60,8 @@ func main() {
 	validator := validator.New()
 	validator.RegisterStructValidation(models.PasswordMatchValidation, models.NewUserValidation{})
 
-	authSvc := services.NewAuth(db, authSessionStore, cfg)
-	userModelSvc := models.NewUserService(db, authSvc, validator)
+	authSvc := services.NewAuth(psql, authSessionStore, cfg)
+	userModelSvc := models.NewUserService(psql, authSvc, validator)
 
 	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 

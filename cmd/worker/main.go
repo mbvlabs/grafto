@@ -13,7 +13,8 @@ import (
 	"github.com/mbv-labs/grafto/pkg/mail"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/repository/database"
+	"github.com/mbv-labs/grafto/repository/psql"
+	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/riverqueue/river"
 )
 
@@ -26,27 +27,20 @@ func main() {
 	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
 	mailClient := mail.NewMail(&postmark)
 
-	conn := database.SetupDatabasePool(context.Background(), cfg.Db.GetUrlString())
+	conn, err := psql.CreatePooledConnection(context.Background(), cfg.Db.GetUrlString())
+	if err != nil {
+		panic(err)
+	}
 	db := database.New(conn)
 
 	jobStarted := make(chan struct{})
 
 	workers, err := queue.SetupWorkers(queue.WorkerDependencies{
-		Db:         db,
+		DB:         db,
 		MailClient: mailClient,
 	})
 	if err != nil {
 		panic(err)
-	}
-
-	periodicJobs := []*river.PeriodicJob{
-		river.NewPeriodicJob(
-			river.PeriodicInterval(24*time.Hour),
-			func() (river.JobArgs, *river.InsertOpts) {
-				return queue.RemoveUnverifiedUsersJobArgs{}, nil
-			},
-			&river.PeriodicJobOpts{RunOnStart: true},
-		),
 	}
 
 	q := map[string]river.QueueConfig{river.QueueDefault: {MaxWorkers: 100}}
@@ -55,7 +49,6 @@ func main() {
 		queue.WithQueues(q),
 		queue.WithWorkers(workers),
 		queue.WithLogger(logger),
-		queue.WithPeriodicJobs(periodicJobs),
 	)
 
 	if err := riverClient.Start(ctx); err != nil {

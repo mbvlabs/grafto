@@ -15,7 +15,7 @@ import (
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
-	"github.com/mbv-labs/grafto/repository/database"
+	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
@@ -101,7 +101,7 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := c.db.QueryUserByMail(ctx.Request().Context(), payload.Mail)
+	user, err := c.db.QueryUserByEmail(ctx.Request().Context(), payload.Mail)
 	if err != nil {
 		failureOccurred := true
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -225,7 +225,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := c.db.QueryUser(ctx.Request().Context(), token.UserID)
+	user, err := c.db.QueryUserByID(ctx.Request().Context(), token.UserID)
 	if err != nil {
 		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
 			HasError: true,
@@ -329,10 +329,18 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
+	user, err := c.db.QueryUserByID(ctx.Request().Context(), token.UserID)
+	if err != nil {
+		return c.InternalError(ctx)
+	}
+
 	confirmTime := time.Now()
-	user, err := c.db.ConfirmUserEmail(ctx.Request().Context(), database.ConfirmUserEmailParams{
+	updatedUser, err := c.db.UpdateUser(ctx.Request().Context(), database.UpdateUserParams{
 		ID:             token.UserID,
 		UpdatedAt:      database.ConvertToPGTimestamptz(confirmTime),
+		Name:           user.Name,
+		Mail:           user.Mail,
+		Password:       user.Password,
 		MailVerifiedAt: database.ConvertToPGTimestamptz(confirmTime),
 	})
 	if err != nil {
@@ -351,7 +359,7 @@ func (c *Controller) VerifyEmail(ctx echo.Context) error {
 		return c.InternalError(ctx)
 	}
 
-	_, err = c.authSvc.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
+	_, err = c.authSvc.NewUserSession(ctx.Request(), ctx.Response(), updatedUser.ID)
 	if err != nil {
 		return c.InternalError(ctx)
 	}
