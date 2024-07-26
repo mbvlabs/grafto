@@ -55,7 +55,7 @@ type UpdateUserData struct {
 	Email     string
 }
 
-var updateUserValidations = func() map[string][]validation.Rule {
+var UpdateUserValidations = func() map[string][]validation.Rule {
 	return map[string][]validation.Rule{
 		"ID":        {validation.RequiredRule},
 		"UpdatedAt": {validation.RequiredRule},

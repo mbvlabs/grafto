@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateUser(t *testing.T) {
+func TestCreateUserValidations(t *testing.T) {
 	tests := map[string]struct {
 		data     models.CreateUserData
 		expected []error
@@ -68,6 +68,81 @@ func TestCreateUser(t *testing.T) {
 			actualErrors := validation.ValidateStruct(
 				test.data,
 				models.CreateUserValidations(test.data.ConfirmPassword),
+			)
+			if test.expected == nil {
+				assert.Equal(t, nil, actualErrors,
+					fmt.Sprintf(
+						"test failed, expected: %v but got: %v",
+						test.expected,
+						actualErrors,
+					),
+				)
+			}
+
+			if test.expected != nil {
+				var valiErrors validation.ValidationErrors
+				if ok := errors.As(actualErrors, &valiErrors); !ok {
+					t.Fail()
+				}
+
+				assert.Equal(
+					t,
+					test.expected,
+					valiErrors.UnwrapViolations(),
+					fmt.Sprintf(
+						"test failed, expected: %v but got: %v",
+						test.expected,
+						actualErrors,
+					),
+				)
+			}
+		})
+	}
+}
+
+func TestUpdateUserValidations(t *testing.T) {
+	tests := map[string]struct {
+		data     models.UpdateUserData
+		expected []error
+	}{
+		"should update a new user without failing validation": {
+			data: models.UpdateUserData{
+				ID:        uuid.New(),
+				UpdatedAt: time.Now(),
+				Name:      "Jon Snow",
+				Email:     "knowseverything@gmail.com",
+			},
+			expected: nil,
+		},
+		"should return fail validation with errors:'ErrIsRequired'": {
+			data: models.UpdateUserData{
+				UpdatedAt: time.Now(),
+				Name:      "King of the North",
+				Email:     "theking@stark.com",
+			},
+			expected: []error{
+				validation.ErrIsRequired,
+			},
+		},
+		"should return fail validation with errors:'ErrIsRequired, ErrValueTooShort, ErrInvalidEmail'": {
+			data: models.UpdateUserData{
+				UpdatedAt: time.Now(),
+				Name:      "J",
+				Email:     "thekingstark.com",
+			},
+			expected: []error{
+				validation.ErrIsRequired,
+				validation.ErrValueTooShort,
+				validation.ErrInvalidEmail,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			actualErrors := validation.ValidateStruct(
+				test.data,
+				models.UpdateUserValidations(),
 			)
 			if test.expected == nil {
 				assert.Equal(t, nil, actualErrors,

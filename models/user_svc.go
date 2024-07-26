@@ -81,7 +81,7 @@ func (us UserService) Update(
 	ctx context.Context,
 	data UpdateUserData,
 ) (User, error) {
-	if err := validation.ValidateStruct(data, updateUserValidations()); err != nil {
+	if err := validation.ValidateStruct(data, UpdateUserValidations()); err != nil {
 		return User{}, errors.Join(ErrFailValidation, err)
 	}
 
