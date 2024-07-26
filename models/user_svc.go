@@ -3,7 +3,6 @@ package models
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -40,39 +39,11 @@ func (us UserService) ByEmail(ctx context.Context, email string) (User, error) {
 	return user, nil
 }
 
-type CreateUserData struct {
-	ID              uuid.UUID
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	Name            string
-	Email           string
-	Password        string
-	ConfirmPassword string
-}
-
-var createUserValidations = func(confirm string) map[string][]validation.Rule {
-	return map[string][]validation.Rule{
-		"ID":        {validation.RequiredRule},
-		"CreatedAt": {validation.RequiredRule},
-		"Name": {
-			validation.RequiredRule,
-			validation.MinLengthRule(2),
-			validation.MaxLengthRule(25),
-		},
-		"Email": {validation.RequiredRule, validation.ValidEmailRule},
-		"Password": {
-			validation.RequiredRule,
-			validation.MinLengthRule(6),
-			validation.PasswordMatchConfirmRule(confirm),
-		},
-	}
-}
-
 func (us UserService) New(
 	ctx context.Context,
 	data CreateUserData,
 ) (User, error) {
-	if err := validation.ValidateStruct(data, createUserValidations(data.ConfirmPassword)); err != nil {
+	if err := validation.ValidateStruct(data, CreateUserValidations(data.ConfirmPassword)); err != nil {
 		return User{}, errors.Join(ErrFailValidation, err)
 	}
 
@@ -104,26 +75,6 @@ func (us UserService) New(
 	}
 
 	return newUser, nil
-}
-
-type UpdateUserData struct {
-	ID        uuid.UUID
-	UpdatedAt time.Time
-	Name      string
-	Email     string
-}
-
-var updateUserValidations = func() map[string][]validation.Rule {
-	return map[string][]validation.Rule{
-		"ID":        {validation.RequiredRule},
-		"UpdatedAt": {validation.RequiredRule},
-		"Name": {
-			validation.RequiredRule,
-			validation.MinLengthRule(2),
-			validation.MaxLengthRule(25),
-		},
-		"Email": {validation.RequiredRule, validation.ValidEmailRule},
-	}
 }
 
 func (us UserService) Update(
