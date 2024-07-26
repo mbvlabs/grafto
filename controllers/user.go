@@ -40,9 +40,13 @@ func (c *Controller) StoreUser(ctx echo.Context) error {
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := c.userModel.New(ctx.Request().Context(), models.NewUserValidation{
+	t := time.Now()
+	user, err := c.userModel.New(ctx.Request().Context(), models.CreateUserData{
+		ID:              uuid.New(),
+		CreatedAt:       t,
+		UpdatedAt:       t,
 		Name:            payload.UserName,
-		Mail:            payload.Mail,
+		Email:           payload.Mail,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
 	})
