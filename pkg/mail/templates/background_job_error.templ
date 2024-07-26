@@ -1,13 +1,15 @@
 package templates
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"github.com/golang-module/carbon/v2"
+	"github.com/riverqueue/river/rivertype"
+	"github.com/vanng822/go-premailer/premailer"
+	"io"
 	"text/template"
 	"time"
-	"github.com/riverqueue/river/rivertype"
-
-	"github.com/golang-module/carbon/v2"
-	"github.com/vanng822/go-premailer/premailer"
 )
 
 const backgroundJobErrorTmplName = "background_job_error"

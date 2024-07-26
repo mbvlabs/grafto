@@ -66,7 +66,7 @@ func (a Auth) AuthenticateUser(
 		return err
 	}
 
-	if verifiedAt := user.EmailVerifiedAt; verifiedAt.IsZero() {
+	if isVerified := user.IsVerified(); !isVerified {
 		return ErrEmailNotValidated
 	}
 

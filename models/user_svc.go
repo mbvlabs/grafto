@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -15,6 +16,12 @@ type userStorage interface {
 	QueryUserByEmail(ctx context.Context, mail string) (User, error)
 	QueryUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	UpdateUser(ctx context.Context, arg User) (User, error)
+	UpdateUserPassword(
+		ctx context.Context,
+		userID uuid.UUID,
+		newPassword string,
+		updatedAt time.Time,
+	) error
 }
 
 type authService interface {
@@ -97,4 +104,17 @@ func (us UserService) Update(
 	}
 
 	return updatedUser, nil
+}
+
+func (us UserService) ChangePassword(ctx context.Context, data ChangeUserPasswordData) error {
+	if err := validation.ValidateStruct(data, UpdateUserValidations()); err != nil {
+		return errors.Join(ErrFailValidation, err)
+	}
+
+	hashedPassword, err := us.authSvc.HashAndPepperPassword(data.Password)
+	if err != nil {
+		return err
+	}
+
+	return us.storage.UpdateUserPassword(ctx, data.ID, hashedPassword, data.UpdatedAt)
 }

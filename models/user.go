@@ -67,3 +67,22 @@ var UpdateUserValidations = func() map[string][]validation.Rule {
 		"Email": {validation.RequiredRule, validation.ValidEmailRule},
 	}
 }
+
+type ChangeUserPasswordData struct {
+	ID              uuid.UUID
+	UpdatedAt       time.Time
+	Password        string
+	ConfirmPassword string
+}
+
+var ChangeUserPasswordValidations = func(confirm string) map[string][]validation.Rule {
+	return map[string][]validation.Rule{
+		"ID":        {validation.RequiredRule},
+		"UpdatedAt": {validation.RequiredRule},
+		"Password": {
+			validation.RequiredRule,
+			validation.MinLengthRule(6),
+			validation.PasswordMatchConfirmRule(confirm),
+		},
+	}
+}

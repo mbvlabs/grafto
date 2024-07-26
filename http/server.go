@@ -1,4 +1,4 @@
-package server
+package http
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/controllers"
 	"github.com/mbv-labs/grafto/pkg/config"
 )
 
@@ -26,7 +25,6 @@ type Server struct {
 
 func NewServer(
 	router *echo.Echo,
-	controllers controllers.Controller,
 	logger *slog.Logger,
 	cfg config.Cfg,
 ) Server {
@@ -37,7 +35,7 @@ func NewServer(
 	srv := &http.Server{
 		Addr: fmt.Sprintf("%v:%v", host, port),
 		Handler: csrf.Protect(
-			[]byte(cfg.Auth.CsrfToken), csrf.Secure(isProduction))(router),
+			[]byte(cfg.Auth.CsrfToken), csrf.Secure(isProduction), csrf.Path("/"))(router),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}

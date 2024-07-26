@@ -1,9 +1,12 @@
 package templates
 
 import (
+	"bytes"
+	"context"
 	"fmt"
-	"text/template"
 	"github.com/vanng822/go-premailer/premailer"
+	"io"
+	"text/template"
 )
 
 const userSignupTmplName = "user_signup_welcome"

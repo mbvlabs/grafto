@@ -7,18 +7,17 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/mbv-labs/grafto/controllers"
+	"github.com/mbv-labs/grafto/http"
+	"github.com/mbv-labs/grafto/http/handlers"
+	mw "github.com/mbv-labs/grafto/http/middleware"
 	"github.com/mbv-labs/grafto/models"
 	"github.com/mbv-labs/grafto/pkg/config"
-	"github.com/mbv-labs/grafto/pkg/mail"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
 	"github.com/mbv-labs/grafto/repository/psql"
 	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/routes"
-	"github.com/mbv-labs/grafto/server"
-	mw "github.com/mbv-labs/grafto/server/middleware"
 	"github.com/mbv-labs/grafto/services"
 	slogecho "github.com/samber/slog-echo"
 )
@@ -46,8 +45,8 @@ func main() {
 	db := database.New(conn)
 	psql := psql.NewPostgres(conn)
 
-	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
-	mailClient := mail.NewMail(&postmark)
+	// postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
+	// mailClient := mail.NewMail(&postmark)
 
 	tokenManager := tokens.NewManager(cfg.Auth.TokenSigningKey)
 
@@ -61,23 +60,39 @@ func main() {
 
 	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 
-	controllers := controllers.NewController(
-		*db,
-		mailClient,
-		userModelSvc,
+	flashStore := handlers.NewCookieStore("")
+	baseHandler := handlers.NewDependencies(cfg, db, flashStore, riverClient)
+	appHandlers := handlers.NewApp(baseHandler)
+	dashboardHandlers := handlers.NewDashboard(baseHandler)
+	registrationHandlers := handlers.NewRegistration(
 		authSvc,
+		baseHandler,
+		userModelSvc,
 		*tokenManager,
-		cfg,
-		riverClient,
-		authSessionStore,
+	)
+	apiHandlers := handlers.NewApi()
+	authenticationHandlers := handlers.NewAuthentication(
+		authSvc,
+		baseHandler,
+		userModelSvc,
+		*tokenManager,
 	)
 
 	serverMW := mw.NewMiddleware(authSvc)
 
-	routes := routes.NewRoutes(controllers, serverMW, cfg)
+	routes := routes.NewRoutes(
+		appHandlers,
+		dashboardHandlers,
+		authenticationHandlers,
+		registrationHandlers,
+		apiHandlers,
+		baseHandler,
+		serverMW,
+		cfg,
+	)
 	router = routes.SetupRoutes()
 
-	server := server.NewServer(router, controllers, logger, cfg)
+	server := http.NewServer(router, logger, cfg)
 
 	server.Start()
 }
