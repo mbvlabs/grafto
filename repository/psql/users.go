@@ -109,16 +109,17 @@ func (p Postgres) UpdateUserPassword(
 	ctx context.Context,
 	userID uuid.UUID,
 	newPassword string,
+	updatedAt time.Time,
 ) error {
-	updatedAt := pgtype.Timestamptz{
-		Time:  time.Now(),
+	parsedUpdatedAt := pgtype.Timestamptz{
+		Time:  updatedAt,
 		Valid: true,
 	}
 
 	if err := p.Queries.ChangeUserPassword(ctx, database.ChangeUserPasswordParams{
 		ID:        userID,
 		Password:  newPassword,
-		UpdatedAt: updatedAt,
+		UpdatedAt: parsedUpdatedAt,
 	}); err != nil {
 		return err
 	}

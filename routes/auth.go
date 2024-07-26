@@ -2,31 +2,20 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/controllers"
-	"github.com/mbv-labs/grafto/server/middleware"
+	"github.com/mbv-labs/grafto/http/handlers"
+	"github.com/mbv-labs/grafto/http/middleware"
 )
 
 func authRoutes(
 	router *echo.Echo,
-	controllers controllers.Controller,
+	controllers handlers.Authentication,
 	middleware middleware.Middleware,
 ) {
-	router.GET("/register", func(c echo.Context) error {
-		return controllers.CreateUser(c)
-	})
-	router.POST("/register", func(c echo.Context) error {
-		return controllers.StoreUser(c)
-	})
-
 	router.GET("/login", func(c echo.Context) error {
-		return controllers.Login(c)
+		return controllers.CreateAuthenticatedSession(c)
 	})
 	router.POST("/login", func(c echo.Context) error {
 		return controllers.StoreAuthenticatedSession(c)
-	})
-
-	router.GET("/verify-email", func(c echo.Context) error {
-		return controllers.VerifyEmail(c)
 	})
 
 	router.GET("/forgot-password", func(c echo.Context) error {

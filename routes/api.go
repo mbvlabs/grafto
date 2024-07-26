@@ -2,14 +2,12 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/controllers"
-	"github.com/mbv-labs/grafto/server/middleware"
+	"github.com/mbv-labs/grafto/http/handlers"
 )
 
-func apiRoutes(
+func apiV1Routes(
 	router *echo.Group,
-	controllers controllers.Controller,
-	middleware middleware.Middleware,
+	controllers handlers.Api,
 ) {
 	router.GET("/health", func(c echo.Context) error {
 		return controllers.AppHealth(c)

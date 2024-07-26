@@ -1,11 +1,10 @@
-package controllers
+package handlers
 
 import (
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5"
@@ -15,26 +14,43 @@ import (
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/tokens"
+	"github.com/mbv-labs/grafto/pkg/validation"
 	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
 )
 
-func (c *Controller) Login(ctx echo.Context) error {
+type Authentication struct {
+	Base
+	authService services.Auth
+	userModel   models.UserService
+	tknManager  tokens.Manager
+}
+
+func NewAuthentication(
+	authSvc services.Auth,
+	base Base,
+	userSvc models.UserService,
+	tknManager tokens.Manager,
+) Authentication {
+	return Authentication{base, authSvc, userSvc, tknManager}
+}
+
+func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
 	return authentication.LoginPage(authentication.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
-type UserLoginPayload struct {
+type StoreAuthenticatedSessionPayload struct {
 	Mail       string `form:"email"`
 	Password   string `form:"password"`
 	RememberMe string `form:"remember_me"`
 }
 
-func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
-	var payload UserLoginPayload
+func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
+	var payload StoreAuthenticatedSessionPayload
 	if err := ctx.Bind(&payload); err != nil {
 		telemetry.Logger.ErrorContext(
 			ctx.Request().Context(),
@@ -46,7 +62,7 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	if err := c.authSvc.AuthenticateUser(
+	if err := a.authService.AuthenticateUser(
 		ctx.Request().Context(),
 		payload.Mail,
 		payload.Password,
@@ -72,12 +88,12 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := c.userModel.ByEmail(ctx.Request().Context(), payload.Mail)
+	user, err := a.userModel.ByEmail(ctx.Request().Context(), payload.Mail)
 	if err != nil {
-		return c.InternalError(ctx)
+		return a.InternalError(ctx)
 	}
 
-	_, err = c.authSvc.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
+	_, err = a.authService.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
 	if err != nil {
 		return err
 	}
@@ -85,23 +101,23 @@ func (c *Controller) StoreAuthenticatedSession(ctx echo.Context) error {
 	return authentication.LoginResponse(false).Render(views.ExtractRenderDeps(ctx))
 }
 
-func (c *Controller) CreatePasswordReset(ctx echo.Context) error {
+func (a *Authentication) CreatePasswordReset(ctx echo.Context) error {
 	return authentication.ForgottenPasswordPage(authentication.ForgottenPasswordPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type StorePasswordResetPayload struct {
-	Mail string `form:"email"`
+	Email string `form:"email"`
 }
 
-func (c *Controller) StorePasswordReset(ctx echo.Context) error {
+func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := c.db.QueryUserByEmail(ctx.Request().Context(), payload.Mail)
+	user, err := a.db.QueryUserByEmail(ctx.Request().Context(), payload.Email)
 	if err != nil {
 		failureOccurred := true
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -112,14 +128,14 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	plainText, hashedToken, err := c.tknManager.GenerateToken()
+	plainText, hashedToken, err := a.tknManager.GenerateToken()
 	if err != nil {
 		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	resetPWToken := tokens.CreateResetPasswordToken(plainText, hashedToken)
 
-	if err := c.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
+	if err := a.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
 		ID:        uuid.New(),
 		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
 		Hash:      resetPWToken.Hash,
@@ -134,8 +150,8 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 	pwResetMail := &templates.PasswordResetMail{
 		ResetPasswordLink: fmt.Sprintf(
 			"%s://%s/reset-password?token=%s",
-			c.cfg.App.AppScheme,
-			c.cfg.App.AppHost,
+			a.cfg.App.AppScheme,
+			a.cfg.App.AppHost,
 			resetPWToken.GetPlainText(),
 		),
 	}
@@ -149,9 +165,9 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	_, err = c.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
+	_, err = a.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
 		To:          user.Mail,
-		From:        c.cfg.App.DefaultSenderSignature,
+		From:        a.cfg.App.DefaultSenderSignature,
 		Subject:     "Password Reset Request",
 		TextVersion: textVersion,
 		HtmlVersion: htmlVersion,
@@ -163,14 +179,14 @@ func (c *Controller) StorePasswordReset(ctx echo.Context) error {
 	return authentication.ForgottenPasswordSuccess(false).Render(views.ExtractRenderDeps(ctx))
 }
 
-type PasswordResetToken struct {
+type PasswordResetTokenPayload struct {
 	Token string `query:"token"`
 }
 
-func (c *Controller) CreateResetPassword(ctx echo.Context) error {
-	var passwordResetToken PasswordResetToken
+func (a *Authentication) CreateResetPassword(ctx echo.Context) error {
+	var passwordResetToken PasswordResetTokenPayload
 	if err := ctx.Bind(&passwordResetToken); err != nil {
-		return c.InternalError(ctx)
+		return a.InternalError(ctx)
 	}
 
 	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{
@@ -185,7 +201,7 @@ type ResetPasswordPayload struct {
 	Token           string `form:"token"`
 }
 
-func (c *Controller) StoreResetPassword(ctx echo.Context) error {
+func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
@@ -194,7 +210,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	hashedToken, err := c.tknManager.Hash(payload.Token)
+	hashedToken, err := a.tknManager.Hash(payload.Token)
 	if err != nil {
 		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
 			HasError: true,
@@ -202,7 +218,7 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	token, err := c.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
+	token, err := a.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
@@ -225,31 +241,18 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	user, err := c.db.QueryUserByID(ctx.Request().Context(), token.UserID)
-	if err != nil {
-		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-			HasError: true,
-			Msg:      "An error occurred while trying to reset your password. Please try again.",
-		}).Render(views.ExtractRenderDeps(ctx))
-	}
-
-	_, err = c.userModel.Update(ctx.Request().Context(), models.UpdateUserData{
-		ID:        user.ID,
-		UpdatedAt: time.Now(),
-		Name:      user.Name,
-		Email:     user.Mail,
-	})
-	if err != nil {
-		e, ok := err.(validator.ValidationErrors)
-		if !ok {
-			telemetry.Logger.Info("internal error", "ok", ok)
-		}
-
-		if len(e) == 0 {
-			return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-				HasError: true,
-				Msg:      "An error occurred while trying to reset your password. Please try again.",
-			}).Render(views.ExtractRenderDeps(ctx))
+	err = a.userModel.ChangePassword(ctx.Request().Context(),
+		models.ChangeUserPasswordData{
+			ID:              token.UserID,
+			UpdatedAt:       time.Now(),
+			Password:        payload.Password,
+			ConfirmPassword: payload.ConfirmPassword,
+		},
+	)
+	if err != nil && errors.Is(err, models.ErrFailValidation) {
+		var valiErrs validation.ValidationErrors
+		if ok := errors.As(err, &valiErrs); !ok {
+			return a.InternalError(ctx)
 		}
 
 		props := authentication.ResetPasswordFormProps{
@@ -257,29 +260,32 @@ func (c *Controller) StoreResetPassword(ctx echo.Context) error {
 			ResetToken: token.Hash,
 		}
 
-		for _, validationError := range e {
-			switch validationError.StructField() {
+		for _, validationError := range valiErrs {
+			switch validationError.Field() {
 			case "Password", "ConfirmPassword":
 				props.Password = views.InputElementError{
 					Invalid:    true,
-					InvalidMsg: validationError.Param(),
+					InvalidMsg: validationError.ErrorForHumans(),
 				}
 				props.ConfirmPassword = views.InputElementError{
 					Invalid:    true,
-					InvalidMsg: validationError.Param(),
+					InvalidMsg: validationError.ErrorForHumans(),
 				}
 			}
 		}
 
 		return authentication.ResetPasswordForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
+	if err != nil {
+		return a.InternalError(ctx)
+	}
 
-	if err := c.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
+	if err := a.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return c.InternalError(ctx)
+		return a.InternalError(ctx)
 	}
 
 	return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
