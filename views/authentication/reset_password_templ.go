@@ -13,11 +13,13 @@ import (
 	"github.com/mbv-labs/grafto/views/internal/layouts"
 )
 
+var PasswordNotMatchConfirm string = ""
+var PasswordNotValid string = ""
+
 type ResetPasswordFormProps struct {
-	CsrfToken       string
-	ResetToken      string
-	Password        views.InputElementError
-	ConfirmPassword views.InputElementError
+	CsrfToken  string
+	ResetToken string
+	Errors     views.Errors
 }
 
 func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
@@ -45,7 +47,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(props.CsrfToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 20, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 22, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -58,7 +60,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(props.ResetToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 21, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 23, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -68,7 +70,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if props.Password.Invalid {
+		if props.Errors[PasswordNotValid] != "" {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3\"><svg class=\"h-5 w-5 text-red-500\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z\"></path></svg></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -78,15 +80,15 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if props.ConfirmPassword.Invalid {
+		if props.Errors[PasswordNotMatchConfirm] != "" {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"block text-sm mb-2 text-red-500\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.ConfirmPassword.InvalidMsg)
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.Errors[PasswordNotMatchConfirm])
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 56, Col: 84}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 58, Col: 89}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -101,7 +103,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if props.ConfirmPassword.Invalid {
+		if props.Errors[PasswordNotMatchConfirm] != "" {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3\"><svg class=\"h-5 w-5 text-red-500\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 \n                                        0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z\"></path></svg></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -150,7 +152,7 @@ func ResetPasswordResponse(props ResetPasswordResponseProps) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(props.Msg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 114, Col: 15}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 116, Col: 15}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

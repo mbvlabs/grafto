@@ -59,7 +59,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			err,
 		)
 
-		return authentication.LoginResponse(true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.LoginResponse().Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := a.authService.AuthenticateUser(
@@ -74,18 +74,17 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			err,
 		)
 
-		errMsg := "An error occurred while trying to authenticate you. Please try again."
+		var errors views.Errors
 
 		switch err {
 		case services.ErrPasswordNotMatch, services.ErrUserNotExist:
-			errMsg = "The password you entered is incorrect."
+			errors[authentication.ErrAuthDetailsWrong] = "The email or password you entered is incorrect."
 		case services.ErrEmailNotValidated:
-			errMsg = "You need to verify your email before you can log in. Please check your inbox for a verification email."
+			errors[authentication.ErrEmailNotValidated] = "Your email has not yet been verified."
 		}
-		return authentication.LoginForm(csrf.Token(ctx.Request()), authentication.LoginFormProps{
-			HasError: true,
-			ErrMsg:   errMsg,
-		}).Render(views.ExtractRenderDeps(ctx))
+
+		return authentication.LoginForm(csrf.Token(ctx.Request()), errors).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := a.userModel.ByEmail(ctx.Request().Context(), payload.Mail)
@@ -98,7 +97,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		return err
 	}
 
-	return authentication.LoginResponse(false).Render(views.ExtractRenderDeps(ctx))
+	return authentication.LoginResponse().Render(views.ExtractRenderDeps(ctx))
 }
 
 func (a *Authentication) CreatePasswordReset(ctx echo.Context) error {
@@ -262,15 +261,10 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 
 		for _, validationError := range valiErrs {
 			switch validationError.Field() {
-			case "Password", "ConfirmPassword":
-				props.Password = views.InputElementError{
-					Invalid:    true,
-					InvalidMsg: validationError.ErrorForHumans(),
-				}
-				props.ConfirmPassword = views.InputElementError{
-					Invalid:    true,
-					InvalidMsg: validationError.ErrorForHumans(),
-				}
+			case "Password":
+				props.Errors[authentication.PasswordNotValid] = validationError.ErrorForHumans()
+			case "ConfirmPassword":
+				props.Errors[authentication.PasswordNotMatchConfirm] = validationError.ErrorForHumans()
 			}
 		}
 

@@ -864,6 +864,12 @@ html {
   }
 }
 
+.avatar.placeholder > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (hover:hover) {
   .label a:hover {
     --tw-text-opacity: 1;
@@ -1245,6 +1251,13 @@ html {
   color: var(--fallback-bc,oklch(var(--bc)/var(--tw-text-opacity)));
 }
 
+.label-text-alt {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  --tw-text-opacity: 1;
+  color: var(--fallback-bc,oklch(var(--bc)/var(--tw-text-opacity)));
+}
+
 .input input:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -1252,6 +1265,10 @@ html {
 
 .input[list]::-webkit-calendar-picker-indicator {
   line-height: 1em;
+}
+
+.input-bordered {
+  border-color: var(--fallback-bc,oklch(var(--bc)/0.2));
 }
 
 .input:focus,
@@ -1262,6 +1279,18 @@ html {
   outline-width: 2px;
   outline-offset: 2px;
   outline-color: var(--fallback-bc,oklch(var(--bc)/0.2));
+}
+
+.input-error {
+  --tw-border-opacity: 1;
+  border-color: var(--fallback-er,oklch(var(--er)/var(--tw-border-opacity)));
+}
+
+.input-error:focus,
+    .input-error:focus-within {
+  --tw-border-opacity: 1;
+  border-color: var(--fallback-er,oklch(var(--er)/var(--tw-border-opacity)));
+  outline-color: var(--fallback-er,oklch(var(--er)/1));
 }
 
 .input-disabled,
@@ -1522,10 +1551,6 @@ html {
 
 .mb-2 {
   margin-bottom: 0.5rem;
-}
-
-.ml-2 {
-  margin-left: 0.5rem;
 }
 
 .mr-4 {
@@ -1858,6 +1883,11 @@ html {
   color: rgb(220 38 38 / var(--tw-text-opacity));
 }
 
+.text-red-800 {
+  --tw-text-opacity: 1;
+  color: rgb(153 27 27 / var(--tw-text-opacity));
+}
+
 .text-secondary {
   --tw-text-opacity: 1;
   color: var(--fallback-s,oklch(var(--s)/var(--tw-text-opacity)));
@@ -1866,6 +1896,11 @@ html {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.text-yellow-400 {
+  --tw-text-opacity: 1;
+  color: rgb(250 204 21 / var(--tw-text-opacity));
 }
 
 .decoration-2 {

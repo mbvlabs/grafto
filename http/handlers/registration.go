@@ -44,8 +44,8 @@ func (r *Registration) CreateUser(ctx echo.Context) error {
 }
 
 type StoreUserPayload struct {
-	UserName        string `form:"user_name"`
-	Mail            string `form:"email"`
+	UserName        string `form:"username"`
+	Email           string `form:"email"`
 	Password        string `form:"password"`
 	ConfirmPassword string `form:"confirm_password"`
 }
@@ -63,7 +63,7 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		CreatedAt:       t,
 		UpdatedAt:       t,
 		Name:            payload.UserName,
-		Email:           payload.Mail,
+		Email:           payload.Email,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
 	})
@@ -79,11 +79,14 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		}
 
 		props := authentication.RegisterFormProps{
-			NameInput: views.InputElementError{
-				OldValue: payload.UserName,
-			},
-			EmailInput: views.InputElementError{
-				OldValue: payload.Mail,
+			Fields: map[string]views.InputFieldProps{
+				authentication.UsernameField: {
+					Value: payload.UserName,
+				},
+				authentication.EmailField: {
+					Value: payload.Email,
+				},
+				authentication.PasswordField: {},
 			},
 			CsrfToken: csrf.Token(ctx.Request()),
 		}
@@ -91,23 +94,43 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		for _, validationError := range valiErr {
 			switch validationError.Field() {
 			case "Name":
-				props.NameInput.Invalid = true
-				// TODO can be multiple errors and should be reflected in the UI
-				props.NameInput.InvalidMsg = validationError.ErrorForHumans()
-			case "MailRegistered":
-				props.EmailInput.Invalid = true
-				// TODO can be multiple errors and should be reflected in the UI
-				props.EmailInput.InvalidMsg = validationError.ErrorForHumans()
-			case "Password", "ConfirmPassword":
-				props.PasswordInput = views.InputElementError{
-					Invalid: true,
-					// TODO can be multiple errors and should be reflected in the UI
-					InvalidMsg: validationError.ErrorForHumans(),
+				if entry, ok := props.Fields[authentication.UsernameField]; ok {
+					causes := validationError.Causes()
+
+					var errMsgs []string
+					for _, cause := range causes {
+						errMsgs = append(errMsgs, cause.Error())
+					}
+
+					entry.ErrorMsgs = errMsgs
+
+					props.Fields[authentication.UsernameField] = entry
 				}
-				props.ConfirmPassword = views.InputElementError{
-					Invalid: true,
-					// TODO can be multiple errors and should be reflected in the UI
-					InvalidMsg: validationError.ErrorForHumans(),
+			case "Email":
+				if entry, ok := props.Fields[authentication.EmailField]; ok {
+					causes := validationError.Causes()
+
+					var errMsgs []string
+					for _, cause := range causes {
+						errMsgs = append(errMsgs, cause.Error())
+					}
+
+					entry.ErrorMsgs = errMsgs
+
+					props.Fields[authentication.EmailField] = entry
+				}
+			case "Password":
+				if entry, ok := props.Fields[authentication.PasswordField]; ok {
+					causes := validationError.Causes()
+
+					var errMsgs []string
+					for _, cause := range causes {
+						errMsgs = append(errMsgs, cause.Error())
+					}
+
+					entry.ErrorMsgs = errMsgs
+
+					props.Fields[authentication.PasswordField] = entry
 				}
 			}
 		}

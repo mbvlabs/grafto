@@ -1,0 +1,31 @@
+package views
+
+import "strings"
+
+type InputFieldProps struct {
+	Value     string
+	ErrorMsgs []string
+}
+
+templ InputField(title, fieldType, fieldName, placeholder string, attributes templ.Attributes, props InputFieldProps) {
+	<label class="form-control w-full">
+		<div class="label">
+			<span class="label-text">{ title }</span>
+		</div>
+		<input
+			{ attributes... }
+			class={ "input input-bordered w-full", templ.KV( "input-error", len(props.ErrorMsgs)> 0) }
+			type={ fieldType }
+			placeholder={ placeholder }
+			value={ props.Value }
+			name={ fieldName }
+		/>
+		if props.ErrorMsgs != nil {
+			<div class="label">
+				for _, errMsg := range props.ErrorMsgs {
+					<span class="label-text-alt">{ strings.ToUpper(errMsg) }</span>
+				}
+			</div>
+		}
+	</label>
+}

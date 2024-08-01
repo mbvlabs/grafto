@@ -1,11 +1,24 @@
 package views
 
-import "github.com/labstack/echo/v4"
+// type Error struct {
+// 	Msg      string
+// 	OldValue string
+// }
+//
+// func (e Error) Exists() bool {
+// 	return e.Msg != "" || e.OldValue != ""
+// }
 
-type InternalServerErrData struct {
-	FromLocation string
-}
+// type Errors map[string]Error
 
-func InternalServerErr(ctx echo.Context, data InternalServerErrData) error {
-	return nil
-}
+type Errors map[string]string
+
+// import "github.com/labstack/echo/v4"
+//
+// type InternalServerErrData struct {
+// 	FromLocation string
+// }
+//
+// func InternalServerErr(ctx echo.Context, data InternalServerErrData) error {
+// 	return nil
+// }
