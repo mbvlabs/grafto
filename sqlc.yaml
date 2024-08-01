@@ -8,6 +8,7 @@ sql:
       package: "database"
       out: "repository/psql/database"
       output_db_file_name: "database.go"
+      output_models_file_name: "entities.go"
       sql_package: "pgx/v5"
       overrides:
         - db_type: "pg_catalog.bool"
