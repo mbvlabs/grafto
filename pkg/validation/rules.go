@@ -10,7 +10,8 @@ import (
 type Rule interface {
 	IsViolated(val any) bool
 	Violation() error
-	ViolationForHumans(val string) error
+	// TODO: should maybe be named HumanExplanation/HumanDescription/Description?
+	ViolationForHumans(val string) string
 }
 
 func PasswordMatchConfirmRule(confirm string) passwordMatchConfirm {
@@ -36,10 +37,8 @@ func (p passwordMatchConfirm) Violation() error {
 }
 
 // ViolationForHumans implements Rule.
-func (p passwordMatchConfirm) ViolationForHumans(val string) error {
-	return fmt.Errorf(
-		"password and confirm password must match",
-	)
+func (p passwordMatchConfirm) ViolationForHumans(val string) string {
+	return "password and confirm password must match"
 }
 
 var RequiredRule required
@@ -47,8 +46,8 @@ var RequiredRule required
 type required struct{}
 
 // ViolationForHumans implements Rule.
-func (r required) ViolationForHumans(val string) error {
-	return fmt.Errorf("%v needs to provided", "yo")
+func (r required) ViolationForHumans(val string) string {
+	return "must be provided"
 }
 
 // IsViolated implements Rule.
@@ -87,10 +86,9 @@ func (m minLength) Violation() error {
 }
 
 // ViolationForHumans implements Rule.
-func (m minLength) ViolationForHumans(val string) error {
-	return fmt.Errorf(
-		"%s needs to be longer than: '%v' characters",
-		val,
+func (m minLength) ViolationForHumans(val string) string {
+	return fmt.Sprintf(
+		"needs to be longer than: '%v' characters",
 		m.minimum,
 	)
 }
@@ -121,11 +119,10 @@ func (m maxLength) Violation() error {
 }
 
 // ViolationForHumans implements Rule.
-func (m maxLength) ViolationForHumans(val string) error {
-	return fmt.Errorf(
-		"%v needs to be longer than: '%v' characters",
+func (m maxLength) ViolationForHumans(val string) string {
+	return fmt.Sprintf(
+		"can max be: '%v' characters",
 		m.maximum,
-		val,
 	)
 }
 
@@ -155,8 +152,8 @@ func (v validEmail) Violation() error {
 }
 
 // ViolationForHumans implements Rule.
-func (v validEmail) ViolationForHumans(val string) error {
-	return fmt.Errorf("the provided email: %v, is not valid", val)
+func (v validEmail) ViolationForHumans(val string) string {
+	return fmt.Sprintf("the provided email: '%v' is not valid", val)
 }
 
 var (

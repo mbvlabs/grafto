@@ -79,22 +79,24 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if props.ConfirmPassword.Invalid {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"block text-sm mb-2 text-red-500\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var4 string
-			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.ConfirmPassword.InvalidMsg)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 56, Col: 84}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
+			for _, msg := range props.ConfirmPassword.InvalidMsg {
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"block text-sm mb-2 text-red-500\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var4 string
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(msg)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 57, Col: 56}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 			}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<label for=\"confirm-password\" class=\"block text-sm mb-2 text-white\">Confirm New Password</label><div class=\"relative\"><input type=\"password\" id=\"confirm-password\" name=\"confirm_password\" class=\"py-3 px-4 block w-full border rounded-md text-sm focus:border-blue-500 \n                            focus:ring-blue-500 bg-gray-800 border-gray-700 text-gray-400\" required aria-describedby=\"confirm-password-error\" minlength=\"8\"> ")
@@ -150,7 +152,7 @@ func ResetPasswordResponse(props ResetPasswordResponseProps) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(props.Msg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 114, Col: 15}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 116, Col: 15}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {

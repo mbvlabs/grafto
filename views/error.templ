@@ -1,10 +1,8 @@
 package views
 
-import (
-	"github.com/mbv-labs/grafto/views/internal/layouts"
-)
+import "github.com/mbv-labs/grafto/views/internal/layouts"
 
-templ InternalServerError(head Head,  fromLocation string) {
+templ InternalServerError(head Head, fromLocation string) {
 	@layouts.Base(head.Build()) {
 		<div class="h-full w-full flex flex-col items-center mt-44">
 			<h1 class="text-4xl">Internal Server Error</h1>
