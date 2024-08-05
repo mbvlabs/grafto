@@ -1,105 +1,85 @@
 package validation
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 )
 
-var BaseErrMsg = "Field: '%s' with Value: '%v' has Error(s): validation failed due to '%v'"
-
 type ValidationError interface {
 	Error() string
-	ErrorForHumans() string
-	Field() string
-	Value() string
-	Causes() []error
+	GetFieldName() string
+	GetFieldValue() string
+	GetViolations() []error
+	// TODO: rename this
+	GetHumanExplanations() []string
 }
 
 type ValidationErrors []ValidationError
 
 func (ve ValidationErrors) Error() string {
-	var errMsg string
-	if len(ve) == 1 {
-		return ve[0].Error()
+	var msgs string
+	for _, err := range ve {
+		if len(ve) == 1 {
+			msgs = fmt.Sprintf("%v has the following errors: %v", err.GetFieldName(), err.Error())
+		}
+
+		msgs = fmt.Sprintf(
+			"%v; %v has the following errors: %v",
+			msgs,
+			err.GetFieldName(),
+			err.Error(),
+		)
 	}
 
-	for _, err := range ve {
-		errMsg += err.Error() + "; "
-	}
-	return errMsg
+	return msgs
 }
 
-func (ve ValidationErrors) UnwrapViolations() []error {
+// Unwrap() is used to make testing easier for now
+func (ve ValidationErrors) Unwrap() []error {
 	var errs []error
-	for _, errValidation := range ve {
-		errs = append(errs, errValidation.Causes()...)
+	for _, err := range ve {
+		errs = append(errs, err.GetViolations()...)
 	}
 
 	return errs
 }
 
 type Error struct {
-	FieldValue         string
-	FieldName          string
-	Violations         []error
-	ViolationsForHuman []error
+	Value               string
+	FieldName           string
+	Violations          []error
+	ViolationsForHumans []string
 }
 
-func (e Error) Field() string {
+func (e Error) GetFieldName() string {
 	return e.FieldName
 }
 
-func (e Error) Value() string {
-	return e.FieldValue
+func (e Error) GetFieldValue() string {
+	return e.Value
 }
 
-func (e Error) Causes() []error {
+func (e Error) GetViolations() []error {
 	return e.Violations
 }
 
-func (e Error) ErrorForHumans() string {
-	var causes string
-	for i, violation := range e.ViolationsForHuman {
-		var validationErr ValidationError
-		if errors.As(violation, &validationErr) {
-			if i == 0 {
-				causes = validationErr.ErrorForHumans()
-			}
-
-			if i != 0 {
-				causes = causes + ", " + validationErr.ErrorForHumans()
-			}
-		}
-
-	}
-
-	return fmt.Sprintf(
-		BaseErrMsg,
-		e.FieldName,
-		e.FieldValue,
-		causes,
-	)
+func (e Error) GetHumanExplanations() []string {
+	return e.ViolationsForHumans
 }
 
 func (e Error) Error() string {
-	var causes string
+	causes := fmt.Sprintf("field: %v has error(s): ", e.GetFieldName())
 	for i, violation := range e.Violations {
 		if i == 0 {
 			causes = violation.Error()
 		}
 
 		if i != 0 {
-			causes = causes + ", " + violation.Error()
+			causes = causes + "; " + violation.Error()
 		}
 	}
 
-	return fmt.Sprintf(
-		BaseErrMsg,
-		e.FieldName,
-		e.FieldValue,
-		causes,
-	)
+	return causes
 }
 
 func getFieldValue(fieldValue reflect.Value) any {
@@ -124,8 +104,8 @@ func ValidateStruct(structToValidate any, validationMap map[string][]Rule) error
 		}
 
 		errVal := Error{
-			FieldValue: fieldVal,
-			FieldName:  name,
+			Value:     fieldVal,
+			FieldName: name,
 		}
 
 		for _, rule := range validationMap[name] {
@@ -134,9 +114,9 @@ func ValidateStruct(structToValidate any, validationMap map[string][]Rule) error
 					errVal.Violations,
 					rule.Violation(),
 				)
-				errVal.ViolationsForHuman = append(
-					errVal.ViolationsForHuman,
-					rule.ViolationForHumans(name),
+				errVal.ViolationsForHumans = append(
+					errVal.ViolationsForHumans,
+					rule.ViolationForHumans(fieldVal),
 				)
 			}
 		}

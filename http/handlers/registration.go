@@ -89,25 +89,25 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		}
 
 		for _, validationError := range valiErr {
-			switch validationError.Field() {
+			switch validationError.GetFieldName() {
 			case "Name":
 				props.NameInput.Invalid = true
 				// TODO can be multiple errors and should be reflected in the UI
-				props.NameInput.InvalidMsg = validationError.ErrorForHumans()
+				props.NameInput.InvalidMsg = validationError.GetHumanExplanations()
 			case "MailRegistered":
 				props.EmailInput.Invalid = true
 				// TODO can be multiple errors and should be reflected in the UI
-				props.EmailInput.InvalidMsg = validationError.ErrorForHumans()
+				props.EmailInput.InvalidMsg = validationError.GetHumanExplanations()
 			case "Password", "ConfirmPassword":
 				props.PasswordInput = views.InputElementError{
 					Invalid: true,
 					// TODO can be multiple errors and should be reflected in the UI
-					InvalidMsg: validationError.ErrorForHumans(),
+					InvalidMsg: validationError.GetHumanExplanations(),
 				}
 				props.ConfirmPassword = views.InputElementError{
 					Invalid: true,
 					// TODO can be multiple errors and should be reflected in the UI
-					InvalidMsg: validationError.ErrorForHumans(),
+					InvalidMsg: validationError.GetHumanExplanations(),
 				}
 			}
 		}

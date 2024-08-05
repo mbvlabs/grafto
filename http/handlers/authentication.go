@@ -261,15 +261,15 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		}
 
 		for _, validationError := range valiErrs {
-			switch validationError.Field() {
+			switch validationError.GetFieldName() {
 			case "Password", "ConfirmPassword":
 				props.Password = views.InputElementError{
 					Invalid:    true,
-					InvalidMsg: validationError.ErrorForHumans(),
+					InvalidMsg: validationError.GetHumanExplanations(),
 				}
 				props.ConfirmPassword = views.InputElementError{
 					Invalid:    true,
-					InvalidMsg: validationError.ErrorForHumans(),
+					InvalidMsg: validationError.GetHumanExplanations(),
 				}
 			}
 		}

@@ -1,8 +1,8 @@
 package authentication
 
 import (
-	"github.com/mbv-labs/grafto/views/internal/layouts"
 	"github.com/mbv-labs/grafto/views"
+	"github.com/mbv-labs/grafto/views/internal/layouts"
 )
 
 type RegisterFormProps struct {
@@ -41,7 +41,7 @@ templ RegisterResponse(title, message string, hasError bool) {
 	</div>
 }
 
-templ inputField(inputType, name, oldValue string, isRequired, hasError bool, ) {
+templ inputField(inputType, name, oldValue string, isRequired, hasError bool) {
 	<input
 		type={ inputType }
 		name={ name }
@@ -133,7 +133,9 @@ templ RegisterForm(data RegisterFormProps) {
 					</div>
 					<div>
 						if data.ConfirmPassword.Invalid {
-							<p class="block text-sm mb-2 text-red-500">{ data.ConfirmPassword.InvalidMsg }</p>
+							for _, msg := range data.ConfirmPassword.InvalidMsg {
+								<p class="block text-sm mb-2 text-red-500">{ msg }</p>
+							}
 						}
 						<label for="confirm-password" class="block text-sm mb-2 text-white">
 							Confirm

@@ -88,7 +88,7 @@ func TestCreateUserValidations(t *testing.T) {
 				assert.Equal(
 					t,
 					test.expected,
-					valiErrors.UnwrapViolations(),
+					valiErrors.Unwrap(),
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expected,
@@ -163,7 +163,7 @@ func TestUpdateUserValidations(t *testing.T) {
 				assert.Equal(
 					t,
 					test.expected,
-					valiErrors.UnwrapViolations(),
+					valiErrors.Unwrap(),
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expected,
