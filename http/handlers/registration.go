@@ -92,7 +92,7 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		}
 
 		for _, validationError := range valiErr {
-			switch validationError.Field() {
+			switch validationError.GetFieldName() {
 			case "Name":
 				if entry, ok := props.Fields[authentication.UsernameField]; ok {
 					causes := validationError.Causes()

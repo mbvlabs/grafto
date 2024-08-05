@@ -1,6 +1,7 @@
 package validation_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -15,7 +16,7 @@ func TestPasswordMatchConfirmRule(t *testing.T) {
 			Password string
 		}
 		validations   map[string][]validation.Rule
-		expectedError error
+		expectedError validation.ValidationErrors
 	}{
 		"should return no errors because password match": {
 			inputStruct: struct{ Password string }{
@@ -37,12 +38,14 @@ func TestPasswordMatchConfirmRule(t *testing.T) {
 					validation.PasswordMatchConfirmRule("PASSWORD"),
 				},
 			},
-			expectedError: fmt.Errorf(
-				validation.BaseErrMsg,
-				"Password",
-				"password",
-				validation.ErrPasswordDontMatchConfirm,
-			),
+			expectedError: []validation.ValidationError{
+				validation.Error{
+					Value:               "password",
+					FieldName:           "Password",
+					Violations:          []error{validation.ErrPasswordDontMatchConfirm},
+					ViolationsForHumans: []string{"password and confirm password must match"},
+				},
+			},
 		},
 	}
 	for name, test := range tests {
@@ -50,18 +53,25 @@ func TestPasswordMatchConfirmRule(t *testing.T) {
 			actualErrors := validation.ValidateStruct(test.inputStruct, test.validations)
 
 			if test.expectedError == nil {
-				assert.Equal(t, test.expectedError, actualErrors,
+				assert.Equal(t, nil, actualErrors,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
 						actualErrors,
 					),
 				)
-			} else {
-				assert.EqualError(
+			}
+
+			if test.expectedError != nil {
+				var valiErrs validation.ValidationErrors
+				if ok := errors.As(actualErrors, &valiErrs); !ok {
+					t.Fail()
+				}
+
+				assert.EqualValues(
 					t,
 					test.expectedError,
-					actualErrors.Error(),
+					valiErrs,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
@@ -80,7 +90,7 @@ func TestRequiredRule(t *testing.T) {
 			Data any
 		}
 		validations   map[string][]validation.Rule
-		expectedError error
+		expectedError validation.ValidationErrors
 	}{
 		"should return no errors because required string field is provided": {
 			inputStruct: struct{ Data any }{
@@ -102,12 +112,14 @@ func TestRequiredRule(t *testing.T) {
 					validation.RequiredRule,
 				},
 			},
-			expectedError: fmt.Errorf(
-				validation.BaseErrMsg,
-				"Data",
-				"TypeDefault",
-				validation.ErrIsRequired,
-			),
+			expectedError: []validation.ValidationError{
+				validation.Error{
+					Value:               "TypeDefault",
+					FieldName:           "Data",
+					Violations:          []error{validation.ErrIsRequired},
+					ViolationsForHumans: []string{"must be provided"},
+				},
+			},
 		},
 		"should return no errors because required int field is provided": {
 			inputStruct: struct{ Data any }{
@@ -129,12 +141,14 @@ func TestRequiredRule(t *testing.T) {
 					validation.RequiredRule,
 				},
 			},
-			expectedError: fmt.Errorf(
-				validation.BaseErrMsg,
-				"Data",
-				"TypeDefault",
-				validation.ErrIsRequired,
-			),
+			expectedError: []validation.ValidationError{
+				validation.Error{
+					Value:               "TypeDefault",
+					FieldName:           "Data",
+					Violations:          []error{validation.ErrIsRequired},
+					ViolationsForHumans: []string{"must be provided"},
+				},
+			},
 		},
 	}
 	for name, test := range tests {
@@ -142,18 +156,25 @@ func TestRequiredRule(t *testing.T) {
 			actualErrors := validation.ValidateStruct(test.inputStruct, test.validations)
 
 			if test.expectedError == nil {
-				assert.Equal(t, test.expectedError, actualErrors,
+				assert.Equal(t, nil, actualErrors,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
 						actualErrors,
 					),
 				)
-			} else {
-				assert.EqualError(
+			}
+
+			if test.expectedError != nil {
+				var valiErrs validation.ValidationErrors
+				if ok := errors.As(actualErrors, &valiErrs); !ok {
+					t.Fail()
+				}
+
+				assert.EqualValues(
 					t,
-					actualErrors,
-					test.expectedError.Error(),
+					test.expectedError,
+					valiErrs,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
@@ -172,7 +193,7 @@ func TestMinLengthRule(t *testing.T) {
 			Data string
 		}
 		validations   map[string][]validation.Rule
-		expectedError error
+		expectedError validation.ValidationErrors
 	}{
 		"should return no errors because value was longer than the minimum": {
 			inputStruct: struct{ Data string }{
@@ -194,12 +215,16 @@ func TestMinLengthRule(t *testing.T) {
 					validation.MinLengthRule(50000),
 				},
 			},
-			expectedError: fmt.Errorf(
-				validation.BaseErrMsg,
-				"Data",
-				"short string",
-				validation.ErrValueTooShort,
-			),
+			expectedError: []validation.ValidationError{
+				validation.Error{
+					Value:      "short string",
+					FieldName:  "Data",
+					Violations: []error{validation.ErrValueTooShort},
+					ViolationsForHumans: []string{
+						"needs to be longer than: '50000' characters",
+					},
+				},
+			},
 		},
 	}
 	for name, test := range tests {
@@ -207,18 +232,25 @@ func TestMinLengthRule(t *testing.T) {
 			actualErrors := validation.ValidateStruct(test.inputStruct, test.validations)
 
 			if test.expectedError == nil {
-				assert.Equal(t, test.expectedError, actualErrors,
+				assert.Equal(t, nil, actualErrors,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
 						actualErrors,
 					),
 				)
-			} else {
-				assert.EqualError(
+			}
+
+			if test.expectedError != nil {
+				var valiErrs validation.ValidationErrors
+				if ok := errors.As(actualErrors, &valiErrs); !ok {
+					t.Fail()
+				}
+
+				assert.EqualValues(
 					t,
 					test.expectedError,
-					actualErrors.Error(),
+					valiErrs,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
@@ -237,7 +269,7 @@ func TestMaxLengthRule(t *testing.T) {
 			Data string
 		}
 		validations   map[string][]validation.Rule
-		expectedError error
+		expectedError validation.ValidationErrors
 	}{
 		"should return no errors because value was shorter than the maximum": {
 			inputStruct: struct{ Data string }{
@@ -259,12 +291,16 @@ func TestMaxLengthRule(t *testing.T) {
 					validation.MaxLengthRule(5),
 				},
 			},
-			expectedError: fmt.Errorf(
-				validation.BaseErrMsg,
-				"Data",
-				"short string",
-				validation.ErrValueTooLong,
-			),
+			expectedError: []validation.ValidationError{
+				validation.Error{
+					Value:      "short string",
+					FieldName:  "Data",
+					Violations: []error{validation.ErrValueTooLong},
+					ViolationsForHumans: []string{
+						"can max be: '5' characters",
+					},
+				},
+			},
 		},
 	}
 	for name, test := range tests {
@@ -272,18 +308,25 @@ func TestMaxLengthRule(t *testing.T) {
 			actualErrors := validation.ValidateStruct(test.inputStruct, test.validations)
 
 			if test.expectedError == nil {
-				assert.Equal(t, test.expectedError, actualErrors,
+				assert.Equal(t, nil, actualErrors,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
 						actualErrors,
 					),
 				)
-			} else {
-				assert.EqualError(
+			}
+
+			if test.expectedError != nil {
+				var valiErrs validation.ValidationErrors
+				if ok := errors.As(actualErrors, &valiErrs); !ok {
+					t.Fail()
+				}
+
+				assert.EqualValues(
 					t,
 					test.expectedError,
-					actualErrors.Error(),
+					valiErrs,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
@@ -302,7 +345,7 @@ func TestValidEmailRule(t *testing.T) {
 			Data string
 		}
 		validations   map[string][]validation.Rule
-		expectedError error
+		expectedError validation.ValidationErrors
 	}{
 		"should return no errors because valid email was provided": {
 			inputStruct: struct{ Data string }{
@@ -324,12 +367,16 @@ func TestValidEmailRule(t *testing.T) {
 					validation.ValidEmailRule,
 				},
 			},
-			expectedError: fmt.Errorf(
-				validation.BaseErrMsg,
-				"Data",
-				"testgmail.com",
-				validation.ErrInvalidEmail,
-			),
+			expectedError: []validation.ValidationError{
+				validation.Error{
+					Value:      "testgmail.com",
+					FieldName:  "Data",
+					Violations: []error{validation.ErrInvalidEmail},
+					ViolationsForHumans: []string{
+						"the provided email: 'testgmail.com' is not valid",
+					},
+				},
+			},
 		},
 	}
 	for name, test := range tests {
@@ -337,18 +384,25 @@ func TestValidEmailRule(t *testing.T) {
 			actualErrors := validation.ValidateStruct(test.inputStruct, test.validations)
 
 			if test.expectedError == nil {
-				assert.Equal(t, test.expectedError, actualErrors,
+				assert.Equal(t, nil, actualErrors,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
 						actualErrors,
 					),
 				)
-			} else {
-				assert.EqualError(
+			}
+
+			if test.expectedError != nil {
+				var valiErrs validation.ValidationErrors
+				if ok := errors.As(actualErrors, &valiErrs); !ok {
+					t.Fail()
+				}
+
+				assert.EqualValues(
 					t,
 					test.expectedError,
-					actualErrors.Error(),
+					valiErrs,
 					fmt.Sprintf(
 						"test failed, expected: %v but got: %v",
 						test.expectedError,
