@@ -127,7 +127,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = views.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"requred": true}, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = views.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"required": true}, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -135,7 +135,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = views.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"requred": true}, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = views.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"required": true}, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

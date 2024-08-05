@@ -85,10 +85,10 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 				<input type="hidden" name="gorilla.csrf.Token" value={ csrfToken }/>
 				<div class="grid gap-y-4">
 					<div>
-						@views.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"requred": true}, views.InputFieldProps{})
+						@views.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"required": true}, views.InputFieldProps{})
 					</div>
 					<div>
-						@views.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"requred": true}, views.InputFieldProps{})
+						@views.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"required": true}, views.InputFieldProps{})
 					</div>
 					<div class="my-2 w-full flex items-center justify-between">
 						<div class="form-control">

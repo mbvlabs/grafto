@@ -154,7 +154,7 @@ func ResetPasswordPage(invalidToken, internalErr bool, csrfToken, resetToken str
 					return templ_7745c5c3_Err
 				}
 			}
-			if !internalErr {
+			if internalErr {
 				templ_7745c5c3_Err = InternalErrorFlag().Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
