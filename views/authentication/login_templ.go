@@ -13,10 +13,12 @@ import (
 	"github.com/mbv-labs/grafto/views/internal/layouts"
 )
 
-var ErrAuthDetailsWrong string = "ErrAuthDetailsWrong"
-var ErrEmailNotValidated string = "ErrEmailNotValidated"
+var (
+	ErrAuthDetailsWrong  string = "ErrAuthDetailsWrong"
+	ErrEmailNotValidated string = "ErrEmailNotValidated"
+)
 
-func LoginResponse() templ.Component {
+func LoginSuccess() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
@@ -34,7 +36,7 @@ func LoginResponse() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-get=\"/redirect?to=dashboard\" hx-trigger=\"load delay:5s\" class=\"m-20 flex flex-col\"><h2 hx-target=\"closest div\" class=\"text-green-400\">You're now authenticated, you'll be re-directed in 5 seconds.</h2></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-get=\"/redirect?to=dashboard\" hx-trigger=\"load delay:2s\" role=\"alert\" class=\"mb-4 alert alert-success col-span-4 md:col-start-2 md:col-end-6 lg:col-span-4 lg:col-start-5 shadow-xl\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 shrink-0 stroke-current\" fill=\"none\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg> <span>You've been authenticated and will be redirect to the dashboard.</span></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -42,7 +44,7 @@ func LoginResponse() templ.Component {
 	})
 }
 
-func LoginForm(csrfToken string, errors views.Errors) templ.Component {
+func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
@@ -60,7 +62,13 @@ func LoginForm(csrfToken string, errors views.Errors) templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"p-4 sm:p-7\"><div class=\"text-center\"><h1 class=\"block text-2xl font-bold text-white\">Login</h1><p class=\"mt-2 text-sm text-gray-400\">Don't have an account? <a class=\"text-blue-600 decoration-2 hover:underline font-medium\" href=\"/register\">Register here</a></p></div><div class=\"mt-5\">")
+		if success {
+			templ_7745c5c3_Err = LoginSuccess().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"rounded-lg p-4 bg-base-200 flex flex-col items-center col-span-4 md:col-start-2 md:col-end-6 lg:col-span-4 lg:col-start-5 shadow-xl\"><div class=\"text-center w-full\"><h1 class=\"block text-2xl font-bold text-white\">Login</h1><p class=\"mt-2 text-sm md:text-base text-gray-400\">Don't have an account? <a class=\"btn btn-xs btn-outline btn-success\" href=\"/register\">Register</a></p></div><div class=\"mt-5 w-full\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -72,7 +80,7 @@ func LoginForm(csrfToken string, errors views.Errors) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(errors[ErrAuthDetailsWrong])
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 48, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 64, Col: 59}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -91,7 +99,7 @@ func LoginForm(csrfToken string, errors views.Errors) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(errors[ErrEmailNotValidated])
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 65, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 81, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -102,36 +110,36 @@ func LoginForm(csrfToken string, errors views.Errors) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-target=\"#loginFormWrapper\" hx-swap=\"innerHTML\" hx-post=\"/login\" method=\"post\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/login\" method=\"post\"><input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 69, Col: 68}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 85, Col: 68}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"grid gap-y-4\"><div><label for=\"email\" class=\"block text-sm mb-2 text-white\">Email</label><div class=\"relative\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><div class=\"grid gap-y-4\"><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = views.InputField("", "", "", "", nil, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = views.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"requred": true}, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div><div class=\"flex items center\"><label for=\"email\" class=\"block text-sm mb-2 text-white\">password</label></div><div class=\"relative\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = views.InputField("", "", "", "", nil, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = views.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"requred": true}, views.InputFieldProps{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div><div class=\"my-2 w-full flex items-center justify-between\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text mr-4\">Remember me</span> <input type=\"checkbox\" class=\"checkbox\"></label></div><a class=\"text-blue-600 decoration-2 hover:underline font-medium\" href=\"/forgot-password\">Forgotten password?</a></div><button type=\"submit\" class=\"py-3 px-4 inline-flex jstify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focs:outline-none focs:ring-2 focs:ring-blue-500 focs:ring-offset-2 transition-all text-sm focs:ring-offset-gray-800\">Login</button></div></form></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><div class=\"my-2 w-full flex items-center justify-between\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text mr-4\">Remember me</span> <input type=\"checkbox\" class=\"checkbox checkbox-primary\"></label></div><a class=\"btn\" href=\"/forgot-password\">Forgotten password?</a></div><button type=\"submit\" class=\"btn btn-primary mt-5 py-3 px-4\">Register</button></div></form></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -144,7 +152,7 @@ type LoginPageProps struct {
 	CsrfToken string
 }
 
-func LoginPage(data LoginPageProps, head views.Head) templ.Component {
+func LoginPage(data LoginPageProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
@@ -174,21 +182,21 @@ func LoginPage(data LoginPageProps, head views.Head) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main class=\"w-full max-w-md mx-auto my-auto\"><div id=\"loginFormWrapper\" class=\"mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main class=\"container mx-auto my-auto grid grid-cols-4 px-4 md:grid-cols-6 lg:grid-cols-12\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = LoginForm(data.CsrfToken, data.Errors).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = LoginForm(data.CsrfToken, false, data.Errors).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></main>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return templ_7745c5c3_Err
 		})
-		templ_7745c5c3_Err = layouts.Base(head.Build()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layouts.Base(views.Head{}.Default().Build()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

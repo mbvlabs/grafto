@@ -8,11 +8,28 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "strings"
+import (
+	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"strings"
+)
 
 type InputFieldProps struct {
 	Value     string
 	ErrorMsgs []string
+}
+
+func UppercaseFirstWord(sentence string) string {
+	sentenceElements := strings.Split(sentence, " ")
+
+	var s string
+	for _, otherElements := range sentenceElements[1:] {
+		s = s + " " + otherElements
+	}
+
+	caser := cases.Title(language.AmericanEnglish)
+	return fmt.Sprintf("%v %v", caser.String(sentenceElements[0]), s)
 }
 
 func InputField(title, fieldType, fieldName, placeholder string, attributes templ.Attributes, props InputFieldProps) templ.Component {
@@ -33,14 +50,14 @@ func InputField(title, fieldType, fieldName, placeholder string, attributes temp
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<label class=\"form-control w-full\"><div class=\"label\"><span class=\"label-text\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<label class=\"form-control w-full\"><div class=\"label\"><span class=\"label-text md:text-lg\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 13, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 30, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -83,7 +100,7 @@ func InputField(title, fieldType, fieldName, placeholder string, attributes temp
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fieldType)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 18, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 35, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -96,7 +113,7 @@ func InputField(title, fieldType, fieldName, placeholder string, attributes temp
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(placeholder)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 19, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 36, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -109,7 +126,7 @@ func InputField(title, fieldType, fieldName, placeholder string, attributes temp
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(props.Value)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 20, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 37, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -122,7 +139,7 @@ func InputField(title, fieldType, fieldName, placeholder string, attributes temp
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fieldName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 21, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 38, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -143,9 +160,9 @@ func InputField(title, fieldType, fieldName, placeholder string, attributes temp
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var9 string
-				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(strings.ToUpper(errMsg))
+				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(UppercaseFirstWord(errMsg))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 26, Col: 59}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/form_components.templ`, Line: 43, Col: 62}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {

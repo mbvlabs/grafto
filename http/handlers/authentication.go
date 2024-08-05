@@ -40,7 +40,7 @@ func NewAuthentication(
 func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
 	return authentication.LoginPage(authentication.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
-	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type StoreAuthenticatedSessionPayload struct {
@@ -59,7 +59,8 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			err,
 		)
 
-		return authentication.LoginResponse().Render(views.ExtractRenderDeps(ctx))
+		return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := a.authService.AuthenticateUser(
@@ -74,7 +75,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			err,
 		)
 
-		var errors views.Errors
+		errors := make(views.Errors)
 
 		switch err {
 		case services.ErrPasswordNotMatch, services.ErrUserNotExist:
@@ -83,7 +84,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			errors[authentication.ErrEmailNotValidated] = "Your email has not yet been verified."
 		}
 
-		return authentication.LoginForm(csrf.Token(ctx.Request()), errors).
+		return authentication.LoginForm(csrf.Token(ctx.Request()), false, errors).
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
@@ -97,13 +98,13 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		return err
 	}
 
-	return authentication.LoginResponse().Render(views.ExtractRenderDeps(ctx))
+	return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
+		Render(views.ExtractRenderDeps(ctx))
 }
 
 func (a *Authentication) CreatePasswordReset(ctx echo.Context) error {
-	return authentication.ForgottenPasswordPage(authentication.ForgottenPasswordPageProps{
-		CsrfToken: csrf.Token(ctx.Request()),
-	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ForgottenPasswordPage(csrf.Token(ctx.Request())).
+		Render(views.ExtractRenderDeps(ctx))
 }
 
 type StorePasswordResetPayload struct {
@@ -113,23 +114,33 @@ type StorePasswordResetPayload struct {
 func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+			CsrfToken:     csrf.Token(ctx.Request()),
+			InternalError: true,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := a.db.QueryUserByEmail(ctx.Request().Context(), payload.Email)
 	if err != nil {
-		failureOccurred := true
 		if errors.Is(err, pgx.ErrNoRows) {
-			failureOccurred = false
+			return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+				CsrfToken:        csrf.Token(ctx.Request()),
+				NoAssociatedUser: true,
+			}).Render(views.ExtractRenderDeps(ctx))
 		}
 
-		return authentication.ForgottenPasswordSuccess(failureOccurred).
-			Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+			CsrfToken:     csrf.Token(ctx.Request()),
+			InternalError: true,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	plainText, hashedToken, err := a.tknManager.GenerateToken()
 	if err != nil {
-		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+			CsrfToken:     csrf.Token(ctx.Request()),
+			InternalError: true,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	resetPWToken := tokens.CreateResetPasswordToken(plainText, hashedToken)
@@ -142,7 +153,10 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		Scope:     resetPWToken.GetScope(),
 		UserID:    user.ID,
 	}); err != nil {
-		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+			CsrfToken:     csrf.Token(ctx.Request()),
+			InternalError: true,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	// TODO fix this error flow
@@ -157,11 +171,17 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 
 	textVersion, err := pwResetMail.GenerateTextVersion()
 	if err != nil {
-		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+			CsrfToken:     csrf.Token(ctx.Request()),
+			InternalError: true,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 	htmlVersion, err := pwResetMail.GenerateHtmlVersion()
 	if err != nil {
-		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+			CsrfToken:     csrf.Token(ctx.Request()),
+			InternalError: true,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	_, err = a.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
@@ -172,10 +192,16 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		HtmlVersion: htmlVersion,
 	}, nil)
 	if err != nil {
-		return authentication.ForgottenPasswordSuccess(true).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+			CsrfToken:     csrf.Token(ctx.Request()),
+			InternalError: true,
+		}).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	return authentication.ForgottenPasswordSuccess(false).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
+		CsrfToken: csrf.Token(ctx.Request()),
+		Success:   true,
+	}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type PasswordResetTokenPayload struct {
@@ -185,13 +211,12 @@ type PasswordResetTokenPayload struct {
 func (a *Authentication) CreateResetPassword(ctx echo.Context) error {
 	var passwordResetToken PasswordResetTokenPayload
 	if err := ctx.Bind(&passwordResetToken); err != nil {
-		return a.InternalError(ctx)
+		return authentication.ResetPasswordPage(false, true, csrf.Token(ctx.Request()), "").
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	return authentication.ResetPasswordPage(authentication.ResetPasswordPageProps{
-		ResetToken: passwordResetToken.Token,
-		CsrfToken:  csrf.Token(ctx.Request()),
-	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ResetPasswordPage(false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
+		Render(views.ExtractRenderDeps(ctx))
 }
 
 type ResetPasswordPayload struct {
@@ -203,41 +228,31 @@ type ResetPasswordPayload struct {
 func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-			HasError: true,
-			Msg:      "An error occurred while trying to reset your password. Please try again.",
-		}).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ResetPasswordPage(false, true, "", "").
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	hashedToken, err := a.tknManager.Hash(payload.Token)
 	if err != nil {
-		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-			HasError: true,
-			Msg:      "An error occurred while trying to reset your password. Please try again.",
-		}).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ResetPasswordPage(false, true, "", "").
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	token, err := a.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-				HasError: true,
-				Msg:      "The token is invalid. Please request a new one.",
-			}).Render(views.ExtractRenderDeps(ctx))
+			return authentication.ResetPasswordPage(true, false, "", "").
+				Render(views.ExtractRenderDeps(ctx))
 		}
 
-		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-			HasError: true,
-			Msg:      "An error occurred while trying to reset your password. Please try again.",
-		}).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ResetPasswordPage(false, true, "", "").
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) &&
+	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) ||
 		token.Scope != tokens.ScopeResetPassword {
-		return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-			HasError: true,
-			Msg:      "The token has expired. Please request a new one.",
-		}).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ResetPasswordPage(true, false, "", "").
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	err = a.userModel.ChangePassword(ctx.Request().Context(),
@@ -262,9 +277,9 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		for _, validationError := range valiErrs {
 			switch validationError.GetFieldName() {
 			case "Password":
-				props.Errors[authentication.PasswordNotValid] = validationError.GetHumanExplanations()[0]
+				props.Errors[authentication.PasswordField] = validationError.GetHumanExplanations()[0]
 			case "ConfirmPassword":
-				props.Errors[authentication.PasswordNotMatchConfirm] = validationError.GetHumanExplanations()[0]
+				props.Errors[authentication.PasswordField] = validationError.GetHumanExplanations()[0]
 			}
 		}
 
@@ -282,7 +297,6 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		return a.InternalError(ctx)
 	}
 
-	return authentication.ResetPasswordResponse(authentication.ResetPasswordResponseProps{
-		HasError: false,
-	}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.ResetPasswordForm(authentication.ResetPasswordFormProps{}).
+		Render(views.ExtractRenderDeps(ctx))
 }

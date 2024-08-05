@@ -1,20 +1,37 @@
 package views
 
-import "strings"
+import (
+	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"strings"
+)
 
 type InputFieldProps struct {
 	Value     string
 	ErrorMsgs []string
 }
 
+func UppercaseFirstWord(sentence string) string {
+	sentenceElements := strings.Split(sentence, " ")
+
+	var s string
+	for _, otherElements := range sentenceElements[1:] {
+		s = s + " " + otherElements
+	}
+
+	caser := cases.Title(language.AmericanEnglish)
+	return fmt.Sprintf("%v %v", caser.String(sentenceElements[0]), s)
+}
+
 templ InputField(title, fieldType, fieldName, placeholder string, attributes templ.Attributes, props InputFieldProps) {
 	<label class="form-control w-full">
 		<div class="label">
-			<span class="label-text">{ title }</span>
+			<span class="label-text md:text-lg">{ title }</span>
 		</div>
 		<input
 			{ attributes... }
-			class={ "input input-bordered w-full", templ.KV( "input-error", len(props.ErrorMsgs)> 0) }
+			class={ "input input-bordered w-full", templ.KV("input-error", len(props.ErrorMsgs)> 0) }
 			type={ fieldType }
 			placeholder={ placeholder }
 			value={ props.Value }
@@ -23,7 +40,7 @@ templ InputField(title, fieldType, fieldName, placeholder string, attributes tem
 		if props.ErrorMsgs != nil {
 			<div class="label">
 				for _, errMsg := range props.ErrorMsgs {
-					<span class="label-text-alt">{ strings.ToUpper(errMsg) }</span>
+					<span class="label-text-alt">{ UppercaseFirstWord(errMsg) }</span>
 				}
 			</div>
 		}
