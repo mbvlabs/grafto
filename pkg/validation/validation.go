@@ -44,29 +44,6 @@ func (ve ValidationErrors) Unwrap() []error {
 	return errs
 }
 
-//
-// func (ve ValidationErrors) Error() string {
-// 	var errMsg string
-// 	if len(ve) == 1 {
-// 		return ve[0].Field()
-// 	}
-//
-// 	for _, err := range ve {
-// 		errMsg += err.Field() + "; "
-// 	}
-//
-// 	return errMsg
-// }
-
-//func (ve ValidationErrors) UnwrapMe() map[string][]error {
-//	errs := make(map[string][]error, len(ve))
-//	for _, errValidation := range ve {
-//		errs[errValidation.Field()] = errValidation.causes()
-//	}
-//
-//	return errs
-//}
-
 type Error struct {
 	Value               string
 	FieldName           string
