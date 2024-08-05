@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/repository/psql/database"
-	"github.com/mbv-labs/grafto/views"
 	"github.com/riverqueue/river"
 )
 
@@ -46,9 +45,8 @@ func (bd Base) Redirect(w http.ResponseWriter, r *http.Request, url string) erro
 }
 
 func (bd Base) InternalError(ctx echo.Context) error {
-	from := "/"
-
-	return views.InternalServerErr(ctx, views.InternalServerErrData{
-		FromLocation: from,
-	})
+	return ctx.HTML(
+		http.StatusOK,
+		"<h2>An unrecoverable error occurred. Please click <a href='/'>here</a></h2>",
+	)
 }

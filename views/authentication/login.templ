@@ -5,73 +5,83 @@ import (
 	"github.com/mbv-labs/grafto/views/internal/layouts"
 )
 
-templ LoginResponse(hasError bool) {
-	if hasError {
-		<div class="m-20 flex flex-col">
-			<h2 hx-target="closest div" class="text-green-400">
-				An error occurred, please try again.
-			</h2>
-		</div>
-	} else {
-		<div hx-get="/redirect?to=dashboard" hx-trigger="load delay:5s" class="m-20 flex flex-col">
-			<h2 hx-target="closest div" class="text-green-400">
-				You're now authenticated, you'll be re-directed in 5 seconds.
-			</h2>
-		</div>
+var (
+	ErrAuthDetailsWrong  string = "ErrAuthDetailsWrong"
+	ErrEmailNotValidated string = "ErrEmailNotValidated"
+)
+
+templ LoginForm(csrfToken string, success bool, errors views.Errors) {
+	if success {
+		@formFlagWrapper() {
+			@views.SuccessFlag("You've been authenticated and will be redirect to the dashboard.", templ.Attributes{"hx-get": "/redirect?to=dashboard", "hx-trigger": "load delay:2s"})
+		}
 	}
-}
-
-type LoginFormProps struct {
-	HasError bool
-	ErrMsg   string
-}
-
-templ LoginForm(csrfToken string, props LoginFormProps) {
-	<div class="p-4 sm:p-7">
-		<div class="text-center">
+	<div hx-target="this" hx-swap="outerHTML" class="rounded-lg p-4 bg-base-200 flex flex-col items-center col-span-4 md:col-start-2 md:col-end-6 lg:col-span-4 lg:col-start-5 shadow-xl">
+		<div class="text-center w-full">
 			<h1 class="block text-2xl font-bold text-white">Login</h1>
-			<p class="mt-2 text-sm text-gray-400">
+			<p class="mt-2 text-sm md:text-base text-gray-400">
 				Don't have an account?
 				<a
-					class="text-blue-600 decoration-2 hover:underline font-medium"
+					class="btn btn-xs btn-outline btn-success"
 					href="/register"
 				>
-					Register here
+					Register
 				</a>
 			</p>
 		</div>
-		<div class="mt-5">
-			if props.HasError {
-				<div class="my-4">
-					<h2 class="text-red-400">{ props.ErrMsg }</h2>
+		<div class="mt-5 w-full">
+			if errors[ErrAuthDetailsWrong] != "" {
+				<div class="flex my-4">
+					<svg
+						class="h-5 w-5 text-red-400 mr-4"
+						width="16"
+						height="16"
+						fill="currentColor"
+						viewBox="0 0 16 16"
+						aria-hidden="true"
+					>
+						<path
+							d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+						></path>
+					</svg>
+					<h2 class="text-red-400">{ errors[ErrAuthDetailsWrong] }</h2>
 				</div>
 			}
-			<form hx-target="#loginFormWrapper" hx-swap="innerHTML" hx-post="/login" method="post">
+			if errors[ErrEmailNotValidated] != "" {
+				<div class="flex my-4">
+					<svg
+						class="h-5 w-5 text-yellow-400 mr-4"
+						width="16"
+						height="16"
+						fill="currentColor"
+						viewBox="0 0 16 16"
+						aria-hidden="true"
+					>
+						<path
+							d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+						></path>
+					</svg>
+					<h2 class="text-yellow-400">{ errors[ErrEmailNotValidated] }</h2>
+				</div>
+			}
+			<form hx-post="/login" method="post">
 				<input type="hidden" name="gorilla.csrf.Token" value={ csrfToken }/>
 				<div class="grid gap-y-4">
 					<div>
-						<label for="email" class="block text-sm mb-2 text-white">Email</label>
-						<div class="relative">
-							@inputField("email", "email", "", true, false)
-						</div>
+						@views.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"required": true}, views.InputFieldProps{})
 					</div>
 					<div>
-						<div class="flex items center">
-							<label for="email" class="block text-sm mb-2 text-white">password</label>
-						</div>
-						<div class="relative">
-							@inputField("password", "password", "", true, false)
-						</div>
+						@views.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"required": true}, views.InputFieldProps{})
 					</div>
 					<div class="my-2 w-full flex items-center justify-between">
 						<div class="form-control">
 							<label class="label cursor-pointer">
 								<span class="label-text mr-4">Remember me</span>
-								<input type="checkbox" class="checkbox"/>
+								<input type="checkbox" class="checkbox checkbox-primary"/>
 							</label>
 						</div>
 						<a
-							class="text-blue-600 decoration-2 hover:underline font-medium"
+							class="btn"
 							href="/forgot-password"
 						>
 							Forgotten password?
@@ -79,9 +89,9 @@ templ LoginForm(csrfToken string, props LoginFormProps) {
 					</div>
 					<button
 						type="submit"
-						class="py-3 px-4 inline-flex jstify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focs:outline-none focs:ring-2 focs:ring-blue-500 focs:ring-offset-2 transition-all text-sm focs:ring-offset-gray-800"
+						class="btn btn-primary mt-5 py-3 px-4"
 					>
-						Login
+						Register
 					</button>
 				</div>
 			</form>
@@ -90,17 +100,14 @@ templ LoginForm(csrfToken string, props LoginFormProps) {
 }
 
 type LoginPageProps struct {
-	EmailNotVerified     bool
-	CouldNotAuthenticate bool
-	CsrfToken            string
+	Errors    views.Errors
+	CsrfToken string
 }
 
-templ LoginPage(data LoginPageProps, head views.Head) {
-	@layouts.Base(head.Build()) {
-		<main class="w-full max-w-md mx-auto my-auto">
-			<div id="loginFormWrapper" class="mt-7 border rounded-xl shadow-sm bg-gray-800 border-gray-700">
-				@LoginForm(data.CsrfToken, LoginFormProps{})
-			</div>
+templ LoginPage(data LoginPageProps) {
+	@layouts.Base(views.Head{}.Default().Build()) {
+		<main class="container mx-auto my-auto grid grid-cols-4 px-4 md:grid-cols-6 lg:grid-cols-12">
+			@LoginForm(data.CsrfToken, false, data.Errors)
 		</main>
 	}
 }

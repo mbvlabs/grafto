@@ -40,12 +40,12 @@ func NewRegistration(
 func (r *Registration) CreateUser(ctx echo.Context) error {
 	return authentication.RegisterPage(authentication.RegisterFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
-	}, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	}).Render(views.ExtractRenderDeps(ctx))
 }
 
 type StoreUserPayload struct {
-	UserName        string `form:"user_name"`
-	Mail            string `form:"email"`
+	UserName        string `form:"username"`
+	Email           string `form:"email"`
 	Password        string `form:"password"`
 	ConfirmPassword string `form:"confirm_password"`
 }
@@ -53,8 +53,11 @@ type StoreUserPayload struct {
 func (r *Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-			Render(views.ExtractRenderDeps(ctx))
+		props := authentication.RegisterFormProps{
+			InternalError: true,
+			CsrfToken:     csrf.Token(ctx.Request()),
+		}
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	t := time.Now()
@@ -63,27 +66,36 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		CreatedAt:       t,
 		UpdatedAt:       t,
 		Name:            payload.UserName,
-		Email:           payload.Mail,
+		Email:           payload.Email,
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
 	})
 	if err != nil && errors.Is(err, models.ErrUserAlreadyExists) { // TODO handle this better
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-			Render(views.ExtractRenderDeps(ctx))
+		props := authentication.RegisterFormProps{
+			InternalError: true,
+			CsrfToken:     csrf.Token(ctx.Request()),
+		}
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 	if err != nil && errors.Is(err, models.ErrFailValidation) {
 		var valiErr validation.ValidationErrors
 		if ok := errors.As(err, &valiErr); !ok {
-			return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-				Render(views.ExtractRenderDeps(ctx))
+			props := authentication.RegisterFormProps{
+				InternalError: true,
+				CsrfToken:     csrf.Token(ctx.Request()),
+			}
+			return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 		}
 
 		props := authentication.RegisterFormProps{
-			NameInput: views.InputElementError{
-				OldValue: payload.UserName,
-			},
-			EmailInput: views.InputElementError{
-				OldValue: payload.Mail,
+			Fields: map[string]views.InputFieldProps{
+				authentication.UsernameField: {
+					Value: payload.UserName,
+				},
+				authentication.EmailField: {
+					Value: payload.Email,
+				},
+				authentication.PasswordField: {},
 			},
 			CsrfToken: csrf.Token(ctx.Request()),
 		}
@@ -91,23 +103,19 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		for _, validationError := range valiErr {
 			switch validationError.GetFieldName() {
 			case "Name":
-				props.NameInput.Invalid = true
-				// TODO can be multiple errors and should be reflected in the UI
-				props.NameInput.InvalidMsg = validationError.GetHumanExplanations()
-			case "MailRegistered":
-				props.EmailInput.Invalid = true
-				// TODO can be multiple errors and should be reflected in the UI
-				props.EmailInput.InvalidMsg = validationError.GetHumanExplanations()
-			case "Password", "ConfirmPassword":
-				props.PasswordInput = views.InputElementError{
-					Invalid: true,
-					// TODO can be multiple errors and should be reflected in the UI
-					InvalidMsg: validationError.GetHumanExplanations(),
+				if entry, ok := props.Fields[authentication.UsernameField]; ok {
+					entry.ErrorMsgs = validationError.GetHumanExplanations()
+					props.Fields[authentication.UsernameField] = entry
 				}
-				props.ConfirmPassword = views.InputElementError{
-					Invalid: true,
-					// TODO can be multiple errors and should be reflected in the UI
-					InvalidMsg: validationError.GetHumanExplanations(),
+			case "Email":
+				if entry, ok := props.Fields[authentication.EmailField]; ok {
+					entry.ErrorMsgs = validationError.GetHumanExplanations()
+					props.Fields[authentication.EmailField] = entry
+				}
+			case "Password":
+				if entry, ok := props.Fields[authentication.PasswordField]; ok {
+					entry.ErrorMsgs = validationError.GetHumanExplanations()
+					props.Fields[authentication.PasswordField] = entry
 				}
 			}
 		}
@@ -119,8 +127,11 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-			Render(views.ExtractRenderDeps(ctx))
+		props := authentication.RegisterFormProps{
+			InternalError: true,
+			CsrfToken:     csrf.Token(ctx.Request()),
+		}
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	activationToken := tokens.CreateActivationToken(plainText, hashedToken)
@@ -135,8 +146,11 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 	}); err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-			Render(views.ExtractRenderDeps(ctx))
+		props := authentication.RegisterFormProps{
+			InternalError: true,
+			CsrfToken:     csrf.Token(ctx.Request()),
+		}
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	userSignupMail := templates.UserSignupWelcomeMail{
@@ -151,15 +165,21 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-			Render(views.ExtractRenderDeps(ctx))
+		props := authentication.RegisterFormProps{
+			InternalError: true,
+			CsrfToken:     csrf.Token(ctx.Request()),
+		}
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 	htmlVersion, err := userSignupMail.GenerateHtmlVersion()
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-			Render(views.ExtractRenderDeps(ctx))
+		props := authentication.RegisterFormProps{
+			InternalError: true,
+			CsrfToken:     csrf.Token(ctx.Request()),
+		}
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	_, err = r.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
@@ -172,12 +192,18 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 	if err != nil {
 		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		return authentication.RegisterResponse("An error occurred", "Please refresh the page an try again.", true).
-			Render(views.ExtractRenderDeps(ctx))
+		props := authentication.RegisterFormProps{
+			InternalError: true,
+			CsrfToken:     csrf.Token(ctx.Request()),
+		}
+		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	return authentication.RegisterResponse("You're now registered", "You should receive an email soon to validate your account.", false).
-		Render(views.ExtractRenderDeps(ctx))
+	props := authentication.RegisterFormProps{
+		SuccessRegister: true,
+		CsrfToken:       csrf.Token(ctx.Request()),
+	}
+	return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 }
 
 type verificationTokenPayload struct {
@@ -205,7 +231,7 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 	token, err := r.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return authentication.VerifyEmailPage(true, views.Head{}).
+			return authentication.VerifyEmailPage(true).
 				Render(views.ExtractRenderDeps(ctx))
 		}
 
@@ -218,7 +244,7 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 
 	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) &&
 		token.Scope != tokens.ScopeEmailVerification {
-		return authentication.VerifyEmailPage(true, views.Head{}).
+		return authentication.VerifyEmailPage(true).
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
@@ -257,5 +283,5 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 		return r.InternalError(ctx)
 	}
 
-	return authentication.VerifyEmailPage(false, views.Head{}).Render(views.ExtractRenderDeps(ctx))
+	return authentication.VerifyEmailPage(false).Render(views.ExtractRenderDeps(ctx))
 }
