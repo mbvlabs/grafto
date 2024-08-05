@@ -45,10 +45,8 @@ func (bd Base) Redirect(w http.ResponseWriter, r *http.Request, url string) erro
 }
 
 func (bd Base) InternalError(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, "dsadads")
-	// from := "/"
-	//
-	// return views.InternalServerErr(ctx, views.InternalServerErrData{
-	// 	FromLocation: from,
-	// })
+	return ctx.HTML(
+		http.StatusOK,
+		"<h2>An unrecoverable error occurred. Please click <a href='/'>here</a></h2>",
+	)
 }
