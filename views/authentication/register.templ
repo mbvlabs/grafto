@@ -19,50 +19,16 @@ type RegisterFormProps struct {
 	CsrfToken       string
 }
 
-templ InternalErrorFlag() {
-	<div role="alert" class="mb-4 alert alert-error col-span-4 md:col-start-2 md:col-end-6 lg:col-span-4 lg:col-start-5 shadow-xl">
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			class="h-6 w-6 shrink-0 stroke-current"
-			fill="none"
-			viewBox="0 0 24 24"
-		>
-			<path
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				stroke-width="2"
-				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-			></path>
-		</svg>
-		<span>An error ocurred on our side, sorry! Please try again.</span>
-	</div>
-}
-
-templ RegisterResponse() {
-	<div role="alert" class="mb-4 alert alert-success col-span-4 md:col-start-2 md:col-end-6 lg:col-span-4 lg:col-start-5 shadow-xl">
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			class="h-6 w-6 shrink-0 stroke-current"
-			fill="none"
-			viewBox="0 0 24 24"
-		>
-			<path
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				stroke-width="2"
-				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-			></path>
-		</svg>
-		<span>Your account has been created!</span>
-	</div>
-}
-
 templ RegisterForm(data RegisterFormProps) {
 	if data.SuccessRegister {
-		@RegisterResponse()
+		@formFlagWrapper() {
+			@views.SuccessFlag("Your account has been created!", nil)
+		}
 	}
 	if data.InternalError {
-		@InternalErrorFlag()
+		@formFlagWrapper() {
+			@views.ErrorFlag("An error occurred that we could not recover from.")
+		}
 	}
 	<div hx-target="this" hx-swap="outerHTML" class="rounded-lg p-4 bg-base-200 flex flex-col items-center col-span-4 md:col-start-2 md:col-end-6 lg:col-span-4 lg:col-start-5 shadow-xl">
 		<div class="text-center w-full">
