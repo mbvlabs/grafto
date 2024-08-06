@@ -1,4 +1,4 @@
-package templates
+package emails
 
 import (
 	"context"
@@ -7,9 +7,12 @@ import (
 )
 
 //go:embed *.txt
-var textTemplates embed.FS
+var TextTemplates embed.FS
 
-type MailTemplateHandler interface {
+//go:embed *_templ.go
+var HtmlTemplates embed.FS
+
+type TemplateHandler interface {
 	GenerateTextVersion() (string, error)
 	GenerateHtmlVersion() (string, error)
 	Render(ctx context.Context, w io.Writer) error

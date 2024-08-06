@@ -1,33 +1,32 @@
-package templates
+package emails
 
 import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/mbv-labs/grafto/views/emails/internal/components"
 	"github.com/vanng822/go-premailer/premailer"
 	"io"
 	"text/template"
 )
 
-const newsletterWelcomeTmplName = "newsletter_welcome"
+const userSignupTmplName = "user_signup_welcome"
 
-type NewsletterWelcomeMail struct {
+type UserSignupWelcome struct {
 	ConfirmationLink string
-	UnsubscribeLink  string
 }
 
-var _ MailTemplateHandler = (*NewsletterWelcomeMail)(nil)
+var _ TemplateHandler = (*UserSignupWelcome)(nil)
 
-func (n NewsletterWelcomeMail) GenerateTextVersion() (string, error) {
-	textFile, err := template.ParseFS(textTemplates, fmt.Sprintf("%s.txt", newsletterWelcomeTmplName))
+func (u UserSignupWelcome) GenerateTextVersion() (string, error) {
+	textFile, err := template.ParseFS(TextTemplates, fmt.Sprintf("%s.txt", userSignupTmplName))
 	if err != nil {
 		return "", err
 	}
 
 	var textBody bytes.Buffer
-	if err := textFile.Execute(&textBody, NewsletterWelcomeMail{
-		ConfirmationLink: n.ConfirmationLink,
-		UnsubscribeLink:  n.UnsubscribeLink,
+	if err := textFile.Execute(&textBody, UserSignupWelcome{
+		ConfirmationLink: u.ConfirmationLink,
 	}); err != nil {
 		return "", err
 	}
@@ -35,9 +34,9 @@ func (n NewsletterWelcomeMail) GenerateTextVersion() (string, error) {
 	return textBody.String(), nil
 }
 
-func (n NewsletterWelcomeMail) GenerateHtmlVersion() (string, error) {
+func (u UserSignupWelcome) GenerateHtmlVersion() (string, error) {
 	var html bytes.Buffer
-	if err := n.template().Render(context.Background(), &html); err != nil {
+	if err := u.template().Render(context.Background(), &html); err != nil {
 		return "", err
 	}
 
@@ -54,11 +53,11 @@ func (n NewsletterWelcomeMail) GenerateHtmlVersion() (string, error) {
 	return inlineHtml, nil
 }
 
-func (n NewsletterWelcomeMail) Render(ctx context.Context, w io.Writer) error {
-	return n.template().Render(ctx, w)
+func (u UserSignupWelcome) Render(ctx context.Context, w io.Writer) error {
+	return u.template().Render(ctx, w)
 }
 
-templ (n NewsletterWelcomeMail) template() {
+templ (u UserSignupWelcome) template() {
 	<!DOCTYPE html>
 	<html xmlns="http://www.w3.org/1999/xhtml">
 		<head>
@@ -498,7 +497,7 @@ templ (n NewsletterWelcomeMail) template() {
   <![endif]-->
 		</head>
 		<body>
-			<span class="preheader">Thanks for joining our newsletter!</span>
+			<span class="preheader">Thanks for signing up for Grafto.</span>
 			<table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
 				<tr>
 					<td align="center">
@@ -519,7 +518,7 @@ templ (n NewsletterWelcomeMail) template() {
 											<td class="content-cell">
 												<div class="f-fallback">
 													<h1>Welcome!</h1>
-													<p>Thanks for joining our newsletter. We're super excited to share our process with Grafto with you. To receive these updates, we need you to confirm your mail:</p>
+													<p>Thanks for signing up for Grafto. We’re thrilled to have you on board. To continue, we need you to confirm your mail:</p>
 													<!-- Action -->
 													<table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0" role="presentation">
 														<tr>
@@ -528,7 +527,7 @@ templ (n NewsletterWelcomeMail) template() {
 																<table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation">
 																	<tr>
 																		<td align="center">
-																			<a href={ templ.SafeURL(n.ConfirmationLink) } class="f-fallback button" target="_blank">Confirm Mail</a>
+																			<a href={ templ.SafeURL(u.ConfirmationLink) } class="f-fallback button" target="_blank">Confirm Mail</a>
 																		</td>
 																	</tr>
 																</table>
@@ -553,7 +552,7 @@ templ (n NewsletterWelcomeMail) template() {
 																		If you’re having trouble with the button above, copy and paste the URL below into your web browser.
 																	</p>
 																	<p class="f-fallback sub">
-																		{ n.ConfirmationLink }
+																		{ u.ConfirmationLink }
 																	</p>
 																</td>
 															</tr>
@@ -566,7 +565,7 @@ templ (n NewsletterWelcomeMail) template() {
 								</td>
 							</tr>
 							<tr>
-								@footer(unsubscribeUrl(n.UnsubscribeLink))
+								@components.Footer(nil)
 							</tr>
 						</table>
 					</td>

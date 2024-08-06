@@ -1,17 +1,17 @@
-package templates
+package components
 
 func unsubscribeUrl(url string) *string {
 	return &url
 }
 
-templ footer(unsubUrl *string) {
+templ Footer(unsubUrl *string) {
 	<td>
 		if unsubUrl != nil {
 			<table class="email-footer" align="center" width="570" cellpadding="0" cellspacing="0" role="presentation">
 				<tr>
 					<td>
 						<p class="f-fallback sub">
-							If you didn't signup for Grafto, or want to stop receiving these emails, click here:
+							If you didn't signup, or want to stop receiving these emails, click here:
 						</p>
 						<p class="f-fallback sub">
 							<a href={ templ.SafeURL(*unsubUrl) } class="f-fallback sub" target="_blank">Unsubscribe me!</a>

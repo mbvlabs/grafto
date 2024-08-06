@@ -2,16 +2,12 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/models"
-	"github.com/mbv-labs/grafto/pkg/mail/templates"
-	"github.com/mbv-labs/grafto/pkg/queue"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/validation"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
@@ -20,9 +16,10 @@ import (
 
 type Registration struct {
 	Base
-	authService services.Auth
-	userModel   models.UserService
-	tknService  services.Token
+	authService  services.Auth
+	userModel    models.UserService
+	tknService   services.Token
+	emailService services.Email
 }
 
 func NewRegistration(
@@ -30,8 +27,9 @@ func NewRegistration(
 	base Base,
 	userSvc models.UserService,
 	tknService services.Token,
+	emailService services.Email,
 ) Registration {
-	return Registration{base, authSvc, userSvc, tknService}
+	return Registration{base, authSvc, userSvc, tknService, emailService}
 }
 
 func (r *Registration) CreateUser(ctx echo.Context) error {
@@ -132,50 +130,13 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	userSignupMail := templates.UserSignupWelcomeMail{
-		ConfirmationLink: fmt.Sprintf(
-			"%s://%s/verify-email?token=%s",
-			r.cfg.App.AppScheme,
-			r.cfg.App.AppHost,
-			emailActivationTkn,
-		),
-	}
-	textVersion, err := userSignupMail.GenerateTextVersion()
-	if err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-
+	if err := r.emailService.SendUserSignupWelcome(ctx.Request().Context(), user.Email, emailActivationTkn, true); err != nil {
 		props := authentication.RegisterFormProps{
 			InternalError: true,
 			CsrfToken:     csrf.Token(ctx.Request()),
 		}
 		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
-	}
-	htmlVersion, err := userSignupMail.GenerateHtmlVersion()
-	if err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 
-		props := authentication.RegisterFormProps{
-			InternalError: true,
-			CsrfToken:     csrf.Token(ctx.Request()),
-		}
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
-	}
-
-	_, err = r.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
-		To:          user.Email,
-		From:        r.cfg.App.DefaultSenderSignature,
-		Subject:     "Thanks for signing up!",
-		TextVersion: textVersion,
-		HtmlVersion: htmlVersion,
-	}, nil)
-	if err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-
-		props := authentication.RegisterFormProps{
-			InternalError: true,
-			CsrfToken:     csrf.Token(ctx.Request()),
-		}
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
 	props := authentication.RegisterFormProps{

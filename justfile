@@ -1,12 +1,11 @@
 set dotenv-load
 
 # alias
-alias rl := run-reload
+alias r := run-app
 alias rw := run-worker
+alias re := run-email
 
 alias wc := watch-css
-
-alias sm := serve-mails
 
 alias cm := create-migration
 alias ms := migration-status
@@ -31,10 +30,6 @@ default:
 watch-css:
     @cd resources && npm run watch-css
 
-# Mails
-serve-mails:
-    @cd ./pkg/mail/templates && wgo -file=.go -file=.templ -xfile=_templ.go templ generate :: go run ./server/main.go
-
 # Database 
 create-migration name:
 	@goose -dir migrations $DB_KIND $DATABASE_URL create {{name}} sql
@@ -58,19 +53,23 @@ generate-db-functions:
 	sqlc compile && sqlc generate
 
 # Application
-run-reload:
-    wgo -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/app/main.go
+run-app:
+    wgo -xdir ./views/emails -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/app/main.go
 
 # Worker
 run-worker:
     @go run ./cmd/worker/main.go
 
+# Emails
+run-email:
+    wgo -dir ./views/emails -file=.txt -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/*.go
+
 # templates
 compile-templates:
-    templ generate 
+    templ generate
 
 fmt-templates:
-    templ fmt ./views/ . 
+    cd views && templ fmt .
 
 # river
 river-migrate-up:

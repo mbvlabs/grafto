@@ -1,0 +1,25 @@
+package main
+
+import "fmt"
+
+templ emailsIndex(textEmailSlugs, htmlEmailSlugs []string) {
+	<div>
+		<h2>Text Emails: </h2>
+		<ul>
+			for _, textEmailSlug := range textEmailSlugs {
+				<li>
+					<a href={ templ.SafeURL(fmt.Sprintf("/text-emails/%v", textEmailSlug)) }>{ textEmailSlug }</a>
+				</li>
+			}
+		</ul>
+		<br/>
+		<h2>HTML Emails: </h2>
+		<ul>
+			for _, htmlEmailSlug := range htmlEmailSlugs {
+				<li>
+					<a href={ templ.SafeURL(fmt.Sprintf("/html-emails/%v", htmlEmailSlug)) }>{ htmlEmailSlug }</a>
+				</li>
+			}
+		</ul>
+	</div>
+}

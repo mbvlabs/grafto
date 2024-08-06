@@ -19,10 +19,6 @@ If you’re having trouble with the button above, copy and paste the URL below i
 
 {{ .ConfirmationLink }}
 
-If you didn't signup for Grafto, or want to stop receiving these emails, click here:
-
-{{ .UnsubscribeLink }}
-
 mbv labs
 
 CPH Denmark

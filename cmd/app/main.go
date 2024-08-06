@@ -11,11 +11,12 @@ import (
 	"github.com/mbv-labs/grafto/http/handlers"
 	mw "github.com/mbv-labs/grafto/http/middleware"
 	"github.com/mbv-labs/grafto/models"
+	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
 	"github.com/mbv-labs/grafto/pkg/config"
-	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/psql"
 	"github.com/mbv-labs/grafto/psql/database"
+	"github.com/mbv-labs/grafto/psql/queue"
 	"github.com/mbv-labs/grafto/routes"
 	"github.com/mbv-labs/grafto/services"
 	slogecho "github.com/samber/slog-echo"
@@ -43,18 +44,20 @@ func main() {
 
 	db := database.New(conn)
 	psql := psql.NewPostgres(conn)
+	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 
 	authSessionStore := sessions.NewCookieStore(
 		[]byte(cfg.Auth.SessionKey),
 		[]byte(cfg.Auth.SessionEncryptionKey),
 	)
 
+	awsSes := awsses.New()
+
 	authSvc := services.NewAuth(psql, authSessionStore, cfg)
 	tokenService := services.NewTokenSvc(psql, cfg.Auth.TokenSigningKey)
+	emailService := services.NewEmailSvc(cfg, &awsSes, riverClient)
 
 	userModelSvc := models.NewUserService(psql, authSvc)
-
-	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 
 	flashStore := handlers.NewCookieStore("")
 	baseHandler := handlers.NewDependencies(cfg, db, flashStore, riverClient)
@@ -65,6 +68,7 @@ func main() {
 		baseHandler,
 		userModelSvc,
 		*tokenService,
+		emailService,
 	)
 	apiHandlers := handlers.NewApi()
 	authenticationHandlers := handlers.NewAuthentication(
@@ -72,6 +76,7 @@ func main() {
 		baseHandler,
 		userModelSvc,
 		*tokenService,
+		emailService,
 	)
 
 	serverMW := mw.NewMiddleware(authSvc)

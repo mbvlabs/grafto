@@ -2,15 +2,12 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/models"
-	"github.com/mbv-labs/grafto/pkg/mail/templates"
-	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/validation"
 	"github.com/mbv-labs/grafto/services"
@@ -20,18 +17,20 @@ import (
 
 type Authentication struct {
 	Base
-	authService services.Auth
-	userModel   models.UserService
-	tknService  services.Token
+	authService  services.Auth
+	userModel    models.UserService
+	tknService   services.Token
+	emailService services.Email
 }
 
 func NewAuthentication(
 	authSvc services.Auth,
 	base Base,
 	userSvc models.UserService,
-	tknManager services.Token,
+	tknService services.Token,
+	emailService services.Email,
 ) Authentication {
-	return Authentication{base, authSvc, userSvc, tknManager}
+	return Authentication{base, authSvc, userSvc, tknService, emailService}
 }
 
 func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
@@ -136,43 +135,8 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		return err
 	}
 
-	// TODO fix this error flow
-	pwResetMail := &templates.PasswordResetMail{
-		ResetPasswordLink: fmt.Sprintf(
-			"%s://%s/reset-password?token=%s",
-			a.cfg.App.AppScheme,
-			a.cfg.App.AppHost,
-			resetToken,
-		),
-	}
-
-	textVersion, err := pwResetMail.GenerateTextVersion()
-	if err != nil {
-		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-			CsrfToken:     csrf.Token(ctx.Request()),
-			InternalError: true,
-		}).Render(views.ExtractRenderDeps(ctx))
-	}
-	htmlVersion, err := pwResetMail.GenerateHtmlVersion()
-	if err != nil {
-		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-			CsrfToken:     csrf.Token(ctx.Request()),
-			InternalError: true,
-		}).Render(views.ExtractRenderDeps(ctx))
-	}
-
-	_, err = a.queueClient.Insert(ctx.Request().Context(), queue.EmailJobArgs{
-		To:          user.Mail,
-		From:        a.cfg.App.DefaultSenderSignature,
-		Subject:     "Password Reset Request",
-		TextVersion: textVersion,
-		HtmlVersion: htmlVersion,
-	}, nil)
-	if err != nil {
-		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-			CsrfToken:     csrf.Token(ctx.Request()),
-			InternalError: true,
-		}).Render(views.ExtractRenderDeps(ctx))
+	if err := a.emailService.SendPasswordReset(ctx.Request().Context(), user.Mail, resetToken, true); err != nil {
+		return err
 	}
 
 	return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
