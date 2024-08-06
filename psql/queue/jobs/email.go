@@ -1,10 +1,6 @@
-package queue
+package jobs
 
-import (
-	"context"
-
-	"github.com/riverqueue/river"
-)
+import "context"
 
 const emailJobKind string = "email_job"
 
@@ -18,7 +14,7 @@ type EmailJobArgs struct {
 
 func (EmailJobArgs) Kind() string { return emailJobKind }
 
-type emailSender interface {
+type EmailSender interface {
 	Send(
 		ctx context.Context,
 		to,
@@ -27,20 +23,4 @@ type emailSender interface {
 		textVersion,
 		htmlVersion string,
 	) error
-}
-
-type EmailJobWorker struct {
-	Sender emailSender
-	river.WorkerDefaults[EmailJobArgs]
-}
-
-func (w *EmailJobWorker) Work(ctx context.Context, job *river.Job[EmailJobArgs]) error {
-	return w.Sender.Send(
-		ctx,
-		job.Args.To,
-		job.Args.From,
-		job.Args.Subject,
-		job.Args.TextVersion,
-		job.Args.HtmlVersion,
-	)
 }

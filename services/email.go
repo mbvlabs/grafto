@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/mbv-labs/grafto/pkg/config"
-	"github.com/mbv-labs/grafto/pkg/queue"
+	"github.com/mbv-labs/grafto/psql/queue/jobs"
 	"github.com/mbv-labs/grafto/views/emails"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -90,7 +90,7 @@ func (e *Email) SendUserSignupWelcome(
 	subject := "Grafto | Action Required"
 
 	if putOnQueue {
-		_, err := e.queueClient.Insert(ctx, queue.EmailJobArgs{
+		_, err := e.queueClient.Insert(ctx, jobs.EmailJobArgs{
 			To:          email,
 			From:        e.cfg.App.DefaultSenderSignature,
 			Subject:     subject,
@@ -148,7 +148,7 @@ func (e *Email) SendPasswordReset(
 	subject := "Grafto | Reset Password Request"
 
 	if putOnQueue {
-		_, err := e.queueClient.Insert(ctx, queue.EmailJobArgs{
+		_, err := e.queueClient.Insert(ctx, jobs.EmailJobArgs{
 			To:          email,
 			From:        e.cfg.App.DefaultSenderSignature,
 			Subject:     subject,

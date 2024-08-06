@@ -9,12 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
 	"github.com/mbv-labs/grafto/pkg/config"
-	"github.com/mbv-labs/grafto/pkg/mail"
-	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/psql"
 	"github.com/mbv-labs/grafto/psql/database"
+	"github.com/mbv-labs/grafto/psql/queue"
+	"github.com/mbv-labs/grafto/psql/queue/workers"
 	"github.com/riverqueue/river"
 )
 
@@ -24,8 +25,7 @@ func main() {
 
 	logger := telemetry.SetupLogger()
 
-	postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
-	mailClient := mail.NewMail(&postmark)
+	awsSes := awsses.New()
 
 	conn, err := psql.CreatePooledConnection(context.Background(), cfg.Db.GetUrlString())
 	if err != nil {
@@ -35,9 +35,9 @@ func main() {
 
 	jobStarted := make(chan struct{})
 
-	workers, err := queue.SetupWorkers(queue.WorkerDependencies{
-		DB:         db,
-		MailClient: mailClient,
+	workers, err := workers.SetupWorkers(workers.WorkerDependencies{
+		DB:      db,
+		Emailer: awsSes,
 	})
 	if err != nil {
 		panic(err)

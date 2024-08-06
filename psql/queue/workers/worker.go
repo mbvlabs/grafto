@@ -1,21 +1,21 @@
-package queue
+package workers
 
 import (
-	"github.com/mbv-labs/grafto/pkg/mail"
+	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
 	"github.com/mbv-labs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
 
 type WorkerDependencies struct {
-	DB         *database.Queries
-	MailClient mail.Mail
+	DB      *database.Queries
+	Emailer awsses.AwsSimpleEmailService
 }
 
 func SetupWorkers(deps WorkerDependencies) (*river.Workers, error) {
 	workers := river.NewWorkers()
 
 	if err := river.AddWorkerSafely(workers, &EmailJobWorker{
-		Sender: &deps.MailClient,
+		emailer: &deps.Emailer,
 	}); err != nil {
 		return nil, err
 	}
