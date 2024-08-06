@@ -13,8 +13,8 @@ import (
 	"github.com/mbv-labs/grafto/pkg/mail"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/repository/psql"
-	"github.com/mbv-labs/grafto/repository/psql/database"
+	"github.com/mbv-labs/grafto/psql"
+	"github.com/mbv-labs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
 

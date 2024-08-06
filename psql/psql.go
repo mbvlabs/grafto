@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/mbv-labs/grafto/repository/psql/database"
+	"github.com/mbv-labs/grafto/psql/database"
 )
 
 var (

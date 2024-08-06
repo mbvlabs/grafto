@@ -1,12 +1,12 @@
 version: "2"
 sql:
 - schema: "migrations"
-  queries: "repository/psql/queries"
+  queries: "psql/queries"
   engine: "postgresql"
   gen:
     go:
       package: "database"
-      out: "repository/psql/database"
+      out: "psql/database"
       output_db_file_name: "database.go"
       output_models_file_name: "entities.go"
       sql_package: "pgx/v5"
