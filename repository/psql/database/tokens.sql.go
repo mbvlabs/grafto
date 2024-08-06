@@ -12,17 +12,43 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteToken = `-- name: DeleteToken :exec
-delete from tokens where id=$1
+const deleteTokenByHash = `-- name: DeleteTokenByHash :exec
+delete from tokens
+where hash = $1
 `
 
-func (q *Queries) DeleteToken(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteToken, id)
+func (q *Queries) DeleteTokenByHash(ctx context.Context, hash string) error {
+	_, err := q.db.Exec(ctx, deleteTokenByHash, hash)
+	return err
+}
+
+const insertToken = `-- name: InsertToken :exec
+insert into tokens
+    (id, created_at, hash, expires_at, meta_information) values ($1, $2, $3, $4, $5) 
+returning id, created_at, hash, expires_at, meta_information
+`
+
+type InsertTokenParams struct {
+	ID              uuid.UUID
+	CreatedAt       pgtype.Timestamptz
+	Hash            string
+	ExpiresAt       pgtype.Timestamptz
+	MetaInformation []byte
+}
+
+func (q *Queries) InsertToken(ctx context.Context, arg InsertTokenParams) error {
+	_, err := q.db.Exec(ctx, insertToken,
+		arg.ID,
+		arg.CreatedAt,
+		arg.Hash,
+		arg.ExpiresAt,
+		arg.MetaInformation,
+	)
 	return err
 }
 
 const queryTokenByHash = `-- name: QueryTokenByHash :one
-select id, created_at, hash, expires_at, scope, user_id from tokens where hash=$1
+select id, created_at, hash, expires_at, meta_information from tokens where hash=$1
 `
 
 func (q *Queries) QueryTokenByHash(ctx context.Context, hash string) (Token, error) {
@@ -33,35 +59,7 @@ func (q *Queries) QueryTokenByHash(ctx context.Context, hash string) (Token, err
 		&i.CreatedAt,
 		&i.Hash,
 		&i.ExpiresAt,
-		&i.Scope,
-		&i.UserID,
+		&i.MetaInformation,
 	)
 	return i, err
-}
-
-const storeToken = `-- name: StoreToken :exec
-insert into tokens
-    (id, created_at, hash, expires_at, scope, user_id) values ($1, $2, $3, $4, $5, $6) 
-returning id, created_at, hash, expires_at, scope, user_id
-`
-
-type StoreTokenParams struct {
-	ID        uuid.UUID
-	CreatedAt pgtype.Timestamptz
-	Hash      string
-	ExpiresAt pgtype.Timestamptz
-	Scope     string
-	UserID    uuid.UUID
-}
-
-func (q *Queries) StoreToken(ctx context.Context, arg StoreTokenParams) error {
-	_, err := q.db.Exec(ctx, storeToken,
-		arg.ID,
-		arg.CreatedAt,
-		arg.Hash,
-		arg.ExpiresAt,
-		arg.Scope,
-		arg.UserID,
-	)
-	return err
 }

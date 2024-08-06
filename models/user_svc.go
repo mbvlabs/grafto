@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,6 +22,11 @@ type userStorage interface {
 		userID uuid.UUID,
 		newPassword string,
 		updatedAt time.Time,
+	) error
+	VerifyUserEmail(
+		ctx context.Context,
+		updatedAt time.Time,
+		email string,
 	) error
 }
 
@@ -117,4 +123,14 @@ func (us UserService) ChangePassword(ctx context.Context, data ChangeUserPasswor
 	}
 
 	return us.storage.UpdateUserPassword(ctx, data.ID, hashedPassword, data.UpdatedAt)
+}
+
+func (us UserService) VerifyEmail(ctx context.Context, email string) error {
+	err := us.storage.VerifyUserEmail(ctx, time.Now(), email)
+	if err != nil {
+		slog.ErrorContext(ctx, "could not verify user email", "error", err)
+		return err
+	}
+
+	return nil
 }

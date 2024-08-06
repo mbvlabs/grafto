@@ -7,15 +7,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
-	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/models"
 	"github.com/mbv-labs/grafto/pkg/mail/templates"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/pkg/tokens"
 	"github.com/mbv-labs/grafto/pkg/validation"
-	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
@@ -25,16 +22,16 @@ type Registration struct {
 	Base
 	authService services.Auth
 	userModel   models.UserService
-	tknManager  tokens.Manager
+	tknService  services.Token
 }
 
 func NewRegistration(
 	authSvc services.Auth,
 	base Base,
 	userSvc models.UserService,
-	tknManager tokens.Manager,
+	tknService services.Token,
 ) Registration {
-	return Registration{base, authSvc, userSvc, tknManager}
+	return Registration{base, authSvc, userSvc, tknService}
 }
 
 func (r *Registration) CreateUser(ctx echo.Context) error {
@@ -123,29 +120,11 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
 	}
 
-	plainText, hashedToken, err := r.tknManager.GenerateToken()
+	emailActivationTkn, err := r.tknService.CreateUserEmailVerification(
+		ctx.Request().Context(),
+		user.ID,
+	)
 	if err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-
-		props := authentication.RegisterFormProps{
-			InternalError: true,
-			CsrfToken:     csrf.Token(ctx.Request()),
-		}
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
-	}
-
-	activationToken := tokens.CreateActivationToken(plainText, hashedToken)
-
-	if err := r.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
-		ID:        uuid.New(),
-		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
-		Hash:      activationToken.Hash,
-		ExpiresAt: database.ConvertToPGTimestamptz(activationToken.GetExpirationTime()),
-		Scope:     activationToken.GetScope(),
-		UserID:    user.ID,
-	}); err != nil {
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-
 		props := authentication.RegisterFormProps{
 			InternalError: true,
 			CsrfToken:     csrf.Token(ctx.Request()),
@@ -158,7 +137,7 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 			"%s://%s/verify-email?token=%s",
 			r.cfg.App.AppScheme,
 			r.cfg.App.AppHost,
-			activationToken.GetPlainText(),
+			emailActivationTkn,
 		),
 	}
 	textVersion, err := userSignupMail.GenerateTextVersion()
@@ -219,66 +198,35 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 		return r.InternalError(ctx)
 	}
 
-	hashedToken, err := r.tknManager.Hash(payload.Token)
-	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
+	if err := r.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeEmailVerification); err != nil {
+		if err := ctx.Bind(&payload); err != nil {
+			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
 
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return r.InternalError(ctx)
-	}
-
-	token, err := r.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return authentication.VerifyEmailPage(true).
-				Render(views.ExtractRenderDeps(ctx))
+			return r.InternalError(ctx)
 		}
-
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return r.InternalError(ctx)
 	}
 
-	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) &&
-		token.Scope != tokens.ScopeEmailVerification {
-		return authentication.VerifyEmailPage(true).
-			Render(views.ExtractRenderDeps(ctx))
+	userID, err := r.tknService.GetAssociatedUserID(ctx.Request().Context(), payload.Token)
+	if err != nil {
+		if err := ctx.Bind(&payload); err != nil {
+			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+
+			return r.InternalError(ctx)
+		}
 	}
 
-	user, err := r.db.QueryUserByID(ctx.Request().Context(), token.UserID)
+	user, err := r.db.QueryUserByID(ctx.Request().Context(), userID)
 	if err != nil {
 		return r.InternalError(ctx)
 	}
 
-	confirmTime := time.Now()
-	updatedUser, err := r.db.UpdateUser(ctx.Request().Context(), database.UpdateUserParams{
-		ID:             token.UserID,
-		UpdatedAt:      database.ConvertToPGTimestamptz(confirmTime),
-		Name:           user.Name,
-		Mail:           user.Mail,
-		Password:       user.Password,
-		MailVerifiedAt: database.ConvertToPGTimestamptz(confirmTime),
-	})
-	if err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+	if err := r.userModel.VerifyEmail(ctx.Request().Context(), user.Mail); err != nil {
 		return r.InternalError(ctx)
 	}
 
-	if err := r.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
-		return r.InternalError(ctx)
-	}
-
-	_, err = r.authService.NewUserSession(ctx.Request(), ctx.Response(), updatedUser.ID)
+	_, err = r.authService.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
 	if err != nil {
 		return r.InternalError(ctx)
 	}

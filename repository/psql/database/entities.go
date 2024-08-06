@@ -101,12 +101,11 @@ type RiverQueue struct {
 }
 
 type Token struct {
-	ID        uuid.UUID
-	CreatedAt pgtype.Timestamptz
-	Hash      string
-	ExpiresAt pgtype.Timestamptz
-	Scope     string
-	UserID    uuid.UUID
+	ID              uuid.UUID
+	CreatedAt       pgtype.Timestamptz
+	Hash            string
+	ExpiresAt       pgtype.Timestamptz
+	MetaInformation []byte
 }
 
 type User struct {

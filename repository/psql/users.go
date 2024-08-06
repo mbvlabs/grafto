@@ -86,17 +86,11 @@ func (p Postgres) UpdateUser(
 		Valid: true,
 	}
 
-	mailVerifiedAt := pgtype.Timestamptz{
-		Time:  data.EmailVerifiedAt,
-		Valid: true,
-	}
-
 	_, err := p.Queries.UpdateUser(ctx, database.UpdateUserParams{
-		ID:             data.ID,
-		UpdatedAt:      updatedAt,
-		Name:           data.Name,
-		Mail:           data.Email,
-		MailVerifiedAt: mailVerifiedAt,
+		ID:        data.ID,
+		UpdatedAt: updatedAt,
+		Name:      data.Name,
+		Mail:      data.Email,
 	})
 	if err != nil {
 		return models.User{}, err
@@ -125,4 +119,21 @@ func (p Postgres) UpdateUserPassword(
 	}
 
 	return nil
+}
+
+func (p Postgres) VerifyUserEmail(
+	ctx context.Context,
+	updatedAt time.Time,
+	email string,
+) error {
+	parsedUpdatedAt := pgtype.Timestamptz{
+		Time:  updatedAt,
+		Valid: true,
+	}
+
+	return p.Queries.VerifyUserEmail(ctx, database.VerifyUserEmailParams{
+		Mail:           email,
+		UpdatedAt:      parsedUpdatedAt,
+		MailVerifiedAt: parsedUpdatedAt,
+	})
 }

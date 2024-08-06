@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
@@ -13,9 +12,7 @@ import (
 	"github.com/mbv-labs/grafto/pkg/mail/templates"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/pkg/tokens"
 	"github.com/mbv-labs/grafto/pkg/validation"
-	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
 	"github.com/mbv-labs/grafto/views/authentication"
@@ -25,14 +22,14 @@ type Authentication struct {
 	Base
 	authService services.Auth
 	userModel   models.UserService
-	tknManager  tokens.Manager
+	tknService  services.Token
 }
 
 func NewAuthentication(
 	authSvc services.Auth,
 	base Base,
 	userSvc models.UserService,
-	tknManager tokens.Manager,
+	tknManager services.Token,
 ) Authentication {
 	return Authentication{base, authSvc, userSvc, tknManager}
 }
@@ -134,29 +131,9 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 			InternalError: true,
 		}).Render(views.ExtractRenderDeps(ctx))
 	}
-
-	plainText, hashedToken, err := a.tknManager.GenerateToken()
+	resetToken, err := a.tknService.CreateResetPasswordToken(ctx.Request().Context(), user.ID)
 	if err != nil {
-		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-			CsrfToken:     csrf.Token(ctx.Request()),
-			InternalError: true,
-		}).Render(views.ExtractRenderDeps(ctx))
-	}
-
-	resetPWToken := tokens.CreateResetPasswordToken(plainText, hashedToken)
-
-	if err := a.db.StoreToken(ctx.Request().Context(), database.StoreTokenParams{
-		ID:        uuid.New(),
-		CreatedAt: database.ConvertToPGTimestamptz(time.Now()),
-		Hash:      resetPWToken.Hash,
-		ExpiresAt: database.ConvertToPGTimestamptz(resetPWToken.GetExpirationTime()),
-		Scope:     resetPWToken.GetScope(),
-		UserID:    user.ID,
-	}); err != nil {
-		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-			CsrfToken:     csrf.Token(ctx.Request()),
-			InternalError: true,
-		}).Render(views.ExtractRenderDeps(ctx))
+		return err
 	}
 
 	// TODO fix this error flow
@@ -165,7 +142,7 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 			"%s://%s/reset-password?token=%s",
 			a.cfg.App.AppScheme,
 			a.cfg.App.AppHost,
-			resetPWToken.GetPlainText(),
+			resetToken,
 		),
 	}
 
@@ -232,32 +209,19 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	hashedToken, err := a.tknManager.Hash(payload.Token)
-	if err != nil {
-		return authentication.ResetPasswordPage(false, true, "", "").
-			Render(views.ExtractRenderDeps(ctx))
+	if err := a.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
+		return err
 	}
 
-	token, err := a.db.QueryTokenByHash(ctx.Request().Context(), hashedToken)
+	userID, err := a.tknService.GetAssociatedUserID(ctx.Request().Context(), payload.Token)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return authentication.ResetPasswordPage(true, false, "", "").
-				Render(views.ExtractRenderDeps(ctx))
-		}
-
 		return authentication.ResetPasswordPage(false, true, "", "").
-			Render(views.ExtractRenderDeps(ctx))
-	}
-
-	if database.ConvertFromPGTimestamptzToTime(token.ExpiresAt).Before(time.Now()) ||
-		token.Scope != tokens.ScopeResetPassword {
-		return authentication.ResetPasswordPage(true, false, "", "").
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	err = a.userModel.ChangePassword(ctx.Request().Context(),
 		models.ChangeUserPasswordData{
-			ID:              token.UserID,
+			ID:              userID,
 			UpdatedAt:       time.Now(),
 			Password:        payload.Password,
 			ConfirmPassword: payload.ConfirmPassword,
@@ -271,7 +235,7 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 
 		props := authentication.ResetPasswordFormProps{
 			CsrfToken:  csrf.Token(ctx.Request()),
-			ResetToken: token.Hash,
+			ResetToken: payload.Token,
 		}
 
 		for _, validationError := range valiErrs {
@@ -289,7 +253,7 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		return a.InternalError(ctx)
 	}
 
-	if err := a.db.DeleteToken(ctx.Request().Context(), token.ID); err != nil {
+	if err := a.tknService.Delete(ctx.Request().Context(), payload.Token); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
