@@ -6,6 +6,11 @@ import (
 	"github.com/caarlos0/env/v10"
 )
 
+const (
+	DEV_ENVIRONMENT  = "development"
+	PROD_ENVIRONMENT = "production"
+)
+
 type App struct {
 	ServerHost             string `env:"SERVER_HOST"`
 	ServerPort             string `env:"SERVER_PORT"`

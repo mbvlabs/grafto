@@ -6,7 +6,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 )
@@ -83,7 +82,7 @@ func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] 
 		fetchCooldown:     100 * time.Millisecond,
 		fetchPollInterval: 1 * time.Second,
 		jobTimeout:        5 * time.Minute,
-		logger:            telemetry.SetupLogger(),
+		logger:            slog.Default(),
 	}
 
 	for _, opt := range opts {

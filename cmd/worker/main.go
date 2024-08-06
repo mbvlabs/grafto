@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,11 +20,13 @@ import (
 	"github.com/riverqueue/river"
 )
 
+var appRelease string
+
 func main() {
 	ctx := context.Background()
 	cfg := config.NewTBD()
 
-	logger := telemetry.SetupLogger()
+	telemetry.NewTelemetry(cfg, appRelease, "queue-worker")
 
 	awsSes := awsses.New()
 
@@ -48,7 +51,7 @@ func main() {
 		conn,
 		queue.WithQueues(q),
 		queue.WithWorkers(workers),
-		queue.WithLogger(logger),
+		queue.WithLogger(slog.Default()),
 	)
 
 	if err := riverClient.Start(ctx); err != nil {

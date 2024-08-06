@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"errors"
+	"log/slog"
 	"time"
 
 	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/models"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/validation"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/mbv-labs/grafto/views"
@@ -48,7 +48,7 @@ type StoreAuthenticatedSessionPayload struct {
 func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 	var payload StoreAuthenticatedSessionPayload
 	if err := ctx.Bind(&payload); err != nil {
-		telemetry.Logger.ErrorContext(
+		slog.ErrorContext(
 			ctx.Request().Context(),
 			"could not parse UserLoginPayload",
 			"error",
@@ -64,7 +64,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		payload.Mail,
 		payload.Password,
 	); err != nil {
-		telemetry.Logger.ErrorContext(
+		slog.ErrorContext(
 			ctx.Request().Context(),
 			"could not authenticate user",
 			"error",
@@ -221,7 +221,7 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
-		telemetry.Logger.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		slog.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
 		return a.InternalError(ctx)
 	}
 

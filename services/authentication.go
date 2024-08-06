@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -10,7 +11,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/mbv-labs/grafto/config"
 	"github.com/mbv-labs/grafto/models"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -62,7 +62,7 @@ func (a Auth) AuthenticateUser(
 			return ErrUserNotExist
 		}
 
-		telemetry.Logger.ErrorContext(ctx, "could not query user", "error", err)
+		slog.ErrorContext(ctx, "could not query user", "error", err)
 		return err
 	}
 
