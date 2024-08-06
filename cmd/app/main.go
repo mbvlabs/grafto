@@ -14,7 +14,6 @@ import (
 	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/queue"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/pkg/tokens"
 	"github.com/mbv-labs/grafto/repository/psql"
 	"github.com/mbv-labs/grafto/repository/psql/database"
 	"github.com/mbv-labs/grafto/routes"
@@ -45,17 +44,14 @@ func main() {
 	db := database.New(conn)
 	psql := psql.NewPostgres(conn)
 
-	// postmark := mail.NewPostmark(cfg.ExternalProviders.PostmarkApiToken)
-	// mailClient := mail.NewMail(&postmark)
-
-	tokenManager := tokens.NewManager(cfg.Auth.TokenSigningKey)
-
 	authSessionStore := sessions.NewCookieStore(
 		[]byte(cfg.Auth.SessionKey),
 		[]byte(cfg.Auth.SessionEncryptionKey),
 	)
 
 	authSvc := services.NewAuth(psql, authSessionStore, cfg)
+	tokenService := services.NewTokenSvc(psql, cfg.Auth.TokenSigningKey)
+
 	userModelSvc := models.NewUserService(psql, authSvc)
 
 	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
@@ -68,14 +64,14 @@ func main() {
 		authSvc,
 		baseHandler,
 		userModelSvc,
-		*tokenManager,
+		*tokenService,
 	)
 	apiHandlers := handlers.NewApi()
 	authenticationHandlers := handlers.NewAuthentication(
 		authSvc,
 		baseHandler,
 		userModelSvc,
-		*tokenManager,
+		*tokenService,
 	)
 
 	serverMW := mw.NewMiddleware(authSvc)

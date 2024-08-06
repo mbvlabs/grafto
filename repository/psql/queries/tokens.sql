@@ -1,10 +1,11 @@
--- name: StoreToken :exec
+-- name: InsertToken :exec
 insert into tokens
-    (id, created_at, hash, expires_at, scope, user_id) values ($1, $2, $3, $4, $5, $6) 
+    (id, created_at, hash, expires_at, meta_information) values ($1, $2, $3, $4, $5) 
 returning *;
 
 -- name: QueryTokenByHash :one
 select * from tokens where hash=$1;
 
--- name: DeleteToken :exec
-delete from tokens where id=$1;
+-- name: DeleteTokenByHash :exec
+delete from tokens
+where hash = $1;
