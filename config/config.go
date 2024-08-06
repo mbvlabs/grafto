@@ -2,7 +2,7 @@ package config
 
 import "os"
 
-type TBD struct {
+type Config struct {
 	Database
 	Authentication
 	App
@@ -10,7 +10,7 @@ type TBD struct {
 	AwsSecretAccessKey string
 }
 
-func NewTBD() TBD {
+func NewTBD() Config {
 	db := newDatabase()
 	authentication := newAuthentication()
 	app := newApp()
@@ -24,7 +24,7 @@ func NewTBD() TBD {
 		panic("missing 'AWS_SECRET_ACCESS_KEY'")
 	}
 
-	return TBD{
+	return Config{
 		db,
 		authentication,
 		app,

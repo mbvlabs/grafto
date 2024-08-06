@@ -16,7 +16,7 @@ type Routes struct {
 	apiHandlers          handlers.Api
 	baseHandlers         handlers.Base
 	middleware           middleware.Middleware
-	cfg                  config.TBD
+	cfg                  config.Config
 }
 
 func NewRoutes(
@@ -27,7 +27,7 @@ func NewRoutes(
 	apiHandlers handlers.Api,
 	baseHandlers handlers.Base,
 	mw middleware.Middleware,
-	cfg config.TBD,
+	cfg config.Config,
 ) *Routes {
 	router := echo.New()
 

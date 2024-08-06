@@ -11,14 +11,14 @@ import (
 )
 
 type Base struct {
-	cfg         config.TBD
+	cfg         config.Config
 	db          *database.Queries
 	flashStore  FlashStorage
 	queueClient *river.Client[pgx.Tx]
 }
 
 func NewDependencies(
-	cfg config.TBD,
+	cfg config.Config,
 	db *database.Queries,
 	flashStore FlashStorage,
 	queueClient *river.Client[pgx.Tx],

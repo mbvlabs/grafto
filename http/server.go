@@ -19,14 +19,14 @@ type Server struct {
 	router *echo.Echo
 	host   string
 	port   string
-	cfg    config.TBD
+	cfg    config.Config
 	srv    *http.Server
 }
 
 func NewServer(
 	router *echo.Echo,
 	logger *slog.Logger,
-	cfg config.TBD,
+	cfg config.Config,
 ) Server {
 	host := cfg.App.ServerHost
 	port := cfg.App.ServerPort

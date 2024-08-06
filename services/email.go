@@ -33,13 +33,13 @@ type QueueClient interface {
 }
 
 type Email struct {
-	cfg         config.TBD
+	cfg         config.Config
 	client      EmailClient
 	queueClient QueueClient
 }
 
 func NewEmailSvc(
-	cfg config.TBD,
+	cfg config.Config,
 	client EmailClient,
 	queueClient QueueClient,
 ) Email {

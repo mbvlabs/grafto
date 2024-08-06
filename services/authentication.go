@@ -21,7 +21,7 @@ type authStorage interface {
 type Auth struct {
 	storage     authStorage
 	cookieStore *sessions.CookieStore
-	cfg         config.TBD
+	cfg         config.Config
 }
 
 type UserSession struct {
@@ -30,7 +30,7 @@ type UserSession struct {
 	IsAdmin       bool
 }
 
-func NewAuth(storage authStorage, cookieStore *sessions.CookieStore, cfg config.TBD) Auth {
+func NewAuth(storage authStorage, cookieStore *sessions.CookieStore, cfg config.Config) Auth {
 	return Auth{storage, cookieStore, cfg}
 }
 
