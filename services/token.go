@@ -14,7 +14,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/mbv-labs/grafto/repository/psql/database"
+	"github.com/mbv-labs/grafto/psql/database"
 )
 
 const (

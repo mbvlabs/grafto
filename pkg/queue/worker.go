@@ -2,7 +2,7 @@ package queue
 
 import (
 	"github.com/mbv-labs/grafto/pkg/mail"
-	"github.com/mbv-labs/grafto/repository/psql/database"
+	"github.com/mbv-labs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
 
