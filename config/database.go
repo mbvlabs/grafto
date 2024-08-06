@@ -1,6 +1,10 @@
 package config
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/caarlos0/env/v10"
+)
 
 type Database struct {
 	Port         string `env:"DB_PORT"`
@@ -12,9 +16,19 @@ type Database struct {
 	SSL_MODE     string `env:"DB_SSL_MODE"`
 }
 
-func (d Database) GetUrlString() string {
+func (d Database) GetDatabaseURL() string {
 	return fmt.Sprintf("%s://%s:%s@%s:%s/%s?sslmode=%s",
 		d.DatabaseKind, d.User, d.Password, d.Host, d.Port,
 		d.Name, d.SSL_MODE,
 	)
+}
+
+func newDatabase() Database {
+	dataCfg := Database{}
+
+	if err := env.Parse(&dataCfg); err != nil {
+		panic(err)
+	}
+
+	return dataCfg
 }

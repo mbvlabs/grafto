@@ -7,12 +7,12 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mbv-labs/grafto/config"
 	"github.com/mbv-labs/grafto/http"
 	"github.com/mbv-labs/grafto/http/handlers"
 	mw "github.com/mbv-labs/grafto/http/middleware"
 	"github.com/mbv-labs/grafto/models"
 	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
-	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/psql"
 	"github.com/mbv-labs/grafto/psql/database"
@@ -28,7 +28,7 @@ func main() {
 	logger := telemetry.SetupLogger()
 	slog.SetDefault(logger)
 
-	cfg := config.New()
+	cfg := config.NewTBD()
 
 	// Middleware
 	router.Use(slogecho.New(logger))
@@ -36,7 +36,7 @@ func main() {
 
 	conn, err := psql.CreatePooledConnection(
 		context.Background(),
-		cfg.Db.GetUrlString(),
+		cfg.GetDatabaseURL(),
 	)
 	if err != nil {
 		panic(err)
@@ -47,14 +47,14 @@ func main() {
 	riverClient := queue.NewClient(conn, queue.WithLogger(logger))
 
 	authSessionStore := sessions.NewCookieStore(
-		[]byte(cfg.Auth.SessionKey),
-		[]byte(cfg.Auth.SessionEncryptionKey),
+		[]byte(cfg.SessionKey),
+		[]byte(cfg.SessionEncryptionKey),
 	)
 
 	awsSes := awsses.New()
 
 	authSvc := services.NewAuth(psql, authSessionStore, cfg)
-	tokenService := services.NewTokenSvc(psql, cfg.Auth.TokenSigningKey)
+	tokenService := services.NewTokenSvc(psql, cfg.TokenSigningKey)
 	emailService := services.NewEmailSvc(cfg, &awsSes, riverClient)
 
 	userModelSvc := models.NewUserService(psql, authSvc)

@@ -5,20 +5,20 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/pkg/config"
+	"github.com/mbv-labs/grafto/config"
 	"github.com/mbv-labs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
 
 type Base struct {
-	cfg         config.Cfg
+	cfg         config.Config
 	db          *database.Queries
 	flashStore  FlashStorage
 	queueClient *river.Client[pgx.Tx]
 }
 
 func NewDependencies(
-	cfg config.Cfg,
+	cfg config.Config,
 	db *database.Queries,
 	flashStore FlashStorage,
 	queueClient *river.Client[pgx.Tx],
