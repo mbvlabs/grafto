@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mbv-labs/grafto/pkg/config"
+	"github.com/mbv-labs/grafto/config"
 	"github.com/mbv-labs/grafto/psql/queue/jobs"
 	"github.com/mbv-labs/grafto/views/emails"
 	"github.com/riverqueue/river"
@@ -33,13 +33,13 @@ type QueueClient interface {
 }
 
 type Email struct {
-	cfg         config.Cfg
+	cfg         config.TBD
 	client      EmailClient
 	queueClient QueueClient
 }
 
 func NewEmailSvc(
-	cfg config.Cfg,
+	cfg config.TBD,
 	client EmailClient,
 	queueClient QueueClient,
 ) Email {
@@ -58,9 +58,8 @@ func (e *Email) SendUserSignupWelcome(
 ) error {
 	newsletterEmail := emails.UserSignupWelcome{
 		ConfirmationLink: fmt.Sprintf(
-			"%s://%s/verify-email?token=%s",
-			e.cfg.App.AppScheme,
-			e.cfg.App.AppHost,
+			"%s/verify-email?token=%s",
+			e.cfg.GetFullDomain(),
 			activationTkn,
 		),
 	}

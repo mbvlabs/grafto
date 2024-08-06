@@ -12,21 +12,21 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/pkg/config"
+	"github.com/mbv-labs/grafto/config"
 )
 
 type Server struct {
 	router *echo.Echo
 	host   string
 	port   string
-	cfg    config.Cfg
+	cfg    config.TBD
 	srv    *http.Server
 }
 
 func NewServer(
 	router *echo.Echo,
 	logger *slog.Logger,
-	cfg config.Cfg,
+	cfg config.TBD,
 ) Server {
 	host := cfg.App.ServerHost
 	port := cfg.App.ServerPort
@@ -35,7 +35,7 @@ func NewServer(
 	srv := &http.Server{
 		Addr: fmt.Sprintf("%v:%v", host, port),
 		Handler: csrf.Protect(
-			[]byte(cfg.Auth.CsrfToken), csrf.Secure(isProduction), csrf.Path("/"))(router),
+			[]byte(cfg.CsrfToken), csrf.Secure(isProduction), csrf.Path("/"))(router),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}

@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
+	"github.com/mbv-labs/grafto/config"
 	"github.com/mbv-labs/grafto/models"
-	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,7 +21,7 @@ type authStorage interface {
 type Auth struct {
 	storage     authStorage
 	cookieStore *sessions.CookieStore
-	cfg         config.Cfg
+	cfg         config.TBD
 }
 
 type UserSession struct {
@@ -30,12 +30,12 @@ type UserSession struct {
 	IsAdmin       bool
 }
 
-func NewAuth(storage authStorage, cookieStore *sessions.CookieStore, cfg config.Cfg) Auth {
+func NewAuth(storage authStorage, cookieStore *sessions.CookieStore, cfg config.TBD) Auth {
 	return Auth{storage, cookieStore, cfg}
 }
 
 func (a Auth) HashAndPepperPassword(password string) (string, error) {
-	passwordBytes := []byte(password + a.cfg.Auth.PasswordPepper)
+	passwordBytes := []byte(password + a.cfg.PasswordPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -47,7 +47,7 @@ func (a Auth) HashAndPepperPassword(password string) (string, error) {
 func (a Auth) ValidatePassword(password, hashedPassword string) error {
 	return bcrypt.CompareHashAndPassword(
 		[]byte(hashedPassword),
-		[]byte(password+a.cfg.Auth.PasswordPepper),
+		[]byte(password+a.cfg.PasswordPepper),
 	)
 }
 
@@ -93,7 +93,7 @@ func (a Auth) NewUserSession(
 	}
 
 	session.Options.HttpOnly = true
-	session.Options.Domain = a.cfg.App.AppHost
+	session.Options.Domain = a.cfg.AppDomain
 	session.Options.Secure = true
 	session.Options.MaxAge = 86400
 

@@ -2,9 +2,9 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
+	"github.com/mbv-labs/grafto/config"
 	"github.com/mbv-labs/grafto/http/handlers"
 	"github.com/mbv-labs/grafto/http/middleware"
-	"github.com/mbv-labs/grafto/pkg/config"
 )
 
 type Routes struct {
@@ -16,7 +16,7 @@ type Routes struct {
 	apiHandlers          handlers.Api
 	baseHandlers         handlers.Base
 	middleware           middleware.Middleware
-	cfg                  config.Cfg
+	cfg                  config.TBD
 }
 
 func NewRoutes(
@@ -27,7 +27,7 @@ func NewRoutes(
 	apiHandlers handlers.Api,
 	baseHandlers handlers.Base,
 	mw middleware.Middleware,
-	cfg config.Cfg,
+	cfg config.TBD,
 ) *Routes {
 	router := echo.New()
 

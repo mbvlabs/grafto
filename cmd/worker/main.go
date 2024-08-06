@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/mbv-labs/grafto/config"
 	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
-	"github.com/mbv-labs/grafto/pkg/config"
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/psql"
 	"github.com/mbv-labs/grafto/psql/database"
@@ -21,13 +21,13 @@ import (
 
 func main() {
 	ctx := context.Background()
-	cfg := config.New()
+	cfg := config.NewTBD()
 
 	logger := telemetry.SetupLogger()
 
 	awsSes := awsses.New()
 
-	conn, err := psql.CreatePooledConnection(context.Background(), cfg.Db.GetUrlString())
+	conn, err := psql.CreatePooledConnection(context.Background(), cfg.GetDatabaseURL())
 	if err != nil {
 		panic(err)
 	}
