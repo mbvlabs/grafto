@@ -7,7 +7,6 @@ create table if not exists tokens (
     created_at timestamp with time zone not null,
     hash text not null,
     expires_at timestamp with time zone not null,
-    --scope varchar(255) not null,
 	meta_information jsonb not null
 );
 -- +goose StatementEnd
