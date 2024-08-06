@@ -1,0 +1,24 @@
+Thanks for signing up for Grafto.
+
+Grafto ( https://mbv-labs.com )
+
+******************
+Welcome!
+******************
+
+Thanks for signing up for Grafto. We’re thrilled to have you on board. To continue, we need you to confirm your mail:
+
+Confirm your mail: ( {{ .ConfirmationLink }} )
+
+If you have any questions, feel free to email our customer success team ( support@mbv-labs.com ). (We're lightning quick at replying.)
+
+Thanks,
+MBV and the Grafto team
+
+If you’re having trouble with the button above, copy and paste the URL below into your web browser.
+
+{{ .ConfirmationLink }}
+
+mbv labs
+
+CPH Denmark
