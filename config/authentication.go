@@ -13,7 +13,9 @@ type Authentication struct {
 func newAuthentication() Authentication {
 	authenticationCfg := Authentication{}
 
-	if err := env.Parse(&authenticationCfg); err != nil {
+	if err := env.ParseWithOptions(&authenticationCfg, env.Options{
+		RequiredIfNoDef: true,
+	}); err != nil {
 		panic(err)
 	}
 

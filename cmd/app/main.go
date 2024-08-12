@@ -24,7 +24,19 @@ var appRelease string
 func main() {
 	cfg := config.NewTBD()
 
-	telemetry.NewTelemetry(cfg, appRelease, "app")
+	otel := telemetry.NewOtel(cfg)
+	defer func() {
+		if err := otel.Shutdown(); err != nil {
+			panic(err)
+		}
+	}()
+
+	appTracer := otel.NewTracer("app/tracer")
+
+	client := telemetry.NewTelemetry(cfg, appRelease)
+	if client != nil {
+		defer client.Stop()
+	}
 
 	conn, err := psql.CreatePooledConnection(
 		context.Background(),
@@ -52,7 +64,7 @@ func main() {
 	userModelSvc := models.NewUserService(psql, authSvc)
 
 	flashStore := handlers.NewCookieStore("")
-	baseHandler := handlers.NewDependencies(cfg, db, flashStore, riverClient)
+	baseHandler := handlers.NewDependencies(cfg, db, flashStore, riverClient, appTracer)
 	appHandlers := handlers.NewApp(baseHandler)
 	dashboardHandlers := handlers.NewDashboard(baseHandler)
 	registrationHandlers := handlers.NewRegistration(

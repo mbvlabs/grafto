@@ -28,7 +28,9 @@ func (a App) GetFullDomain() string {
 func newApp() App {
 	appCfg := App{}
 
-	if err := env.Parse(&appCfg); err != nil {
+	if err := env.ParseWithOptions(&appCfg, env.Options{
+		RequiredIfNoDef: true,
+	}); err != nil {
 		panic(err)
 	}
 

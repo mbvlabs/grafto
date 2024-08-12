@@ -26,7 +26,19 @@ func main() {
 	ctx := context.Background()
 	cfg := config.NewTBD()
 
-	telemetry.NewTelemetry(cfg, appRelease, "queue-worker")
+	otel := telemetry.NewOtel(cfg)
+	defer func() {
+		if err := otel.Shutdown(); err != nil {
+			panic(err)
+		}
+	}()
+
+	workerTracer := otel.NewTracer("worker/tracer")
+
+	client := telemetry.NewTelemetry(cfg, appRelease)
+	if client != nil {
+		defer client.Stop()
+	}
 
 	awsSes := awsses.New()
 
@@ -41,6 +53,7 @@ func main() {
 	workers, err := workers.SetupWorkers(workers.WorkerDependencies{
 		DB:      db,
 		Emailer: awsSes,
+		Tracer:  workerTracer,
 	})
 	if err != nil {
 		panic(err)

@@ -10,7 +10,9 @@ type Telemetry struct {
 func newTelemetry() Telemetry {
 	telemetryCfg := Telemetry{}
 
-	if err := env.Parse(&telemetryCfg); err != nil {
+	if err := env.ParseWithOptions(&telemetryCfg, env.Options{
+		RequiredIfNoDef: true,
+	}); err != nil {
 		panic(err)
 	}
 

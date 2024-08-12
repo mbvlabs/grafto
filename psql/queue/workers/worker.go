@@ -2,6 +2,7 @@ package workers
 
 import (
 	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
@@ -9,6 +10,7 @@ import (
 type WorkerDependencies struct {
 	DB      *database.Queries
 	Emailer awsses.AwsSimpleEmailService
+	Tracer  telemetry.Tracer
 }
 
 func SetupWorkers(deps WorkerDependencies) (*river.Workers, error) {
