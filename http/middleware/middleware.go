@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/services"
 )
 
@@ -44,7 +43,12 @@ func (m *Middleware) RegisterUserContext(next echo.HandlerFunc) echo.HandlerFunc
 	return func(c echo.Context) error {
 		sess, err := m.authSvc.GetUserSession(c.Request())
 		if err != nil {
-			telemetry.Logger.Error("could not get authenticated user session", "error", err)
+			slog.ErrorContext(
+				c.Request().Context(),
+				"could not get authenticated user session",
+				"error",
+				err,
+			)
 			return c.Redirect(http.StatusPermanentRedirect, "/500")
 		}
 

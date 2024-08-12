@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/mbv-labs/grafto/config"
+	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
@@ -15,6 +16,7 @@ type Base struct {
 	db          *database.Queries
 	flashStore  FlashStorage
 	queueClient *river.Client[pgx.Tx]
+	tracer      telemetry.Tracer
 }
 
 func NewDependencies(
@@ -22,12 +24,14 @@ func NewDependencies(
 	db *database.Queries,
 	flashStore FlashStorage,
 	queueClient *river.Client[pgx.Tx],
+	tracer telemetry.Tracer,
 ) Base {
 	return Base{
 		cfg,
 		db,
 		flashStore,
 		queueClient,
+		tracer,
 	}
 }
 

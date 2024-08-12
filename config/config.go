@@ -6,15 +6,12 @@ type Config struct {
 	Database
 	Authentication
 	App
+	Telemetry
 	AwsAccessKeyID     string
 	AwsSecretAccessKey string
 }
 
-func NewTBD() Config {
-	db := newDatabase()
-	authentication := newAuthentication()
-	app := newApp()
-
+func NewConfig() Config {
 	awsAccessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	if awsAccessKeyID == "" {
 		panic("missing 'AWS_ACCESS_KEY_ID'")
@@ -25,9 +22,10 @@ func NewTBD() Config {
 	}
 
 	return Config{
-		db,
-		authentication,
-		app,
+		newDatabase(),
+		newAuthentication(),
+		newApp(),
+		newTelemetry(),
 		awsAccessKeyID,
 		awsSecretAccessKey,
 	}

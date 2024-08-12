@@ -25,17 +25,22 @@ type Server struct {
 
 func NewServer(
 	router *echo.Echo,
-	logger *slog.Logger,
 	cfg config.Config,
 ) Server {
-	host := cfg.App.ServerHost
-	port := cfg.App.ServerPort
-	isProduction := cfg.App.Environment == "production"
+	host := cfg.ServerHost
+	port := cfg.ServerPort
 
 	srv := &http.Server{
 		Addr: fmt.Sprintf("%v:%v", host, port),
 		Handler: csrf.Protect(
-			[]byte(cfg.CsrfToken), csrf.Secure(isProduction), csrf.Path("/"))(router),
+			[]byte(
+				cfg.CsrfToken,
+			),
+			csrf.Secure(cfg.Environment == config.PROD_ENVIRONMENT),
+			csrf.Path("/"),
+		)(
+			router,
+		),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}

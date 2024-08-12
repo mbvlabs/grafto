@@ -1,18 +1,8 @@
 FROM node:18.16.1 AS build-resources
 
-ARG app_host=0.0.0.0:8000
-ARG app_scheme=http
-ARG is_ci=true
-
-ENV CI=$is_ci
-ENV APP_HOST=$app_host
-ENV APP_SCHEME=$app_scheme
-
 WORKDIR /
 
 COPY resources/ resources
-COPY views/ views
-COPY pkg/mail pkg/mail
 COPY static static
 
 RUN cd resources && npm ci
@@ -20,7 +10,10 @@ RUN cd resources && npm run build-css
 
 FROM golang:1.22 AS build-go
 
-ENV CI=true
+ARG appRelease=0.0.1
+
+ENV APP_RELEASE=$appRelease
+
 WORKDIR /
 
 RUN go install github.com/a-h/templ/cmd/templ@latest
@@ -32,8 +25,8 @@ RUN templ generate
 COPY --from=build-resources static static
 COPY --from=build-resources pkg/mail pkg/mail
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -mod=readonly -v -o app cmd/app/main.go
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -mod=readonly -v -o worker cmd/worker/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X 'main.$APP_RELEASE'" -mod=readonly -v -o app cmd/app/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X 'main.$APP_RELEASE'" -mod=readonly -v -o worker cmd/worker/main.go
 
 FROM scratch
 

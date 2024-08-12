@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/pkg/validation"
 )
 
@@ -62,7 +61,7 @@ func (us UserService) New(
 
 	_, err := us.storage.QueryUserByEmail(ctx, data.Email)
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
-		telemetry.Logger.Error("could not query user by email", "error", err)
+		slog.ErrorContext(ctx, "could not query user by email", "error", err)
 		return User{}, err
 	}
 	if err == nil {
@@ -71,7 +70,7 @@ func (us UserService) New(
 
 	hashedPassword, err := us.authSvc.HashAndPepperPassword(data.Password)
 	if err != nil {
-		telemetry.Logger.Error("error hashing and peppering password", "error", err)
+		slog.ErrorContext(ctx, "error hashing and peppering password", "error", err)
 		return User{}, err
 	}
 
@@ -83,7 +82,7 @@ func (us UserService) New(
 		Email:     data.Email,
 	}, hashedPassword)
 	if err != nil {
-		telemetry.Logger.Error("could not insert user", "error", err)
+		slog.ErrorContext(ctx, "could not insert user", "error", err)
 		return User{}, err
 	}
 
@@ -105,7 +104,7 @@ func (us UserService) Update(
 		Email:     data.Email,
 	})
 	if err != nil {
-		telemetry.Logger.Error("could not insert user", "error", err)
+		slog.ErrorContext(ctx, "could not insert user", "error", err)
 		return User{}, err
 	}
 

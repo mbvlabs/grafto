@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,11 +20,25 @@ import (
 	"github.com/riverqueue/river"
 )
 
+var appRelease string
+
 func main() {
 	ctx := context.Background()
-	cfg := config.NewTBD()
+	cfg := config.NewConfig()
 
-	logger := telemetry.SetupLogger()
+	otel := telemetry.NewOtel(cfg)
+	defer func() {
+		if err := otel.Shutdown(); err != nil {
+			panic(err)
+		}
+	}()
+
+	workerTracer := otel.NewTracer("worker/tracer")
+
+	client := telemetry.NewTelemetry(cfg, appRelease)
+	if client != nil {
+		defer client.Stop()
+	}
 
 	awsSes := awsses.New()
 
@@ -38,6 +53,7 @@ func main() {
 	workers, err := workers.SetupWorkers(workers.WorkerDependencies{
 		DB:      db,
 		Emailer: awsSes,
+		Tracer:  workerTracer,
 	})
 	if err != nil {
 		panic(err)
@@ -48,7 +64,7 @@ func main() {
 		conn,
 		queue.WithQueues(q),
 		queue.WithWorkers(workers),
-		queue.WithLogger(logger),
+		queue.WithLogger(slog.Default()),
 	)
 
 	if err := riverClient.Start(ctx); err != nil {

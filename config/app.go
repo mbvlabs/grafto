@@ -6,6 +6,11 @@ import (
 	"github.com/caarlos0/env/v10"
 )
 
+const (
+	DEV_ENVIRONMENT  = "development"
+	PROD_ENVIRONMENT = "production"
+)
+
 type App struct {
 	ServerHost             string `env:"SERVER_HOST"`
 	ServerPort             string `env:"SERVER_PORT"`
@@ -23,7 +28,9 @@ func (a App) GetFullDomain() string {
 func newApp() App {
 	appCfg := App{}
 
-	if err := env.Parse(&appCfg); err != nil {
+	if err := env.ParseWithOptions(&appCfg, env.Options{
+		RequiredIfNoDef: true,
+	}); err != nil {
 		panic(err)
 	}
 
