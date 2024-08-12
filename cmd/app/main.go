@@ -22,7 +22,7 @@ import (
 var appRelease string
 
 func main() {
-	cfg := config.NewTBD()
+	cfg := config.NewConfig()
 
 	otel := telemetry.NewOtel(cfg)
 	defer func() {

@@ -24,7 +24,7 @@ var appRelease string
 
 func main() {
 	ctx := context.Background()
-	cfg := config.NewTBD()
+	cfg := config.NewConfig()
 
 	otel := telemetry.NewOtel(cfg)
 	defer func() {

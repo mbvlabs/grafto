@@ -11,7 +11,7 @@ type Config struct {
 	AwsSecretAccessKey string
 }
 
-func NewTBD() Config {
+func NewConfig() Config {
 	awsAccessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 	if awsAccessKeyID == "" {
 		panic("missing 'AWS_ACCESS_KEY_ID'")
