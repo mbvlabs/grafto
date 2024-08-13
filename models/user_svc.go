@@ -60,7 +60,7 @@ func (us UserService) New(
 	}
 
 	_, err := us.storage.QueryUserByEmail(ctx, data.Email)
-	if err != nil && errors.Is(err, pgx.ErrNoRows) {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		slog.ErrorContext(ctx, "could not query user by email", "error", err)
 		return User{}, err
 	}

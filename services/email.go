@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/mbv-labs/grafto/config"
-	"github.com/mbv-labs/grafto/psql/queue/jobs"
+	"github.com/mbv-labs/grafto/queue/jobs"
 	"github.com/mbv-labs/grafto/views/emails"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"

@@ -14,7 +14,7 @@ import (
 	"github.com/mbv-labs/grafto/pkg/telemetry"
 	"github.com/mbv-labs/grafto/psql"
 	"github.com/mbv-labs/grafto/psql/database"
-	"github.com/mbv-labs/grafto/psql/queue"
+	"github.com/mbv-labs/grafto/queue"
 	"github.com/mbv-labs/grafto/routes"
 	"github.com/mbv-labs/grafto/services"
 )
