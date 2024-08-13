@@ -3,7 +3,7 @@ package workers
 import (
 	"context"
 
-	"github.com/mbv-labs/grafto/psql/queue/jobs"
+	"github.com/mbv-labs/grafto/queue/jobs"
 	"github.com/mbv-labs/grafto/services"
 	"github.com/riverqueue/river"
 )
