@@ -8,7 +8,7 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/mbv-labs/grafto/views/internal/layouts"
+import "github.com/mbvlabs/grafto/views/internal/layouts"
 
 func InternalServerError(head Head, fromLocation string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

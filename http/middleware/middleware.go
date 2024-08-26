@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/services"
+	"github.com/mbvlabs/grafto/services"
 )
 
 type Middleware struct {

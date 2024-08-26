@@ -8,7 +8,7 @@ import (
 
 	"github.com/grafana/loki-client-go/loki"
 	"github.com/lmittmann/tint"
-	"github.com/mbv-labs/grafto/config"
+	"github.com/mbvlabs/grafto/config"
 	slogloki "github.com/samber/slog-loki/v3"
 	slogotel "github.com/samber/slog-otel"
 )

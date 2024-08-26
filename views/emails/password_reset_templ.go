@@ -12,7 +12,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/mbv-labs/grafto/views/emails/internal/components"
+	"github.com/mbvlabs/grafto/views/emails/internal/components"
 	"github.com/vanng822/go-premailer/premailer"
 	"io"
 	"text/template"
@@ -90,7 +90,7 @@ func (n PasswordReset) template() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"f-fallback button button--green\" target=\"_blank\">Reset your password</a></td></tr></table></td></tr></table><p>If you did not request a password reset, please ignore this email or  <a href=\"support@mbv-labs.com\">contact support</a> you have questions.</p><p>Thanks,<br>The Grafto team</p><!-- Sub copy --><table class=\"body-sub\" role=\"presentation\"><tr><td><p class=\"f-fallback sub\">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p><p class=\"f-fallback sub\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"f-fallback button button--green\" target=\"_blank\">Reset your password</a></td></tr></table></td></tr></table><p>If you did not request a password reset, please ignore this email or  <a href=\"support@mbvlabs.com\">contact support</a> you have questions.</p><p>Thanks,<br>The Grafto team</p><!-- Sub copy --><table class=\"body-sub\" role=\"presentation\"><tr><td><p class=\"f-fallback sub\">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p><p class=\"f-fallback sub\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

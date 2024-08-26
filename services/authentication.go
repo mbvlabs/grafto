@@ -9,8 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
-	"github.com/mbv-labs/grafto/config"
-	"github.com/mbv-labs/grafto/models"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/models"
 	"golang.org/x/crypto/bcrypt"
 )
 

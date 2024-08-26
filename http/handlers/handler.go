@@ -5,9 +5,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/config"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/psql/database"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/pkg/telemetry"
+	"github.com/mbvlabs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
 

@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/views"
+	"github.com/mbvlabs/grafto/views"
 )
 
 type App struct {

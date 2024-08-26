@@ -1,4 +1,4 @@
-module github.com/mbv-labs/grafto
+module github.com/mbvlabs/grafto
 
 go 1.22.0
 

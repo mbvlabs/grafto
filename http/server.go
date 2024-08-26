@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/config"
+	"github.com/mbvlabs/grafto/config"
 )
 
 type Server struct {

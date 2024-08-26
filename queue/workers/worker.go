@@ -1,9 +1,9 @@
 package workers
 
 import (
-	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/psql/database"
+	awsses "github.com/mbvlabs/grafto/pkg/aws_ses"
+	"github.com/mbvlabs/grafto/pkg/telemetry"
+	"github.com/mbvlabs/grafto/psql/database"
 	"github.com/riverqueue/river"
 )
 

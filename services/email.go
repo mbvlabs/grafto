@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/mbv-labs/grafto/config"
-	"github.com/mbv-labs/grafto/queue/jobs"
-	"github.com/mbv-labs/grafto/views/emails"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/queue/jobs"
+	"github.com/mbvlabs/grafto/views/emails"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 )

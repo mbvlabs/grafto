@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mbv-labs/grafto/models"
-	"github.com/mbv-labs/grafto/psql/database"
+	"github.com/mbvlabs/grafto/models"
+	"github.com/mbvlabs/grafto/psql/database"
 )
 
 func (p Postgres) QueryUserByID(

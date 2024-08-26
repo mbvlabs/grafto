@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mbv-labs/grafto/pkg/validation"
+	"github.com/mbvlabs/grafto/pkg/validation"
 )
 
 type User struct {

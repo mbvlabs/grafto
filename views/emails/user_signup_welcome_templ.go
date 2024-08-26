@@ -12,7 +12,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/mbv-labs/grafto/views/emails/internal/components"
+	"github.com/mbvlabs/grafto/views/emails/internal/components"
 	"github.com/vanng822/go-premailer/premailer"
 	"io"
 	"text/template"
@@ -92,7 +92,7 @@ func (u UserSignupWelcome) template() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"f-fallback button\" target=\"_blank\">Confirm Mail</a></td></tr></table></td></tr></table><p>If you have any questions, feel free to email our customer success team: <a href=\"mailto:support@mbv-labs.com\">here</a>. <br>(We're lightning quick at replying.)<p>Thanks,<br>MBV and the Grafto team</p><!-- Sub copy --><table class=\"body-sub\" role=\"presentation\"><tr><td><p class=\"f-fallback sub\">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p><p class=\"f-fallback sub\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"f-fallback button\" target=\"_blank\">Confirm Mail</a></td></tr></table></td></tr></table><p>If you have any questions, feel free to email our customer success team: <a href=\"mailto:support@mbvlabs.com\">here</a>. <br>(We're lightning quick at replying.)<p>Thanks,<br>MBV and the Grafto team</p><!-- Sub copy --><table class=\"body-sub\" role=\"presentation\"><tr><td><p class=\"f-fallback sub\">If you’re having trouble with the button above, copy and paste the URL below into your web browser.</p><p class=\"f-fallback sub\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/views/emails"
+	"github.com/mbvlabs/grafto/views/emails"
 )
 
 func getTextVersionSlugs() ([]string, error) {

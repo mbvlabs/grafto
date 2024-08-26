@@ -6,9 +6,9 @@ import (
 
 	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/config"
-	"github.com/mbv-labs/grafto/http/handlers"
-	"github.com/mbv-labs/grafto/http/middleware"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/http/middleware"
 	slogecho "github.com/samber/slog-echo"
 
 	echomw "github.com/labstack/echo/v4/middleware"

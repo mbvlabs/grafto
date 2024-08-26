@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mbv-labs/grafto/services"
+	"github.com/mbvlabs/grafto/services"
 )
 
 var (

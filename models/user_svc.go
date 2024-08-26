@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/mbv-labs/grafto/pkg/validation"
+	"github.com/mbvlabs/grafto/pkg/validation"
 )
 
 type userStorage interface {

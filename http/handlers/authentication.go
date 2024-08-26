@@ -8,11 +8,11 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/models"
-	"github.com/mbv-labs/grafto/pkg/validation"
-	"github.com/mbv-labs/grafto/services"
-	"github.com/mbv-labs/grafto/views"
-	"github.com/mbv-labs/grafto/views/authentication"
+	"github.com/mbvlabs/grafto/models"
+	"github.com/mbvlabs/grafto/pkg/validation"
+	"github.com/mbvlabs/grafto/services"
+	"github.com/mbvlabs/grafto/views"
+	"github.com/mbvlabs/grafto/views/authentication"
 )
 
 type Authentication struct {

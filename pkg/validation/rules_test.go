@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mbv-labs/grafto/pkg/validation"
+	"github.com/mbvlabs/grafto/pkg/validation"
 	"github.com/stretchr/testify/assert"
 )
 

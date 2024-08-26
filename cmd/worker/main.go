@@ -10,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mbv-labs/grafto/config"
-	awsses "github.com/mbv-labs/grafto/pkg/aws_ses"
-	"github.com/mbv-labs/grafto/pkg/telemetry"
-	"github.com/mbv-labs/grafto/psql"
-	"github.com/mbv-labs/grafto/psql/database"
-	"github.com/mbv-labs/grafto/queue"
-	"github.com/mbv-labs/grafto/queue/workers"
+	"github.com/mbvlabs/grafto/config"
+	awsses "github.com/mbvlabs/grafto/pkg/aws_ses"
+	"github.com/mbvlabs/grafto/pkg/telemetry"
+	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/psql/database"
+	"github.com/mbvlabs/grafto/queue"
+	"github.com/mbvlabs/grafto/queue/workers"
 	"github.com/riverqueue/river"
 )
 

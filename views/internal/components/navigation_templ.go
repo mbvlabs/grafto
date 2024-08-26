@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"context"
-	"github.com/mbv-labs/grafto/http/middleware"
+	"github.com/mbvlabs/grafto/http/middleware"
 )
 
 func extractAuthStatus(ctx context.Context) bool {

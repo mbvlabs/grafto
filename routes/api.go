@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbv-labs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/http/handlers"
 )
 
 func apiV1Routes(

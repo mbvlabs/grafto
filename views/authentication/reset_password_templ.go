@@ -9,8 +9,8 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/mbv-labs/grafto/views"
-	"github.com/mbv-labs/grafto/views/internal/layouts"
+	"github.com/mbvlabs/grafto/views"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
 type ResetPasswordFormProps struct {

@@ -3,7 +3,7 @@ package telemetry
 import (
 	"context"
 
-	"github.com/mbv-labs/grafto/config"
+	"github.com/mbvlabs/grafto/config"
 
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"

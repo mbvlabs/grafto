@@ -8,7 +8,7 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/mbv-labs/grafto/views/internal/layouts"
+import "github.com/mbvlabs/grafto/views/internal/layouts"
 
 // HomePage renders the page at '/'
 func HomePage() templ.Component {
