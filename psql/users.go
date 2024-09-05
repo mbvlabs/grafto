@@ -24,8 +24,8 @@ func (p Postgres) QueryUserByID(
 		CreatedAt:       user.CreatedAt.Time,
 		UpdatedAt:       user.UpdatedAt.Time,
 		Name:            user.Name,
-		Email:           user.Mail,
-		EmailVerifiedAt: user.MailVerifiedAt.Time,
+		Email:           user.Email,
+		EmailVerifiedAt: user.EmailVerifiedAt.Time,
 	}, nil
 }
 
@@ -43,8 +43,8 @@ func (p Postgres) QueryUserByEmail(
 		CreatedAt:       user.CreatedAt.Time,
 		UpdatedAt:       user.UpdatedAt.Time,
 		Name:            user.Name,
-		Email:           user.Mail,
-		EmailVerifiedAt: user.MailVerifiedAt.Time,
+		Email:           user.Email,
+		EmailVerifiedAt: user.EmailVerifiedAt.Time,
 	}, nil
 }
 
@@ -67,7 +67,7 @@ func (p Postgres) InsertUser(
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,
 		Name:      data.Name,
-		Mail:      data.Email,
+		Email:     data.Email,
 		Password:  hashedPassword,
 	})
 	if err != nil {
@@ -90,7 +90,7 @@ func (p Postgres) UpdateUser(
 		ID:        data.ID,
 		UpdatedAt: updatedAt,
 		Name:      data.Name,
-		Mail:      data.Email,
+		Email:     data.Email,
 	})
 	if err != nil {
 		return models.User{}, err
@@ -132,8 +132,8 @@ func (p Postgres) VerifyUserEmail(
 	}
 
 	return p.Queries.VerifyUserEmail(ctx, database.VerifyUserEmailParams{
-		Mail:           email,
-		UpdatedAt:      parsedUpdatedAt,
-		MailVerifiedAt: parsedUpdatedAt,
+		Email:           email,
+		UpdatedAt:       parsedUpdatedAt,
+		EmailVerifiedAt: parsedUpdatedAt,
 	})
 }

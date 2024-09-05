@@ -7,8 +7,8 @@ create table if not exists users (
     created_at timestamp with time zone not null,
     updated_at timestamp with time zone not null,
     name varchar(255) not null,
-    mail varchar(255) unique not null,
-    mail_verified_at timestamp with time zone,
+    email varchar(255) unique not null,
+    email_verified_at timestamp with time zone,
     password text not null
 );
 -- +goose StatementEnd

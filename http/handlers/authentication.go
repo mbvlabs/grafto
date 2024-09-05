@@ -89,7 +89,11 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		return a.InternalError(ctx)
 	}
 
-	_, err = a.authService.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
+	_, err = a.authService.NewUserSession(
+		ctx.Request(),
+		ctx.Response(),
+		user.ID,
+	)
 	if err != nil {
 		return err
 	}
@@ -113,7 +117,8 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
 			CsrfToken:     csrf.Token(ctx.Request()),
 			InternalError: true,
-		}).Render(views.ExtractRenderDeps(ctx))
+		}).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	user, err := a.db.QueryUserByEmail(ctx.Request().Context(), payload.Email)
@@ -122,27 +127,33 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 			return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
 				CsrfToken:        csrf.Token(ctx.Request()),
 				NoAssociatedUser: true,
-			}).Render(views.ExtractRenderDeps(ctx))
+			}).
+				Render(views.ExtractRenderDeps(ctx))
 		}
 
 		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
 			CsrfToken:     csrf.Token(ctx.Request()),
 			InternalError: true,
-		}).Render(views.ExtractRenderDeps(ctx))
+		}).
+			Render(views.ExtractRenderDeps(ctx))
 	}
-	resetToken, err := a.tknService.CreateResetPasswordToken(ctx.Request().Context(), user.ID)
+	resetToken, err := a.tknService.CreateResetPasswordToken(
+		ctx.Request().Context(),
+		user.ID,
+	)
 	if err != nil {
 		return err
 	}
 
-	if err := a.emailService.SendPasswordReset(ctx.Request().Context(), user.Mail, resetToken, true); err != nil {
+	if err := a.emailService.SendPasswordReset(ctx.Request().Context(), user.Email, resetToken, true); err != nil {
 		return err
 	}
 
 	return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 		Success:   true,
-	}).Render(views.ExtractRenderDeps(ctx))
+	}).
+		Render(views.ExtractRenderDeps(ctx))
 }
 
 type PasswordResetTokenPayload struct {
@@ -177,7 +188,10 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		return err
 	}
 
-	userID, err := a.tknService.GetAssociatedUserID(ctx.Request().Context(), payload.Token)
+	userID, err := a.tknService.GetAssociatedUserID(
+		ctx.Request().Context(),
+		payload.Token,
+	)
 	if err != nil {
 		return authentication.ResetPasswordPage(false, true, "", "").
 			Render(views.ExtractRenderDeps(ctx))
@@ -211,7 +225,8 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 			}
 		}
 
-		return authentication.ResetPasswordForm(props).Render(views.ExtractRenderDeps(ctx))
+		return authentication.ResetPasswordForm(props).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 	if err != nil {
 		return a.InternalError(ctx)
@@ -221,7 +236,12 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
 
-		slog.ErrorContext(ctx.Request().Context(), "could not query user", "error", err)
+		slog.ErrorContext(
+			ctx.Request().Context(),
+			"could not query user",
+			"error",
+			err,
+		)
 		return a.InternalError(ctx)
 	}
 

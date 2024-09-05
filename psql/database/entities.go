@@ -109,11 +109,11 @@ type Token struct {
 }
 
 type User struct {
-	ID             uuid.UUID
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
-	Name           string
-	Mail           string
-	MailVerifiedAt pgtype.Timestamptz
-	Password       string
+	ID              uuid.UUID
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
+	Name            string
+	Email           string
+	EmailVerifiedAt pgtype.Timestamptz
+	Password        string
 }

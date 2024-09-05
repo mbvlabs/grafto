@@ -52,7 +52,8 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 			InternalError: true,
 			CsrfToken:     csrf.Token(ctx.Request()),
 		}
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterForm(props).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	t := time.Now()
@@ -65,12 +66,14 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		Password:        payload.Password,
 		ConfirmPassword: payload.ConfirmPassword,
 	})
-	if err != nil && errors.Is(err, models.ErrUserAlreadyExists) { // TODO handle this better
+	if err != nil &&
+		errors.Is(err, models.ErrUserAlreadyExists) { // TODO handle this better
 		props := authentication.RegisterFormProps{
 			InternalError: true,
 			CsrfToken:     csrf.Token(ctx.Request()),
 		}
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterForm(props).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 	if err != nil && errors.Is(err, models.ErrFailValidation) {
 		var valiErr validation.ValidationErrors
@@ -79,7 +82,8 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 				InternalError: true,
 				CsrfToken:     csrf.Token(ctx.Request()),
 			}
-			return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
+			return authentication.RegisterForm(props).
+				Render(views.ExtractRenderDeps(ctx))
 		}
 
 		props := authentication.RegisterFormProps{
@@ -115,7 +119,8 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 			}
 		}
 
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterForm(props).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	emailActivationTkn, err := r.tknService.CreateUserEmailVerification(
@@ -127,7 +132,8 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 			InternalError: true,
 			CsrfToken:     csrf.Token(ctx.Request()),
 		}
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterForm(props).
+			Render(views.ExtractRenderDeps(ctx))
 	}
 
 	if err := r.emailService.SendUserSignupWelcome(ctx.Request().Context(), user.Email, emailActivationTkn, true); err != nil {
@@ -135,7 +141,8 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 			InternalError: true,
 			CsrfToken:     csrf.Token(ctx.Request()),
 		}
-		return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
+		return authentication.RegisterForm(props).
+			Render(views.ExtractRenderDeps(ctx))
 
 	}
 
@@ -143,7 +150,8 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		SuccessRegister: true,
 		CsrfToken:       csrf.Token(ctx.Request()),
 	}
-	return authentication.RegisterForm(props).Render(views.ExtractRenderDeps(ctx))
+	return authentication.RegisterForm(props).
+		Render(views.ExtractRenderDeps(ctx))
 }
 
 type verificationTokenPayload struct {
@@ -162,17 +170,24 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 	if err := r.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeEmailVerification); err != nil {
 		if err := ctx.Bind(&payload); err != nil {
 			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+			ctx.Response().
+				Writer.Header().
+				Add("PreviousLocation", "/user/create")
 
 			return r.InternalError(ctx)
 		}
 	}
 
-	userID, err := r.tknService.GetAssociatedUserID(ctx.Request().Context(), payload.Token)
+	userID, err := r.tknService.GetAssociatedUserID(
+		ctx.Request().Context(),
+		payload.Token,
+	)
 	if err != nil {
 		if err := ctx.Bind(&payload); err != nil {
 			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-			ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
+			ctx.Response().
+				Writer.Header().
+				Add("PreviousLocation", "/user/create")
 
 			return r.InternalError(ctx)
 		}
@@ -183,14 +198,19 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 		return r.InternalError(ctx)
 	}
 
-	if err := r.userModel.VerifyEmail(ctx.Request().Context(), user.Mail); err != nil {
+	if err := r.userModel.VerifyEmail(ctx.Request().Context(), user.Email); err != nil {
 		return r.InternalError(ctx)
 	}
 
-	_, err = r.authService.NewUserSession(ctx.Request(), ctx.Response(), user.ID)
+	_, err = r.authService.NewUserSession(
+		ctx.Request(),
+		ctx.Response(),
+		user.ID,
+	)
 	if err != nil {
 		return r.InternalError(ctx)
 	}
 
-	return authentication.VerifyEmailPage(false).Render(views.ExtractRenderDeps(ctx))
+	return authentication.VerifyEmailPage(false).
+		Render(views.ExtractRenderDeps(ctx))
 }

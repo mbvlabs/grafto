@@ -38,10 +38,10 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 
 const insertUser = `-- name: InsertUser :one
 insert into
-    users (id, created_at, updated_at, name, mail, password)
+    users (id, created_at, updated_at, name, email, password)
 values
     ($1, $2, $3, $4, $5, $6)
-returning id, created_at, updated_at, name, mail, mail_verified_at, password
+returning id, created_at, updated_at, name, email, email_verified_at, password
 `
 
 type InsertUserParams struct {
@@ -49,7 +49,7 @@ type InsertUserParams struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
-	Mail      string
+	Email     string
 	Password  string
 }
 
@@ -59,7 +59,7 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 		arg.CreatedAt,
 		arg.UpdatedAt,
 		arg.Name,
-		arg.Mail,
+		arg.Email,
 		arg.Password,
 	)
 	var i User
@@ -68,34 +68,34 @@ func (q *Queries) InsertUser(ctx context.Context, arg InsertUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.Mail,
-		&i.MailVerifiedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 		&i.Password,
 	)
 	return i, err
 }
 
 const queryUserByEmail = `-- name: QueryUserByEmail :one
-select id, created_at, updated_at, name, mail, mail_verified_at, password from users where mail=$1
+select id, created_at, updated_at, name, email, email_verified_at, password from users where email=$1
 `
 
-func (q *Queries) QueryUserByEmail(ctx context.Context, mail string) (User, error) {
-	row := q.db.QueryRow(ctx, queryUserByEmail, mail)
+func (q *Queries) QueryUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, queryUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.Mail,
-		&i.MailVerifiedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 		&i.Password,
 	)
 	return i, err
 }
 
 const queryUserByID = `-- name: QueryUserByID :one
-select id, created_at, updated_at, name, mail, mail_verified_at, password from users where id=$1
+select id, created_at, updated_at, name, email, email_verified_at, password from users where id=$1
 `
 
 func (q *Queries) QueryUserByID(ctx context.Context, id uuid.UUID) (User, error) {
@@ -106,15 +106,15 @@ func (q *Queries) QueryUserByID(ctx context.Context, id uuid.UUID) (User, error)
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.Mail,
-		&i.MailVerifiedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 		&i.Password,
 	)
 	return i, err
 }
 
 const queryUsers = `-- name: QueryUsers :many
-select id, created_at, updated_at, name, mail, mail_verified_at, password from users
+select id, created_at, updated_at, name, email, email_verified_at, password from users
 `
 
 func (q *Queries) QueryUsers(ctx context.Context) ([]User, error) {
@@ -131,8 +131,8 @@ func (q *Queries) QueryUsers(ctx context.Context) ([]User, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Name,
-			&i.Mail,
-			&i.MailVerifiedAt,
+			&i.Email,
+			&i.EmailVerifiedAt,
 			&i.Password,
 		); err != nil {
 			return nil, err
@@ -147,16 +147,16 @@ func (q *Queries) QueryUsers(ctx context.Context) ([]User, error) {
 
 const updateUser = `-- name: UpdateUser :one
 update users
-    set updated_at=$2, name=$3, mail=$4, password=$5
+    set updated_at=$2, name=$3, email=$4, password=$5
 where id = $1
-returning id, created_at, updated_at, name, mail, mail_verified_at, password
+returning id, created_at, updated_at, name, email, email_verified_at, password
 `
 
 type UpdateUserParams struct {
 	ID        uuid.UUID
 	UpdatedAt pgtype.Timestamptz
 	Name      string
-	Mail      string
+	Email     string
 	Password  string
 }
 
@@ -165,7 +165,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.ID,
 		arg.UpdatedAt,
 		arg.Name,
-		arg.Mail,
+		arg.Email,
 		arg.Password,
 	)
 	var i User
@@ -174,24 +174,24 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Name,
-		&i.Mail,
-		&i.MailVerifiedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 		&i.Password,
 	)
 	return i, err
 }
 
 const verifyUserEmail = `-- name: VerifyUserEmail :exec
-update users set updated_at=$2, mail_verified_at=$3 where mail=$1
+update users set updated_at=$2, email_verified_at=$3 where email=$1
 `
 
 type VerifyUserEmailParams struct {
-	Mail           string
-	UpdatedAt      pgtype.Timestamptz
-	MailVerifiedAt pgtype.Timestamptz
+	Email           string
+	UpdatedAt       pgtype.Timestamptz
+	EmailVerifiedAt pgtype.Timestamptz
 }
 
 func (q *Queries) VerifyUserEmail(ctx context.Context, arg VerifyUserEmailParams) error {
-	_, err := q.db.Exec(ctx, verifyUserEmail, arg.Mail, arg.UpdatedAt, arg.MailVerifiedAt)
+	_, err := q.db.Exec(ctx, verifyUserEmail, arg.Email, arg.UpdatedAt, arg.EmailVerifiedAt)
 	return err
 }
