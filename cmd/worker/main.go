@@ -35,14 +35,17 @@ func main() {
 
 	workerTracer := otel.NewTracer("worker/tracer")
 
-	client := telemetry.NewTelemetry(cfg, appRelease)
+	client := telemetry.NewTelemetry(cfg, appRelease, "grafto-worker")
 	if client != nil {
 		defer client.Stop()
 	}
 
 	awsSes := awsses.New()
 
-	conn, err := psql.CreatePooledConnection(context.Background(), cfg.GetDatabaseURL())
+	conn, err := psql.CreatePooledConnection(
+		context.Background(),
+		cfg.GetDatabaseURL(),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -87,7 +90,10 @@ func main() {
 			"Received SIGINT/SIGTERM; initiating soft stop (try to wait for jobs to finish)\n",
 		)
 
-		softStopCtx, softStopCtxCancel := context.WithTimeout(ctx, 10*time.Second)
+		softStopCtx, softStopCtxCancel := context.WithTimeout(
+			ctx,
+			10*time.Second,
+		)
 		defer softStopCtxCancel()
 
 		go func() {
@@ -98,7 +104,9 @@ func main() {
 				)
 				softStopCtxCancel()
 			case <-softStopCtx.Done():
-				fmt.Printf("Soft stop timeout; initiating hard stop (cancel everything)\n")
+				fmt.Printf(
+					"Soft stop timeout; initiating hard stop (cancel everything)\n",
+				)
 			}
 		}()
 
@@ -112,7 +120,10 @@ func main() {
 			return
 		}
 
-		hardStopCtx, hardStopCtxCancel := context.WithTimeout(ctx, 10*time.Second)
+		hardStopCtx, hardStopCtxCancel := context.WithTimeout(
+			ctx,
+			10*time.Second,
+		)
 		defer hardStopCtxCancel()
 
 		// As long as all jobs respect context cancellation, StopAndCancel will
@@ -121,7 +132,9 @@ func main() {
 		// result (what's shown here) or have a supervisor kill the process.
 		err = riverClient.StopAndCancel(hardStopCtx)
 		if err != nil && errors.Is(err, context.DeadlineExceeded) {
-			fmt.Printf("Hard stop timeout; ignoring stop procedure and exiting unsafely\n")
+			fmt.Printf(
+				"Hard stop timeout; ignoring stop procedure and exiting unsafely\n",
+			)
 		} else if err != nil {
 			panic(err)
 		}

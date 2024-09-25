@@ -11,19 +11,23 @@ import (
 )
 
 var (
-	ErrInternalDBErr       = errors.New("an error occurred that was not possible to recover from")
-	ErrNoRowWithIdentifier = errors.New("could not find requested row in database")
+	ErrInternalDBErr = errors.New(
+		"an error occurred that was not possible to recover from",
+	)
+	ErrNoRowWithIdentifier = errors.New(
+		"could not find requested row in database",
+	)
 )
 
 type Postgres struct {
-	Queries *database.Queries
-	tx      *pgxpool.Pool
+	*database.Queries
+	tx *pgxpool.Pool
 }
 
 func NewPostgres(dbPool *pgxpool.Pool) Postgres {
 	return Postgres{
-		Queries: database.New(dbPool),
-		tx:      dbPool,
+		database.New(dbPool),
+		dbPool,
 	}
 }
 
@@ -31,7 +35,10 @@ func (p Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	return p.tx.Begin(ctx)
 }
 
-func CreatePooledConnection(ctx context.Context, uri string) (*pgxpool.Pool, error) {
+func CreatePooledConnection(
+	ctx context.Context,
+	uri string,
+) (*pgxpool.Pool, error) {
 	dbpool, err := pgxpool.New(ctx, uri)
 	if err != nil {
 		slog.Error("could not establish connection to database", "error", err)

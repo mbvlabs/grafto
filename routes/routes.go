@@ -55,6 +55,16 @@ func NewRoutes(
 	}
 
 	router.Static("/static", "static")
+	router.GET("/robots.txt", func(c echo.Context) error {
+		return c.File("./resources/seo/robots.txt")
+	})
+	router.GET("/sitemap.xml", func(c echo.Context) error {
+		return c.File("./resources/seo/sitemap.xml")
+	})
+	router.GET("/favicon.ico", func(c echo.Context) error {
+		return c.File("./static/images/favicon.ico")
+	})
+
 	router.Use(mw.RegisterUserContext)
 
 	slogechoCfg := slogecho.Config{
@@ -84,7 +94,6 @@ func NewRoutes(
 
 func (r *Routes) web() {
 	authRoutes(r.router, r.authHandlers, r.middleware)
-	errorRoutes(r.router, r.baseHandlers)
 	dashboardRoutes(r.router, r.dashboardHandlers, r.middleware)
 	appRoutes(r.router, r.appHandlers)
 	registrationRoutes(r.router, r.registrationHandlers)
@@ -100,18 +109,4 @@ func (r *Routes) SetupRoutes() *echo.Echo {
 	r.api()
 
 	return r.router
-}
-
-func errorRoutes(router *echo.Echo, ctrl handlers.Base) {
-	router.GET("/400", func(c echo.Context) error {
-		return ctrl.InternalError(c)
-	})
-
-	router.GET("/404", func(c echo.Context) error {
-		return ctrl.InternalError(c)
-	})
-
-	router.GET("/500", func(c echo.Context) error {
-		return ctrl.InternalError(c)
-	})
 }

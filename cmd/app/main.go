@@ -13,7 +13,6 @@ import (
 	awsses "github.com/mbvlabs/grafto/pkg/aws_ses"
 	"github.com/mbvlabs/grafto/pkg/telemetry"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/psql/database"
 	"github.com/mbvlabs/grafto/queue"
 	"github.com/mbvlabs/grafto/routes"
 	"github.com/mbvlabs/grafto/services"
@@ -33,7 +32,7 @@ func main() {
 
 	appTracer := otel.NewTracer("app/tracer")
 
-	client := telemetry.NewTelemetry(cfg, appRelease)
+	client := telemetry.NewTelemetry(cfg, appRelease, "grafto")
 	if client != nil {
 		defer client.Stop()
 	}
@@ -46,7 +45,6 @@ func main() {
 		panic(err)
 	}
 
-	db := database.New(conn)
 	psql := psql.NewPostgres(conn)
 	riverClient := queue.NewClient(conn, queue.WithLogger(slog.Default()))
 
@@ -64,7 +62,13 @@ func main() {
 	userModelSvc := models.NewUserService(psql, authSvc)
 
 	flashStore := handlers.NewCookieStore("")
-	baseHandler := handlers.NewDependencies(cfg, db, flashStore, riverClient, appTracer)
+	baseHandler := handlers.NewDependencies(
+		cfg,
+		psql,
+		flashStore,
+		riverClient,
+		appTracer,
+	)
 	appHandlers := handlers.NewApp(baseHandler)
 	dashboardHandlers := handlers.NewDashboard(baseHandler)
 	registrationHandlers := handlers.NewRegistration(

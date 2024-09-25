@@ -39,7 +39,9 @@ func (m *Middleware) AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (m *Middleware) RegisterUserContext(next echo.HandlerFunc) echo.HandlerFunc {
+func (m *Middleware) RegisterUserContext(
+	next echo.HandlerFunc,
+) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		sess, err := m.authSvc.GetUserSession(c.Request())
 		if err != nil {

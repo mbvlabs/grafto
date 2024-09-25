@@ -7,13 +7,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/pkg/telemetry"
-	"github.com/mbvlabs/grafto/psql/database"
+	"github.com/mbvlabs/grafto/psql"
 	"github.com/riverqueue/river"
 )
 
 type Base struct {
 	cfg         config.Config
-	db          *database.Queries
+	db          psql.Postgres
 	flashStore  FlashStorage
 	queueClient *river.Client[pgx.Tx]
 	tracer      telemetry.Tracer
@@ -21,7 +21,7 @@ type Base struct {
 
 func NewDependencies(
 	cfg config.Config,
-	db *database.Queries,
+	db psql.Postgres,
 	flashStore FlashStorage,
 	queueClient *river.Client[pgx.Tx],
 	tracer telemetry.Tracer,
@@ -42,7 +42,11 @@ func (bd Base) RedirectHx(w http.ResponseWriter, url string) error {
 	return nil
 }
 
-func (bd Base) Redirect(w http.ResponseWriter, r *http.Request, url string) error {
+func (bd Base) Redirect(
+	w http.ResponseWriter,
+	r *http.Request,
+	url string,
+) error {
 	http.Redirect(w, r, url, http.StatusSeeOther)
 
 	return nil
