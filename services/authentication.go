@@ -3,11 +3,13 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
+	"github.com/gosimple/slug"
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/models"
@@ -22,6 +24,7 @@ type Auth struct {
 	storage     authStorage
 	cookieStore *sessions.CookieStore
 	cfg         config.Config
+	cookieName  string
 }
 
 type UserSession struct {
@@ -30,13 +33,25 @@ type UserSession struct {
 	IsAdmin       bool
 }
 
-func NewAuth(storage authStorage, cookieStore *sessions.CookieStore, cfg config.Config) Auth {
-	return Auth{storage, cookieStore, cfg}
+func NewAuth(
+	storage authStorage,
+	cookieStore *sessions.CookieStore,
+	cfg config.Config,
+) Auth {
+	return Auth{
+		storage,
+		cookieStore,
+		cfg,
+		fmt.Sprintf("%s-ua", slug.Make(cfg.ProjectName)),
+	}
 }
 
 func (a Auth) HashAndPepperPassword(password string) (string, error) {
 	passwordBytes := []byte(password + a.cfg.PasswordPepper)
-	hashedBytes, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
+	hashedBytes, err := bcrypt.GenerateFromPassword(
+		passwordBytes,
+		bcrypt.DefaultCost,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +102,7 @@ func (a Auth) NewUserSession(
 	res http.ResponseWriter,
 	userID uuid.UUID,
 ) (UserSession, error) {
-	session, err := a.cookieStore.New(req, "ua")
+	session, err := a.cookieStore.New(req, a.cookieName)
 	if err != nil {
 		return UserSession{}, err
 	}
@@ -113,7 +128,7 @@ func (a Auth) NewUserSession(
 }
 
 func (a Auth) GetUserSession(req *http.Request) (UserSession, error) {
-	session, err := a.cookieStore.Get(req, "ua")
+	session, err := a.cookieStore.Get(req, a.cookieName)
 	if err != nil {
 		return UserSession{}, err
 	}
