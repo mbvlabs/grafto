@@ -1,4 +1,4 @@
-package awsses
+package emailclient
 
 import (
 	"context"
@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/mbvlabs/grafto/services"
 )
 
 type AwsSimpleEmailService struct {
@@ -19,9 +18,9 @@ type AwsSimpleEmailService struct {
 }
 
 // SendEmail implements mailClient.
-func (a *AwsSimpleEmailService) SendEmail(
+func (a AwsSimpleEmailService) send(
 	ctx context.Context,
-	payload services.EmailPayload,
+	payload EmailPayload,
 ) error {
 	from := payload.From
 	if payload.From == "" {
@@ -79,7 +78,7 @@ func (a *AwsSimpleEmailService) SendEmail(
 	return nil
 }
 
-func New() AwsSimpleEmailService {
+func NewSESClient() AwsSimpleEmailService {
 	creds := credentials.NewEnvCredentials()
 	conf := &aws.Config{
 		Region:      aws.String("eu-central-1"),
@@ -90,11 +89,9 @@ func New() AwsSimpleEmailService {
 		panic(err)
 	}
 
-	// TODO: accept these as arguments
 	sender := "nopreply@grafto.com"
 	charSet := "UTF-8"
 
-	// Create an SES session.
 	svc := ses.New(sess)
 	return AwsSimpleEmailService{
 		svc,
@@ -103,4 +100,4 @@ func New() AwsSimpleEmailService {
 	}
 }
 
-var _ services.EmailClient = (*AwsSimpleEmailService)(nil)
+var _ emailer = (*AwsSimpleEmailService)(nil)

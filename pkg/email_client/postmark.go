@@ -1,4 +1,4 @@
-package postmark
+package emailclient
 
 import (
 	"bytes"
@@ -10,8 +10,6 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
-
-	"github.com/mbvlabs/grafto/services"
 )
 
 var (
@@ -25,7 +23,7 @@ type Postmark struct {
 	baseUrl string
 }
 
-func New(token string) Postmark {
+func NewPostmarkClient(token string) Postmark {
 	client := http.Client{
 		Timeout: 30 * time.Second,
 	}
@@ -37,7 +35,7 @@ func New(token string) Postmark {
 	}
 }
 
-var _ services.EmailClient = (*Postmark)(nil)
+var _ emailer = (*Postmark)(nil)
 
 type mailBody struct {
 	From     string `json:"From"`
@@ -48,7 +46,7 @@ type mailBody struct {
 }
 
 // SendEmail implements services.EmailClient.
-func (p *Postmark) SendEmail(ctx context.Context, payload services.EmailPayload) error {
+func (p *Postmark) send(ctx context.Context, payload EmailPayload) error {
 	byt, err := json.Marshal(mailBody{
 		From:     payload.From,
 		To:       payload.To,

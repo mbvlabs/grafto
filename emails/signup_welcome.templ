@@ -1,0 +1,37 @@
+package emails
+
+import (
+	"context"
+	"fmt"
+	"github.com/mbvlabs/grafto/config"
+)
+
+type SignupWelcome struct {
+	ConfirmationLink string
+}
+
+var _ TemplateHandler = (*SignupWelcome)(nil)
+
+func (s SignupWelcome) Generate(ctx context.Context) (Html, Text, error) {
+	html, plainText, err := processEmail(ctx, s.template())
+	if err != nil {
+		return Html(""), Text(""), err
+	}
+
+	return Html(html), Text(plainText), nil
+}
+
+templ (s SignupWelcome) template() {
+	@base() {
+		@header(fmt.Sprintf("Thanks for signing up for %s", config.Cfg.ProjectName))
+		@section() {
+			<p>Thanks for signing up for { config.Cfg.ProjectName }. We’re thrilled to have you on board.</p>
+		}
+		@section() {
+			<p>To continue, we need you to confirm your mail.</p>
+		}
+		@section() {
+			@link(linkProps{text: "Confirm mail", url: s.ConfirmationLink, style: "success"})
+		}
+	}
+}

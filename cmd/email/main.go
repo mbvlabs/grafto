@@ -1,114 +1,46 @@
 package main
 
 import (
-	"html/template"
+	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
-	"strings"
 
-	"github.com/gosimple/slug"
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/views/emails"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/emails"
 )
 
-func getTextVersionSlugs() ([]string, error) {
-	files, err := emails.TextTemplates.ReadDir(".")
-	if err != nil {
-		return nil, err
-	}
-
-	var textVersions []string
-	for _, f := range files {
-		removedSuffix, _ := strings.CutSuffix(f.Name(), ".txt")
-		splitted := strings.Split(removedSuffix, "_")
-
-		var finished string
-		for _, el := range splitted {
-			finished = slug.Make(finished + " " + el)
-		}
-
-		textVersions = append(textVersions, finished)
-	}
-
-	return textVersions, nil
-}
-
-func getHtmlVersionSlugs() ([]string, error) {
-	files, err := emails.HtmlTemplates.ReadDir(".")
-	if err != nil {
-		return nil, err
-	}
-
-	var htmlVersions []string
-	for _, f := range files {
-		removedSuffix, _ := strings.CutSuffix(f.Name(), "_templ.go")
-		splitted := strings.Split(removedSuffix, "_")
-
-		var finished string
-		for _, el := range splitted {
-			finished = slug.Make(finished + " " + el)
-		}
-
-		htmlVersions = append(htmlVersions, finished)
-	}
-
-	return htmlVersions, nil
-}
-
 func main() {
-	textEmails, err := getTextVersionSlugs()
-	if err != nil {
-		panic(err)
-	}
-
-	htmlEmails, err := getHtmlVersionSlugs()
-	if err != nil {
-		panic(err)
-	}
-
+	ctx := context.Background()
 	e := echo.New()
 
-	index := emailsIndex(textEmails, htmlEmails)
-	e.GET("/", func(c echo.Context) error {
-		return index.Render(c.Request().Context(), c.Response())
-	})
-
 	passwordReset := emails.PasswordReset{
-		ResetPasswordLink: "wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
+		ResetLink: fmt.Sprintf("%s/%s?token=%s", config.Cfg.GetFullDomain(), "reset-password", "wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y"),
 	}
-	userSignupWelcome := emails.UserSignupWelcome{
-		ConfirmationLink: "wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
-	}
+	passwordResetHtml, passwordResetText, _ := passwordReset.Generate(ctx)
 
-	textGroup := e.Group("/text-emails")
+	signupWelcome := emails.SignupWelcome{
+		ConfirmationLink: fmt.Sprintf("%s/%s?token=%s", config.Cfg.GetFullDomain(), "reset-password", "wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y"),
+	}
+	signupWelcomeHtml, signupWelcomeText, _ := signupWelcome.Generate(ctx)
+
+	textGroup := e.Group("/text")
 	textGroup.GET("/password-reset", func(c echo.Context) error {
-		tmpl, err := template.ParseFS(emails.TextTemplates, "password_reset.txt")
-		if err != nil {
-			slog.Error("error", "e", err)
-			return c.HTML(http.StatusInternalServerError, "could not parse template")
-		}
-
-		return tmpl.Execute(c.Response().Writer, passwordReset)
+		return c.String(http.StatusOK, passwordResetText.String())
 	})
-	textGroup.GET("/user-signup-welcome", func(c echo.Context) error {
-		return userSignupWelcome.Render(c.Request().Context(), c.Response())
+	textGroup.GET("/signup-welcome", func(c echo.Context) error {
+		return c.String(http.StatusOK, signupWelcomeText.String())
 	})
 
-	htmlGroup := e.Group("/html-emails")
+	htmlGroup := e.Group("/html")
 	htmlGroup.GET("/password-reset", func(c echo.Context) error {
-		return passwordReset.Render(c.Request().Context(), c.Response())
+		return c.HTML(http.StatusOK, passwordResetHtml.String())
 	})
-	htmlGroup.GET("/user-signup-welcome", func(c echo.Context) error {
-		return userSignupWelcome.Render(c.Request().Context(), c.Response())
+	htmlGroup.GET("/signup-welcome", func(c echo.Context) error {
+		return c.HTML(http.StatusOK, signupWelcomeHtml.String())
 	})
-
-	// http.Handle("/password-reset-mail", templ.Handler(&emails.PasswordReset{
-	// 	ResetPasswordLink: "https://mortenvistisen.com",
-	// }))
-	// http.Handle("/user-signup-welcome-mail", templ.Handler(&emails.UserSignupWelcomeMail{
-	// 	ConfirmationLink: "https://mortenvistisen.com",
-	// }))
 
 	slog.Info("starting the password server on port: 4444")
 	log.Fatal(e.Start(":4444"))

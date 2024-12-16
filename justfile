@@ -32,22 +32,29 @@ watch-css:
 
 # Database 
 create-migration name:
-	@goose -dir migrations $DB_KIND $DATABASE_URL create {{name}} sql
+	@goose -dir psql/migrations $DB_KIND $DATABASE_URL create {{name}} sql \
+	&& goose -dir psql/migrations $DB_KIND $DATABASE_URL fix
 
 migration-status:
-	@goose -dir migrations $DB_KIND $DATABASE_URL status
+	go run cmd/migration/main.go --cmd "status"
 
 up-migrations:
-	@goose -dir migrations $DB_KIND $DATABASE_URL up
+	go run cmd/migration/main.go --cmd "up"
+
+up-migrations-by-one:
+	go run cmd/migration/main.go --cmd "upbyone"
 
 down-migrations:
-	@goose -dir migrations $DB_KIND $DATABASE_URL down
+	go run cmd/migration/main.go --cmd "down"
 
 down-migrations-to version:
-	@goose -dir migrations $DB_KIND $DATABASE_URL down-to {{version}}
+	go run cmd/migration/main.go --cmd "down" --version {{version}}
+
+fix-migrations:
+	@goose -dir psql/migrations $DB_KIND $DATABASE_URL fix
 
 reset-db:
-	@goose -dir migrations $DB_KIND $DATABASE_URL reset
+	go run cmd/migration/main.go --cmd "reset"
 
 generate-db-functions:
 	sqlc compile && sqlc generate
@@ -62,7 +69,7 @@ run-worker:
 
 # Emails
 run-email:
-    wgo -dir ./views/emails -file=.txt -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/*.go
+    wgo -dir ./emails -file=.txt -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/*.go
 
 # templates
 compile-templates:
@@ -78,3 +85,6 @@ river-migrate-up:
 # exploration
 explore:
     @go run ./cmd/explore/main.go
+
+riverui:
+	docker run -p 8080:8080 --env DATABASE_URL=$DATABASE_URL --network host ghcr.io/riverqueue/riverui:latest

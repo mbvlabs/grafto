@@ -1,0 +1,102 @@
+package emails
+
+import (
+	"github.com/mbvlabs/grafto/config"
+	"strconv"
+	"time"
+)
+
+templ header(text string) {
+	<tr>
+		<td>
+			<h1>{ text }</h1>
+		</td>
+	</tr>
+}
+
+templ subHeader(text string) {
+	<tr>
+		<td>
+			<h2>{ text }</h2>
+		</td>
+	</tr>
+}
+
+templ footer() {
+	<tr>
+		<td style="text-align: center;">
+			<p>© { strconv.Itoa(time.Now().Year()) } { config.Cfg.ProjectName } </p>
+		</td>
+	</tr>
+}
+
+templ footerWithUnsub(unsubURl string) {
+	<tr>
+		<td>
+			<table align="center" width="100%" cellpadding="0" cellspacing="0">
+				<tr>
+					<td style="color: #999999; text-align: center;">
+						<p>
+							If you didn't signup, or want to stop receiving these emails, click here:
+						</p>
+						<p>
+							<a href={ templ.SafeURL(unsubURl) } target="_blank">Unsubscribe me!</a>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</td>
+		<table align="center" width="100%" cellpadding="0" cellspacing="0">
+			@footer()
+		</table>
+	</tr>
+}
+
+type linkProps struct {
+	text  string
+	url   string
+	style string
+}
+
+templ link(props linkProps) {
+	<style>
+	.link {
+      background-color: #3869D4;
+      border-top: 10px solid #3869D4;
+      border-right: 18px solid #3869D4;
+      border-bottom: 10px solid #3869D4;
+      border-left: 18px solid #3869D4;
+      display: inline-block;
+      color: #FFF;
+      text-decoration: none;
+      border-radius: 3px;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
+      -webkit-text-size-adjust: none;
+      box-sizing: border-box;
+	}
+	.link--success {
+      background-color: #22BC66;
+      border-top: 10px solid #22BC66;
+      border-right: 18px solid #22BC66;
+      border-bottom: 10px solid #22BC66;
+      border-left: 18px solid #22BC66;
+  }
+
+    .link--danger {
+      background-color: #FF6136;
+      border-top: 10px solid #FF6136;
+      border-right: 18px solid #FF6136;
+      border-bottom: 10px solid #FF6136;
+      border-left: 18px solid #FF6136;
+    }
+  </style>
+	<a class={ "link", templ.KV("link--success", props.style=="success"), templ.KV("link--danger", props.style=="danger") } href={ templ.SafeURL(props.url) } target="_blank">{ props.text }</a>
+}
+
+templ section() {
+	<tr>
+		<td>
+			{ children... }
+		</td>
+	</tr>
+}
