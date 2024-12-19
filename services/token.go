@@ -6,15 +6,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"hash"
-	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
-	"github.com/mbvlabs/grafto/psql/database"
+	"github.com/mbvlabs/grafto/psql"
 )
 
 const (
@@ -41,23 +37,23 @@ type tokenServiceStorage interface {
 		expiresAt time.Time,
 		metaData []byte,
 	) error
-	QueryTokenByHash(ctx context.Context, hash string) (database.Token, error)
+	// QueryTokenByHash(ctx context.Context, hash string) (database.Token, error)
 	DeleteTokenByHash(ctx context.Context, hash string) error
 }
 
 type Token struct {
-	storage tokenServiceStorage
-	hasher  hash.Hash
+	db     psql.Postgres
+	hasher hash.Hash
 }
 
 func NewTokenSvc(
-	storage tokenServiceStorage,
+	db psql.Postgres,
 	tokenSigningKey string,
 ) *Token {
 	h := hmac.New(sha256.New, []byte(tokenSigningKey))
 
 	return &Token{
-		storage,
+		db,
 		h,
 	}
 }
@@ -100,28 +96,28 @@ func (svc *Token) CreateSubscriberEmailValidation(
 		return "", err
 	}
 
-	metaData, err := json.Marshal(TokenMetaInformation{
-		Resource:   resourceSubscriber,
-		ResourceID: subscriberID,
-		Scope:      ScopeEmailVerification,
-	})
-	if err != nil {
-		return "", err
-	}
+	// metaData, err := json.Marshal(TokenMetaInformation{
+	// 	Resource:   resourceSubscriber,
+	// 	ResourceID: subscriberID,
+	// 	Scope:      ScopeEmailVerification,
+	// })
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// expirationDate := time.Now().Add(72 * time.Hour)
 
-	expirationDate := time.Now().Add(72 * time.Hour)
-
-	if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
-		slog.ErrorContext(
-			ctx,
-			"could not insert a subscriber token",
-			"error",
-			err,
-			"subscriber_id",
-			subscriberID,
-		)
-		return "", err
-	}
+	// if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
+	// 	slog.ErrorContext(
+	// 		ctx,
+	// 		"could not insert a subscriber token",
+	// 		"error",
+	// 		err,
+	// 		"subscriber_id",
+	// 		subscriberID,
+	// 	)
+	// 	return "", err
+	// }
 
 	return tokenPair.plain, nil
 }
@@ -135,28 +131,28 @@ func (svc *Token) CreateUserEmailVerification(
 		return "", err
 	}
 
-	metaData, err := json.Marshal(TokenMetaInformation{
-		Resource:   resourceUser,
-		ResourceID: userID,
-		Scope:      ScopeEmailVerification,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	expirationDate := time.Now().Add(48 * time.Hour)
-
-	if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
-		slog.ErrorContext(
-			ctx,
-			"could not insert a user email verification token",
-			"error",
-			err,
-			"user_id",
-			userID,
-		)
-		return "", err
-	}
+	// metaData, err := json.Marshal(TokenMetaInformation{
+	// 	Resource:   resourceUser,
+	// 	ResourceID: userID,
+	// 	Scope:      ScopeEmailVerification,
+	// })
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// expirationDate := time.Now().Add(48 * time.Hour)
+	//
+	// if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
+	// 	slog.ErrorContext(
+	// 		ctx,
+	// 		"could not insert a user email verification token",
+	// 		"error",
+	// 		err,
+	// 		"user_id",
+	// 		userID,
+	// 	)
+	// 	return "", err
+	// }
 
 	return tokenPair.plain, nil
 }
@@ -170,27 +166,27 @@ func (svc *Token) CreateResetPasswordToken(
 		return "", err
 	}
 
-	metaData, err := json.Marshal(TokenMetaInformation{
-		ResourceID: userID,
-		Scope:      ScopeResetPassword,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	expirationDate := time.Now().Add(24 * time.Hour)
-
-	if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
-		slog.ErrorContext(
-			ctx,
-			"could not insert a reset password token",
-			"error",
-			err,
-			"user_id",
-			userID,
-		)
-		return "", err
-	}
+	// metaData, err := json.Marshal(TokenMetaInformation{
+	// 	ResourceID: userID,
+	// 	Scope:      ScopeResetPassword,
+	// })
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// expirationDate := time.Now().Add(24 * time.Hour)
+	//
+	// if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
+	// 	slog.ErrorContext(
+	// 		ctx,
+	// 		"could not insert a reset password token",
+	// 		"error",
+	// 		err,
+	// 		"user_id",
+	// 		userID,
+	// 	)
+	// 	return "", err
+	// }
 
 	return tokenPair.plain, nil
 }
@@ -204,127 +200,129 @@ func (svc *Token) CreateUnsubscribeToken(
 		return "", err
 	}
 
-	metaData, err := json.Marshal(TokenMetaInformation{
-		Resource:   resourceSubscriber,
-		ResourceID: subscriberID,
-		Scope:      ScopeUnsubscribe,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	expirationDate := time.Now().Add(168 * time.Hour)
-
-	if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
-		slog.ErrorContext(
-			ctx,
-			"could not insert a unsubscribe token",
-			"error",
-			err,
-			"subscriber_id",
-			subscriberID,
-		)
-		return "", err
-	}
-
+	// metaData, err := json.Marshal(TokenMetaInformation{
+	// 	Resource:   resourceSubscriber,
+	// 	ResourceID: subscriberID,
+	// 	Scope:      ScopeUnsubscribe,
+	// })
+	// if err != nil {
+	// 	return "", err
+	// }
+	//
+	// expirationDate := time.Now().Add(168 * time.Hour)
+	//
+	// if err := svc.storage.InsertToken(ctx, tokenPair.hashed, expirationDate, metaData); err != nil {
+	// 	slog.ErrorContext(
+	// 		ctx,
+	// 		"could not insert a unsubscribe token",
+	// 		"error",
+	// 		err,
+	// 		"subscriber_id",
+	// 		subscriberID,
+	// 	)
+	// 	return "", err
+	// }
+	//
 	return tokenPair.plain, nil
 }
 
 func (svc *Token) Validate(ctx context.Context, token, scope string) error {
-	tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			slog.InfoContext(ctx, "a token was requested that could not be found", "token", tkn)
-
-			slog.ErrorContext(ctx, "could not query token by hash", "error", err)
-			return errors.Join(ErrTokenNotExist, err)
-		}
-
-		return err
-	}
-
-	if time.Now().After(tkn.ExpiresAt.Time) {
-		return ErrTokenExpired
-	}
-
-	var metaInfo TokenMetaInformation
-	if err := json.Unmarshal(tkn.MetaInformation, &metaInfo); err != nil {
-		return err
-	}
-
-	if metaInfo.Scope != scope {
-		return ErrTokenScopeInvalid
-	}
+	// tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
+	// if err != nil {
+	// 	if errors.Is(err, pgx.ErrNoRows) {
+	// 		slog.InfoContext(ctx, "a token was requested that could not be found", "token", tkn)
+	//
+	// 		slog.ErrorContext(ctx, "could not query token by hash", "error", err)
+	// 		return errors.Join(ErrTokenNotExist, err)
+	// 	}
+	//
+	// 	return err
+	// }
+	//
+	// if time.Now().After(tkn.ExpiresAt.Time) {
+	// 	return ErrTokenExpired
+	// }
+	//
+	// var metaInfo TokenMetaInformation
+	// if err := json.Unmarshal(tkn.MetaInformation, &metaInfo); err != nil {
+	// 	return err
+	// }
+	//
+	// if metaInfo.Scope != scope {
+	// 	return ErrTokenScopeInvalid
+	// }
 
 	return nil
 }
 
 func (svc *Token) IsExpired(ctx context.Context, token string) error {
-	tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			slog.InfoContext(ctx, "a token was requested that could not be found", "token", tkn)
-
-			slog.ErrorContext(ctx, "could not query token by hash", "error", err)
-			return errors.Join(ErrTokenNotExist, err)
-		}
-
-		return err
-	}
-
-	if time.Now().After(tkn.ExpiresAt.Time) {
-		return ErrTokenExpired
-	}
-
+	// tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
+	// if err != nil {
+	// 	if errors.Is(err, pgx.ErrNoRows) {
+	// 		slog.InfoContext(ctx, "a token was requested that could not be found", "token", tkn)
+	//
+	// 		slog.ErrorContext(ctx, "could not query token by hash", "error", err)
+	// 		return errors.Join(ErrTokenNotExist, err)
+	// 	}
+	//
+	// 	return err
+	// }
+	//
+	// if time.Now().After(tkn.ExpiresAt.Time) {
+	// 	return ErrTokenExpired
+	// }
+	//
 	return nil
 }
 
 func (svc *Token) GetAssociatedUserID(ctx context.Context, token string) (uuid.UUID, error) {
-	tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
-	if err != nil {
-		return uuid.UUID{}, err
-	}
+	// tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
+	// if err != nil {
+	// 	return uuid.UUID{}, err
+	// }
+	//
+	// var metaData TokenMetaInformation
+	// if err := json.Unmarshal(tkn.MetaInformation, &metaData); err != nil {
+	// 	return uuid.UUID{}, err
+	// }
+	//
+	// // TODO add err here
+	// if metaData.Resource != resourceUser {
+	// 	return uuid.UUID{}, err
+	// }
 
-	var metaData TokenMetaInformation
-	if err := json.Unmarshal(tkn.MetaInformation, &metaData); err != nil {
-		return uuid.UUID{}, err
-	}
-
-	// TODO add err here
-	if metaData.Resource != resourceUser {
-		return uuid.UUID{}, err
-	}
-
-	return metaData.ResourceID, nil
+	// return metaData.ResourceID, nil
+	return uuid.New(), nil
 }
 
 func (svc *Token) GetAssociatedSubscriberID(
 	ctx context.Context,
 	token string,
 ) (uuid.UUID, error) {
-	tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-
-	var metaData TokenMetaInformation
-	if err := json.Unmarshal(tkn.MetaInformation, &metaData); err != nil {
-		return uuid.UUID{}, err
-	}
-
-	// TODO add err here
-	if metaData.Resource != resourceSubscriber {
-		return uuid.UUID{}, err
-	}
-
-	return metaData.ResourceID, nil
+	// tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
+	// if err != nil {
+	// 	return uuid.UUID{}, err
+	// }
+	//
+	// var metaData TokenMetaInformation
+	// if err := json.Unmarshal(tkn.MetaInformation, &metaData); err != nil {
+	// 	return uuid.UUID{}, err
+	// }
+	//
+	// // TODO add err here
+	// if metaData.Resource != resourceSubscriber {
+	// 	return uuid.UUID{}, err
+	// }
+	//
+	// return metaData.ResourceID, nil
+	return uuid.New(), nil
 }
 
 func (svc *Token) Delete(ctx context.Context, token string) error {
-	err := svc.storage.DeleteTokenByHash(ctx, svc.hash(token))
-	if err != nil {
-		return err
-	}
+	// err := svc.storage.DeleteTokenByHash(ctx, svc.hash(token))
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }

@@ -79,7 +79,7 @@ func run(ctx context.Context) error {
 	awsSES := emails.NewSESClient()
 	emailClient := emails.NewEmail(awsSES)
 
-	authSvc := services.NewAuthNew(psql, emailClient)
+	authSvc := services.NewAuth(psql, emailClient)
 	tokenService := services.NewTokenSvc(psql, cfg.TokenSigningKey)
 
 	cacheBuilder, err := otter.NewBuilder[string, string](20)
