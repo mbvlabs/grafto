@@ -4,43 +4,42 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/echoprometheus"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/http/handlers"
-	"github.com/mbvlabs/grafto/http/middleware"
+	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/server/middleware"
 	slogecho "github.com/samber/slog-echo"
+	"riverqueue.com/riverui"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 )
 
 type Routes struct {
 	router               *echo.Echo
-	appHandlers          handlers.App
-	dashboardHandlers    handlers.Dashboard
-	authHandlers         handlers.Authentication
-	registrationHandlers handlers.Registration
-	apiHandlers          handlers.Api
-	baseHandlers         handlers.Base
+	appHandlers          controllers.App
+	dashboardHandlers    controllers.Dashboard
+	authHandlers         controllers.Authentication
+	registrationHandlers controllers.Registration
+	apiHandlers          controllers.Api
 	middleware           middleware.Middleware
-	cfg                  config.Config
 }
 
 func NewRoutes(
-	appHandlers handlers.App,
-	dashboardHandlers handlers.Dashboard,
-	authHandlers handlers.Authentication,
-	registrationHandlers handlers.Registration,
-	apiHandlers handlers.Api,
-	baseHandlers handlers.Base,
+	appControllers controllers.App,
+	dashboardControllers controllers.Dashboard,
+	authControllers controllers.Authentication,
+	registrationControllers controllers.Registration,
+	apiControllers controllers.Api,
 	mw middleware.Middleware,
-	cfg config.Config,
+	riverUI *riverui.Server,
 ) *Routes {
 	router := echo.New()
-
 	router.Debug = true
 
-	if cfg.Environment == config.PROD_ENVIRONMENT {
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		router.Debug = false
 		router.Use(echomw.GzipWithConfig(echomw.GzipConfig{
 			Level: 5,
@@ -49,24 +48,13 @@ func NewRoutes(
 			},
 		}))
 		router.Use(
-			echoprometheus.NewMiddleware(cfg.ProjectName),
+			echoprometheus.NewMiddleware(config.Cfg.ProjectName),
 		)
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
-
 	router.Static("/static", "static")
-	router.GET("/robots.txt", func(c echo.Context) error {
-		return c.File("./resources/seo/robots.txt")
-	})
-	router.GET("/sitemap.xml", func(c echo.Context) error {
-		return c.File("./resources/seo/sitemap.xml")
-	})
-	router.GET("/favicon.ico", func(c echo.Context) error {
-		return c.File("./static/images/favicon.ico")
-	})
-
-	router.Use(mw.RegisterUserContext)
-
+	router.Use(session.Middleware(sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey))))
+	router.Use(mw.RegisterAppContext)
 	slogechoCfg := slogecho.Config{
 		WithRequestID: false,
 		WithTraceID:   false,
@@ -76,24 +64,25 @@ func NewRoutes(
 		},
 	}
 	router.Use(slogecho.NewWithConfig(slog.Default(), slogechoCfg))
-
 	router.Use(echomw.Recover())
+
+	router.Any("/river*", echo.WrapHandler(riverUI))
+	// router.Any("/river*", echo.WrapHandler(riverUI), mw.AuthOnly)
 
 	return &Routes{
 		router,
-		appHandlers,
-		dashboardHandlers,
-		authHandlers,
-		registrationHandlers,
-		apiHandlers,
-		baseHandlers,
+		appControllers,
+		dashboardControllers,
+		authControllers,
+		registrationControllers,
+		apiControllers,
 		mw,
-		cfg,
 	}
 }
 
 func (r *Routes) web() {
-	authRoutes(r.router, r.authHandlers, r.middleware)
+	resourceRoutes(r.router)
+	authRoutes(r.router, r.authHandlers)
 	dashboardRoutes(r.router, r.dashboardHandlers, r.middleware)
 	appRoutes(r.router, r.appHandlers)
 	registrationRoutes(r.router, r.registrationHandlers)
