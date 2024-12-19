@@ -1,14 +1,15 @@
 version: "2"
 sql:
-- schema: "migrations"
-  queries: "psql/queries"
+- schema: "psql/migrations"
+  queries: "psql"
   engine: "postgresql"
   gen:
     go:
-      package: "database"
-      out: "psql/database"
-      output_db_file_name: "database.go"
+      package: "db"
+      out: "models/internal/db"
+      output_db_file_name: "db.go"
       output_models_file_name: "entities.go"
+      emit_methods_with_db_argument: true
       sql_package: "pgx/v5"
       overrides:
         - db_type: "pg_catalog.bool"
