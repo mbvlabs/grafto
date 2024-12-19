@@ -15,13 +15,12 @@ type Tracer struct {
 }
 
 type Otel struct {
-	cfg           config.Config
 	traceProvider *tracesdk.TracerProvider
 }
 
-func NewOtel(cfg config.Config) Otel {
+func NewOtel() Otel {
 	sampler := tracesdk.WithSampler(tracesdk.NeverSample())
-	if cfg.App.Environment == config.PROD_ENVIRONMENT {
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		sampler = tracesdk.WithSampler(tracesdk.AlwaysSample())
 	}
 
@@ -30,17 +29,16 @@ func NewOtel(cfg config.Config) Otel {
 	)
 
 	return Otel{
-		cfg,
 		tp,
 	}
 }
 
 func (o Otel) NewTracer(name string) Tracer {
 	var t trace.Tracer
-	if o.cfg.App.Environment == config.PROD_ENVIRONMENT {
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		t = o.traceProvider.Tracer(name)
 	}
-	if o.cfg.App.Environment == config.DEV_ENVIRONMENT {
+	if config.Cfg.Environment == config.DEV_ENVIRONMENT {
 		t = NoopTracer{}
 	}
 

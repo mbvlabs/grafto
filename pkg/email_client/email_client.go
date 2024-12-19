@@ -2,8 +2,6 @@ package emailclient
 
 import (
 	"context"
-
-	"github.com/mbvlabs/grafto/views/emails"
 )
 
 type EmailPayload struct {
@@ -38,19 +36,10 @@ func (e *EmailClient) Send(
 	ctx context.Context,
 	to,
 	from,
-	subject string,
-	payload emails.TemplateHandler,
+	subject,
+	htmlVersion,
+	textVersion string,
 ) error {
-	textVersion, err := payload.GenerateTextVersion()
-	if err != nil {
-		return err
-	}
-
-	htmlVersion, err := payload.GenerateHtmlVersion()
-	if err != nil {
-		return err
-	}
-
 	return e.client.send(ctx, EmailPayload{
 		To:       to,
 		From:     from,
