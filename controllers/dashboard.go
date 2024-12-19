@@ -1,16 +1,14 @@
-package handlers
+package controllers
 
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/views"
 )
 
-type Dashboard struct {
-	Base
-}
+type Dashboard struct{}
 
-func NewDashboard(base Base) Dashboard {
-	return Dashboard{base}
+func NewDashboard() Dashboard {
+	return Dashboard{}
 }
 
 func (d *Dashboard) Index(ctx echo.Context) error {
