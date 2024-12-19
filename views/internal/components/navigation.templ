@@ -2,12 +2,12 @@ package components
 
 import (
 	"context"
-	"github.com/mbvlabs/grafto/http/middleware"
+	"github.com/mbvlabs/grafto/server/middleware"
 )
 
 func extractAuthStatus(ctx context.Context) bool {
-	if userCtx, ok := ctx.Value(middleware.UserContext{}).(*middleware.UserContext); ok {
-		return userCtx.GetAuthStatus()
+	if appCtx, ok := ctx.Value(middleware.AppContext{}).(*middleware.AppContext); ok {
+		return appCtx.IsAuthenticated
 	}
 
 	return false
