@@ -2,14 +2,12 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/http/handlers"
-	"github.com/mbvlabs/grafto/http/middleware"
+	"github.com/mbvlabs/grafto/controllers"
 )
 
 func authRoutes(
 	router *echo.Echo,
-	controllers handlers.Authentication,
-	middleware middleware.Middleware,
+	controllers controllers.Authentication,
 ) {
 	router.GET("/login", func(c echo.Context) error {
 		return controllers.CreateAuthenticatedSession(c)
