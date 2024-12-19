@@ -83,6 +83,10 @@ func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] 
 		fetchPollInterval: 1 * time.Second,
 		jobTimeout:        5 * time.Minute,
 		logger:            slog.Default(),
+		queues: &map[string]river.QueueConfig{
+			// TODO: bump when we go into production
+			river.QueueDefault: {MaxWorkers: 5},
+		},
 	}
 
 	for _, opt := range opts {
@@ -96,11 +100,8 @@ func NewClient(pool *pgxpool.Pool, opts ...ClientCfgOpts) *river.Client[pgx.Tx] 
 		JobTimeout:        cfg.jobTimeout,
 		Logger:            cfg.logger,
 		PeriodicJobs:      cfg.periodicJobs,
-	}
-
-	if cfg.queues != nil {
-		riverCfg.Queues = *cfg.queues
-		riverCfg.Workers = cfg.workers
+		Workers:           cfg.workers,
+		Queues:            *cfg.queues,
 	}
 
 	riverClient, err := river.NewClient(riverpgxv5.New(pool), riverCfg)
