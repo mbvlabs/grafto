@@ -2,6 +2,9 @@ package config
 
 import "os"
 
+// Cfg instantiate a new cfg but can panic
+var Cfg Config = NewConfig()
+
 type Config struct {
 	Database
 	Authentication

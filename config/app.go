@@ -22,6 +22,9 @@ type App struct {
 }
 
 func (a App) GetFullDomain() string {
+	if a.Environment == DEV_ENVIRONMENT {
+		return fmt.Sprintf("%v://%v:%v", a.AppProtocol, a.AppDomain, a.ServerPort)
+	}
 	return fmt.Sprintf("%v://%v", a.AppProtocol, a.AppDomain)
 }
 
