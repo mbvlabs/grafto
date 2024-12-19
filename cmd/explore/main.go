@@ -1,7 +1,10 @@
 package main
 
-import "log/slog"
+import (
+	"log/slog"
+)
 
 func main() {
 	slog.Info("explore code here")
+	slog.Info("explore code done")
 }
