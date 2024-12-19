@@ -5,15 +5,19 @@ import (
 	"io"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/http/middleware"
+	"github.com/mbvlabs/grafto/server/middleware"
 )
 
-func setUserCtx(ctx echo.Context) context.Context {
-	userCtx := ctx.(*middleware.UserContext)
-	return context.WithValue(ctx.Request().Context(), middleware.UserContext{}, userCtx)
+func setAppCtx(ctx echo.Context) context.Context {
+	appCtx := ctx.Get(middleware.AppContextName)
+	return context.WithValue(
+		ctx.Request().Context(),
+		middleware.AppContext{},
+		appCtx,
+	)
 }
 
 // ExtractRenderDeps extracts the context and writer from the echo context and sets the user context
 func ExtractRenderDeps(ctx echo.Context) (context.Context, io.Writer) {
-	return setUserCtx(ctx), ctx.Response().Writer
+	return setAppCtx(ctx), ctx.Response().Writer
 }
