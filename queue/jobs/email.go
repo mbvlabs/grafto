@@ -1,6 +1,8 @@
 package jobs
 
-import "context"
+import (
+	"context"
+)
 
 const emailJobKind string = "email_job"
 

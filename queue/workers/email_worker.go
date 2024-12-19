@@ -3,25 +3,23 @@ package workers
 import (
 	"context"
 
+	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/queue/jobs"
-	"github.com/mbvlabs/grafto/services"
 	"github.com/riverqueue/river"
 )
 
 type EmailJobWorker struct {
-	emailer services.EmailClient
+	emailer emails.EmailClient
 	river.WorkerDefaults[jobs.EmailJobArgs]
 }
 
 func (w *EmailJobWorker) Work(ctx context.Context, job *river.Job[jobs.EmailJobArgs]) error {
-	return w.emailer.SendEmail(
+	return w.emailer.Send(
 		ctx,
-		services.EmailPayload{
-			To:       job.Args.To,
-			From:     job.Args.From,
-			Subject:  job.Args.Subject,
-			HtmlBody: job.Args.TextVersion,
-			TextBody: job.Args.HtmlVersion,
-		},
+		job.Args.To,
+		job.Args.From,
+		job.Args.Subject,
+		job.Args.HtmlVersion,
+		job.Args.TextVersion,
 	)
 }
