@@ -53,8 +53,10 @@ func NewRoutes(
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
 	router.Static("/static", "static")
+
 	router.Use(session.Middleware(sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey))))
 	router.Use(mw.RegisterAppContext)
+
 	slogechoCfg := slogecho.Config{
 		WithRequestID: false,
 		WithTraceID:   false,
@@ -66,8 +68,7 @@ func NewRoutes(
 	router.Use(slogecho.NewWithConfig(slog.Default(), slogechoCfg))
 	router.Use(echomw.Recover())
 
-	router.Any("/river*", echo.WrapHandler(riverUI))
-	// router.Any("/river*", echo.WrapHandler(riverUI), mw.AuthOnly)
+	router.Any("/river*", echo.WrapHandler(riverUI), mw.AuthOnly)
 
 	return &Routes{
 		router,
