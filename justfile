@@ -14,12 +14,12 @@ alias dm := down-migrations
 alias dmt := down-migrations-to
 alias rdb := reset-db
 
+alias s := seed
+
 alias gdf := generate-db-functions
 
 alias ct := compile-templates
 alias ft := fmt-templates
-
-alias rm := river-migrate-up
 
 alias ex := explore
 
@@ -32,8 +32,8 @@ watch-css:
 
 # Database 
 create-migration name:
-	@goose -dir psql/migrations $DB_KIND $DATABASE_URL create {{name}} sql \
-	&& goose -dir psql/migrations $DB_KIND $DATABASE_URL fix
+	@goose -dir psql/migrations postgres $DB_KIND://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME create {{name}} sql
+	
 
 migration-status:
 	go run cmd/migration/main.go --cmd "status"
@@ -51,13 +51,13 @@ down-migrations-to version:
 	go run cmd/migration/main.go --cmd "down" --version {{version}}
 
 fix-migrations:
-	@goose -dir psql/migrations $DB_KIND $DATABASE_URL fix
+	@goose -dir psql/migrations postgres $DB_KIND://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME fix
 
 reset-db:
 	go run cmd/migration/main.go --cmd "reset"
 
 generate-db-functions:
-	sqlc compile && sqlc generate
+	@sqlc compile && sqlc generate
 
 # Application
 run-app:
@@ -78,13 +78,9 @@ compile-templates:
 fmt-templates:
     cd views && templ fmt .
 
-# river
-river-migrate-up:
-	river migrate-up --database-url $QUEUE_DATABASE_URL
-
 # exploration
 explore:
     @go run ./cmd/explore/main.go
 
-riverui:
-	docker run -p 8080:8080 --env DATABASE_URL=$DATABASE_URL --network host ghcr.io/riverqueue/riverui:latest
+seed:
+	@go run ./cmd/seed/main.go

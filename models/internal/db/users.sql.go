@@ -38,19 +38,19 @@ func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id uuid.UUID) error {
 
 const insertUser = `-- name: InsertUser :one
 insert into
-    users (id, created_at, updated_at, name, email, password)
+    users (id, created_at, updated_at, email, password, is_admin)
 values
     ($1, $2, $3, $4, $5, $6)
-returning id, created_at, updated_at, name, email, email_verified_at, password
+returning id, created_at, updated_at, email, email_verified_at, password, is_admin
 `
 
 type InsertUserParams struct {
 	ID        uuid.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
-	Name      string
 	Email     string
 	Password  string
+	IsAdmin   bool
 }
 
 func (q *Queries) InsertUser(ctx context.Context, db DBTX, arg InsertUserParams) (User, error) {
@@ -58,25 +58,25 @@ func (q *Queries) InsertUser(ctx context.Context, db DBTX, arg InsertUserParams)
 		arg.ID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
-		arg.Name,
 		arg.Email,
 		arg.Password,
+		arg.IsAdmin,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Name,
 		&i.Email,
 		&i.EmailVerifiedAt,
 		&i.Password,
+		&i.IsAdmin,
 	)
 	return i, err
 }
 
 const queryUserByEmail = `-- name: QueryUserByEmail :one
-select id, created_at, updated_at, name, email, email_verified_at, password from users where email=$1
+select id, created_at, updated_at, email, email_verified_at, password, is_admin from users where email=$1
 `
 
 func (q *Queries) QueryUserByEmail(ctx context.Context, db DBTX, email string) (User, error) {
@@ -86,16 +86,16 @@ func (q *Queries) QueryUserByEmail(ctx context.Context, db DBTX, email string) (
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Name,
 		&i.Email,
 		&i.EmailVerifiedAt,
 		&i.Password,
+		&i.IsAdmin,
 	)
 	return i, err
 }
 
 const queryUserByID = `-- name: QueryUserByID :one
-select id, created_at, updated_at, name, email, email_verified_at, password from users where id=$1
+select id, created_at, updated_at, email, email_verified_at, password, is_admin from users where id=$1
 `
 
 func (q *Queries) QueryUserByID(ctx context.Context, db DBTX, id uuid.UUID) (User, error) {
@@ -105,16 +105,16 @@ func (q *Queries) QueryUserByID(ctx context.Context, db DBTX, id uuid.UUID) (Use
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Name,
 		&i.Email,
 		&i.EmailVerifiedAt,
 		&i.Password,
+		&i.IsAdmin,
 	)
 	return i, err
 }
 
 const queryUsers = `-- name: QueryUsers :many
-select id, created_at, updated_at, name, email, email_verified_at, password from users
+select id, created_at, updated_at, email, email_verified_at, password, is_admin from users
 `
 
 func (q *Queries) QueryUsers(ctx context.Context, db DBTX) ([]User, error) {
@@ -130,10 +130,10 @@ func (q *Queries) QueryUsers(ctx context.Context, db DBTX) ([]User, error) {
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Name,
 			&i.Email,
 			&i.EmailVerifiedAt,
 			&i.Password,
+			&i.IsAdmin,
 		); err != nil {
 			return nil, err
 		}
@@ -147,36 +147,34 @@ func (q *Queries) QueryUsers(ctx context.Context, db DBTX) ([]User, error) {
 
 const updateUser = `-- name: UpdateUser :one
 update users
-    set updated_at=$2, name=$3, email=$4, password=$5
+    set updated_at=$2, email=$3, is_admin=$4
 where id = $1
-returning id, created_at, updated_at, name, email, email_verified_at, password
+returning id, created_at, updated_at, email, email_verified_at, password, is_admin
 `
 
 type UpdateUserParams struct {
 	ID        uuid.UUID
 	UpdatedAt pgtype.Timestamptz
-	Name      string
 	Email     string
-	Password  string
+	IsAdmin   bool
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg UpdateUserParams) (User, error) {
 	row := db.QueryRow(ctx, updateUser,
 		arg.ID,
 		arg.UpdatedAt,
-		arg.Name,
 		arg.Email,
-		arg.Password,
+		arg.IsAdmin,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Name,
 		&i.Email,
 		&i.EmailVerifiedAt,
 		&i.Password,
+		&i.IsAdmin,
 	)
 	return i, err
 }

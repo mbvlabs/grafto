@@ -104,6 +104,7 @@ require (
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/caarlos0/env/v10 v10.0.0
+	github.com/go-faker/faker/v4 v4.5.0
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/gorilla/csrf v1.7.1
 	github.com/grafana/loki-client-go v0.0.0-20230116142646-e7494d0ef70c

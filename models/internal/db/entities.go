@@ -60,23 +60,44 @@ func (ns NullRiverJobState) Value() (driver.Value, error) {
 	return string(ns.RiverJobState), nil
 }
 
+type RiverClient struct {
+	ID        string
+	CreatedAt pgtype.Timestamptz
+	Metadata  []byte
+	PausedAt  pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+type RiverClientQueue struct {
+	RiverClientID    string
+	Name             string
+	CreatedAt        pgtype.Timestamptz
+	MaxWorkers       int64
+	Metadata         []byte
+	NumJobsCompleted int64
+	NumJobsRunning   int64
+	UpdatedAt        pgtype.Timestamptz
+}
+
 type RiverJob struct {
-	ID          int64
-	State       RiverJobState
-	Attempt     int16
-	MaxAttempts int16
-	AttemptedAt pgtype.Timestamptz
-	CreatedAt   pgtype.Timestamptz
-	FinalizedAt pgtype.Timestamptz
-	ScheduledAt pgtype.Timestamptz
-	Priority    int16
-	Args        []byte
-	AttemptedBy []string
-	Errors      [][]byte
-	Kind        string
-	Metadata    []byte
-	Queue       string
-	Tags        []string
+	ID           int64
+	State        RiverJobState
+	Attempt      int16
+	MaxAttempts  int16
+	AttemptedAt  pgtype.Timestamptz
+	CreatedAt    pgtype.Timestamptz
+	FinalizedAt  pgtype.Timestamptz
+	ScheduledAt  pgtype.Timestamptz
+	Priority     int16
+	Args         []byte
+	AttemptedBy  []string
+	Errors       [][]byte
+	Kind         string
+	Metadata     []byte
+	Queue        string
+	Tags         []string
+	UniqueKey    []byte
+	UniqueStates pgtype.Bits
 }
 
 type RiverLeader struct {
@@ -112,8 +133,8 @@ type User struct {
 	ID              uuid.UUID
 	CreatedAt       pgtype.Timestamptz
 	UpdatedAt       pgtype.Timestamptz
-	Name            string
 	Email           string
 	EmailVerifiedAt pgtype.Timestamptz
 	Password        string
+	IsAdmin         bool
 }

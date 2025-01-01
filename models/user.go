@@ -14,7 +14,6 @@ type UserEntity struct {
 	ID              uuid.UUID
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
-	Name            string
 	Email           string
 	EmailVerifiedAt time.Time
 	IsAdmin         bool
@@ -29,12 +28,22 @@ func GetUserByEmail(
 	email string,
 	dbtx db.DBTX,
 ) (UserEntity, error) {
-	_ = db.Stmts.ChangeUserPassword(ctx, dbtx, db.ChangeUserPasswordParams{})
-	return UserEntity{}, nil
+	user, err := db.Stmts.QueryUserByEmail(ctx, dbtx, email)
+	if err != nil {
+		return UserEntity{}, err
+	}
+
+	return UserEntity{
+		ID:              user.ID,
+		CreatedAt:       user.CreatedAt.Time,
+		UpdatedAt:       user.UpdatedAt.Time,
+		Email:           user.Email,
+		EmailVerifiedAt: user.EmailVerifiedAt.Time,
+		IsAdmin:         user.IsAdmin,
+	}, nil
 }
 
 type NewUserPayload struct {
-	Name            string `validate:"required,gte=2,lte=25"`
 	Email           string `validate:"required,email"`
 	Password        string `validate:"required,gte=6"`
 	ConfirmPassword string `validate:"required,gte=6"`
@@ -50,7 +59,6 @@ func GetUser(ctx context.Context, id uuid.UUID, dbtx db.DBTX) (UserEntity, error
 		ID:              id,
 		CreatedAt:       usr.CreatedAt.Time,
 		UpdatedAt:       usr.UpdatedAt.Time,
-		Name:            usr.Name,
 		Email:           usr.Email,
 		EmailVerifiedAt: usr.EmailVerifiedAt.Time,
 		IsAdmin:         false,
@@ -71,7 +79,6 @@ func NewUser(
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		Name:      data.Name,
 		Email:     data.Email,
 	}
 
@@ -84,7 +91,6 @@ func NewUser(
 		ID:        usr.ID,
 		CreatedAt: pgtype.Timestamptz{Time: usr.CreatedAt, Valid: true},
 		UpdatedAt: pgtype.Timestamptz{Time: usr.UpdatedAt, Valid: true},
-		Name:      usr.Name,
 		Email:     usr.Email,
 		Password:  hashedPassword,
 	})
@@ -119,7 +125,6 @@ func UpdateUser(
 			Time:  data.UpdatedAt,
 			Valid: true,
 		},
-		Name:  data.Name,
 		Email: data.Email,
 	})
 	if err != nil {
@@ -130,7 +135,6 @@ func UpdateUser(
 		ID:              updatedUsr.ID,
 		CreatedAt:       updatedUsr.CreatedAt.Time,
 		UpdatedAt:       updatedUsr.UpdatedAt.Time,
-		Name:            updatedUsr.Name,
 		Email:           updatedUsr.Email,
 		EmailVerifiedAt: updatedUsr.EmailVerifiedAt.Time,
 		IsAdmin:         false,

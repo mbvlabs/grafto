@@ -17,7 +17,6 @@ import (
 )
 
 type Auth struct {
-	// cfg     config.Config
 	db    psql.Postgres
 	email emailClient.EmailClient
 }
@@ -26,10 +25,11 @@ func NewAuth(
 	db psql.Postgres,
 	email emailClient.EmailClient,
 ) Auth {
-	return Auth{}
+	return Auth{db, email}
 }
 
-func (a Auth) hashAndPepperPassword(password string) (string, error) {
+// TODO: maybe this should be moved
+func HashAndPepperPassword(password string) (string, error) {
 	passwordBytes := []byte(password + config.Cfg.PasswordPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(
 		passwordBytes,
@@ -42,7 +42,12 @@ func (a Auth) hashAndPepperPassword(password string) (string, error) {
 	return string(hashedBytes), nil
 }
 
-func (a Auth) validatePassword(password, hashedPassword string) error {
+func validatePassword(password string) error {
+	hashedPassword, err := HashAndPepperPassword(password)
+	if err != nil {
+		return err
+	}
+
 	return bcrypt.CompareHashAndPassword(
 		[]byte(hashedPassword),
 		[]byte(password+config.Cfg.PasswordPepper),
@@ -53,31 +58,26 @@ func (a Auth) AuthenticateUser(
 	ctx context.Context,
 	email string,
 	password string,
-) error {
+) (models.UserEntity, error) {
 	user, err := models.GetUserByEmail(ctx, email, a.db.Pool)
 	if err != nil {
+		slog.ErrorContext(ctx, "could not query user", "error", err)
 		if errors.Is(err, pgx.ErrNoRows) {
-			return ErrUserNotExist
+			return models.UserEntity{}, ErrUserNotExist
 		}
 
-		slog.ErrorContext(ctx, "could not query user", "error", err)
-		return err
+		return models.UserEntity{}, err
 	}
 
 	if isVerified := user.IsVerified(); !isVerified {
-		return ErrEmailNotValidated
+		return models.UserEntity{}, ErrEmailNotValidated
 	}
 
-	hashedPw, err := a.hashAndPepperPassword(password)
-	if err != nil {
-		return err
+	if err := validatePassword(password); err != nil {
+		return models.UserEntity{}, ErrPasswordNotMatch
 	}
 
-	if err := a.validatePassword(password, hashedPw); err != nil {
-		return ErrPasswordNotMatch
-	}
-
-	return nil
+	return user, nil
 }
 
 func (a Auth) RegisterUser(
@@ -93,10 +93,9 @@ func (a Auth) RegisterUser(
 	}
 
 	user, err := models.NewUser(ctx, models.NewUserPayload{
-		Name:     name,
 		Email:    email,
 		Password: password,
-	}, tx, a.hashAndPepperPassword)
+	}, tx, HashAndPepperPassword)
 	if err != nil {
 		if !errors.Is(err, models.ErrDomainValidation) {
 			return errors.Join(ErrUnrecoverable, err)
@@ -159,7 +158,6 @@ func (a Auth) VerifyUserEmail(
 	if _, err := models.UpdateUser(ctx, models.UpdateUserPayload{
 		ID:             user.ID,
 		UpdatedAt:      time.Now(),
-		Name:           user.Name,
 		Email:          user.Email,
 		EmailUpdatedAt: time.Now(),
 	}, tx); err != nil {
