@@ -1,17 +1,11 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
 	content: [
-		"../views/**/*.templ",
-		"../views/**/*.go",
+		"../views/**/*.templ"
 	],
 	blocklist: [],
 	darkMode: 'class',
-	daisyui: {
-		themes: ["dracula"],
-	},
 	plugins: [
 		require('@tailwindcss/forms'),
-		require("@tailwindcss/typography"),
-		require('daisyui')
+		require("@tailwindcss/typography")
 	],
 }

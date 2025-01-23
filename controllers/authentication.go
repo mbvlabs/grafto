@@ -54,7 +54,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			Render(views.ExtractRenderDeps(ctx))
 	}
 
-	if err := a.authService.AuthenticateUser(
+	if _, err := a.authService.AuthenticateUser(
 		ctx.Request().Context(),
 		payload.Mail,
 		payload.Password,
