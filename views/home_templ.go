@@ -115,7 +115,7 @@ func HomePage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<main class=\"container mx-auto my-auto bg-blue-200\"><div class=\"py-10 px-4 sm:px-6 lg:px-8 xl:px-32 2xl:px-56\"><h1 class=\"block text-2xl font-bold text-white sm:text-4xl\">Grafto</h1><p class=\"mt-3 text-lg text-blue-500\">Grafto is a kickstarter template for full-stack Go apps, using your grandfather's technology. It focuses on simplicity, fast iteration and easy deployments. Built for indiehacking Gophers, by indiehacking Gophers.</p>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<main class=\"container mx-auto my-auto\"><div class=\"py-10 px-4 sm:px-6 lg:px-8 xl:px-32 2xl:px-56\"><h1 class=\"block text-2xl font-bold text-white sm:text-4xl\">Grafto</h1><p class=\"mt-3 text-lg text-blue-500\">Grafto is a kickstarter template for full-stack Go apps, using your grandfather's technology. It focuses on simplicity, fast iteration and easy deployments. Built for indiehacking Gophers, by indiehacking Gophers.</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
