@@ -28,7 +28,7 @@ default:
 
 # CSS
 watch-css:
-    @cd resources && npm run watch-css
+    npm run dev
 
 # Database 
 create-migration name:

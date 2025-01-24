@@ -25,5 +25,3 @@ go.work
 node_modules
 
 tmp
-
-./resources/mails/node_modules

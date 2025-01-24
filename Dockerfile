@@ -1,14 +1,17 @@
-FROM node:18.16.1 AS build-resources
+FROM node:22.6.0 AS build-resources
 
 WORKDIR /
 
-COPY resources/ resources
-COPY static static
+COPY resources resources
+COPY views views
+COPY package.json package.json
+COPY package-lock.json package-lock.json
+COPY vite.config.js vite.config.js
 
-RUN cd resources && npm ci
-RUN cd resources && npm run build-css
+RUN npm ci
+RUN npm run build
 
-FROM golang:1.22 AS build-go
+FROM golang:1.23 AS build-go
 
 ARG appRelease=0.0.1
 
@@ -22,10 +25,10 @@ COPY . .
 
 RUN templ generate
 
-COPY --from=build-resources static static
-COPY --from=build-resources pkg/mail pkg/mail
+COPY --from=build-resources static/css static/css
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X 'main.$APP_RELEASE'" -mod=readonly -v -o app cmd/app/main.go
+
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X 'main.$APP_RELEASE'" -mod=readonly -v -o worker cmd/worker/main.go
 
 FROM scratch
