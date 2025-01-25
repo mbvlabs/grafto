@@ -22,7 +22,7 @@ type AppContext struct {
 	CurrentPath     string
 }
 
-func extractAppContext(ctx context.Context) *AppContext {
+func ExtractAppContext(ctx context.Context) *AppContext {
 	appCtx, ok := ctx.Value(AppContextKey{}.Value()).(*AppContext)
 	if !ok {
 		return &AppContext{}

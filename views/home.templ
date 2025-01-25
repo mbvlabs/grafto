@@ -1,9 +1,6 @@
 package views
 
-import (
-	"fmt"
-	"github.com/mbvlabs/grafto/views/internal/layouts"
-)
+import "github.com/mbvlabs/grafto/views/internal/layouts"
 
 templ CsrfToken(token string) {
 	<input type="hidden" name="gorilla.csrf.Token" value={ token }/>
@@ -13,7 +10,6 @@ templ loadCsrfToken() {
 	<span hx-get="/load-csrf" hx-target="this" hx-trigger="load" hx-swap="outerHTML"></span>
 }
 
-// HomePage renders the page at '/'
 templ HomePage() {
 	@layouts.Base(Head{}.Default().Build()) {
 		<main class="container mx-auto my-auto">
@@ -23,7 +19,6 @@ templ HomePage() {
 					Grafto is a kickstarter template for full-stack Go apps, using your grandfather's technology. It focuses
 					on simplicity, fast iteration and easy deployments. Built for indiehacking Gophers, by indiehacking Gophers.
 				</p>
-				<p>User is authed: { fmt.Sprintf("%v", extractAppContext(ctx).Email) }</p>
 				<div class="mt-5 flex flex-col justify-center items-center gap-2 sm:flex-row sm:gap-3">
 					<a
 						class="w-full sm:w-auto inline-flex justify-center items-center gap-x-3.5 text-center bg-white shadow-sm text-sm text-blue-600 font-medium rounded-md hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-slate-900 transition py-3 px-4"
