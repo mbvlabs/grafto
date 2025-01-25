@@ -81,7 +81,6 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 	}
 
 	if err := createAuthSession(ctx, true, authedUser); err != nil {
-		slog.Error("could not create auth sess", "e", err)
 		internalError(ctx)
 	}
 
@@ -222,13 +221,6 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	if err := a.tknService.Delete(ctx.Request().Context(), payload.Token); err != nil {
 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
 		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-
-		slog.ErrorContext(
-			ctx.Request().Context(),
-			"could not query user",
-			"error",
-			err,
-		)
 		return internalError(ctx)
 	}
 
