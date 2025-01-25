@@ -75,6 +75,25 @@ func (q *Queries) InsertUser(ctx context.Context, db DBTX, arg InsertUserParams)
 	return i, err
 }
 
+const queryFirstUser = `-- name: QueryFirstUser :one
+select id, created_at, updated_at, email, email_verified_at, password, is_admin from users order by created_at asc limit 1
+`
+
+func (q *Queries) QueryFirstUser(ctx context.Context, db DBTX) (User, error) {
+	row := db.QueryRow(ctx, queryFirstUser)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
+		&i.Password,
+		&i.IsAdmin,
+	)
+	return i, err
+}
+
 const queryUserByEmail = `-- name: QueryUserByEmail :one
 select id, created_at, updated_at, email, email_verified_at, password, is_admin from users where email=$1
 `
@@ -166,6 +185,36 @@ func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg UpdateUserParams)
 		arg.Email,
 		arg.IsAdmin,
 	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
+		&i.Password,
+		&i.IsAdmin,
+	)
+	return i, err
+}
+
+const updateUserIsAdmin = `-- name: UpdateUserIsAdmin :one
+UPDATE users 
+SET 
+    is_admin = $2,
+    updated_at = $3
+WHERE id = $1
+RETURNING id, created_at, updated_at, email, email_verified_at, password, is_admin
+`
+
+type UpdateUserIsAdminParams struct {
+	ID        uuid.UUID
+	IsAdmin   bool
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateUserIsAdmin(ctx context.Context, db DBTX, arg UpdateUserIsAdminParams) (User, error) {
+	row := db.QueryRow(ctx, updateUserIsAdmin, arg.ID, arg.IsAdmin, arg.UpdatedAt)
 	var i User
 	err := row.Scan(
 		&i.ID,

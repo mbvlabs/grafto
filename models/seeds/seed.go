@@ -14,3 +14,11 @@ type SeedBuilder[T, V any] interface {
 type Seed interface {
 	Generate(ctx context.Context, dbtx db.DBTX) error
 }
+
+type Seeder struct {
+	dbtx db.DBTX
+}
+
+func NewSeeder() Seeder {
+	return Seeder{}
+}
