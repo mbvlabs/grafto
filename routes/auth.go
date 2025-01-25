@@ -2,30 +2,30 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/http/handlers"
 )
 
 func authRoutes(
 	router *echo.Echo,
-	controllers controllers.Authentication,
+	handlers handlers.Authentication,
 ) {
 	router.GET("/login", func(c echo.Context) error {
-		return controllers.CreateAuthenticatedSession(c)
+		return handlers.CreateAuthenticatedSession(c)
 	})
 	router.POST("/login", func(c echo.Context) error {
-		return controllers.StoreAuthenticatedSession(c)
+		return handlers.StoreAuthenticatedSession(c)
 	})
 
 	router.GET("/forgot-password", func(c echo.Context) error {
-		return controllers.CreatePasswordReset(c)
+		return handlers.CreatePasswordReset(c)
 	})
 	router.POST("/forgot-password", func(c echo.Context) error {
-		return controllers.StorePasswordReset(c)
+		return handlers.StorePasswordReset(c)
 	})
 	router.GET("/reset-password", func(c echo.Context) error {
-		return controllers.CreateResetPassword(c)
+		return handlers.CreateResetPassword(c)
 	})
 	router.POST("/reset-password", func(c echo.Context) error {
-		return controllers.StoreResetPassword(c)
+		return handlers.StoreResetPassword(c)
 	})
 }

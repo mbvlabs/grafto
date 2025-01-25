@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"github.com/labstack/echo/v4"
@@ -7,10 +7,10 @@ import (
 
 type Dashboard struct{}
 
-func NewDashboard() Dashboard {
+func newDashboard() Dashboard {
 	return Dashboard{}
 }
 
 func (d *Dashboard) Index(ctx echo.Context) error {
-	return views.DashboardPage().Render(views.ExtractRenderDeps(ctx))
+	return views.DashboardPage().Render(extractRenderDeps(ctx))
 }

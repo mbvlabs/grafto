@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"log"
@@ -19,7 +19,10 @@ type App struct {
 	cache otter.CacheWithVariableTTL[string, string]
 }
 
-func NewApp(db psql.Postgres, cache otter.CacheWithVariableTTL[string, string]) App {
+func newApp(
+	db psql.Postgres,
+	cache otter.CacheWithVariableTTL[string, string],
+) App {
 	return App{db, cache}
 }
 
@@ -36,7 +39,7 @@ func (a *App) LandingPage(ctx echo.Context) error {
 	cachedHtml := sb.String()
 
 	if ok := a.cache.Set(landingPageCacheKey, cachedHtml, time.Hour*time.Duration(24)); !ok {
-		return views.HomePage().Render(ctx.Request().Context(), ctx.Response())
+		return views.HomePage().Render(extractRenderDeps(ctx))
 	}
 
 	return ctx.HTML(http.StatusOK, cachedHtml)
