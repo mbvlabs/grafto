@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"errors"
@@ -21,7 +21,7 @@ type Registration struct {
 	emailClient emails.EmailClient
 }
 
-func NewRegistration(
+func newRegistration(
 	authSvc services.Auth,
 	db psql.Postgres,
 	tknService services.Token,
@@ -33,7 +33,7 @@ func NewRegistration(
 func (r *Registration) CreateUser(ctx echo.Context) error {
 	return authentication.RegisterPage(authentication.RegisterFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
-	}).Render(views.ExtractRenderDeps(ctx))
+	}).Render(extractRenderDeps(ctx))
 }
 
 type StoreUserPayload struct {
@@ -51,11 +51,15 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 			CsrfToken:     csrf.Token(ctx.Request()),
 		}
 		return authentication.RegisterForm(props).
-			Render(views.ExtractRenderDeps(ctx))
+			Render(extractRenderDeps(ctx))
 	}
 
 	err := r.authSvc.RegisterUser(
-		ctx.Request().Context(), payload.UserName, payload.Email, payload.Password,
+		ctx.Request().
+			Context(),
+		payload.UserName,
+		payload.Email,
+		payload.Password,
 		payload.ConfirmPassword,
 	)
 	if err != nil {
@@ -69,7 +73,10 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 				return internalError(ctx)
 			}
 
-			fields := make(map[string]views.InputFieldProps, len(validationErrors))
+			fields := make(
+				map[string]views.InputFieldProps,
+				len(validationErrors),
+			)
 			for _, validationError := range validationErrors {
 				fields[validationError.StructField()] = views.InputFieldProps{
 					Value:     validationError.Value().(string),
@@ -83,7 +90,7 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 				CsrfToken:       csrf.Token(ctx.Request()),
 			}
 			return authentication.RegisterForm(props).
-				Render(views.ExtractRenderDeps(ctx))
+				Render(extractRenderDeps(ctx))
 		}
 	}
 
@@ -92,7 +99,7 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		CsrfToken:       csrf.Token(ctx.Request()),
 	}
 	return authentication.RegisterForm(props).
-		Render(views.ExtractRenderDeps(ctx))
+		Render(extractRenderDeps(ctx))
 }
 
 type verificationTokenPayload struct {
@@ -153,5 +160,5 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 	// }
 
 	return authentication.VerifyEmailPage(false).
-		Render(views.ExtractRenderDeps(ctx))
+		Render(extractRenderDeps(ctx))
 }

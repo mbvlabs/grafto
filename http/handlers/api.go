@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 
 type Api struct{}
 
-func NewApi() Api {
+func newApi() Api {
 	return Api{}
 }
 

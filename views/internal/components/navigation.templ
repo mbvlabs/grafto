@@ -1,18 +1,5 @@
 package components
 
-import (
-	"context"
-	"github.com/mbvlabs/grafto/server/middleware"
-)
-
-func extractAuthStatus(ctx context.Context) bool {
-	if appCtx, ok := ctx.Value(middleware.AppContext{}).(*middleware.AppContext); ok {
-		return appCtx.IsAuthenticated
-	}
-
-	return false
-}
-
 templ Nav() {
 	<header class="container mx-auto flex flex-wrap sm:justify-start sm:flex-nowrap z-50 text-sm py-4">
 		<nav class="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between" aria-label="Global">
@@ -29,13 +16,14 @@ templ Nav() {
 				<div class="flex flex-col gap-5 mt-5 sm:flex-row sm:items-center sm:justify-end sm:mt-0 sm:ps-5">
 					<a class="font-medium text-blue-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href="/">Home</a>
 					<a class="font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href="/about">About</a>
-					if  extractAuthStatus(ctx) {
-						<a class="font-medium text-gray-400 hover:text-gray-500" href="/user/logout">logout</a>
-					} else {
-						<a class="font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href="/login">Login</a>
-					}
 				</div>
 			</div>
 		</nav>
 	</header>
 }
+
+//if  extractAuthStatus(ctx) {
+//	<a class="font-medium text-gray-400 hover:text-gray-500" href="/user/logout">logout</a>
+//} else {
+//	<a class="font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href="/login">Login</a>
+//}

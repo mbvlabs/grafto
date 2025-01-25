@@ -1,4 +1,4 @@
-package controllers
+package handlers
 
 import (
 	"log/slog"
@@ -19,7 +19,7 @@ type Authentication struct {
 	emailClient emails.EmailClient
 }
 
-func NewAuthentication(
+func newAuthentication(
 	authSvc services.Auth,
 	db psql.Postgres,
 	tknService services.Token,
@@ -31,7 +31,7 @@ func NewAuthentication(
 func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
 	return authentication.LoginPage(authentication.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
-	}).Render(views.ExtractRenderDeps(ctx))
+	}).Render(extractRenderDeps(ctx))
 }
 
 type StoreAuthenticatedSessionPayload struct {
@@ -51,14 +51,15 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		)
 
 		return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
-			Render(views.ExtractRenderDeps(ctx))
+			Render(extractRenderDeps(ctx))
 	}
 
-	if _, err := a.authService.AuthenticateUser(
+	authedUser, err := a.authService.AuthenticateUser(
 		ctx.Request().Context(),
 		payload.Mail,
 		payload.Password,
-	); err != nil {
+	)
+	if err != nil {
 		slog.ErrorContext(
 			ctx.Request().Context(),
 			"could not authenticate user",
@@ -76,25 +77,21 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		}
 
 		return authentication.LoginForm(csrf.Token(ctx.Request()), false, errors).
-			Render(views.ExtractRenderDeps(ctx))
+			Render(extractRenderDeps(ctx))
 	}
 
-	// _, err = a.authService.NewUserSession(
-	// 	ctx.Request(),
-	// 	ctx.Response(),
-	// 	user.ID,
-	// )
-	// if err != nil {
-	// 	return err
-	// }
+	if err := createAuthSession(ctx, true, authedUser); err != nil {
+		slog.Error("could not create auth sess", "e", err)
+		internalError(ctx)
+	}
 
 	return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
-		Render(views.ExtractRenderDeps(ctx))
+		Render(extractRenderDeps(ctx))
 }
 
 func (a *Authentication) CreatePasswordReset(ctx echo.Context) error {
 	return authentication.ForgottenPasswordPage(csrf.Token(ctx.Request())).
-		Render(views.ExtractRenderDeps(ctx))
+		Render(extractRenderDeps(ctx))
 }
 
 type StorePasswordResetPayload struct {
@@ -108,7 +105,7 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 			CsrfToken:     csrf.Token(ctx.Request()),
 			InternalError: true,
 		}).
-			Render(views.ExtractRenderDeps(ctx))
+			Render(extractRenderDeps(ctx))
 	}
 
 	// user, err := a.db.QueryUserByEmail(ctx.Request().Context(), payload.Email)
@@ -143,7 +140,7 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		CsrfToken: csrf.Token(ctx.Request()),
 		Success:   true,
 	}).
-		Render(views.ExtractRenderDeps(ctx))
+		Render(extractRenderDeps(ctx))
 }
 
 type PasswordResetTokenPayload struct {
@@ -154,11 +151,11 @@ func (a *Authentication) CreateResetPassword(ctx echo.Context) error {
 	var passwordResetToken PasswordResetTokenPayload
 	if err := ctx.Bind(&passwordResetToken); err != nil {
 		return authentication.ResetPasswordPage(false, true, csrf.Token(ctx.Request()), "").
-			Render(views.ExtractRenderDeps(ctx))
+			Render(extractRenderDeps(ctx))
 	}
 
 	return authentication.ResetPasswordPage(false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
-		Render(views.ExtractRenderDeps(ctx))
+		Render(extractRenderDeps(ctx))
 }
 
 type ResetPasswordPayload struct {
@@ -171,7 +168,7 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return authentication.ResetPasswordPage(false, true, "", "").
-			Render(views.ExtractRenderDeps(ctx))
+			Render(extractRenderDeps(ctx))
 	}
 
 	if err := a.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
@@ -236,5 +233,5 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	}
 
 	return authentication.ResetPasswordForm(authentication.ResetPasswordFormProps{}).
-		Render(views.ExtractRenderDeps(ctx))
+		Render(extractRenderDeps(ctx))
 }
