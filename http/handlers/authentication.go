@@ -50,8 +50,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			err,
 		)
 
-		return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
-			Render(extractRenderDeps(ctx))
+		return internalError(ctx)
 	}
 
 	authedUser, err := a.authService.AuthenticateUser(
@@ -81,7 +80,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 	}
 
 	if err := createAuthSession(ctx, true, authedUser); err != nil {
-		internalError(ctx)
+		return internalError(ctx)
 	}
 
 	return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
@@ -100,11 +99,7 @@ type StorePasswordResetPayload struct {
 func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-			CsrfToken:     csrf.Token(ctx.Request()),
-			InternalError: true,
-		}).
-			Render(extractRenderDeps(ctx))
+		return internalError(ctx)
 	}
 
 	// user, err := a.db.QueryUserByEmail(ctx.Request().Context(), payload.Email)
@@ -149,8 +144,7 @@ type PasswordResetTokenPayload struct {
 func (a *Authentication) CreateResetPassword(ctx echo.Context) error {
 	var passwordResetToken PasswordResetTokenPayload
 	if err := ctx.Bind(&passwordResetToken); err != nil {
-		return authentication.ResetPasswordPage(false, true, csrf.Token(ctx.Request()), "").
-			Render(extractRenderDeps(ctx))
+		return internalError(ctx)
 	}
 
 	return authentication.ResetPasswordPage(false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
@@ -166,12 +160,11 @@ type ResetPasswordPayload struct {
 func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.ResetPasswordPage(false, true, "", "").
-			Render(extractRenderDeps(ctx))
+		return internalError(ctx)
 	}
 
 	if err := a.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
-		return err
+		return internalError(ctx)
 	}
 
 	// userID, err := a.tknService.GetAssociatedUserID(

@@ -17,6 +17,7 @@ import (
 	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
+	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/contexts"
 )
 
@@ -101,10 +102,8 @@ func redirect(
 }
 
 func internalError(ctx echo.Context) error {
-	return ctx.HTML(
-		http.StatusOK,
-		"<h2>An unrecoverable error occurred. Please click <a href='/'>here</a></h2>",
-	)
+	// ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+	return views.ErrorPage().Render(extractRenderDeps(ctx))
 }
 
 func createAuthSession(

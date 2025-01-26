@@ -46,12 +46,7 @@ type StoreUserPayload struct {
 func (r *Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
-		props := authentication.RegisterFormProps{
-			InternalError: true,
-			CsrfToken:     csrf.Token(ctx.Request()),
-		}
-		return authentication.RegisterForm(props).
-			Render(extractRenderDeps(ctx))
+		return internalError(ctx)
 	}
 
 	err := r.authSvc.RegisterUser(
@@ -109,9 +104,6 @@ type verificationTokenPayload struct {
 func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 	var payload verificationTokenPayload
 	if err := ctx.Bind(&payload); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/user/create")
-
 		return internalError(ctx)
 	}
 
