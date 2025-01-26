@@ -53,7 +53,7 @@ func setAppCtx(ctx echo.Context) context.Context {
 	)
 }
 
-func extractRenderDeps(ctx echo.Context) (context.Context, io.Writer) {
+func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
@@ -98,13 +98,6 @@ func redirect(
 	url string,
 ) {
 	http.Redirect(w, r, url, http.StatusSeeOther)
-}
-
-func internalError(ctx echo.Context) error {
-	return ctx.HTML(
-		http.StatusOK,
-		"<h2>An unrecoverable error occurred. Please click <a href='/'>here</a></h2>",
-	)
 }
 
 func createAuthSession(

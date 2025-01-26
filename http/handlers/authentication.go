@@ -31,7 +31,7 @@ func newAuthentication(
 func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
 	return authentication.LoginPage(authentication.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
-	}).Render(extractRenderDeps(ctx))
+	}).Render(renderArgs(ctx))
 }
 
 type StoreAuthenticatedSessionPayload struct {
@@ -50,8 +50,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			err,
 		)
 
-		return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
-			Render(extractRenderDeps(ctx))
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	authedUser, err := a.authService.AuthenticateUser(
@@ -77,20 +76,20 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		}
 
 		return authentication.LoginForm(csrf.Token(ctx.Request()), false, errors).
-			Render(extractRenderDeps(ctx))
+			Render(renderArgs(ctx))
 	}
 
 	if err := createAuthSession(ctx, true, authedUser); err != nil {
-		internalError(ctx)
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
-		Render(extractRenderDeps(ctx))
+		Render(renderArgs(ctx))
 }
 
 func (a *Authentication) CreatePasswordReset(ctx echo.Context) error {
 	return authentication.ForgottenPasswordPage(csrf.Token(ctx.Request())).
-		Render(extractRenderDeps(ctx))
+		Render(renderArgs(ctx))
 }
 
 type StorePasswordResetPayload struct {
@@ -100,11 +99,7 @@ type StorePasswordResetPayload struct {
 func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-			CsrfToken:     csrf.Token(ctx.Request()),
-			InternalError: true,
-		}).
-			Render(extractRenderDeps(ctx))
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	// user, err := a.db.QueryUserByEmail(ctx.Request().Context(), payload.Email)
@@ -139,7 +134,7 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		CsrfToken: csrf.Token(ctx.Request()),
 		Success:   true,
 	}).
-		Render(extractRenderDeps(ctx))
+		Render(renderArgs(ctx))
 }
 
 type PasswordResetTokenPayload struct {
@@ -149,12 +144,11 @@ type PasswordResetTokenPayload struct {
 func (a *Authentication) CreateResetPassword(ctx echo.Context) error {
 	var passwordResetToken PasswordResetTokenPayload
 	if err := ctx.Bind(&passwordResetToken); err != nil {
-		return authentication.ResetPasswordPage(false, true, csrf.Token(ctx.Request()), "").
-			Render(extractRenderDeps(ctx))
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	return authentication.ResetPasswordPage(false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
-		Render(extractRenderDeps(ctx))
+		Render(renderArgs(ctx))
 }
 
 type ResetPasswordPayload struct {
@@ -166,12 +160,12 @@ type ResetPasswordPayload struct {
 func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return authentication.ResetPasswordPage(false, true, "", "").
-			Render(extractRenderDeps(ctx))
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if err := a.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
-		return err
+	if err := a.tknService.Validate(
+		ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	// userID, err := a.tknService.GetAssociatedUserID(
@@ -219,11 +213,9 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	// }
 
 	if err := a.tknService.Delete(ctx.Request().Context(), payload.Token); err != nil {
-		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-		ctx.Response().Writer.Header().Add("PreviousLocation", "/login")
-		return internalError(ctx)
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	return authentication.ResetPasswordForm(authentication.ResetPasswordFormProps{}).
-		Render(extractRenderDeps(ctx))
+		Render(renderArgs(ctx))
 }

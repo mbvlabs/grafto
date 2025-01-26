@@ -1,0 +1,66 @@
+package views
+
+import "github.com/mbvlabs/grafto/views/layouts"
+
+type errorPageData struct {
+	link      string
+	linkTitle string
+	title     string
+	msg       string
+}
+
+type errorPageOption func(*errorPageData)
+
+func WithErrPageTitle(title string) errorPageOption {
+	return func(epd *errorPageData) {
+		epd.title = title
+	}
+}
+
+func WithErrPageMsg(msg string) errorPageOption {
+	return func(epd *errorPageData) {
+		epd.msg = msg
+	}
+}
+
+func WithErrPageLink(link string) errorPageOption {
+	return func(epd *errorPageData) {
+		epd.link = link
+	}
+}
+
+func WithErrPageLinkTitle(title string) errorPageOption {
+	return func(epd *errorPageData) {
+		epd.linkTitle = title
+	}
+}
+
+templ errorPage(data errorPageData) {
+	@layouts.Base(Head(ctx)) {
+		<div class="h-full flex-1 bg-base-100 container mx-auto flex justify-center items-center">
+			<div class="w-full md:w-2/5 flex flex-col">
+				<h1 class="text-2xl font-bold text-base-content mb-2">{ data.title }</h1>
+				<p class="text-lg text-base-content">{ data.msg }</p>
+				<div class="flex mt-4 text-lg text-base-content">
+					<p class="mr-2">Please try again, or go back to</p>
+					<a class="font-semibold hover:underline" href={ templ.SafeURL(data.link) }>{ data.linkTitle }.</a>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+func ErrorPage(opts ...errorPageOption) templ.Component {
+	data := &errorPageData{
+		title:     "Oops! Something went wrong on our end",
+		msg:       "Sorry, this is not working correctly. We have registered this error.",
+		link:      "/",
+		linkTitle: "home",
+	}
+
+	for _, opt := range opts {
+		opt(data)
+	}
+
+	return errorPage(*data)
+}
