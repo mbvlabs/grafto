@@ -22,9 +22,9 @@ func newApp(
 }
 
 func (a *App) LandingPage(ctx echo.Context) error {
-	return views.HomePage().Render(extractRenderDeps(ctx))
+	return views.HomePage().Render(renderArgs(ctx))
 }
 
 func (a *App) AboutPage(ctx echo.Context) error {
-	return views.AboutPage().Render(extractRenderDeps(ctx))
+	return views.AboutPage().Render(renderArgs(ctx))
 }

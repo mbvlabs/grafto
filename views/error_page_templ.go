@@ -141,9 +141,9 @@ func errorPage(data errorPageData) templ.Component {
 func ErrorPage(opts ...errorPageOption) templ.Component {
 	data := &errorPageData{
 		title:     "Oops! Something went wrong on our end",
-		msg:       "Sorry this is not working correctly. We have registered this error and are working on fixing it.",
+		msg:       "Sorry, this is not working correctly. We have registered this error.",
 		link:      "/",
-		linkTitle: "our home page",
+		linkTitle: "home",
 	}
 
 	for _, opt := range opts {

@@ -10,6 +10,7 @@ import (
 	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
+	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
 	"github.com/mbvlabs/grafto/views/components"
 )
@@ -33,7 +34,7 @@ func newRegistration(
 func (r *Registration) CreateUser(ctx echo.Context) error {
 	return authentication.RegisterPage(authentication.RegisterFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
-	}).Render(extractRenderDeps(ctx))
+	}).Render(renderArgs(ctx))
 }
 
 type StoreUserPayload struct {
@@ -46,7 +47,7 @@ type StoreUserPayload struct {
 func (r *Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return internalError(ctx)
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	err := r.authSvc.RegisterUser(
@@ -59,13 +60,13 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 	)
 	if err != nil {
 		if errors.Is(err, services.ErrUnrecoverable) {
-			return internalError(ctx)
+			return views.ErrorPage().Render(renderArgs(ctx))
 		}
 
 		if errors.Is(err, models.ErrDomainValidation) {
 			var validationErrors validator.ValidationErrors
 			if ok := errors.As(err, &validationErrors); !ok {
-				return internalError(ctx)
+				return views.ErrorPage().Render(renderArgs(ctx))
 			}
 
 			fields := make(
@@ -85,7 +86,7 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 				CsrfToken:       csrf.Token(ctx.Request()),
 			}
 			return authentication.RegisterForm(props).
-				Render(extractRenderDeps(ctx))
+				Render(renderArgs(ctx))
 		}
 	}
 
@@ -94,7 +95,7 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		CsrfToken:       csrf.Token(ctx.Request()),
 	}
 	return authentication.RegisterForm(props).
-		Render(extractRenderDeps(ctx))
+		Render(renderArgs(ctx))
 }
 
 type verificationTokenPayload struct {
@@ -104,7 +105,7 @@ type verificationTokenPayload struct {
 func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 	var payload verificationTokenPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return internalError(ctx)
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
 	if err := r.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeEmailVerification); err != nil {
@@ -114,7 +115,7 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 				Writer.Header().
 				Add("PreviousLocation", "/user/create")
 
-			return internalError(ctx)
+			return views.ErrorPage().Render(renderArgs(ctx))
 		}
 	}
 
@@ -152,5 +153,5 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 	// }
 
 	return authentication.VerifyEmailPage(false).
-		Render(extractRenderDeps(ctx))
+		Render(renderArgs(ctx))
 }

@@ -17,7 +17,6 @@ import (
 	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
-	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/contexts"
 )
 
@@ -54,7 +53,7 @@ func setAppCtx(ctx echo.Context) context.Context {
 	)
 }
 
-func extractRenderDeps(ctx echo.Context) (context.Context, io.Writer) {
+func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
@@ -99,11 +98,6 @@ func redirect(
 	url string,
 ) {
 	http.Redirect(w, r, url, http.StatusSeeOther)
-}
-
-func internalError(ctx echo.Context) error {
-	// ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-	return views.ErrorPage().Render(extractRenderDeps(ctx))
 }
 
 func createAuthSession(
