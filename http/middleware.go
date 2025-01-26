@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/http/handlers"
-	"github.com/mbvlabs/grafto/views"
+	"github.com/mbvlabs/grafto/views/contexts"
 )
 
 func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
@@ -40,16 +40,22 @@ func RegisterAppContext(
 		userEmail, _ := sess.Values[handlers.SessUserEmail].(string)
 		isAdmin, _ := sess.Values[handlers.SessIsAdmin].(bool)
 
-		ac := &views.AppContext{
+		routes := c.Echo().Routes()
+		ac := &contexts.App{
 			Context:         c,
 			UserID:          userID,
 			Email:           userEmail,
 			IsAuthenticated: isAuth,
 			IsAdmin:         isAdmin,
 			CurrentPath:     c.Request().URL.Path,
+			Routes:          make(map[string]string, len(routes)),
 		}
 
-		c.Set(views.AppContextKey{}.Value(), ac)
+		for _, r := range routes {
+			ac.Routes[r.Name] = r.Path
+		}
+
+		c.Set(string(contexts.AppKey{}.String()), ac)
 
 		return next(c)
 	}

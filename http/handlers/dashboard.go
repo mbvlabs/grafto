@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/views"
+	"github.com/mbvlabs/grafto/views/dashboard"
 )
 
 type Dashboard struct{}
@@ -12,5 +12,5 @@ func newDashboard() Dashboard {
 }
 
 func (d *Dashboard) Index(ctx echo.Context) error {
-	return views.DashboardPage().Render(extractRenderDeps(ctx))
+	return dashboard.Home().Render(extractRenderDeps(ctx))
 }

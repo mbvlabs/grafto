@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/internal/layouts"
+	"github.com/mbvlabs/grafto/views/layouts"
 )
 
 func VerifyEmailPage(tokenInvalid bool) templ.Component {
@@ -67,7 +67,12 @@ func VerifyEmailPage(tokenInvalid bool) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layouts.Base(views.Head{}.Default().Build()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layouts.Base(
+			views.Head(
+				ctx,
+				views.WithTitle("Verify Email"),
+			),
+		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -10,8 +10,8 @@ import (
 	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
-	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
+	"github.com/mbvlabs/grafto/views/components"
 )
 
 type Registration struct {
@@ -74,11 +74,11 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 			}
 
 			fields := make(
-				map[string]views.InputFieldProps,
+				map[string]components.InputFieldProps,
 				len(validationErrors),
 			)
 			for _, validationError := range validationErrors {
-				fields[validationError.StructField()] = views.InputFieldProps{
+				fields[validationError.StructField()] = components.InputFieldProps{
 					Value:     validationError.Value().(string),
 					ErrorMsgs: []string{validationError.Error()},
 				}

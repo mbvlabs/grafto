@@ -17,7 +17,7 @@ import (
 	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
-	"github.com/mbvlabs/grafto/views"
+	"github.com/mbvlabs/grafto/views/contexts"
 )
 
 var AuthenticatedSessionName = fmt.Sprintf(
@@ -43,8 +43,8 @@ type Handlers struct {
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
-	appCtxKey := views.AppContextKey{}.Value()
-	appCtx := ctx.Get(appCtxKey)
+	appCtxKey := contexts.AppKey{}
+	appCtx := ctx.Get(appCtxKey.String())
 
 	return context.WithValue(
 		ctx.Request().Context(),
