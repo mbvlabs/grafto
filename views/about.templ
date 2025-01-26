@@ -1,0 +1,11 @@
+package views
+
+import "github.com/mbvlabs/grafto/views/layouts"
+
+const AboutPageRoute = "about"
+
+templ AboutPage() {
+	@layouts.Base(Head(ctx)) {
+		<main class="container mx-auto my-auto">About</main>
+	}
+}
