@@ -49,10 +49,10 @@ type Token struct {
 func NewTokenSvc(
 	db psql.Postgres,
 	tokenSigningKey string,
-) *Token {
+) Token {
 	h := hmac.New(sha256.New, []byte(tokenSigningKey))
 
-	return &Token{
+	return Token{
 		db,
 		h,
 	}
@@ -275,7 +275,10 @@ func (svc *Token) IsExpired(ctx context.Context, token string) error {
 	return nil
 }
 
-func (svc *Token) GetAssociatedUserID(ctx context.Context, token string) (uuid.UUID, error) {
+func (svc *Token) GetAssociatedUserID(
+	ctx context.Context,
+	token string,
+) (uuid.UUID, error) {
 	// tkn, err := svc.storage.QueryTokenByHash(ctx, svc.hash(token))
 	// if err != nil {
 	// 	return uuid.UUID{}, err

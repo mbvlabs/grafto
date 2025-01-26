@@ -2,14 +2,18 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/controllers"
-	"github.com/mbvlabs/grafto/server/middleware"
+	"github.com/mbvlabs/grafto/http"
+	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/views/paths"
 )
 
-func dashboardRoutes(router *echo.Echo, ctrl controllers.Dashboard, mw middleware.Middleware) {
+func dashboardRoutes(
+	router *echo.Echo,
+	ctrl handlers.Dashboard,
+) {
 	dashboardRouter := router.Group("/dashboard")
 
 	dashboardRouter.GET("", func(c echo.Context) error {
 		return ctrl.Index(c)
-	}, mw.AuthOnly)
+	}, http.AuthOnly).Name = paths.DashboardHomePage
 }

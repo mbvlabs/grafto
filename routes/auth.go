@@ -2,30 +2,32 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/views/paths"
 )
 
 func authRoutes(
 	router *echo.Echo,
-	controllers controllers.Authentication,
+	handlers handlers.Authentication,
 ) {
 	router.GET("/login", func(c echo.Context) error {
-		return controllers.CreateAuthenticatedSession(c)
-	})
+		return handlers.CreateAuthenticatedSession(c)
+	}).Name = paths.LoginPage
 	router.POST("/login", func(c echo.Context) error {
-		return controllers.StoreAuthenticatedSession(c)
-	})
+		return handlers.StoreAuthenticatedSession(c)
+	}).Name = paths.Login
 
 	router.GET("/forgot-password", func(c echo.Context) error {
-		return controllers.CreatePasswordReset(c)
-	})
+		return handlers.CreatePasswordReset(c)
+	}).Name = paths.ForgotPasswordPage
 	router.POST("/forgot-password", func(c echo.Context) error {
-		return controllers.StorePasswordReset(c)
-	})
+		return handlers.StorePasswordReset(c)
+	}).Name = paths.ForgotPassword
+
 	router.GET("/reset-password", func(c echo.Context) error {
-		return controllers.CreateResetPassword(c)
-	})
+		return handlers.CreateResetPassword(c)
+	}).Name = paths.ResetPasswordPage
 	router.POST("/reset-password", func(c echo.Context) error {
-		return controllers.StoreResetPassword(c)
-	})
+		return handlers.StoreResetPassword(c)
+	}).Name = paths.ResetPassword
 }

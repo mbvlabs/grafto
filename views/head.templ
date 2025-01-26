@@ -1,71 +1,128 @@
 package views
 
-type MetaContent struct {
-	Content  string
-	Name     string
-	Property string
+import (
+	"context"
+	"fmt"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/views/contexts"
+)
+
+type metaContent struct {
+	content  string
+	name     string
+	property string
 }
 
-type Head struct {
-	Title       string
-	Description string
-	Image       string
-	Slug        string
-	MetaType    string
-	ExtraMeta   []MetaContent
+type headData struct {
+	title       string
+	description string
+	image       string
+	slug        string
+	metaType    string
+	extraMeta   []metaContent
 }
 
-func (h Head) Default() Head {
-	h.Title = "Grafto"
-	h.Description = "A starter template for building indie projects with Go, Htmx and tailwind"
-	h.Slug = "http://0.0.0.0:8000/"
-	h.MetaType = "website"
+type headDataOption func(*headData)
 
-	return h
+func WithTitle(title string) headDataOption {
+	return func(hd *headData) {
+		hd.title = fmt.Sprintf("%s | %s", title, hd.title)
+	}
 }
 
-templ (h Head) Build() {
+func WithDescription(description string) headDataOption {
+	return func(hd *headData) {
+		hd.description = description
+	}
+}
+
+func WithImage(image string) headDataOption {
+	return func(hd *headData) {
+		hd.image = image
+	}
+}
+
+func WithSlug(slug string) headDataOption {
+	return func(hd *headData) {
+		hd.slug = slug
+	}
+}
+
+func WithMetaType(metaType string) headDataOption {
+	return func(hd *headData) {
+		hd.metaType = metaType
+	}
+}
+
+func WithExtraMeta(content, name, property string) headDataOption {
+	return func(hd *headData) {
+		hd.extraMeta = append(hd.extraMeta, metaContent{
+			content:  content,
+			name:     name,
+			property: property,
+		})
+	}
+}
+
+func Head(ctx context.Context, opts ...headDataOption) templ.Component {
+	slug := config.Cfg.GetFullDomain()
+	appCtx := contexts.ExtractApp(ctx)
+	if appCtx.CurrentPath != "" {
+		slug = slug + appCtx.CurrentPath
+	}
+
+	data := &headData{
+		title:       config.Cfg.ProjectName,
+		description: "A starter template for building one-man businesses using Golang.",
+		slug:        slug,
+		metaType:    "website",
+	}
+
+	for _, opt := range opts {
+		opt(data)
+	}
+
+	return head(*data)
+}
+
+templ head(data headData) {
 	<head>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<meta name="twitter:card" content="summary_large_image"/>
 		<meta name="twitter:creator" content="@mbvlabs"/>
 		<title>
-			if h.Title == "" {
-				Grafto
-			} else {
-				{ h.Title } | Grafto
-			}
+			{ data.title }
 		</title>
 		<link href="/static/css/main-dev.css" rel="stylesheet"/>
 		<link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png"/>
 		<link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png"/>
 		<link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png"/>
-		<meta property="og:type" content={ h.MetaType }/>
-		<meta property="og:title" content={ h.Title }/>
-		<meta property="og:description" content={ h.Description }/>
-		<meta property="og:url" content={ h.Slug }/>
+		<meta property="og:type" content={ data.metaType }/>
+		<meta property="og:title" content={ data.title }/>
+		<meta property="og:description" content={ data.description }/>
+		<meta property="og:url" content={ data.slug }/>
 		<meta property="og:site_name" content="Grafto"/>
-		if h.Image != "" {
-			<meta property="og:image" content={ h.Image }/>
+		if data.image != "" {
+			<meta property="og:image" content={ data.image }/>
 		}
-		for _, extraMeta := range h.ExtraMeta {
+		for _, extraMeta := range data.extraMeta {
 			<meta
-				if extraMeta.Name != "" {
-					name={ extraMeta.Name }
+				if extraMeta.name != "" {
+					name={ extraMeta.name }
 				}
-				if extraMeta.Property != "" {
-					property={ extraMeta.Property }
+				if extraMeta.property != "" {
+					property={ extraMeta.property }
 				}
-				if extraMeta.Content != "" {
-					content={ extraMeta.Content }
+				if extraMeta.content != "" {
+					content={ extraMeta.content }
 				}
 			/>
 		}
-		<meta name="description" content={ h.Description }/>
+		<meta name="description" content={ data.description }/>
 		<link
 			rel="canonical"
-			href={ h.Slug }
+			href={ data.slug }
 		/>
 	</head>
 }

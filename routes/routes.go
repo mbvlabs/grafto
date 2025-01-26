@@ -9,8 +9,8 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/controllers"
-	"github.com/mbvlabs/grafto/server/middleware"
+	"github.com/mbvlabs/grafto/http"
+	"github.com/mbvlabs/grafto/http/handlers"
 	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
 
@@ -18,22 +18,12 @@ import (
 )
 
 type Routes struct {
-	router               *echo.Echo
-	appHandlers          controllers.App
-	dashboardHandlers    controllers.Dashboard
-	authHandlers         controllers.Authentication
-	registrationHandlers controllers.Registration
-	apiHandlers          controllers.Api
-	middleware           middleware.Middleware
+	router   *echo.Echo
+	handlers handlers.Handlers
 }
 
 func NewRoutes(
-	appControllers controllers.App,
-	dashboardControllers controllers.Dashboard,
-	authControllers controllers.Authentication,
-	registrationControllers controllers.Registration,
-	apiControllers controllers.Api,
-	mw middleware.Middleware,
+	handlers handlers.Handlers,
 	riverUI *riverui.Server,
 ) *Routes {
 	router := echo.New()
@@ -54,8 +44,12 @@ func NewRoutes(
 	}
 	router.Static("/static", "static")
 
-	router.Use(session.Middleware(sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey))))
-	router.Use(mw.RegisterAppContext)
+	router.Use(
+		session.Middleware(
+			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
+		),
+	)
+	router.Use(http.RegisterAppContext)
 
 	slogechoCfg := slogecho.Config{
 		WithRequestID: false,
@@ -68,30 +62,25 @@ func NewRoutes(
 	router.Use(slogecho.NewWithConfig(slog.Default(), slogechoCfg))
 	router.Use(echomw.Recover())
 
-	router.Any("/river*", echo.WrapHandler(riverUI), mw.AuthOnly)
+	router.Any("/river*", echo.WrapHandler(riverUI), http.AuthOnly)
 
 	return &Routes{
 		router,
-		appControllers,
-		dashboardControllers,
-		authControllers,
-		registrationControllers,
-		apiControllers,
-		mw,
+		handlers,
 	}
 }
 
 func (r *Routes) web() {
 	resourceRoutes(r.router)
-	authRoutes(r.router, r.authHandlers)
-	dashboardRoutes(r.router, r.dashboardHandlers, r.middleware)
-	appRoutes(r.router, r.appHandlers)
-	registrationRoutes(r.router, r.registrationHandlers)
+	authRoutes(r.router, r.handlers.Authentication)
+	dashboardRoutes(r.router, r.handlers.Dashboard)
+	appRoutes(r.router, r.handlers.App)
+	registrationRoutes(r.router, r.handlers.Registration)
 }
 
 func (r *Routes) api() {
 	apiV1Router := r.router.Group("/api/v1")
-	apiV1Routes(apiV1Router, r.apiHandlers)
+	apiV1Routes(apiV1Router, r.handlers.Api)
 }
 
 func (r *Routes) SetupRoutes() *echo.Echo {

@@ -10,15 +10,14 @@ import (
 
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/http"
+	"github.com/mbvlabs/grafto/http/handlers"
 	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/pkg/telemetry"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/queue"
 	"github.com/mbvlabs/grafto/queue/workers"
 	"github.com/mbvlabs/grafto/routes"
-	"github.com/mbvlabs/grafto/server"
-	mw "github.com/mbvlabs/grafto/server/middleware"
 	"github.com/mbvlabs/grafto/services"
 	"riverqueue.com/riverui"
 )
@@ -40,7 +39,11 @@ func run(ctx context.Context) error {
 
 	// appTracer := otel.NewTracer("app/tracer")
 
-	client := telemetry.NewTelemetry(cfg, appRelease, strings.ToLower(cfg.ProjectName))
+	client := telemetry.NewTelemetry(
+		cfg,
+		appRelease,
+		strings.ToLower(cfg.ProjectName),
+	)
 	if client != nil {
 		defer client.Stop()
 	}
@@ -56,7 +59,11 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	riverClient := queue.NewClient(conn, queue.WithLogger(slog.Default()), queue.WithWorkers(queueWorkers))
+	riverClient := queue.NewClient(
+		conn,
+		queue.WithLogger(slog.Default()),
+		queue.WithWorkers(queueWorkers),
+	)
 	psql := psql.NewPostgres(conn, riverClient)
 
 	opts := &riverui.ServerOpts{
@@ -92,37 +99,22 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	appHandlers := controllers.NewApp(psql, pageCacher)
-	dashboardHandlers := controllers.NewDashboard()
-	registrationHandlers := controllers.NewRegistration(
-		authSvc,
+	handlers := handlers.NewHandlers(
 		psql,
-		*tokenService,
+		pageCacher,
+		authSvc,
+		tokenService,
 		emailClient,
 	)
-	apiHandlers := controllers.NewApi()
-	authenticationHandlers := controllers.NewAuthentication(
-		authSvc,
-		psql,
-		*tokenService,
-		emailClient,
-	)
-
-	middleware := mw.NewMiddleware()
 
 	routes := routes.NewRoutes(
-		appHandlers,
-		dashboardHandlers,
-		authenticationHandlers,
-		registrationHandlers,
-		apiHandlers,
-		middleware,
+		handlers,
 		riverUI,
 	)
 
 	router := routes.SetupRoutes()
 
-	server := server.NewServer(ctx, router)
+	server := http.NewServer(ctx, router)
 
 	return server.Start(ctx)
 }

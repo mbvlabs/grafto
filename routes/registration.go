@@ -2,21 +2,22 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/views/paths"
 )
 
 func registrationRoutes(
 	router *echo.Echo,
-	controllers controllers.Registration,
+	handlers handlers.Registration,
 ) {
 	router.GET("/register", func(c echo.Context) error {
-		return controllers.CreateUser(c)
-	})
+		return handlers.CreateUser(c)
+	}).Name = paths.RegisterPage
 	router.POST("/register", func(c echo.Context) error {
-		return controllers.StoreUser(c)
-	})
+		return handlers.StoreUser(c)
+	}).Name = paths.RegisterUser
 
 	router.GET("/verify-email", func(c echo.Context) error {
-		return controllers.VerifyUserEmail(c)
-	})
+		return handlers.VerifyUserEmail(c)
+	}).Name = paths.VerifyEmailPage
 }

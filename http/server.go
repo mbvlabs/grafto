@@ -1,4 +1,4 @@
-package server
+package http
 
 import (
 	"context"
@@ -13,14 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"golang.org/x/sync/errgroup"
-)
-
-const (
-	AuthenticatedSessionName = "grafto-ua"
-	SessIsAuthName           = "is_authenticated"
-	SessUserID               = "user_id"
-	SessUserEmail            = "user_email"
-	SessIsAdmin              = "is_admin"
 )
 
 type Server struct {
@@ -42,7 +34,8 @@ func NewServer(
 		Handler: func(handler http.Handler) http.Handler {
 			return http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
-					if strings.HasPrefix(r.URL.Path, "/api") || strings.HasPrefix(r.URL.Path, "/river") {
+					if strings.HasPrefix(r.URL.Path, "/api") ||
+						strings.HasPrefix(r.URL.Path, "/river") {
 
 						handler.ServeHTTP(w, r)
 						return
@@ -90,7 +83,10 @@ func (s *Server) Start(ctx context.Context) error {
 	<-egCtx.Done()
 	slog.Info("initiating graceful shutdown")
 
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(
+		context.Background(),
+		10*time.Second,
+	)
 	defer cancel()
 
 	if err := s.srv.Shutdown(shutdownCtx); err != nil {

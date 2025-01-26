@@ -2,11 +2,16 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/views/paths"
 )
 
-func appRoutes(router *echo.Echo, ctrl controllers.App) {
+func appRoutes(router *echo.Echo, handlers handlers.App) {
 	router.GET("/", func(c echo.Context) error {
-		return ctrl.LandingPage(c)
-	})
+		return handlers.LandingPage(c)
+	}).Name = paths.HomePage
+
+	router.GET("/about", func(c echo.Context) error {
+		return handlers.AboutPage(c)
+	}).Name = paths.AboutPage
 }

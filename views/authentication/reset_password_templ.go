@@ -10,11 +10,12 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/internal/layouts"
+	"github.com/mbvlabs/grafto/views/components"
+	"github.com/mbvlabs/grafto/views/layouts"
 )
 
 type ResetPasswordFormProps struct {
-	Fields     map[string]views.InputFieldProps
+	Fields     map[string]components.InputFieldProps
 	CsrfToken  string
 	ResetToken string
 	Errors     views.Errors
@@ -48,7 +49,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(props.CsrfToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 22, Col: 74}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 23, Col: 74}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -61,7 +62,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(props.ResetToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 23, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/reset_password.templ`, Line: 24, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -71,7 +72,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = views.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"required": true, "minLength": "8"}, props.Fields[PasswordField]).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"required": true, "minLength": "8"}, props.Fields[PasswordField]).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -79,7 +80,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = views.InputField("Confirm Password", "password", "confirm_password", "Repeat your password", templ.Attributes{"required": true, "minLength": "8"}, props.Fields[PasswordField]).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.InputField("Confirm Password", "password", "confirm_password", "Repeat your password", templ.Attributes{"required": true, "minLength": "8"}, props.Fields[PasswordField]).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -170,7 +171,7 @@ func ResetPasswordPage(invalidToken, internalErr bool, csrfToken, resetToken str
 						}()
 					}
 					ctx = templ.InitializeContext(ctx)
-					templ_7745c5c3_Err = views.InfoFlag("Your token is no longer valid; Please request a new one.").Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = components.InfoFlag("Your token is no longer valid; Please request a new one.").Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -194,7 +195,7 @@ func ResetPasswordPage(invalidToken, internalErr bool, csrfToken, resetToken str
 						}()
 					}
 					ctx = templ.InitializeContext(ctx)
-					templ_7745c5c3_Err = views.ErrorFlag("An error occured we could not recover from.").Render(ctx, templ_7745c5c3_Buffer)
+					templ_7745c5c3_Err = components.ErrorFlag("An error occured we could not recover from.").Render(ctx, templ_7745c5c3_Buffer)
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -218,7 +219,12 @@ func ResetPasswordPage(invalidToken, internalErr bool, csrfToken, resetToken str
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layouts.Base(views.Head{}.Default().Build()).Render(templ.WithChildren(ctx, templ_7745c5c3_Var6), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layouts.Base(
+			views.Head(
+				ctx,
+				views.WithTitle("Reset Password"),
+			),
+		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var6), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
