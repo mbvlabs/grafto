@@ -1,3 +1,6 @@
+-- name: QueryFirstUser :one
+select * from users order by created_at asc limit 1;
+
 -- name: QueryUserByID :one
 select * from users where id=$1;
 
@@ -28,3 +31,11 @@ update users set updated_at=$2, password=$3 where id=$1;
 
 -- name: VerifyUserEmail :exec
 update users set updated_at=$2, email_verified_at=$3 where email=$1;
+
+-- name: UpdateUserIsAdmin :one
+UPDATE users 
+SET 
+    is_admin = $2,
+    updated_at = $3
+WHERE id = $1
+RETURNING *;

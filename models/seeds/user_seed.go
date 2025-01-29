@@ -1,7 +1,6 @@
 package seeds
 
 import (
-	"context"
 	"math/rand"
 	"time"
 
@@ -11,121 +10,134 @@ import (
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/internal/db"
 	"github.com/mbvlabs/grafto/services"
+	"golang.org/x/net/context"
 )
 
-type UserSeed struct {
-	entities []models.UserEntity
+type userSeedData struct {
+	ID              uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	Email           string
+	EmailVerifiedAt time.Time
+	IsAdmin         bool
 }
 
-type UserSeedBuilder struct {
-	seed *UserSeed
-}
+type userSeedOption func(*userSeedData)
 
-var (
-	_ Seed                                   = (*UserSeed)(nil)
-	_ SeedBuilder[UserSeedBuilder, UserSeed] = (*UserSeedBuilder)(nil)
-)
-
-func NewUserSeedBuilder() *UserSeedBuilder {
-	return &UserSeedBuilder{
-		seed: &UserSeed{
-			entities: make([]models.UserEntity, 0),
-		},
+func WithUserID(id uuid.UUID) userSeedOption {
+	return func(usd *userSeedData) {
+		usd.ID = id
 	}
 }
 
-func (b *UserSeedBuilder) WithRandoms(n int) *UserSeedBuilder {
-	for i := 0; i < n; i++ {
-		trueOrFalse := rand.Float32() < 0.5
-		var emailVerifiedAt time.Time
-		if trueOrFalse {
-			emailVerifiedAt = time.Now()
-		}
-
-		b.seed.entities = append(b.seed.entities, models.UserEntity{
-			ID:              uuid.New(),
-			CreatedAt:       time.Now().Add(time.Minute * time.Duration(i)),
-			UpdatedAt:       time.Now().Add(time.Minute * time.Duration(i)),
-			Email:           faker.Email(),
-			EmailVerifiedAt: emailVerifiedAt,
-			IsAdmin:         trueOrFalse,
-		})
+func WithUserCreatedAt(createdAt time.Time) userSeedOption {
+	return func(usd *userSeedData) {
+		usd.CreatedAt = createdAt
 	}
-	return b
 }
 
-// WithUser adds a specific user to the seed
-func (b *UserSeedBuilder) WithSpecific(data map[string]any) *UserSeedBuilder {
-	entity := models.UserEntity{
+func WithUserUpdatedAt(updatedAt time.Time) userSeedOption {
+	return func(usd *userSeedData) {
+		usd.UpdatedAt = updatedAt
+	}
+}
+
+func WithUserEmail(email string) userSeedOption {
+	return func(usd *userSeedData) {
+		usd.Email = email
+	}
+}
+
+func WithUserEmailVerifiedAt(emailVerifiedAt time.Time) userSeedOption {
+	return func(usd *userSeedData) {
+		usd.EmailVerifiedAt = emailVerifiedAt
+	}
+}
+
+func WithUserIsAdmin(isAdmin bool) userSeedOption {
+	return func(usd *userSeedData) {
+		usd.IsAdmin = isAdmin
+	}
+}
+
+func (s Seeder) PlantUser(
+	ctx context.Context,
+	opts ...userSeedOption,
+) (models.UserEntity, error) {
+	trueOrFalse := rand.Float32() < 0.5
+	var emailVerifiedAt time.Time
+	if trueOrFalse {
+		emailVerifiedAt = time.Now()
+	}
+
+	data := &userSeedData{
 		ID:              uuid.New(),
-		CreatedAt:       time.Now().Add(time.Minute * time.Duration(1)),
-		UpdatedAt:       time.Now().Add(time.Minute * time.Duration(2)),
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
 		Email:           faker.Email(),
-		EmailVerifiedAt: time.Now(),
-		IsAdmin:         false,
-	}
-	for k, v := range data {
-		switch k {
-		case "ID":
-			entity.ID = v.(uuid.UUID)
-		case "CreatedAt":
-			entity.CreatedAt = v.(time.Time)
-		case "UpdatedAt":
-			entity.UpdatedAt = v.(time.Time)
-		case "Email":
-			entity.Email = v.(string)
-		case "EmailVerifiedAt":
-			entity.EmailVerifiedAt = v.(time.Time)
-		case "IsAdmin":
-			entity.IsAdmin = v.(bool)
-		}
+		EmailVerifiedAt: emailVerifiedAt,
+		IsAdmin:         trueOrFalse,
 	}
 
-	b.seed.entities = append(b.seed.entities, entity)
-	return b
-}
+	for _, opt := range opts {
+		opt(data)
+	}
 
-// Build returns the final UserSeed
-func (b *UserSeedBuilder) Build() *UserSeed {
-	return b.seed
-}
-
-// Generate implements the Seeder interface
-func (s *UserSeed) Generate(ctx context.Context, dbtx db.DBTX) error {
-	hashedBytes, err := services.HashAndPepperPassword("password")
+	user, err := models.NewUser(ctx, models.NewUserPayload{
+		Email:           data.Email,
+		Password:        "password",
+		ConfirmPassword: "password",
+	}, s.dbtx, services.HashAndPepperPassword)
 	if err != nil {
-		return err
+		return models.UserEntity{}, err
 	}
 
-	for _, user := range s.entities {
-		_, err := db.Stmts.InsertUser(ctx, dbtx, db.InsertUserParams{
-			ID:        user.ID,
-			CreatedAt: pgtype.Timestamptz{Time: user.CreatedAt, Valid: true},
-			UpdatedAt: pgtype.Timestamptz{Time: user.UpdatedAt, Valid: true},
-			Email:     user.Email,
-			Password:  string(hashedBytes),
-			IsAdmin:   user.IsAdmin,
-		})
+	if !data.EmailVerifiedAt.IsZero() {
+		if err := db.Stmts.VerifyUserEmail(ctx, s.dbtx, db.VerifyUserEmailParams{
+			Email: data.Email,
+			UpdatedAt: pgtype.Timestamptz{
+				Time:  data.UpdatedAt,
+				Valid: true,
+			},
+			EmailVerifiedAt: pgtype.Timestamptz{
+				Time:  data.EmailVerifiedAt,
+				Valid: true,
+			},
+		}); err != nil {
+			return models.UserEntity{}, err
+		}
+	}
+
+	if data.IsAdmin {
+		if _, err := db.Stmts.UpdateUserIsAdmin(ctx, s.dbtx, db.UpdateUserIsAdminParams{
+			ID:      user.ID,
+			IsAdmin: data.IsAdmin,
+			UpdatedAt: pgtype.Timestamptz{
+				Time:  data.UpdatedAt,
+				Valid: true,
+			},
+		}); err != nil {
+			return models.UserEntity{}, err
+		}
+	}
+
+	return user, nil
+}
+
+func (s Seeder) PlantUsers(
+	ctx context.Context,
+	amount int,
+) ([]models.UserEntity, error) {
+	users := make([]models.UserEntity, amount)
+
+	for i := range amount {
+		usr, err := s.PlantUser(ctx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		if !user.EmailVerifiedAt.IsZero() {
-			if err := db.Stmts.VerifyUserEmail(ctx, dbtx, db.VerifyUserEmailParams{
-				Email: user.Email,
-				UpdatedAt: pgtype.Timestamptz{
-					Time:  user.UpdatedAt,
-					Valid: true,
-				},
-				EmailVerifiedAt: pgtype.Timestamptz{
-					Time:  user.EmailVerifiedAt,
-					Valid: true,
-				},
-			}); err != nil {
-				return err
-			}
-		}
+		users[i] = usr
 	}
 
-	return nil
+	return users, nil
 }

@@ -49,7 +49,11 @@ type NewUserPayload struct {
 	ConfirmPassword string `validate:"required,gte=6"`
 }
 
-func GetUser(ctx context.Context, id uuid.UUID, dbtx db.DBTX) (UserEntity, error) {
+func GetUser(
+	ctx context.Context,
+	id uuid.UUID,
+	dbtx db.DBTX,
+) (UserEntity, error) {
 	usr, err := db.Stmts.QueryUserByID(ctx, dbtx, id)
 	if err != nil {
 		return UserEntity{}, err
@@ -163,4 +167,50 @@ func UpdateUserPassword(
 	}
 
 	return q(ctx, data.ID, data.Password, data.UpdatedAt)
+}
+
+type MakeUserAdminPayload struct {
+	UserID    uuid.UUID `validate:"required,uuid"`
+	UpdatedAt time.Time `validate:"required"`
+	ActorID   uuid.UUID `validate:"required,uuid"`
+}
+
+func MakeUserAdmin(
+	ctx context.Context,
+	data MakeUserAdminPayload,
+	dbtx db.DBTX,
+) (UserEntity, error) {
+	if err := validate.Struct(data); err != nil {
+		return UserEntity{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	actor, err := GetUser(ctx, data.ActorID, dbtx)
+	if err != nil {
+		return UserEntity{}, err
+	}
+	if !actor.IsAdmin {
+		return UserEntity{}, ErrMustBeAdmin
+	}
+
+	user, err := db.Stmts.UpdateUserIsAdmin(
+		ctx,
+		dbtx,
+		db.UpdateUserIsAdminParams{
+			ID:        data.UserID,
+			IsAdmin:   true,
+			UpdatedAt: pgtype.Timestamptz{Time: data.UpdatedAt, Valid: true},
+		},
+	)
+	if err != nil {
+		return UserEntity{}, err
+	}
+
+	return UserEntity{
+		ID:              user.ID,
+		CreatedAt:       user.CreatedAt.Time,
+		UpdatedAt:       user.UpdatedAt.Time,
+		Email:           user.Email,
+		EmailVerifiedAt: user.EmailVerifiedAt.Time,
+		IsAdmin:         true,
+	}, nil
 }
