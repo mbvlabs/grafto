@@ -3,29 +3,24 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/emails"
 	"github.com/mbvlabs/grafto/models"
-	emailClient "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Auth struct {
-	db    psql.Postgres
-	email emailClient.EmailClient
+	db psql.Postgres
 }
 
 func NewAuth(
 	db psql.Postgres,
-	email emailClient.EmailClient,
 ) Auth {
-	return Auth{db, email}
+	return Auth{db}
 }
 
 // TODO: maybe this should be moved
@@ -80,48 +75,34 @@ func (a Auth) AuthenticateUser(
 	return user, nil
 }
 
-func (a Auth) RegisterUser(
-	ctx context.Context,
-	name string,
-	email string,
-	password string,
-	confirmPassword string,
-) error {
-	tx, err := a.db.BeginTx(ctx)
-	if err != nil {
-		return errors.Join(ErrUnrecoverable, err)
-	}
-
-	user, err := models.NewUser(ctx, models.NewUserPayload{
-		Email:    email,
-		Password: password,
-	}, tx, HashAndPepperPassword)
-	if err != nil {
-		if !errors.Is(err, models.ErrDomainValidation) {
-			return errors.Join(ErrUnrecoverable, err)
-		}
-
-		return err
-	}
-
-	html, text, err := emails.SignupWelcome{
-		ConfirmationLink: fmt.Sprintf(
-			"%s/verify-email?token=%s",
-			config.Cfg.GetFullDomain(),
-			"",
-		),
-	}.Generate(ctx)
-	if err != nil {
-		return err
-	}
-
-	if err := a.email.Send(ctx, user.Email, config.Cfg.DefaultSenderSignature, "Grafto | Action Required", html.String(), text.String()); err != nil {
-		return errors.Join(ErrUnrecoverable, err)
-	}
-
-	return nil
-}
-
+// func (a Auth) RegisterUser(
+//
+//	ctx context.Context,
+//	name string,
+//	email string,
+//	password string,
+//	confirmPassword string,
+//
+//	) error {
+//		tx, err := a.db.BeginTx(ctx)
+//		if err != nil {
+//			return errors.Join(ErrUnrecoverable, err)
+//		}
+//
+//		user, err := models.NewUser(ctx, models.NewUserPayload{
+//			Email:    email,
+//			Password: password,
+//		}, tx, HashAndPepperPassword)
+//		if err != nil {
+//			if !errors.Is(err, models.ErrDomainValidation) {
+//				return errors.Join(ErrUnrecoverable, err)
+//			}
+//
+//			return err
+//		}
+//
+//		return nil
+//	}
 func (a Auth) VerifyUserEmail(
 	ctx context.Context,
 	token string,
