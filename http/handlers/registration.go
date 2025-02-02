@@ -1,34 +1,26 @@
 package handlers
 
 import (
-	"errors"
-
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/models"
-	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
-	"github.com/mbvlabs/grafto/views/components"
 )
 
 type Registration struct {
-	authSvc     services.Auth
-	db          psql.Postgres
-	tknService  services.Token
-	emailClient emails.EmailClient
+	authSvc  services.Auth
+	db       psql.Postgres
+	emailSvc services.Email
 }
 
 func newRegistration(
 	authSvc services.Auth,
 	db psql.Postgres,
-	tknService services.Token,
-	emailClient emails.EmailClient,
+	emailSvc services.Email,
 ) Registration {
-	return Registration{authSvc, db, tknService, emailClient}
+	return Registration{authSvc, db, emailSvc}
 }
 
 func (r *Registration) CreateUser(ctx echo.Context) error {
@@ -50,45 +42,45 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	err := r.authSvc.RegisterUser(
-		ctx.Request().
-			Context(),
-		payload.UserName,
-		payload.Email,
-		payload.Password,
-		payload.ConfirmPassword,
-	)
-	if err != nil {
-		if errors.Is(err, services.ErrUnrecoverable) {
-			return views.ErrorPage().Render(renderArgs(ctx))
-		}
-
-		if errors.Is(err, models.ErrDomainValidation) {
-			var validationErrors validator.ValidationErrors
-			if ok := errors.As(err, &validationErrors); !ok {
-				return views.ErrorPage().Render(renderArgs(ctx))
-			}
-
-			fields := make(
-				map[string]components.InputFieldProps,
-				len(validationErrors),
-			)
-			for _, validationError := range validationErrors {
-				fields[validationError.StructField()] = components.InputFieldProps{
-					Value:     validationError.Value().(string),
-					ErrorMsgs: []string{validationError.Error()},
-				}
-			}
-
-			props := authentication.RegisterFormProps{
-				SuccessRegister: false,
-				Fields:          fields,
-				CsrfToken:       csrf.Token(ctx.Request()),
-			}
-			return authentication.RegisterForm(props).
-				Render(renderArgs(ctx))
-		}
-	}
+	// err := r.authSvc.RegisterUser(
+	// 	ctx.Request().
+	// 		Context(),
+	// 	payload.UserName,
+	// 	payload.Email,
+	// 	payload.Password,
+	// 	payload.ConfirmPassword,
+	// )
+	// if err != nil {
+	// 	if errors.Is(err, services.ErrUnrecoverable) {
+	// 		return views.ErrorPage().Render(renderArgs(ctx))
+	// 	}
+	//
+	// 	if errors.Is(err, models.ErrDomainValidation) {
+	// 		var validationErrors validator.ValidationErrors
+	// 		if ok := errors.As(err, &validationErrors); !ok {
+	// 			return views.ErrorPage().Render(renderArgs(ctx))
+	// 		}
+	//
+	// 		fields := make(
+	// 			map[string]components.InputFieldProps,
+	// 			len(validationErrors),
+	// 		)
+	// 		for _, validationError := range validationErrors {
+	// 			fields[validationError.StructField()] = components.InputFieldProps{
+	// 				Value:     validationError.Value().(string),
+	// 				ErrorMsgs: []string{validationError.Error()},
+	// 			}
+	// 		}
+	//
+	// 		props := authentication.RegisterFormProps{
+	// 			SuccessRegister: false,
+	// 			Fields:          fields,
+	// 			CsrfToken:       csrf.Token(ctx.Request()),
+	// 		}
+	// 		return authentication.RegisterForm(props).
+	// 			Render(renderArgs(ctx))
+	// 	}
+	// }
 
 	props := authentication.RegisterFormProps{
 		SuccessRegister: true,
@@ -108,16 +100,16 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if err := r.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeEmailVerification); err != nil {
-		if err := ctx.Bind(&payload); err != nil {
-			ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-			ctx.Response().
-				Writer.Header().
-				Add("PreviousLocation", "/user/create")
-
-			return views.ErrorPage().Render(renderArgs(ctx))
-		}
-	}
+	// if err := r.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeEmailVerification); err != nil {
+	// 	if err := ctx.Bind(&payload); err != nil {
+	// 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
+	// 		ctx.Response().
+	// 			Writer.Header().
+	// 			Add("PreviousLocation", "/user/create")
+	//
+	// 		return views.ErrorPage().Render(renderArgs(ctx))
+	// 	}
+	// }
 
 	// userID, err := r.tknService.GetAssociatedUserID(
 	// 	ctx.Request().Context(),

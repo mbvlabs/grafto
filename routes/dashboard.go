@@ -15,5 +15,5 @@ func dashboardRoutes(
 
 	dashboardRouter.GET("", func(c echo.Context) error {
 		return ctrl.Index(c)
-	}, http.AuthOnly).Name = paths.DashboardHomePage
+	}, http.AuthOnly).Name = paths.DashboardHomePage.Name()
 }

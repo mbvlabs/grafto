@@ -20,7 +20,6 @@ type App struct {
 	IsAuthenticated bool
 	IsAdmin         bool
 	CurrentPath     string
-	Routes          map[string]string
 }
 
 func ExtractApp(ctx context.Context) *App {

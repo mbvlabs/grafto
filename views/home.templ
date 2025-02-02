@@ -2,12 +2,6 @@ package views
 
 import "github.com/mbvlabs/grafto/views/layouts"
 
-const HomePageRoute = "home"
-
-templ CsrfToken(token string) {
-	<input type="hidden" name="gorilla.csrf.Token" value={ token }/>
-}
-
 templ loadCsrfToken() {
 	<span hx-get="/load-csrf" hx-target="this" hx-trigger="load" hx-swap="outerHTML"></span>
 }

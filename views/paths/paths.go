@@ -4,28 +4,43 @@ import (
 	"context"
 
 	"github.com/a-h/templ"
-	"github.com/mbvlabs/grafto/views/contexts"
 )
 
-const (
-	HomePage           = "homePage"
-	AboutPage          = "aboutPage"
-	LoginPage          = "loginPage"
-	Login              = "login"
-	ForgotPasswordPage = "forgotPasswordPage"
-	ForgotPassword     = "forgotPassword"
-	ResetPasswordPage  = "resetPasswordPage"
-	ResetPassword      = "resetPassword"
-	DashboardHomePage  = "dashbordHomePage"
-	RegisterPage       = "registerPage"
-	RegisterUser       = "registerUser"
-	VerifyEmailPage    = "verifyEmailPage"
-)
+type Route string
 
-func Get(ctx context.Context, name string) string {
-	return contexts.ExtractApp(ctx).Routes[name]
+func (r Route) Name() string {
+	return string(r)
 }
 
-func GetSafeURL(ctx context.Context, name string) templ.SafeURL {
-	return templ.SafeURL(contexts.ExtractApp(ctx).Routes[name])
+const (
+	HomePage               Route = "homePage"
+	AboutPage              Route = "aboutPage"
+	LoginPage              Route = "loginPage"
+	Login                  Route = "login"
+	ForgotPasswordPage     Route = "forgotPasswordPage"
+	ForgotPassword         Route = "forgotPassword"
+	ResetPasswordPage      Route = "resetPasswordPage"
+	ResetPassword          Route = "resetPassword"
+	RegisterPage           Route = "registerPage"
+	RegisterUser           Route = "registerUser"
+	VerifyEmailPage        Route = "verifyEmailPage"
+	ArticlePage            Route = "articlePage"
+	ArticlesPage           Route = "articlesPage"
+	ProjectsPage           Route = "projectsPage"
+	NewslettersPage        Route = "newslettersPage"
+	SubscribeEvent         Route = "subscribeEvent"
+	VerifySubEvent         Route = "verifySubEvent"
+	UnsubscribeEvent       Route = "unsubscribeEvent"
+	DashboardHomePage      Route = "dashbordHomePage"
+	DashboardNewsletter    Route = "dashboardNewsletter"
+	DashboardNewsletterNew Route = "dashboardNewsletterNew"
+)
+
+func Get(ctx context.Context, route Route) string {
+	return ctx.Value(route).(string)
+	// return contexts.ExtractApp(ctx).Routes[string(route)]
+}
+
+func GetSafeURL(ctx context.Context, route Route) templ.SafeURL {
+	return templ.SafeURL(Get(ctx, route))
 }

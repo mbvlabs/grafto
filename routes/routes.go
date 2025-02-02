@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"log/slog"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/http"
 	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/views/paths"
 	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
 
@@ -38,7 +40,12 @@ func NewRoutes(
 			},
 		}))
 		router.Use(
-			echoprometheus.NewMiddleware(config.Cfg.ProjectName),
+			echoprometheus.NewMiddleware(
+				strings.Join(
+					strings.Fields(strings.ToLower(config.Cfg.ProjectName)),
+					"_",
+				),
+			),
 		)
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
@@ -83,9 +90,15 @@ func (r *Routes) api() {
 	apiV1Routes(apiV1Router, r.handlers.Api)
 }
 
-func (r *Routes) SetupRoutes() *echo.Echo {
+func (r *Routes) SetupRoutes(
+	ctx context.Context,
+) (*echo.Echo, context.Context) {
 	r.web()
 	r.api()
 
-	return r.router
+	for _, route := range r.router.Routes() {
+		ctx = context.WithValue(ctx, paths.Route(route.Name), route.Path)
+	}
+
+	return r.router, ctx
 }

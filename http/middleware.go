@@ -40,7 +40,6 @@ func RegisterAppContext(
 		userEmail, _ := sess.Values[handlers.SessUserEmail].(string)
 		isAdmin, _ := sess.Values[handlers.SessIsAdmin].(bool)
 
-		routes := c.Echo().Routes()
 		ac := &contexts.App{
 			Context:         c,
 			UserID:          userID,
@@ -48,11 +47,6 @@ func RegisterAppContext(
 			IsAuthenticated: isAuth,
 			IsAdmin:         isAdmin,
 			CurrentPath:     c.Request().URL.Path,
-			Routes:          make(map[string]string, len(routes)),
-		}
-
-		for _, r := range routes {
-			ac.Routes[r.Name] = r.Path
 		}
 
 		c.Set(string(contexts.AppKey{}.String()), ac)

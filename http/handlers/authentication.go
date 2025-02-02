@@ -5,7 +5,6 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
@@ -15,17 +14,15 @@ import (
 type Authentication struct {
 	authService services.Auth
 	db          psql.Postgres
-	tknService  services.Token
-	emailClient emails.EmailClient
+	emailSvc    services.Email
 }
 
 func newAuthentication(
 	authSvc services.Auth,
 	db psql.Postgres,
-	tknService services.Token,
-	emailClient emails.EmailClient,
+	emailSvc services.Email,
 ) Authentication {
-	return Authentication{authSvc, db, tknService, emailClient}
+	return Authentication{authSvc, db, emailSvc}
 }
 
 func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
@@ -163,10 +160,10 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if err := a.tknService.Validate(
-		ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
+	// if err := a.tknService.Validate(
+	// 	ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
+	// 	return views.ErrorPage().Render(renderArgs(ctx))
+	// }
 
 	// userID, err := a.tknService.GetAssociatedUserID(
 	// 	ctx.Request().Context(),
@@ -212,9 +209,9 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 	// 	return a.InternalError(ctx)
 	// }
 
-	if err := a.tknService.Delete(ctx.Request().Context(), payload.Token); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
+	// if err := a.tknService.Delete(ctx.Request().Context(), payload.Token); err != nil {
+	// 	return views.ErrorPage().Render(renderArgs(ctx))
+	// }
 
 	return authentication.ResetPasswordForm(authentication.ResetPasswordFormProps{}).
 		Render(renderArgs(ctx))

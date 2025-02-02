@@ -12,12 +12,12 @@ func registrationRoutes(
 ) {
 	router.GET("/register", func(c echo.Context) error {
 		return handlers.CreateUser(c)
-	}).Name = paths.RegisterPage
+	}).Name = paths.RegisterPage.Name()
 	router.POST("/register", func(c echo.Context) error {
 		return handlers.StoreUser(c)
-	}).Name = paths.RegisterUser
+	}).Name = paths.RegisterUser.Name()
 
 	router.GET("/verify-email", func(c echo.Context) error {
 		return handlers.VerifyUserEmail(c)
-	}).Name = paths.VerifyEmailPage
+	}).Name = paths.VerifyEmailPage.Name()
 }

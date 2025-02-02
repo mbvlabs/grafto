@@ -102,7 +102,7 @@ templ head(data headData) {
 		<meta property="og:title" content={ data.title }/>
 		<meta property="og:description" content={ data.description }/>
 		<meta property="og:url" content={ data.slug }/>
-		<meta property="og:site_name" content="Grafto"/>
+		<meta property="og:site_name" content={ data.title }/>
 		if data.image != "" {
 			<meta property="og:image" content={ data.image }/>
 		}

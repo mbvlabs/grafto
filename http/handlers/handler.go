@@ -14,7 +14,6 @@ import (
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/models"
-	emails "github.com/mbvlabs/grafto/pkg/email_client"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views/contexts"
@@ -61,16 +60,15 @@ func NewHandlers(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, string],
 	authSvc services.Auth,
-	tknSvc services.Token,
-	email emails.EmailClient,
+	emailSvc services.Email,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 
 	api := newApi()
 	app := newApp(db, cache)
-	auth := newAuthentication(authSvc, db, tknSvc, email)
+	auth := newAuthentication(authSvc, db, emailSvc)
 	dashboard := newDashboard()
-	registration := newRegistration(authSvc, db, tknSvc, email)
+	registration := newRegistration(authSvc, db, emailSvc)
 
 	return Handlers{
 		api,
