@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: http://0.0.0.0:8000/sitemap.xml
