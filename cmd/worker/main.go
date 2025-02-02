@@ -11,11 +11,10 @@ import (
 	"time"
 
 	"github.com/mbvlabs/grafto/config"
-	emails "github.com/mbvlabs/grafto/pkg/email_client"
-	"github.com/mbvlabs/grafto/pkg/telemetry"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/queue"
 	"github.com/mbvlabs/grafto/queue/workers"
+	"github.com/mbvlabs/grafto/services"
 	"github.com/riverqueue/river"
 )
 
@@ -25,44 +24,31 @@ func main() {
 	ctx := context.Background()
 	cfg := config.NewConfig()
 
-	// otel := telemetry.NewOtel(cfg)
-	// defer func() {
-	// 	if err := otel.Shutdown(); err != nil {
-	// 		panic(err)
-	// 	}
-	// }()
-	//
-	// workerTracer := otel.NewTracer("worker/tracer")
-
-	client := telemetry.NewTelemetry(cfg, appRelease, "grafto-worker")
-	if client != nil {
-		defer client.Stop()
-	}
-
-	awsSES := emails.NewSESClient()
-	emailClient := emails.NewEmail(awsSES)
+	emailSvc := services.NewEmail()
 
 	conn, err := psql.CreatePooledConnection(
-		context.Background(),
+		ctx,
 		cfg.GetDatabaseURL(),
 	)
 	if err != nil {
 		panic(err)
 	}
-	// db := psql.New(conn)
+	db := psql.NewPostgres(conn, nil)
 
 	jobStarted := make(chan struct{})
 
 	workers, err := workers.SetupWorkers(workers.WorkerDependencies{
-		// DB:      db,
-		Emailer: emailClient,
-		// Tracer:  nil,
+		DB:       db.Pool,
+		EmailSvc: emailSvc,
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	q := map[string]river.QueueConfig{river.QueueDefault: {MaxWorkers: 5}, "high": {MaxWorkers: 100}}
+	q := map[string]river.QueueConfig{
+		river.QueueDefault: {MaxWorkers: 5},
+		"high":             {MaxWorkers: 100},
+	}
 	riverClient := queue.NewClient(
 		conn,
 		queue.WithQueues(q),

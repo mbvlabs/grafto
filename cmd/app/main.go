@@ -6,14 +6,13 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"strings"
+	"time"
 
+	"github.com/lmittmann/tint"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/http"
 	"github.com/mbvlabs/grafto/http/handlers"
-	emails "github.com/mbvlabs/grafto/pkg/email_client"
-	"github.com/mbvlabs/grafto/pkg/telemetry"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/queue"
 	"github.com/mbvlabs/grafto/queue/workers"
@@ -24,28 +23,35 @@ import (
 
 var appRelease string
 
+func developmentLogger() *slog.Logger {
+	return slog.New(
+		tint.NewHandler(os.Stderr, &tint.Options{
+			Level:      slog.LevelDebug,
+			TimeFormat: time.Kitchen,
+		}),
+	)
+}
+
+func productionLogger() *slog.Logger {
+	return slog.New(
+		tint.NewHandler(os.Stderr, &tint.Options{
+			Level:      slog.LevelError,
+			TimeFormat: time.Kitchen,
+		}),
+	)
+}
+
 func run(ctx context.Context) error {
 	cfg := config.NewConfig()
 
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	otel := telemetry.NewOtel()
-	defer func() {
-		if err := otel.Shutdown(); err != nil {
-			panic(err)
-		}
-	}()
-
-	// appTracer := otel.NewTracer("app/tracer")
-
-	client := telemetry.NewTelemetry(
-		cfg,
-		appRelease,
-		strings.ToLower(cfg.ProjectName),
-	)
-	if client != nil {
-		defer client.Stop()
+	if cfg.Environment == config.DEV_ENVIRONMENT {
+		slog.SetDefault(developmentLogger())
+	}
+	if cfg.Environment == config.PROD_ENVIRONMENT {
+		slog.SetDefault(productionLogger())
 	}
 
 	conn, err := psql.CreatePooledConnection(
@@ -78,16 +84,14 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	// Start the server to initialize background processes for caching and periodic queries:
 	if err := riverUI.Start(ctx); err != nil {
 		return err
 	}
 
-	awsSES := emails.NewSESClient()
-	emailClient := emails.NewEmail(awsSES)
-
-	authSvc := services.NewAuth(psql, emailClient)
-	tokenService := services.NewTokenSvc(psql, cfg.TokenSigningKey)
+	authSvc := services.NewAuth(psql)
+	emailSvc := services.NewEmail()
 
 	cacheBuilder, err := otter.NewBuilder[string, string](20)
 	if err != nil {
@@ -103,8 +107,7 @@ func run(ctx context.Context) error {
 		psql,
 		pageCacher,
 		authSvc,
-		tokenService,
-		emailClient,
+		emailSvc,
 	)
 
 	routes := routes.NewRoutes(
@@ -112,11 +115,14 @@ func run(ctx context.Context) error {
 		riverUI,
 	)
 
-	router := routes.SetupRoutes()
+	router, c := routes.SetupRoutes(ctx)
 
-	server := http.NewServer(ctx, router)
+	server := http.NewServer(c, router)
 
-	return server.Start(ctx)
+	if err := riverClient.Start(ctx); err != nil {
+		return err
+	}
+	return server.Start(c)
 }
 
 func main() {
