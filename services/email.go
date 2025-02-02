@@ -1,4 +1,4 @@
-package emailclient
+package services
 
 import (
 	"context"
@@ -9,22 +9,53 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/mbvlabs/grafto/config"
 )
 
-type AwsSimpleEmailService struct {
-	client  *ses.SES
-	sender  string
-	charSet string
+type EmailPayload struct {
+	To       string
+	From     string
+	Subject  string
+	HtmlBody string
+	TextBody string
 }
 
-// SendEmail implements mailClient.
-func (a AwsSimpleEmailService) send(
+const (
+	charSet   = "UTF-8"
+	awsRegion = "eu-central-1"
+)
+
+var defaultSender = config.Cfg.DefaultSenderSignature
+
+type Email struct {
+	client *ses.SES
+}
+
+func NewEmail() Email {
+	creds := credentials.NewEnvCredentials()
+	conf := &aws.Config{
+		Region:      aws.String(awsRegion),
+		Credentials: creds,
+	}
+	sess, err := session.NewSession(conf)
+	if err != nil {
+		panic(err)
+	}
+
+	ses := ses.New(sess)
+
+	return Email{
+		ses,
+	}
+}
+
+func (m *Email) Send(
 	ctx context.Context,
 	payload EmailPayload,
 ) error {
 	from := payload.From
 	if payload.From == "" {
-		from = a.sender
+		from = defaultSender
 	}
 	// Assemble the email.
 	input := &ses.SendEmailInput{
@@ -37,32 +68,38 @@ func (a AwsSimpleEmailService) send(
 		Message: &ses.Message{
 			Body: &ses.Body{
 				Html: &ses.Content{
-					Charset: aws.String(a.charSet),
+					Charset: aws.String(charSet),
 					Data:    aws.String(payload.HtmlBody),
 				},
 				Text: &ses.Content{
-					Charset: aws.String(a.charSet),
+					Charset: aws.String(charSet),
 					Data:    aws.String(payload.TextBody),
 				},
 			},
 			Subject: &ses.Content{
-				Charset: aws.String(a.charSet),
+				Charset: aws.String(charSet),
 				Data:    aws.String(payload.Subject),
 			},
 		},
 		Source: aws.String(from),
 	}
 
-	_, err := a.client.SendEmail(input)
+	_, err := m.client.SendEmail(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case ses.ErrCodeMessageRejected:
 				fmt.Println(ses.ErrCodeMessageRejected, aerr.Error())
 			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				fmt.Println(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
+				fmt.Println(
+					ses.ErrCodeMailFromDomainNotVerifiedException,
+					aerr.Error(),
+				)
 			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				fmt.Println(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
+				fmt.Println(
+					ses.ErrCodeConfigurationSetDoesNotExistException,
+					aerr.Error(),
+				)
 			default:
 				fmt.Println(aerr.Error())
 			}
@@ -77,27 +114,3 @@ func (a AwsSimpleEmailService) send(
 
 	return nil
 }
-
-func NewSESClient() AwsSimpleEmailService {
-	creds := credentials.NewEnvCredentials()
-	conf := &aws.Config{
-		Region:      aws.String("eu-central-1"),
-		Credentials: creds,
-	}
-	sess, err := session.NewSession(conf)
-	if err != nil {
-		panic(err)
-	}
-
-	sender := "nopreply@grafto.com"
-	charSet := "UTF-8"
-
-	svc := ses.New(sess)
-	return AwsSimpleEmailService{
-		svc,
-		sender,
-		charSet,
-	}
-}
-
-var _ emailer = (*AwsSimpleEmailService)(nil)

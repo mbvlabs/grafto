@@ -27,9 +27,7 @@ RUN templ generate
 
 COPY --from=build-resources static/css static/css
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X 'main.$APP_RELEASE'" -mod=readonly -v -o app cmd/app/main.go
-
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X 'main.$APP_RELEASE'" -mod=readonly -v -o worker cmd/worker/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.version=$APP_RELEASE" -mod=readonly -v -o app cmd/app/main.go
 
 FROM scratch
 
@@ -37,8 +35,7 @@ WORKDIR /
 
 COPY --from=build-go /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build-go app app
-COPY --from=build-go worker worker
 COPY --from=build-go static static 
 COPY --from=build-go resources/seo resources/seo
 
-CMD ["app", "worker"]
+CMD ["./app"]
