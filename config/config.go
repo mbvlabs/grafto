@@ -9,7 +9,6 @@ type Config struct {
 	Database
 	Authentication
 	App
-	Telemetry
 	AwsAccessKeyID     string
 	AwsSecretAccessKey string
 }
@@ -28,7 +27,6 @@ func NewConfig() Config {
 		newDatabase(),
 		newAuthentication(),
 		newApp(),
-		newTelemetry(),
 		awsAccessKeyID,
 		awsSecretAccessKey,
 	}
