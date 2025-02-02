@@ -16,8 +16,6 @@ import (
 	"github.com/mbvlabs/grafto/models/internal/db"
 )
 
-var Token TokenEntity
-
 var h = hmac.New(sha256.New, []byte(config.Cfg.TokenSigningKey))
 
 type (
@@ -42,16 +40,17 @@ type MetaInformation struct {
 	Scope      Scope     `validate:"required"`
 }
 
-type TokenEntity struct {
+type Token struct {
 	ID         uuid.UUID
 	CreatedAt  time.Time
 	Expiration time.Time
 	Hash       string
+	Plain      string
 	Meta       MetaInformation
 }
 
-func (te TokenEntity) IsValid() bool {
-	return time.Now().After(te.Expiration)
+func (te Token) IsValid() bool {
+	return time.Now().Before(te.Expiration)
 }
 
 type NewTokenPayload struct {
@@ -63,15 +62,15 @@ func NewToken(
 	ctx context.Context,
 	data NewTokenPayload,
 	dbtx db.DBTX,
-) (TokenEntity, error) {
+) (Token, error) {
 	if err := validate.Struct(data); err != nil {
-		return TokenEntity{}, errors.Join(ErrDomainValidation, err)
+		return Token{}, errors.Join(ErrDomainValidation, err)
 	}
 
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
 	if err != nil {
-		return TokenEntity{}, err
+		return Token{}, err
 	}
 
 	plainText := base64.URLEncoding.EncodeToString(b)
@@ -81,17 +80,19 @@ func NewToken(
 
 	hash := base64.URLEncoding.EncodeToString(bytes)
 
-	tkn := TokenEntity{
-		uuid.New(),
-		time.Now(),
-		data.Expiration,
-		hash,
-		data.Meta,
+	now := time.Now()
+	tkn := Token{
+		ID:         uuid.New(),
+		CreatedAt:  now,
+		Expiration: data.Expiration,
+		Hash:       hash,
+		Plain:      plainText,
+		Meta:       data.Meta,
 	}
 
 	metaData, err := json.Marshal(data.Meta)
 	if err != nil {
-		return TokenEntity{}, err
+		return Token{}, err
 	}
 
 	_, err = db.Stmts.InsertToken(ctx, dbtx, db.InsertTokenParams{
@@ -102,13 +103,13 @@ func NewToken(
 		},
 		Hash: hash,
 		ExpiresAt: pgtype.Timestamptz{
-			Time:  tkn.CreatedAt,
+			Time:  tkn.Expiration,
 			Valid: true,
 		},
 		MetaInformation: metaData,
 	})
 	if err != nil {
-		return TokenEntity{}, err
+		return Token{}, err
 	}
 
 	return tkn, nil
@@ -118,22 +119,35 @@ func GetToken(
 	ctx context.Context,
 	token string,
 	dbtx db.DBTX,
-) (TokenEntity, error) {
+) (Token, error) {
 	tkn, err := db.Stmts.QueryTokenByHash(ctx, dbtx, token)
 	if err != nil {
-		return TokenEntity{}, err
+		return Token{}, err
 	}
 
 	var meta MetaInformation
 	if err := json.Unmarshal(tkn.MetaInformation, &meta); err != nil {
-		return TokenEntity{}, err
+		return Token{}, err
 	}
 
-	return TokenEntity{
+	return Token{
 		ID:         tkn.ID,
 		CreatedAt:  tkn.CreatedAt.Time,
 		Expiration: tkn.ExpiresAt.Time,
 		Hash:       tkn.Hash,
 		Meta:       meta,
 	}, nil
+}
+
+func DeleteToken(
+	ctx context.Context,
+	tokenID uuid.UUID,
+	dbtx db.DBTX,
+) error {
+	err := db.Stmts.DeleteToken(ctx, dbtx, tokenID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
