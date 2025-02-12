@@ -1,0 +1,59 @@
+//go:build integration
+// +build integration
+
+package handlers_test
+
+import (
+	"context"
+	"testing"
+
+	"github.com/a-h/templ"
+	"github.com/labstack/echo/v4"
+	"github.com/maypok86/otter"
+	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/routes"
+	"github.com/mbvlabs/grafto/services"
+	"github.com/stretchr/testify/require"
+)
+
+func setupTestDB(
+	ctx context.Context,
+	t *testing.T,
+) (psql.Postgres, func(), func()) {
+	testPsql, err := psql.NewPostgresTest(ctx)
+	require.NoError(t, err)
+
+	err = testPsql.Psql.Pool.Ping(ctx)
+	require.NoError(t, err)
+
+	stopEmbedded := func() {
+		err := testPsql.EmbeddedPsql.Stop()
+		require.NoError(t, err)
+	}
+
+	return testPsql.Psql, testPsql.CleanupFunc, stopEmbedded
+}
+
+func setupTestHandlers(
+	postgres psql.Postgres,
+	t *testing.T,
+) handlers.Handlers {
+	emailSvc := services.NewEmail()
+
+	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
+	require.NoError(t, err)
+
+	pageCacher, err := cacheBuilder.WithVariableTTL().Build()
+	require.NoError(t, err)
+
+	return handlers.NewHandlers(postgres, pageCacher, emailSvc)
+}
+
+func setupTestRouter(
+	ctx context.Context,
+	handlers handlers.Handlers,
+) (*echo.Echo, context.Context) {
+	routes := routes.NewRoutes(handlers, nil)
+	return routes.SetupRoutes(ctx)
+}
