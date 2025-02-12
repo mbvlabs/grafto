@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
@@ -10,17 +11,15 @@ import (
 )
 
 type Registration struct {
-	authSvc  services.Auth
 	db       psql.Postgres
 	emailSvc services.Email
 }
 
 func newRegistration(
-	authSvc services.Auth,
 	db psql.Postgres,
 	emailSvc services.Email,
 ) Registration {
-	return Registration{authSvc, db, emailSvc}
+	return Registration{db, emailSvc}
 }
 
 func (r *Registration) CreateUser(ctx echo.Context) error {
@@ -39,6 +38,14 @@ type StoreUserPayload struct {
 func (r *Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
+
+	if _, err := models.NewUser(ctx.Request().Context(), models.NewUserPayload{
+		Email:           payload.Email,
+		Password:        payload.Password,
+		ConfirmPassword: payload.ConfirmPassword,
+	}, r.db.Pool); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 

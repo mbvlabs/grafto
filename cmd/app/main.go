@@ -90,7 +90,6 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	authSvc := services.NewAuth(psql)
 	emailSvc := services.NewEmail()
 
 	cacheBuilder, err := otter.NewBuilder[string, string](20)
@@ -106,7 +105,6 @@ func run(ctx context.Context) error {
 	handlers := handlers.NewHandlers(
 		psql,
 		pageCacher,
-		authSvc,
 		emailSvc,
 	)
 

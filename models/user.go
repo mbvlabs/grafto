@@ -7,7 +7,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/models/internal/db"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserEntity struct {
@@ -17,10 +19,36 @@ type UserEntity struct {
 	Email           string
 	EmailVerifiedAt time.Time
 	IsAdmin         bool
+	HashedPassword  string
 }
 
 func (ue UserEntity) IsVerified() bool {
 	return !ue.EmailVerifiedAt.IsZero()
+}
+
+func (ue UserEntity) ValidatePassword(providedPassword string) error {
+	hashedPassword, err := HashAndPepperPassword(providedPassword)
+	if err != nil {
+		return err
+	}
+
+	return bcrypt.CompareHashAndPassword(
+		[]byte(hashedPassword),
+		[]byte(ue.HashedPassword),
+	)
+}
+
+func HashAndPepperPassword(password string) (string, error) {
+	passwordBytes := []byte(password + config.Cfg.PasswordPepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(
+		passwordBytes,
+		bcrypt.DefaultCost,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return string(hashedBytes), nil
 }
 
 func GetUserByEmail(
@@ -73,7 +101,6 @@ func NewUser(
 	ctx context.Context,
 	data NewUserPayload,
 	dbtx db.DBTX,
-	hash func(password string) (string, error),
 ) (UserEntity, error) {
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
@@ -86,7 +113,7 @@ func NewUser(
 		Email:     data.Email,
 	}
 
-	hashedPassword, err := hash(data.Password)
+	hashedPassword, err := HashAndPepperPassword(data.Password)
 	if err != nil {
 		return UserEntity{}, err
 	}

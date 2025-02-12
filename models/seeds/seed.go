@@ -8,6 +8,6 @@ type Seeder struct {
 	dbtx db.DBTX
 }
 
-func NewSeeder() Seeder {
-	return Seeder{}
+func NewSeeder(dbtx db.DBTX) Seeder {
+	return Seeder{dbtx}
 }

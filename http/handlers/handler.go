@@ -59,16 +59,15 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 func NewHandlers(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, string],
-	authSvc services.Auth,
 	emailSvc services.Email,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 
 	api := newApi()
 	app := newApp(db, cache)
-	auth := newAuthentication(authSvc, db, emailSvc)
+	auth := newAuthentication(db, emailSvc)
 	dashboard := newDashboard()
-	registration := newRegistration(authSvc, db, emailSvc)
+	registration := newRegistration(db, emailSvc)
 
 	return Handlers{
 		api,

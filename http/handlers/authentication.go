@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
@@ -12,17 +13,15 @@ import (
 )
 
 type Authentication struct {
-	authService services.Auth
-	db          psql.Postgres
-	emailSvc    services.Email
+	db       psql.Postgres
+	emailSvc services.Email
 }
 
 func newAuthentication(
-	authSvc services.Auth,
 	db psql.Postgres,
 	emailSvc services.Email,
 ) Authentication {
-	return Authentication{authSvc, db, emailSvc}
+	return Authentication{db, emailSvc}
 }
 
 func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
@@ -50,33 +49,27 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	authedUser, err := a.authService.AuthenticateUser(
+	user, err := models.GetUserByEmail(
 		ctx.Request().Context(),
 		payload.Mail,
-		payload.Password,
+		a.db.Pool,
 	)
 	if err != nil {
-		slog.ErrorContext(
-			ctx.Request().Context(),
-			"could not authenticate user",
-			"error",
-			err,
-		)
-
-		errors := make(views.Errors)
-
-		switch err {
-		case services.ErrPasswordNotMatch, services.ErrUserNotExist:
-			errors[authentication.ErrAuthDetailsWrong] = "The email or password you entered is incorrect."
-		case services.ErrEmailNotValidated:
-			errors[authentication.ErrEmailNotValidated] = "Your email has not yet been verified."
-		}
-
-		return authentication.LoginForm(csrf.Token(ctx.Request()), false, errors).
+		return authentication.LoginForm(csrf.Token(ctx.Request()), false, views.Errors{authentication.ErrEmailNotValidated: "The email or password you entered is incorrect."}).
 			Render(renderArgs(ctx))
 	}
 
-	if err := createAuthSession(ctx, true, authedUser); err != nil {
+	if !user.IsVerified() {
+		return authentication.LoginForm(csrf.Token(ctx.Request()), false, views.Errors{authentication.ErrEmailNotValidated: "Your email has not yet been verified."}).
+			Render(renderArgs(ctx))
+	}
+
+	if err := user.ValidatePassword(payload.Password); err != nil {
+		return authentication.LoginForm(csrf.Token(ctx.Request()), false, views.Errors{authentication.ErrAuthDetailsWrong: "The email or password you entered is incorrect."}).
+			Render(renderArgs(ctx))
+	}
+
+	if err := createAuthSession(ctx, payload.RememberMe == "on", user); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 

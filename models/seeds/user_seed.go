@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/internal/db"
-	"github.com/mbvlabs/grafto/services"
 	"golang.org/x/net/context"
 )
 
@@ -87,7 +86,7 @@ func (s Seeder) PlantUser(
 		Email:           data.Email,
 		Password:        "password",
 		ConfirmPassword: "password",
-	}, s.dbtx, services.HashAndPepperPassword)
+	}, s.dbtx)
 	if err != nil {
 		return models.UserEntity{}, err
 	}
