@@ -11,7 +11,7 @@ func appRoutes(router *echo.Echo, handlers handlers.App) {
 		return handlers.LandingPage(c)
 	}).Name = paths.HomePage.Name()
 
-	router.GET("/about", func(c echo.Context) error {
-		return handlers.AboutPage(c)
-	}).Name = paths.AboutPage.Name()
+	// router.GET("/about", func(c echo.Context) error {
+	// 	return handlers.AboutPage(c)
+	// }).Name = paths.AboutPage.Name()
 }

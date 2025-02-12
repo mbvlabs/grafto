@@ -22,9 +22,19 @@ func newApp(
 }
 
 func (a *App) LandingPage(ctx echo.Context) error {
+	// if value, ok := a.cache.Get(landingPageCacheKey); ok {
+	// 	return views.HomePage(value).Render(renderArgs(ctx))
+	// }
+	//
+	// var sb strings.Builder
+	// if err := views.Home().Render(ctx.Request().Context(), &sb); err != nil {
+	// 	log.Fatalf("failed to render to string: %v", err)
+	// }
+	//
+	// cachedHtml := sb.String()
+	//
+	// if ok := a.cache.Set(landingPageCacheKey, cachedHtml, time.Hour*time.Duration(24)); !ok {
+	// 	return views.HomePage(cachedHtml).Render(renderArgs(ctx))
+	// }
 	return views.HomePage().Render(renderArgs(ctx))
-}
-
-func (a *App) AboutPage(ctx echo.Context) error {
-	return views.AboutPage().Render(renderArgs(ctx))
 }
