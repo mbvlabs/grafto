@@ -54,9 +54,6 @@ func NewRoutes(
 	echo.MustSubFS(static.Files, "static")
 	router.StaticFS("/static", static.Files)
 
-	echo.MustSubFS(static.Files, "static")
-	router.StaticFS("/static", static.Files)
-
 	router.Use(
 		session.Middleware(
 			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
