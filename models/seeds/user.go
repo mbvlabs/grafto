@@ -1,7 +1,6 @@
 package seeds
 
 import (
-	"math/rand"
 	"time"
 
 	"github.com/go-faker/faker/v4"
@@ -63,19 +62,11 @@ func (s Seeder) PlantUser(
 	ctx context.Context,
 	opts ...userSeedOption,
 ) (models.UserEntity, error) {
-	trueOrFalse := rand.Float32() < 0.5
-	var emailVerifiedAt time.Time
-	if trueOrFalse {
-		emailVerifiedAt = time.Now()
-	}
-
 	data := &userSeedData{
-		ID:              uuid.New(),
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
-		Email:           faker.Email(),
-		EmailVerifiedAt: emailVerifiedAt,
-		IsAdmin:         trueOrFalse,
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Email:     faker.Email(),
 	}
 
 	for _, opt := range opts {

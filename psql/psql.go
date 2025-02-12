@@ -10,9 +10,12 @@ import (
 	"log/slog"
 	"math/rand"
 	"net"
+	"os"
 	"time"
 
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
+	"github.com/go-faker/faker/v4"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -113,20 +116,40 @@ func getFreePort() (int, error) {
 	return 0, fmt.Errorf("could not find an available port after 10 attempts")
 }
 
+type TestPostgres struct {
+	Psql         Postgres
+	EmbeddedPsql *embeddedpostgres.EmbeddedPostgres
+	CleanupFunc  func()
+}
+
 func NewPostgresTest(
 	ctx context.Context,
-) (Postgres, *embeddedpostgres.EmbeddedPostgres, error) {
+) (TestPostgres, error) {
 	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		panic("don't NewPostgresTest in production")
 	}
 
 	user := "grafto"
 	password := "grafto"
-	database := "grafto_test"
+	database := fmt.Sprintf("grafto_test_%s", faker.DomainName())
 
 	port, err := getFreePort()
 	if err != nil {
-		return Postgres{}, nil, fmt.Errorf("failed to get free port: %w", err)
+		return TestPostgres{}, fmt.Errorf("failed to get free port: %w", err)
+	}
+
+	runtimePath := fmt.Sprintf("/tmp/psql_%s", uuid.New().String())
+	runtimePathCleanup := func() {
+		slog.Info("REMOVING EMBEDDED PSQL DIR")
+		if err := os.RemoveAll(runtimePath); err != nil {
+			slog.Error(
+				"failed to remove temporary directory",
+				"path",
+				runtimePath,
+				"error",
+				err,
+			)
+		}
 	}
 
 	logger := &bytes.Buffer{}
@@ -137,14 +160,14 @@ func NewPostgresTest(
 			Database(database).
 			Version(embeddedpostgres.V16).
 			Port(uint32(port)).
-			RuntimePath("/tmp/psql").
+			RuntimePath(runtimePath).
 			StartTimeout(45 * time.Second).
 			StartParameters(map[string]string{"max_connections": "200"}).
 			Logger(logger),
 	)
 
 	if err := embeddedPsql.Start(); err != nil {
-		return Postgres{}, nil, err
+		return TestPostgres{}, err
 	}
 
 	pool, err := CreatePooledConnection(
@@ -158,36 +181,40 @@ func NewPostgresTest(
 		),
 	)
 	if err != nil {
-		return Postgres{}, nil, err
+		return TestPostgres{}, err
 	}
 
 	db := stdlib.OpenDBFromPool(pool)
 
 	gooseLock, err := lock.NewPostgresSessionLocker()
 	if err != nil {
-		return Postgres{}, nil, err
+		return TestPostgres{}, err
 	}
 
 	fsys, err := fs.Sub(Migrations, "migrations")
 	if err != nil {
-		return Postgres{}, nil, err
+		return TestPostgres{}, err
 	}
 	gooseProvider, err := goose.NewProvider(
 		goose.DialectPostgres,
 		db,
 		fsys,
-		goose.WithVerbose(true),
+		goose.WithVerbose(false),
 		goose.WithSessionLocker(gooseLock),
 	)
 	if err != nil {
-		return Postgres{}, nil, err
+		return TestPostgres{}, err
 	}
 	_, err = gooseProvider.Up(ctx)
 	if err != nil {
-		return Postgres{}, nil, err
+		return TestPostgres{}, err
 	}
 
-	return Postgres{
-		Pool: pool,
-	}, embeddedPsql, nil
+	return TestPostgres{
+		Psql: Postgres{
+			Pool: pool,
+		},
+		EmbeddedPsql: embeddedPsql,
+		CleanupFunc:  runtimePathCleanup,
+	}, nil
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -58,7 +59,7 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 
 func NewHandlers(
 	db psql.Postgres,
-	cache otter.CacheWithVariableTTL[string, string],
+	cache otter.CacheWithVariableTTL[string, templ.Component],
 	emailSvc services.Email,
 ) Handlers {
 	gob.Register(uuid.UUID{})

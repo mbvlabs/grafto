@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
@@ -29,7 +31,6 @@ func (r *Registration) CreateUser(ctx echo.Context) error {
 }
 
 type StoreUserPayload struct {
-	UserName        string `form:"username"`
 	Email           string `form:"email"`
 	Password        string `form:"password"`
 	ConfirmPassword string `form:"confirm_password"`
@@ -107,50 +108,41 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	// if err := r.tknService.Validate(ctx.Request().Context(), payload.Token, services.ScopeEmailVerification); err != nil {
-	// 	if err := ctx.Bind(&payload); err != nil {
-	// 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-	// 		ctx.Response().
-	// 			Writer.Header().
-	// 			Add("PreviousLocation", "/user/create")
-	//
-	// 		return views.ErrorPage().Render(renderArgs(ctx))
-	// 	}
-	// }
+	token, err := models.GetToken(
+		ctx.Request().Context(),
+		payload.Token,
+		r.db.Pool,
+	)
+	if err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
 
-	// userID, err := r.tknService.GetAssociatedUserID(
-	// 	ctx.Request().Context(),
-	// 	payload.Token,
-	// )
-	// if err != nil {
-	// 	if err := ctx.Bind(&payload); err != nil {
-	// 		ctx.Response().Writer.Header().Add("HX-Redirect", "/500")
-	// 		ctx.Response().
-	// 			Writer.Header().
-	// 			Add("PreviousLocation", "/user/create")
-	//
-	// 		return r.InternalError(ctx)
-	// 	}
-	// }
-	//
-	// user, err := r.db.QueryUserByID(ctx.Request().Context(), userID)
-	// if err != nil {
-	// 	return r.InternalError(ctx)
-	// }
+	if !token.IsValid() || token.Meta.Scope != models.ScopeEmailVerification {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
 
-	// if err := r.userModel.VerifyEmail(ctx.Request().Context(), user.Email); err != nil {
-	// 	return r.InternalError(ctx)
-	// }
-	//
-	// _, err = r.authService.NewUserSession(
-	// 	ctx.Request(),
-	// 	ctx.Response(),
-	// 	user.ID,
-	// )
-	// if err != nil {
-	// 	return r.InternalError(ctx)
-	// }
+	user, err := models.GetUser(
+		ctx.Request().Context(),
+		token.Meta.ResourceID,
+		r.db.Pool,
+	)
+	if err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
 
+	if err := models.UpdateUserEmailToVerified(
+		ctx.Request().Context(),
+		models.UpdateUserEmailToVerifiedPayload{
+			ID:         user.ID,
+			Email:      user.Email,
+			VerifiedAt: time.Now(),
+		},
+		r.db.Pool,
+	); err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
+
+	// TODO: create auth session
 	return authentication.VerifyEmailPage(false).
 		Render(renderArgs(ctx))
 }

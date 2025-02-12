@@ -133,11 +133,9 @@ func NewUser(
 }
 
 type UpdateUserPayload struct {
-	ID             uuid.UUID `validate:"required,uuid"`
-	UpdatedAt      time.Time `validate:"required"`
-	Name           string    `validate:"required,gte=2,lte=25"`
-	Email          string    `validate:"required,email"`
-	EmailUpdatedAt time.Time
+	ID        uuid.UUID `validate:"required,uuid"`
+	UpdatedAt time.Time `validate:"required"`
+	Email     string    `validate:"required,email"`
 }
 
 func UpdateUser(
@@ -145,7 +143,6 @@ func UpdateUser(
 	data UpdateUserPayload,
 	dbtx db.DBTX,
 ) (UserEntity, error) {
-	// validate payload
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
 	}
@@ -188,12 +185,38 @@ func UpdateUserPassword(
 		updatedAt time.Time,
 	) error,
 ) error {
-	// validate payload
 	if err := validate.Struct(data); err != nil {
 		return errors.Join(ErrDomainValidation, err)
 	}
 
 	return q(ctx, data.ID, data.Password, data.UpdatedAt)
+}
+
+type UpdateUserEmailToVerifiedPayload struct {
+	ID         uuid.UUID `validate:"required,uuid"`
+	Email      string    `validate:"required,email"`
+	VerifiedAt time.Time `validate:"required"`
+}
+
+func UpdateUserEmailToVerified(
+	ctx context.Context,
+	data UpdateUserEmailToVerifiedPayload,
+	dbtx db.DBTX,
+) error {
+	if err := validate.Struct(data); err != nil {
+		return errors.Join(ErrDomainValidation, err)
+	}
+
+	time := pgtype.Timestamptz{
+		Time:  data.VerifiedAt,
+		Valid: true,
+	}
+
+	return db.Stmts.VerifyUserEmail(ctx, dbtx, db.VerifyUserEmailParams{
+		Email:           data.Email,
+		UpdatedAt:       time,
+		EmailVerifiedAt: time,
+	})
 }
 
 type MakeUserAdminPayload struct {

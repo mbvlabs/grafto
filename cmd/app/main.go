@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/lmittmann/tint"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
@@ -92,7 +93,7 @@ func run(ctx context.Context) error {
 
 	emailSvc := services.NewEmail()
 
-	cacheBuilder, err := otter.NewBuilder[string, string](20)
+	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
 	if err != nil {
 		return err
 	}
