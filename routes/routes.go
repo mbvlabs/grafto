@@ -12,6 +12,7 @@ import (
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/http"
 	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/static"
 	"github.com/mbvlabs/grafto/views/paths"
 	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
@@ -50,6 +51,9 @@ func NewRoutes(
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
 	router.Static("/static", "static")
+
+	echo.MustSubFS(static.Files, "static")
+	router.StaticFS("/static", static.Files)
 
 	router.Use(
 		session.Middleware(
