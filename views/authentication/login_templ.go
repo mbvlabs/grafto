@@ -158,7 +158,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div><div class=\"my-2 w-full flex items-center justify-between\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text mr-4\">Remember me</span> <input type=\"checkbox\" class=\"checkbox checkbox-primary\"></label></div><a class=\"btn\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div><div class=\"my-2 w-full flex items-center justify-between\"><div class=\"form-control\"><label class=\"label cursor-pointer\"><span class=\"label-text mr-4\">Remember me</span> <input type=\"checkbox\" name=\"remember_me\" class=\"checkbox checkbox-primary\"></label></div><a class=\"btn\" href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
