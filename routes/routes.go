@@ -34,13 +34,14 @@ func NewRoutes(
 
 	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		router.Debug = false
-		router.Use(echomw.GzipWithConfig(echomw.GzipConfig{
-			Level: 5,
-			Skipper: func(c echo.Context) bool {
-				return strings.Contains(c.Path(), "metrics")
-			},
-		}))
 		router.Use(
+			echomw.GzipWithConfig(echomw.GzipConfig{
+				Level: 5,
+				Skipper: func(c echo.Context) bool {
+					return strings.Contains(c.Path(), "metrics")
+				},
+			}),
+
 			echoprometheus.NewMiddleware(
 				strings.Join(
 					strings.Fields(strings.ToLower(config.Cfg.ProjectName)),
@@ -48,18 +49,12 @@ func NewRoutes(
 				),
 			),
 		)
+
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
 
 	echo.MustSubFS(static.Files, "static")
 	router.StaticFS("/static", static.Files)
-
-	router.Use(
-		session.Middleware(
-			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
-		),
-	)
-	router.Use(http.RegisterAppContext)
 
 	slogechoCfg := slogecho.Config{
 		WithRequestID: false,
@@ -69,8 +64,15 @@ func NewRoutes(
 			slogecho.IgnorePathContains("health"),
 		},
 	}
-	router.Use(slogecho.NewWithConfig(slog.Default(), slogechoCfg))
-	router.Use(echomw.Recover())
+
+	router.Use(
+		session.Middleware(
+			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
+		),
+		http.RegisterAppContext,
+		slogecho.NewWithConfig(slog.Default(), slogechoCfg),
+		echomw.Recover(),
+	)
 
 	router.Any("/river*", echo.WrapHandler(riverUI), http.AuthOnly)
 

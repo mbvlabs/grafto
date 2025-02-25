@@ -6,12 +6,14 @@ toolchain go1.23.4
 
 require (
 	github.com/a-h/templ v0.3.833
+	github.com/fergusstrange/embedded-postgres v1.30.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.2.2
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
 	github.com/lmittmann/tint v1.0.1
 	github.com/riverqueue/river v0.14.2
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.2
+	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.20.2
 	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.33.0
@@ -26,15 +28,11 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/deckarep/golang-set/v2 v2.7.0 // indirect
 	github.com/dolthub/maphash v0.1.0 // indirect
-	github.com/fergusstrange/embedded-postgres v1.30.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gammazero/deque v0.2.1 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
@@ -52,7 +50,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.2 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20170122224234-a0225b3f23b5 // indirect
-	github.com/playwright-community/playwright-go v0.4902.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.19.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
@@ -64,7 +61,7 @@ require (
 	github.com/samber/lo v1.44.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect

@@ -7,19 +7,18 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
 )
 
 type Registration struct {
 	db       psql.Postgres
-	emailSvc services.Email
+	emailSvc EmailService
 }
 
 func newRegistration(
 	db psql.Postgres,
-	emailSvc services.Email,
+	emailSvc EmailService,
 ) Registration {
 	return Registration{db, emailSvc}
 }

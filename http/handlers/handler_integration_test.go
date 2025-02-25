@@ -14,6 +14,7 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/routes"
 	"github.com/mbvlabs/grafto/services"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,6 +34,18 @@ func setupTestDB(
 	}
 
 	return testPsql.Psql, testPsql.CleanupFunc, stopEmbedded
+}
+
+type mockedEmailService struct {
+	mock.Mock
+}
+
+func (m *mockedEmailService) Send(
+	ctx context.Context,
+	payload services.EmailPayload,
+) error {
+	args := m.Called(ctx, payload)
+	return args.Error(0)
 }
 
 func setupTestHandlers(

@@ -27,14 +27,9 @@ func (ue UserEntity) IsVerified() bool {
 }
 
 func (ue UserEntity) ValidatePassword(providedPassword string) error {
-	hashedPassword, err := HashAndPepperPassword(providedPassword)
-	if err != nil {
-		return err
-	}
-
 	return bcrypt.CompareHashAndPassword(
-		[]byte(hashedPassword),
 		[]byte(ue.HashedPassword),
+		[]byte(providedPassword+config.Cfg.PasswordPepper),
 	)
 }
 
@@ -66,6 +61,7 @@ func GetUserByEmail(
 		CreatedAt:       user.CreatedAt.Time,
 		UpdatedAt:       user.UpdatedAt.Time,
 		Email:           user.Email,
+		HashedPassword:  user.Password,
 		EmailVerifiedAt: user.EmailVerifiedAt.Time,
 		IsAdmin:         user.IsAdmin,
 	}, nil
@@ -82,17 +78,18 @@ func GetUser(
 	id uuid.UUID,
 	dbtx db.DBTX,
 ) (UserEntity, error) {
-	usr, err := db.Stmts.QueryUserByID(ctx, dbtx, id)
+	row, err := db.Stmts.QueryUserByID(ctx, dbtx, id)
 	if err != nil {
 		return UserEntity{}, err
 	}
 
 	return UserEntity{
 		ID:              id,
-		CreatedAt:       usr.CreatedAt.Time,
-		UpdatedAt:       usr.UpdatedAt.Time,
-		Email:           usr.Email,
-		EmailVerifiedAt: usr.EmailVerifiedAt.Time,
+		CreatedAt:       row.CreatedAt.Time,
+		UpdatedAt:       row.UpdatedAt.Time,
+		Email:           row.Email,
+		EmailVerifiedAt: row.EmailVerifiedAt.Time,
+		HashedPassword:  row.Password,
 		IsAdmin:         false,
 	}, nil
 }
@@ -118,12 +115,14 @@ func NewUser(
 		return UserEntity{}, err
 	}
 
+	usr.HashedPassword = hashedPassword
+
 	_, err = db.Stmts.InsertUser(ctx, dbtx, db.InsertUserParams{
 		ID:        usr.ID,
 		CreatedAt: pgtype.Timestamptz{Time: usr.CreatedAt, Valid: true},
 		UpdatedAt: pgtype.Timestamptz{Time: usr.UpdatedAt, Valid: true},
 		Email:     usr.Email,
-		Password:  hashedPassword,
+		Password:  usr.HashedPassword,
 	})
 	if err != nil {
 		return UserEntity{}, err
@@ -147,7 +146,7 @@ func UpdateUser(
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	updatedUsr, err := db.Stmts.UpdateUser(ctx, dbtx, db.UpdateUserParams{
+	row, err := db.Stmts.UpdateUser(ctx, dbtx, db.UpdateUserParams{
 		ID: data.ID,
 		UpdatedAt: pgtype.Timestamptz{
 			Time:  data.UpdatedAt,
@@ -160,11 +159,11 @@ func UpdateUser(
 	}
 
 	return UserEntity{
-		ID:              updatedUsr.ID,
-		CreatedAt:       updatedUsr.CreatedAt.Time,
-		UpdatedAt:       updatedUsr.UpdatedAt.Time,
-		Email:           updatedUsr.Email,
-		EmailVerifiedAt: updatedUsr.EmailVerifiedAt.Time,
+		ID:              row.ID,
+		CreatedAt:       row.CreatedAt.Time,
+		UpdatedAt:       row.UpdatedAt.Time,
+		Email:           row.Email,
+		EmailVerifiedAt: row.EmailVerifiedAt.Time,
 		IsAdmin:         false,
 	}, nil
 }
@@ -242,7 +241,7 @@ func MakeUserAdmin(
 		return UserEntity{}, ErrMustBeAdmin
 	}
 
-	user, err := db.Stmts.UpdateUserIsAdmin(
+	row, err := db.Stmts.UpdateUserIsAdmin(
 		ctx,
 		dbtx,
 		db.UpdateUserIsAdminParams{
@@ -256,11 +255,11 @@ func MakeUserAdmin(
 	}
 
 	return UserEntity{
-		ID:              user.ID,
-		CreatedAt:       user.CreatedAt.Time,
-		UpdatedAt:       user.UpdatedAt.Time,
-		Email:           user.Email,
-		EmailVerifiedAt: user.EmailVerifiedAt.Time,
+		ID:              row.ID,
+		CreatedAt:       row.CreatedAt.Time,
+		UpdatedAt:       row.UpdatedAt.Time,
+		Email:           row.Email,
+		EmailVerifiedAt: row.EmailVerifiedAt.Time,
 		IsAdmin:         true,
 	}, nil
 }

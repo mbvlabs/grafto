@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
@@ -22,7 +23,7 @@ import (
 
 var AuthenticatedSessionName = fmt.Sprintf(
 	"ua-%s-%s",
-	config.Cfg.ProjectName,
+	strings.ToLower(config.Cfg.ProjectName),
 	config.Cfg.Environment,
 )
 
@@ -57,10 +58,17 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
+type EmailService interface {
+	Send(
+		ctx context.Context,
+		payload services.EmailPayload,
+	) error
+}
+
 func NewHandlers(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
-	emailSvc services.Email,
+	emailSvc EmailService,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 
