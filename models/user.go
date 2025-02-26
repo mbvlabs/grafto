@@ -33,6 +33,11 @@ func (ue UserEntity) ValidatePassword(providedPassword string) error {
 	)
 }
 
+type PasswordPair struct {
+	Password        string `validate:"required,gte=6"`
+	ConfirmPassword string `validate:"required,gte=6"`
+}
+
 func HashAndPepperPassword(password string) (string, error) {
 	passwordBytes := []byte(password + config.Cfg.PasswordPepper)
 	hashedBytes, err := bcrypt.GenerateFromPassword(
@@ -68,9 +73,8 @@ func GetUserByEmail(
 }
 
 type NewUserPayload struct {
-	Email           string `validate:"required,email"`
-	Password        string `validate:"required,gte=6"`
-	ConfirmPassword string `validate:"required,gte=6"`
+	Email    string `validate:"required,email"`
+	Password PasswordPair
 }
 
 func GetUser(
@@ -110,7 +114,7 @@ func NewUser(
 		Email:     data.Email,
 	}
 
-	hashedPassword, err := HashAndPepperPassword(data.Password)
+	hashedPassword, err := HashAndPepperPassword(data.Password.Password)
 	if err != nil {
 		return UserEntity{}, err
 	}
@@ -171,24 +175,31 @@ func UpdateUser(
 type UpdateUserPasswordPayload struct {
 	ID        uuid.UUID `validate:"required,uuid"`
 	UpdatedAt time.Time `validate:"required"`
-	Password  string    `validate:"required"`
+	Password  PasswordPair
 }
 
 func UpdateUserPassword(
 	ctx context.Context,
+	dbtx db.DBTX,
 	data UpdateUserPasswordPayload,
-	q func(
-		ctx context.Context,
-		userID uuid.UUID,
-		newPassword string,
-		updatedAt time.Time,
-	) error,
 ) error {
 	if err := validate.Struct(data); err != nil {
 		return errors.Join(ErrDomainValidation, err)
 	}
 
-	return q(ctx, data.ID, data.Password, data.UpdatedAt)
+	hashPW, err := HashAndPepperPassword(data.Password.Password)
+	if err != nil {
+		return err
+	}
+
+	return db.Stmts.ChangeUserPassword(ctx, dbtx, db.ChangeUserPasswordParams{
+		ID: data.ID,
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  data.UpdatedAt,
+			Valid: true,
+		},
+		Password: hashPW,
+	})
 }
 
 type UpdateUserEmailToVerifiedPayload struct {

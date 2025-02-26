@@ -38,7 +38,6 @@ const (
 
 func Get(ctx context.Context, route Route) string {
 	return ctx.Value(route).(string)
-	// return contexts.ExtractApp(ctx).Routes[string(route)]
 }
 
 func GetSafeURL(ctx context.Context, route Route) templ.SafeURL {

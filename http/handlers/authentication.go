@@ -1,14 +1,20 @@
 package handlers
 
 import (
+	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/emails"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
+	"github.com/mbvlabs/grafto/views/paths"
 )
 
 type Authentication struct {
@@ -91,33 +97,51 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	// user, err := a.db.QueryUserByEmail(ctx.Request().Context(), payload.Email)
-	// if err != nil {
-	// 	if errors.Is(err, pgx.ErrNoRows) {
-	// 		return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-	// 			CsrfToken:        csrf.Token(ctx.Request()),
-	// 			NoAssociatedUser: true,
-	// 		}).
-	// 			Render(views.ExtractRenderDeps(ctx))
-	// 	}
-	//
-	// 	return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
-	// 		CsrfToken:     csrf.Token(ctx.Request()),
-	// 		InternalError: true,
-	// 	}).
-	// 		Render(views.ExtractRenderDeps(ctx))
-	// }
-	// resetToken, err := a.tknService.CreateResetPasswordToken(
-	// 	ctx.Request().Context(),
-	// 	user.ID,
-	// )
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// if err := a.emailClient.Send(ctx.Request().Context(), user.Email, re); err != nil {
-	// 	return err
-	// }
+	user, err := models.GetUserByEmail(
+		ctx.Request().Context(),
+		payload.Email,
+		a.db.Pool,
+	)
+	if err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
+
+	tkn, err := models.NewToken(
+		ctx.Request().Context(),
+		a.db.Pool,
+		models.NewTokenPayload{
+			Expiration: models.ResetPasswordExpirary,
+			Meta: models.MetaInformation{
+				Resource:   models.ResourceUser,
+				ResourceID: user.ID,
+				Scope:      models.ScopeResetPassword,
+			},
+		},
+	)
+	if err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
+
+	html, txt, err := emails.PasswordReset{
+		ResetLink: fmt.Sprintf(
+			"%s/%s?token=%s",
+			config.Cfg.GetFullDomain(),
+			paths.Get(ctx.Request().Context(), paths.ResetPasswordPage),
+			tkn.Hash,
+		),
+	}.Generate(ctx.Request().Context())
+	if err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
+
+	if err := a.emailSvc.Send(ctx.Request().Context(), services.EmailPayload{
+		To:       user.Email,
+		Subject:  "Action Required | Password reset requested",
+		HtmlBody: html.String(),
+		TextBody: txt.String(),
+	}); err != nil {
+		return err
+	}
 
 	return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
@@ -152,58 +176,37 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	// if err := a.tknService.Validate(
-	// 	ctx.Request().Context(), payload.Token, services.ScopeResetPassword); err != nil {
-	// 	return views.ErrorPage().Render(renderArgs(ctx))
-	// }
+	token, err := models.GetToken(
+		ctx.Request().Context(),
+		a.db.Pool,
+		payload.Token,
+	)
+	if err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
 
-	// userID, err := a.tknService.GetAssociatedUserID(
-	// 	ctx.Request().Context(),
-	// 	payload.Token,
-	// )
-	// if err != nil {
-	// 	return authentication.ResetPasswordPage(false, true, "", "").
-	// 		Render(views.ExtractRenderDeps(ctx))
-	// }
+	if !token.IsValid() || token.Meta.Scope != models.ScopeResetPassword {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
 
-	// err = a.userModel.ChangePassword(ctx.Request().Context(),
-	// 	models.ChangeUserPasswordData{
-	// 		ID:              userID,
-	// 		UpdatedAt:       time.Now(),
-	// 		Password:        payload.Password,
-	// 		ConfirmPassword: payload.ConfirmPassword,
-	// 	},
-	// )
-	// if err != nil && errors.Is(err, models.ErrFailValidation) {
-	// 	var valiErrs validation.ValidationErrors
-	// 	if ok := errors.As(err, &valiErrs); !ok {
-	// 		return a.InternalError(ctx)
-	// 	}
-	//
-	// 	props := authentication.ResetPasswordFormProps{
-	// 		CsrfToken:  csrf.Token(ctx.Request()),
-	// 		ResetToken: payload.Token,
-	// 	}
-	//
-	// 	for _, validationError := range valiErrs {
-	// 		switch validationError.GetFieldName() {
-	// 		case "Password":
-	// 			props.Errors[authentication.PasswordField] = validationError.GetHumanExplanations()[0]
-	// 		case "ConfirmPassword":
-	// 			props.Errors[authentication.PasswordField] = validationError.GetHumanExplanations()[0]
-	// 		}
-	// 	}
-	//
-	// 	return authentication.ResetPasswordForm(props).
-	// 		Render(views.ExtractRenderDeps(ctx))
-	// }
-	// if err != nil {
-	// 	return a.InternalError(ctx)
-	// }
+	if err := models.UpdateUserPassword(
+		ctx.Request().Context(),
+		a.db.Pool,
+		models.UpdateUserPasswordPayload{
+			ID:        token.Meta.ResourceID,
+			UpdatedAt: time.Now(),
+			Password: models.PasswordPair{
+				Password:        payload.Password,
+				ConfirmPassword: payload.ConfirmPassword,
+			},
+		},
+	); err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
 
-	// if err := a.tknService.Delete(ctx.Request().Context(), payload.Token); err != nil {
-	// 	return views.ErrorPage().Render(renderArgs(ctx))
-	// }
+	if err := models.DeleteToken(ctx.Request().Context(), a.db.Pool, token.ID); err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
 
 	return authentication.ResetPasswordForm(authentication.ResetPasswordFormProps{}).
 		Render(renderArgs(ctx))

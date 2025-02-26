@@ -23,24 +23,6 @@ func newApp(
 }
 
 func (a *App) LandingPage(ctx echo.Context) error {
-	// if value, ok := a.cache.Get(landingPageCacheKey); ok {
-	// 	slog.Info(
-	// 		"$$$$$$$$$$$$$$$$$$$$$$$$$ CACHE HIT $$$$$$$$$$$$$$$$$$$$$$$$$$",
-	// 	)
-	// 	return views.HomePage(value).Render(renderArgs(ctx))
-	// }
-
-	// var sb strings.Builder
-	// if err := views.Home()
-	// 	log.Fatalf("failed to render to string: %v", err)
-	// }
-	//
-	// cachedComponent := views.Home()
-	//
-	// if ok := a.cache.Set(landingPageCacheKey, cachedComponent, time.Hour*time.Duration(24)); !ok {
-	// 	return views.HomePage(cachedComponent).Render(renderArgs(ctx))
-	// }
-
 	return views.HomePage().Render(renderArgs(ctx))
 }
 

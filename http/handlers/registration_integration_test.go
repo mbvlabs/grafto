@@ -27,8 +27,8 @@ func TestStoreUser(t *testing.T) {
 	defer cleanup()
 	defer stopEmbedded()
 
-	handlers := setupTestHandlers(postgres, t)
-	router, ctx := setupTestRouter(ctx, handlers)
+	testHandlers := setupTestHandlers(t, postgres)
+	router, ctx := setupTestRouter(ctx, testHandlers)
 
 	tests := []struct {
 		name           string
@@ -90,7 +90,7 @@ func TestStoreUser(t *testing.T) {
 			rec := httptest.NewRecorder()
 			c := router.NewContext(req, rec)
 
-			err := handlers.Registration.StoreUser(c)
+			err := testHandlers.Registration.StoreUser(c)
 			if assert.NoError(t, err) {
 				assert.Equal(t, http.StatusOK, rec.Code)
 			}
@@ -114,8 +114,8 @@ func TestVerifyEmail(t *testing.T) {
 	defer cleanup()
 	defer stopEmbedded()
 
-	handlers := setupTestHandlers(postgres, t)
-	router, ctx := setupTestRouter(ctx, handlers)
+	testHandlers := setupTestHandlers(t, postgres)
+	router, ctx := setupTestRouter(ctx, testHandlers)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	tests := []struct {
@@ -194,7 +194,7 @@ func TestVerifyEmail(t *testing.T) {
 			rec := httptest.NewRecorder()
 			c := router.NewContext(req, rec)
 
-			err := handlers.Registration.VerifyUserEmail(c)
+			err := testHandlers.Registration.VerifyUserEmail(c)
 			if assert.NoError(t, err) {
 				assert.Equal(t, http.StatusOK, rec.Code)
 			}

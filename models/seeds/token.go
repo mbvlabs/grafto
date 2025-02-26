@@ -62,10 +62,10 @@ func (s Seeder) PlantToken(
 		opt(data)
 	}
 
-	token, err := models.NewToken(ctx, models.NewTokenPayload{
+	token, err := models.NewToken(ctx, s.dbtx, models.NewTokenPayload{
 		Expiration: data.Expiration,
 		Meta:       data.Meta,
-	}, s.dbtx)
+	})
 	if err != nil {
 		return models.Token{}, err
 	}
@@ -79,7 +79,7 @@ func (s Seeder) PlantTokens(
 ) ([]models.Token, error) {
 	tokens := make([]models.Token, amount)
 
-	for i := 0; i < amount; i++ {
+	for i := range amount {
 		tkn, err := s.PlantToken(ctx)
 		if err != nil {
 			return nil, err

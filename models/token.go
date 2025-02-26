@@ -26,10 +26,10 @@ type (
 var (
 	ScopeEmailVerification Scope = "email_verification"
 	ScopeUnsubscribe       Scope = "unsubscribe"
-	ScopeResetPassword     Scope = "password_reset"
-)
 
-var (
+	ResetPasswordExpirary time.Time = time.Now().Add(1 * time.Hour)
+	ScopeResetPassword    Scope     = "password_reset"
+
 	ResourceUser       Resource = "users"
 	ResourceSubscriber Resource = "subscribers"
 )
@@ -45,7 +45,6 @@ type Token struct {
 	CreatedAt  time.Time
 	Expiration time.Time
 	Hash       string
-	Plain      string
 	Meta       MetaInformation
 }
 
@@ -60,25 +59,19 @@ type NewTokenPayload struct {
 
 func NewToken(
 	ctx context.Context,
-	data NewTokenPayload,
 	dbtx db.DBTX,
+	data NewTokenPayload,
 ) (Token, error) {
 	if err := validate.Struct(data); err != nil {
 		return Token{}, errors.Join(ErrDomainValidation, err)
 	}
 
 	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
+	if _, err := rand.Read(b); err != nil {
 		return Token{}, err
 	}
 
-	plainText := base64.URLEncoding.EncodeToString(b)
-	h.Reset()
-	h.Write([]byte(plainText))
-	bytes := h.Sum(nil)
-
-	hash := base64.URLEncoding.EncodeToString(bytes)
+	hash := base64.URLEncoding.EncodeToString(b)
 
 	now := time.Now()
 	tkn := Token{
@@ -86,7 +79,6 @@ func NewToken(
 		CreatedAt:  now,
 		Expiration: data.Expiration,
 		Hash:       hash,
-		Plain:      plainText,
 		Meta:       data.Meta,
 	}
 
@@ -117,8 +109,8 @@ func NewToken(
 
 func GetToken(
 	ctx context.Context,
-	token string,
 	dbtx db.DBTX,
+	token string,
 ) (Token, error) {
 	tkn, err := db.Stmts.QueryTokenByHash(ctx, dbtx, token)
 	if err != nil {
@@ -141,8 +133,8 @@ func GetToken(
 
 func DeleteToken(
 	ctx context.Context,
-	tokenID uuid.UUID,
 	dbtx db.DBTX,
+	tokenID uuid.UUID,
 ) error {
 	err := db.Stmts.DeleteToken(ctx, dbtx, tokenID)
 	if err != nil {

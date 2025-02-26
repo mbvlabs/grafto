@@ -35,6 +35,7 @@ type StoreUserPayload struct {
 	ConfirmPassword string `form:"confirm_password"`
 }
 
+// TODO: send email validation email
 func (r *Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
@@ -42,52 +43,14 @@ func (r *Registration) StoreUser(ctx echo.Context) error {
 	}
 
 	if _, err := models.NewUser(ctx.Request().Context(), models.NewUserPayload{
-		Email:           payload.Email,
-		Password:        payload.Password,
-		ConfirmPassword: payload.ConfirmPassword,
+		Email: payload.Email,
+		Password: models.PasswordPair{
+			Password:        payload.Password,
+			ConfirmPassword: payload.ConfirmPassword,
+		},
 	}, r.db.Pool); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
-
-	// err := r.authSvc.RegisterUser(
-	// 	ctx.Request().
-	// 		Context(),
-	// 	payload.UserName,
-	// 	payload.Email,
-	// 	payload.Password,
-	// 	payload.ConfirmPassword,
-	// )
-	// if err != nil {
-	// 	if errors.Is(err, services.ErrUnrecoverable) {
-	// 		return views.ErrorPage().Render(renderArgs(ctx))
-	// 	}
-	//
-	// 	if errors.Is(err, models.ErrDomainValidation) {
-	// 		var validationErrors validator.ValidationErrors
-	// 		if ok := errors.As(err, &validationErrors); !ok {
-	// 			return views.ErrorPage().Render(renderArgs(ctx))
-	// 		}
-	//
-	// 		fields := make(
-	// 			map[string]components.InputFieldProps,
-	// 			len(validationErrors),
-	// 		)
-	// 		for _, validationError := range validationErrors {
-	// 			fields[validationError.StructField()] = components.InputFieldProps{
-	// 				Value:     validationError.Value().(string),
-	// 				ErrorMsgs: []string{validationError.Error()},
-	// 			}
-	// 		}
-	//
-	// 		props := authentication.RegisterFormProps{
-	// 			SuccessRegister: false,
-	// 			Fields:          fields,
-	// 			CsrfToken:       csrf.Token(ctx.Request()),
-	// 		}
-	// 		return authentication.RegisterForm(props).
-	// 			Render(renderArgs(ctx))
-	// 	}
-	// }
 
 	props := authentication.RegisterFormProps{
 		SuccessRegister: true,
@@ -109,8 +72,8 @@ func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
 
 	token, err := models.GetToken(
 		ctx.Request().Context(),
-		payload.Token,
 		r.db.Pool,
+		payload.Token,
 	)
 	if err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))

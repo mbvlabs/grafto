@@ -74,9 +74,11 @@ func (s Seeder) PlantUser(
 	}
 
 	user, err := models.NewUser(ctx, models.NewUserPayload{
-		Email:           data.Email,
-		Password:        "password",
-		ConfirmPassword: "password",
+		Email: data.Email,
+		Password: models.PasswordPair{
+			Password:        "password",
+			ConfirmPassword: "password",
+		},
 	}, s.dbtx)
 	if err != nil {
 		return models.UserEntity{}, err

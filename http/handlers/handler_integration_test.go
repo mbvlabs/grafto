@@ -48,12 +48,12 @@ func (m *mockedEmailService) Send(
 	return args.Error(0)
 }
 
-func setupTestHandlers(
-	postgres psql.Postgres,
-	t *testing.T,
-) handlers.Handlers {
-	emailSvc := services.NewEmail()
+var emailSvc = new(mockedEmailService)
 
+func setupTestHandlers(
+	t *testing.T,
+	postgres psql.Postgres,
+) handlers.Handlers {
 	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
 	require.NoError(t, err)
 
