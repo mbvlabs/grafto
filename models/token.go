@@ -2,9 +2,7 @@ package models
 
 import (
 	"context"
-	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -12,11 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/models/internal/db"
 )
-
-var h = hmac.New(sha256.New, []byte(config.Cfg.TokenSigningKey))
 
 type (
 	Scope    string

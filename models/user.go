@@ -72,11 +72,6 @@ func GetUserByEmail(
 	}, nil
 }
 
-type NewUserPayload struct {
-	Email    string `validate:"required,email"`
-	Password PasswordPair
-}
-
 func GetUser(
 	ctx context.Context,
 	id uuid.UUID,
@@ -96,6 +91,11 @@ func GetUser(
 		HashedPassword:  row.Password,
 		IsAdmin:         false,
 	}, nil
+}
+
+type NewUserPayload struct {
+	Email    string `validate:"required,email"`
+	Password PasswordPair
 }
 
 func NewUser(
