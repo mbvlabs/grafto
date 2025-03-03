@@ -60,25 +60,52 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		a.db.Pool,
 	)
 	if err != nil {
-		return authentication.LoginForm(csrf.Token(ctx.Request()), false, views.Errors{authentication.ErrEmailNotValidated: "The email or password you entered is incorrect."}).
+		return authentication.LoginForm(
+			csrf.Token(
+				ctx.Request(),
+			),
+			false,
+			views.Errors{
+				authentication.ErrEmailNotValidated: "The email or password you entered is incorrect.",
+			},
+		).
 			Render(renderArgs(ctx))
 	}
 
 	if !user.IsVerified() {
-		return authentication.LoginForm(csrf.Token(ctx.Request()), false, views.Errors{authentication.ErrEmailNotValidated: "Your email has not yet been verified."}).
+		return authentication.LoginForm(
+			csrf.Token(
+				ctx.Request(),
+			),
+			false,
+			views.Errors{
+				authentication.ErrEmailNotValidated: "Your email has not yet been verified.",
+			},
+		).
 			Render(renderArgs(ctx))
 	}
 
-	if err := user.ValidatePassword(payload.Password); err != nil {
-		return authentication.LoginForm(csrf.Token(ctx.Request()), false, views.Errors{authentication.ErrAuthDetailsWrong: "The email or password you entered is incorrect."}).
+	if err := user.ValidatePassword(
+		payload.Password); err != nil {
+		return authentication.LoginForm(
+			csrf.Token(
+				ctx.Request(),
+			),
+			false,
+			views.Errors{
+				authentication.ErrAuthDetailsWrong: "The email or password you entered is incorrect.",
+			},
+		).
 			Render(renderArgs(ctx))
 	}
 
-	if err := createAuthSession(ctx, payload.RememberMe == "on", user); err != nil {
+	if err := createAuthSession(
+		ctx, payload.RememberMe == "on", user); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return authentication.LoginForm(csrf.Token(ctx.Request()), true, nil).
+	return authentication.LoginForm(
+		csrf.Token(ctx.Request()), true, nil).
 		Render(renderArgs(ctx))
 }
 
@@ -160,7 +187,8 @@ func (a *Authentication) CreateResetPassword(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return authentication.ResetPasswordPage(false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
+	return authentication.ResetPasswordPage(
+		false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
 		Render(renderArgs(ctx))
 }
 
@@ -204,7 +232,8 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if err := models.DeleteToken(ctx.Request().Context(), a.db.Pool, token.ID); err != nil {
+	if err := models.DeleteToken(
+		ctx.Request().Context(), a.db.Pool, token.ID); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
