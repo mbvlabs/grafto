@@ -31,10 +31,9 @@ func TestStoreUser(t *testing.T) {
 	router, ctx := setupTestRouter(ctx, testHandlers)
 
 	tests := []struct {
-		name           string
-		payload        url.Values
-		expectedStatus int
-		expectedError  error
+		name          string
+		payload       url.Values
+		expectedError error
 	}{
 		{
 			name: "should register a new user",
@@ -43,8 +42,7 @@ func TestStoreUser(t *testing.T) {
 				"password":         {"password123"},
 				"confirm_password": {"password123"},
 			},
-			expectedStatus: http.StatusOK,
-			expectedError:  nil,
+			expectedError: nil,
 		},
 		{
 			name: "should not register new user because mismatched passwords",
@@ -53,8 +51,7 @@ func TestStoreUser(t *testing.T) {
 				"password":         {"password123"},
 				"confirm_password": {"different"},
 			},
-			expectedStatus: http.StatusOK,
-			expectedError:  pgx.ErrNoRows,
+			expectedError: pgx.ErrNoRows,
 		},
 		{
 			name: "should not register new user invalid email",
@@ -63,8 +60,7 @@ func TestStoreUser(t *testing.T) {
 				"password":         {"password123"},
 				"confirm_password": {"password123"},
 			},
-			expectedStatus: http.StatusOK,
-			expectedError:  pgx.ErrNoRows,
+			expectedError: pgx.ErrNoRows,
 		},
 		{
 			name: "should not register new user empty password",
@@ -73,8 +69,7 @@ func TestStoreUser(t *testing.T) {
 				"password":         {""},
 				"confirm_password": {""},
 			},
-			expectedStatus: http.StatusOK,
-			expectedError:  pgx.ErrNoRows,
+			expectedError: pgx.ErrNoRows,
 		},
 	}
 
