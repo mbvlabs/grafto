@@ -5,6 +5,5 @@ import (
 )
 
 func main() {
-	slog.Info("explore code here")
-	slog.Info("explore code done")
+	slog.Info("explore")
 }

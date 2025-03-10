@@ -49,7 +49,7 @@ func NewEmail() Email {
 	}
 }
 
-func (m *Email) Send(
+func (m Email) Send(
 	ctx context.Context,
 	payload EmailPayload,
 ) error {

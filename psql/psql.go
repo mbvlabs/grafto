@@ -1,13 +1,27 @@
 package psql
 
 import (
+	"bytes"
 	"context"
 	"embed"
 	"errors"
+	"fmt"
+	"io/fs"
 	"log/slog"
+	"math/rand"
+	"net"
+	"os"
+	"time"
 
+	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
+	"github.com/go-faker/faker/v4"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/mbvlabs/grafto/config"
+	"github.com/pressly/goose/v3"
+	"github.com/pressly/goose/v3/lock"
 	"github.com/riverqueue/river"
 )
 
@@ -77,4 +91,130 @@ func CreatePooledConnection(
 	}
 
 	return dbpool, nil
+}
+
+// getFreePort returns a random available port number between 1024-65535
+func getFreePort() (int, error) {
+	const (
+		minPort = 1024
+		maxPort = 65535
+	)
+
+	for attempts := 0; attempts < 10; attempts++ {
+		port := rand.Intn(maxPort-minPort) + minPort
+
+		addr := fmt.Sprintf(":%d", port)
+		conn, err := net.Listen("tcp", addr)
+		if err != nil {
+			continue // Port is in use, try another
+		}
+
+		conn.Close()
+		return port, nil
+	}
+
+	return 0, fmt.Errorf("could not find an available port after 10 attempts")
+}
+
+type TestPostgres struct {
+	Psql         Postgres
+	EmbeddedPsql *embeddedpostgres.EmbeddedPostgres
+	CleanupFunc  func()
+}
+
+func NewPostgresTest(
+	ctx context.Context,
+) (TestPostgres, error) {
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+		panic("don't NewPostgresTest in production")
+	}
+
+	user := "grafto"
+	password := "grafto"
+	database := fmt.Sprintf("grafto_test_%s", faker.DomainName())
+
+	port, err := getFreePort()
+	if err != nil {
+		return TestPostgres{}, fmt.Errorf("failed to get free port: %w", err)
+	}
+
+	runtimePath := fmt.Sprintf("/tmp/psql_%s", uuid.New().String())
+	runtimePathCleanup := func() {
+		slog.Info("REMOVING EMBEDDED PSQL DIR")
+		if err := os.RemoveAll(runtimePath); err != nil {
+			slog.Error(
+				"failed to remove temporary directory",
+				"path",
+				runtimePath,
+				"error",
+				err,
+			)
+		}
+	}
+
+	logger := &bytes.Buffer{}
+	embeddedPsql := embeddedpostgres.NewDatabase(
+		embeddedpostgres.DefaultConfig().
+			Username(user).
+			Password(password).
+			Database(database).
+			Version(embeddedpostgres.V16).
+			Port(uint32(port)).
+			RuntimePath(runtimePath).
+			StartTimeout(45 * time.Second).
+			StartParameters(map[string]string{"max_connections": "200"}).
+			Logger(logger),
+	)
+
+	if err := embeddedPsql.Start(); err != nil {
+		return TestPostgres{}, err
+	}
+
+	pool, err := CreatePooledConnection(
+		ctx,
+		fmt.Sprintf(
+			"postgresql://%s:%s@localhost:%v/%s",
+			user,
+			password,
+			port,
+			database,
+		),
+	)
+	if err != nil {
+		return TestPostgres{}, err
+	}
+
+	db := stdlib.OpenDBFromPool(pool)
+
+	gooseLock, err := lock.NewPostgresSessionLocker()
+	if err != nil {
+		return TestPostgres{}, err
+	}
+
+	fsys, err := fs.Sub(Migrations, "migrations")
+	if err != nil {
+		return TestPostgres{}, err
+	}
+	gooseProvider, err := goose.NewProvider(
+		goose.DialectPostgres,
+		db,
+		fsys,
+		goose.WithVerbose(false),
+		goose.WithSessionLocker(gooseLock),
+	)
+	if err != nil {
+		return TestPostgres{}, err
+	}
+	_, err = gooseProvider.Up(ctx)
+	if err != nil {
+		return TestPostgres{}, err
+	}
+
+	return TestPostgres{
+		Psql: Postgres{
+			Pool: pool,
+		},
+		EmbeddedPsql: embeddedPsql,
+		CleanupFunc:  runtimePathCleanup,
+	}, nil
 }

@@ -1,7 +1,6 @@
 package seeds
 
 import (
-	"math/rand"
 	"time"
 
 	"github.com/go-faker/faker/v4"
@@ -9,7 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/internal/db"
-	"github.com/mbvlabs/grafto/services"
 	"golang.org/x/net/context"
 )
 
@@ -64,19 +62,11 @@ func (s Seeder) PlantUser(
 	ctx context.Context,
 	opts ...userSeedOption,
 ) (models.UserEntity, error) {
-	trueOrFalse := rand.Float32() < 0.5
-	var emailVerifiedAt time.Time
-	if trueOrFalse {
-		emailVerifiedAt = time.Now()
-	}
-
 	data := &userSeedData{
-		ID:              uuid.New(),
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
-		Email:           faker.Email(),
-		EmailVerifiedAt: emailVerifiedAt,
-		IsAdmin:         trueOrFalse,
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Email:     faker.Email(),
 	}
 
 	for _, opt := range opts {
@@ -84,10 +74,12 @@ func (s Seeder) PlantUser(
 	}
 
 	user, err := models.NewUser(ctx, models.NewUserPayload{
-		Email:           data.Email,
-		Password:        "password",
-		ConfirmPassword: "password",
-	}, s.dbtx, services.HashAndPepperPassword)
+		Email: data.Email,
+		Password: models.PasswordPair{
+			Password:        "password",
+			ConfirmPassword: "password",
+		},
+	}, s.dbtx)
 	if err != nil {
 		return models.UserEntity{}, err
 	}

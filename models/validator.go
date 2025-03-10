@@ -9,16 +9,28 @@ var validate = setupValidator()
 func setupValidator() *validator.Validate {
 	v := validator.New(validator.WithRequiredStructEnabled())
 
-	v.RegisterStructValidation(validateConfirmPWMatch, NewUserPayload{})
+	v.RegisterStructValidation(validatePasswordsMatch, PasswordPair{})
 
 	return v
 }
 
-func validateConfirmPWMatch(sl validator.StructLevel) {
-	user := sl.Current().Interface().(NewUserPayload)
+func validatePasswordsMatch(sl validator.StructLevel) {
+	pwPair := sl.Current().Interface().(PasswordPair)
 
-	if user.Password != user.ConfirmPassword {
-		sl.ReportError(user.Password, "Password", "Password", "must match confirm password", "")
-		sl.ReportError(user.Password, "ConfirmPassword", "ConfirmPassword", "must match password", "")
+	if pwPair.Password != pwPair.ConfirmPassword {
+		sl.ReportError(
+			pwPair.Password,
+			"Password",
+			"Password",
+			"must match confirm password",
+			"",
+		)
+		sl.ReportError(
+			pwPair.Password,
+			"ConfirmPassword",
+			"ConfirmPassword",
+			"must match password",
+			"",
+		)
 	}
 }

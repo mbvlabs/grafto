@@ -12,7 +12,7 @@ import (
 
 func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		sess, err := session.Get("session", c)
+		sess, err := session.Get(handlers.AuthenticatedSessionName, c)
 		if err != nil {
 			return next(c)
 		}

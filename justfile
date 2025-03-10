@@ -23,6 +23,8 @@ alias ft := fmt-templates
 
 alias ex := explore
 
+alias ti := test-integrations
+
 default:
     @just --list
 
@@ -83,3 +85,15 @@ explore:
 
 seed:
 	@go run ./cmd/seed/main.go
+
+test-unit:
+	@go test -tags=unit -v ./...
+
+test-integrations:
+	@go test -tags=integration -v ./...
+
+test-e2e:
+	@go test -tags=e2e -v ./...
+
+test-all:
+	@go test ./...

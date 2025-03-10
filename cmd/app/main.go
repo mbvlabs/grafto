@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/lmittmann/tint"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
@@ -90,10 +91,9 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	authSvc := services.NewAuth(psql)
 	emailSvc := services.NewEmail()
 
-	cacheBuilder, err := otter.NewBuilder[string, string](20)
+	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,6 @@ func run(ctx context.Context) error {
 	handlers := handlers.NewHandlers(
 		psql,
 		pageCacher,
-		authSvc,
 		emailSvc,
 	)
 

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
+	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -21,7 +23,7 @@ import (
 
 var AuthenticatedSessionName = fmt.Sprintf(
 	"ua-%s-%s",
-	config.Cfg.ProjectName,
+	strings.ToLower(config.Cfg.ProjectName),
 	config.Cfg.Environment,
 )
 
@@ -56,19 +58,25 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
+type EmailService interface {
+	Send(
+		ctx context.Context,
+		payload services.EmailPayload,
+	) error
+}
+
 func NewHandlers(
 	db psql.Postgres,
-	cache otter.CacheWithVariableTTL[string, string],
-	authSvc services.Auth,
-	emailSvc services.Email,
+	cache otter.CacheWithVariableTTL[string, templ.Component],
+	emailSvc EmailService,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 
 	api := newApi()
 	app := newApp(db, cache)
-	auth := newAuthentication(authSvc, db, emailSvc)
+	auth := newAuthentication(db, emailSvc)
 	dashboard := newDashboard()
-	registration := newRegistration(authSvc, db, emailSvc)
+	registration := newRegistration(db, emailSvc)
 
 	return Handlers{
 		api,

@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/models/seeds"
 	"github.com/mbvlabs/grafto/psql"
 )
 
@@ -26,6 +28,16 @@ func main() {
 	defer tx.Rollback(ctx)
 
 	slog.Info("Starting seed script...")
+
+	seeder := seeds.NewSeeder(pool)
+	_, err = seeder.PlantUser(
+		ctx,
+		seeds.WithUserEmailVerifiedAt(time.Now()),
+		seeds.WithUserEmail("aryastark@gmail.com"),
+	)
+	if err != nil {
+		panic(err)
+	}
 
 	if err := tx.Commit(ctx); err != nil {
 		panic(err)
