@@ -9,10 +9,10 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/components"
 	"github.com/mbvlabs/grafto/views/layouts"
-	"github.com/mbvlabs/grafto/views/paths"
 )
 
 type ForgottenPasswordFormProps struct {
@@ -157,9 +157,9 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(paths.Get(ctx, paths.ForgotPassword))
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(paths.GP(ctx, paths.StoreForgotPassword))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/forgotten_password.templ`, Line: 44, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/forgotten_password.templ`, Line: 44, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

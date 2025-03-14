@@ -9,10 +9,10 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/components"
 	"github.com/mbvlabs/grafto/views/layouts"
-	"github.com/mbvlabs/grafto/views/paths"
 )
 
 var (
@@ -69,7 +69,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 templ.SafeURL = paths.GetSafeURL(ctx, paths.RegisterPage)
+		var templ_7745c5c3_Var3 templ.SafeURL = paths.GSP(ctx, paths.NewUser)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var3)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -121,9 +121,9 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(paths.Get(ctx, paths.Login))
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(paths.GP(ctx, paths.CreateAuthenticatedSession))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 69, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 69, Col: 66}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -162,7 +162,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 templ.SafeURL = paths.GetSafeURL(ctx, paths.ForgotPasswordPage)
+		var templ_7745c5c3_Var8 templ.SafeURL = paths.GSP(ctx, paths.ForgotPassword)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var8)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

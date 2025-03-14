@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/views/paths"
+	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 type Resource struct {
@@ -56,8 +56,8 @@ func createSitemap(c echo.Context) (Sitemap, error) {
 
 	routes := c.Echo().Routes()
 	for _, r := range routes {
-		switch paths.Route(r.Name) {
-		case paths.AboutPage:
+		switch paths.Name(r.Name) {
+		case paths.About:
 			urls = append(urls, URL{
 				Loc: fmt.Sprintf(
 					"%s%s",

@@ -5,6 +5,8 @@ package handlers_test
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"testing"
 
 	"github.com/a-h/templ"
@@ -67,6 +69,11 @@ func setupTestRouter(
 	ctx context.Context,
 	handlers handlers.Handlers,
 ) (*echo.Echo, context.Context) {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelError,
+	}))
+	slog.SetDefault(logger)
+
 	routes := routes.NewRoutes(handlers, nil)
 	return routes.SetupRoutes(ctx)
 }

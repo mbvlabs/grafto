@@ -12,8 +12,8 @@ import (
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/http"
 	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/static"
-	"github.com/mbvlabs/grafto/views/paths"
 	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
 
@@ -102,7 +102,7 @@ func (r *Routes) SetupRoutes(
 	r.api()
 
 	for _, route := range r.router.Routes() {
-		ctx = context.WithValue(ctx, paths.Route(route.Name), route.Path)
+		ctx = context.WithValue(ctx, paths.Name(route.Name), route.Path)
 	}
 
 	return r.router, ctx

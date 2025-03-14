@@ -11,10 +11,10 @@ import (
 	"github.com/mbvlabs/grafto/emails"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
-	"github.com/mbvlabs/grafto/views/paths"
 )
 
 type Authentication struct {
@@ -153,7 +153,7 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		ResetLink: fmt.Sprintf(
 			"%s/%s?token=%s",
 			config.Cfg.GetFullDomain(),
-			paths.Get(ctx.Request().Context(), paths.ResetPasswordPage),
+			paths.GP(ctx.Request().Context(), paths.ResetPassword),
 			tkn.Hash,
 		),
 	}.Generate(ctx.Request().Context())

@@ -15,12 +15,11 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
-	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/http/handlers"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
+	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -90,24 +89,15 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 				ctx,
 				http.MethodPost,
 				fmt.Sprintf(
-					"%s/%s",
-					config.Cfg.GetFullDomain(),
-					"login",
+					"http://localhost:8080%s",
+					paths.GP(ctx, paths.StoreAuthenticatedSession),
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			rec := httptest.NewRecorder()
-			c := router.NewContext(req, rec)
-			c.Set(
-				"_session_store",
-				sessions.NewCookieStore(
-					[]byte(config.Cfg.SessionEncryptionKey),
-				),
-			)
 
-			err := testHandlers.Authentication.StoreAuthenticatedSession(c)
-			assert.NoError(t, err)
+			router.ServeHTTP(rec, req)
 
 			assert.Equal(t, http.StatusOK, rec.Code)
 
@@ -138,7 +128,7 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 	}
 }
 
-func TestStorePasswordReset(t *testing.T) {
+func TestStoreForgottenPassword(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -187,22 +177,20 @@ func TestStorePasswordReset(t *testing.T) {
 				ctx,
 				http.MethodPost,
 				fmt.Sprintf(
-					"%s/%s",
-					config.Cfg.GetFullDomain(),
-					"forgot-password",
+					"http://localhost:8080%s",
+					paths.GP(ctx, paths.StoreForgotPassword),
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			rec := httptest.NewRecorder()
-			c := router.NewContext(req, rec)
 
 			var sentHtml string
 
 			if tt.expectedToSucceed {
 				emailSvc.On(
 					"Send",
-					ctx,
+					mock.Anything,
 					mock.MatchedBy(func(payload services.EmailPayload) bool {
 						correctEmail := payload.To == tt.user.Email
 						correctSubject := payload.Subject == "Action Required | Password reset requested"
@@ -221,7 +209,7 @@ func TestStorePasswordReset(t *testing.T) {
 				if ok := emailSvc.AssertNotCalled(
 					t,
 					"Send",
-					ctx,
+					mock.Anything,
 					services.EmailPayload{},
 				); !ok {
 					assert.FailNow(
@@ -231,7 +219,8 @@ func TestStorePasswordReset(t *testing.T) {
 				}
 			}
 
-			err := testHandlers.Authentication.StorePasswordReset(c)
+			router.ServeHTTP(rec, req)
+
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
 
@@ -359,18 +348,16 @@ func TestStoreResetPassword(t *testing.T) {
 				ctx,
 				http.MethodPost,
 				fmt.Sprintf(
-					"%s/%s",
-					config.Cfg.GetFullDomain(),
-					"reset-password",
+					"http://localhost:8080%s",
+					paths.GP(ctx, paths.ResetPassword),
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 			rec := httptest.NewRecorder()
-			c := router.NewContext(req, rec)
+			router.ServeHTTP(rec, req)
 
-			err := testHandlers.Authentication.StoreResetPassword(c)
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
 
