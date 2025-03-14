@@ -20,7 +20,7 @@ func (n Name) String() string {
 type paths []Name
 
 var Paths = []Name{
-APIHealth Name = "health",
+	APIHealth,
 
 	Home,
 	About,
