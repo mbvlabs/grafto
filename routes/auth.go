@@ -29,5 +29,5 @@ func authRoutes(
 	}).Name = paths.ResetPassword.String()
 	router.POST("/reset-password", func(c echo.Context) error {
 		return handlers.StoreResetPassword(c)
-	}).Name = paths.StoreForgotPassword.String()
+	}).Name = paths.StoreResetPassword.String()
 }
