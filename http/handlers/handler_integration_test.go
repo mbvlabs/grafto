@@ -74,7 +74,6 @@ func setupTestRouter(
 	}))
 	slog.SetDefault(logger)
 
-	slog.SetDefault(slog.Default())
 	routes := routes.NewRoutes(handlers, nil)
 	return routes.SetupRoutes(ctx)
 }

@@ -51,7 +51,9 @@ func TestStoreUser(t *testing.T) {
 		{
 			name: "should not register new user because mismatched passwords",
 			payload: url.Values{
-				"email":            {"test1@example.com"},
+				"email": {
+					fmt.Sprintf("%s@gmail.com", uuid.New().String()),
+				},
 				"password":         {"password123"},
 				"confirm_password": {"different"},
 			},
@@ -69,7 +71,9 @@ func TestStoreUser(t *testing.T) {
 		{
 			name: "should not register new user empty password",
 			payload: url.Values{
-				"email":            {"test2@example.com"},
+				"email": {
+					fmt.Sprintf("%s@gmail.com", uuid.New().String()),
+				},
 				"password":         {""},
 				"confirm_password": {""},
 			},

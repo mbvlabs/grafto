@@ -235,12 +235,12 @@ func TestStoreForgottenPassword(t *testing.T) {
 
 				assert.NotEmpty(t, href, "reset password link was empty")
 
-				// token := strings.Split(href, "?token=")[1]
-				//
-				// resetPwTkn, err := models.GetToken(ctx, postgres.Pool, token)
-				// assert.NoError(t, err)
-				//
-				// assert.True(t, resetPwTkn.IsValid())
+				token := strings.Split(href, "?token=")[1]
+
+				resetPwTkn, err := models.GetToken(ctx, postgres.Pool, token)
+				assert.NoError(t, err)
+
+				assert.True(t, resetPwTkn.IsValid())
 			}
 		})
 	}

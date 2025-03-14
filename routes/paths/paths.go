@@ -20,15 +20,10 @@ func (n Name) String() string {
 type paths []Name
 
 var Paths = []Name{
-	APIHealth,
-	APICollect,
+APIHealth Name = "health",
 
 	Home,
 	About,
-
-	CreateSubscription,
-	UnSubscribe,
-	VerifySubscriber,
 
 	CreateAuthenticatedSession,
 	StoreAuthenticatedSession,
