@@ -4,7 +4,7 @@ import (
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/components"
 	"github.com/mbvlabs/grafto/views/layouts"
-	"github.com/mbvlabs/grafto/views/paths"
+	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 var (
@@ -25,7 +25,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 				Don't have an account?
 				<a
 					class="btn btn-xs btn-outline btn-success"
-					href={ paths.GetSafeURL(ctx, paths.RegisterPage) }
+					href={ paths.GSP(ctx, paths.NewUser) }
 				>
 					Register
 				</a>
@@ -66,7 +66,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 					<h2 class="text-yellow-400">{ errors[ErrEmailNotValidated] }</h2>
 				</div>
 			}
-			<form hx-post={ paths.Get(ctx, paths.Login) } method="post">
+			<form hx-post={ paths.GP(ctx, paths.CreateAuthenticatedSession) } method="post">
 				<input type="hidden" name="gorilla.csrf.Token" value={ csrfToken }/>
 				<div class="grid gap-y-4">
 					<div>
@@ -84,7 +84,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 						</div>
 						<a
 							class="btn"
-							href={ paths.GetSafeURL(ctx, paths.ForgotPasswordPage) }
+							href={ paths.GSP(ctx, paths.ForgotPassword) }
 						>
 							Forgotten password?
 						</a>

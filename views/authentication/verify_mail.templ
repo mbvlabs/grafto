@@ -3,6 +3,7 @@ package authentication
 import (
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/layouts"
+	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 templ VerifyEmailPage(tokenInvalid bool) {
@@ -19,7 +20,7 @@ templ VerifyEmailPage(tokenInvalid bool) {
 						Your token is not valid; please request a new one.
 					</p>
 				} else {
-					<p hx-get="/redirect?to=dashboard" hx-trigger="load delay:4s" class="text-green-600">
+					<p hx-get={ paths.GP(ctx, paths.Redirect, paths.WithQueryParams(paths.QueryParams{"to": "dashboard"})) } hx-trigger="load delay:4s" class="text-green-600">
 						Your email has been validated; you'll be re-directed to the dashboard in 4 seconds.
 					</p>
 				}

@@ -9,10 +9,10 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/components"
 	"github.com/mbvlabs/grafto/views/layouts"
-	"github.com/mbvlabs/grafto/views/paths"
 )
 
 var (
@@ -102,7 +102,7 @@ func RegisterForm(data RegisterFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 templ.SafeURL = paths.GetSafeURL(ctx, paths.LoginPage)
+		var templ_7745c5c3_Var4 templ.SafeURL = paths.GSP(ctx, paths.CreateAuthenticatedSession)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -112,9 +112,9 @@ func RegisterForm(data RegisterFormProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(paths.Get(ctx, paths.RegisterUser))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(paths.GP(ctx, paths.CreateUser))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/register.templ`, Line: 49, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/register.templ`, Line: 49, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

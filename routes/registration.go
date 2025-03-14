@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/http/handlers"
-	"github.com/mbvlabs/grafto/views/paths"
+	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 func registrationRoutes(
@@ -12,12 +12,12 @@ func registrationRoutes(
 ) {
 	router.GET("/register", func(c echo.Context) error {
 		return handlers.CreateUser(c)
-	}).Name = paths.RegisterPage.Name()
+	}).Name = paths.NewUser.String()
 	router.POST("/register", func(c echo.Context) error {
 		return handlers.StoreUser(c)
-	}).Name = paths.RegisterUser.Name()
+	}).Name = paths.CreateUser.String()
 
 	router.GET("/verify-email", func(c echo.Context) error {
 		return handlers.VerifyUserEmail(c)
-	}).Name = paths.VerifyEmailPage.Name()
+	}).Name = paths.VerifyEmail.String()
 }

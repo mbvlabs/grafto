@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/http"
 	"github.com/mbvlabs/grafto/http/handlers"
-	"github.com/mbvlabs/grafto/views/paths"
+	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 func dashboardRoutes(
@@ -15,5 +15,5 @@ func dashboardRoutes(
 
 	dashboardRouter.GET("", func(c echo.Context) error {
 		return ctrl.Index(c)
-	}, http.AuthOnly).Name = paths.DashboardHomePage.Name()
+	}, http.AuthOnly).Name = paths.Dashboard.String()
 }
