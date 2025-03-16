@@ -12,7 +12,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/views/contexts"
+	"github.com/mbvlabs/grafto/routes/contexts"
 )
 
 type metaContent struct {

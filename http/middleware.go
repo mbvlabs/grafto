@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/http/handlers"
-	"github.com/mbvlabs/grafto/views/contexts"
+	"github.com/mbvlabs/grafto/routes/contexts"
 )
 
 func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {

@@ -1,8 +1,6 @@
 package contexts
 
 import (
-	"context"
-
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -20,13 +18,4 @@ type App struct {
 	IsAuthenticated bool
 	IsAdmin         bool
 	CurrentPath     string
-}
-
-func ExtractApp(ctx context.Context) *App {
-	appCtx, ok := ctx.Value(AppKey{}).(*App)
-	if !ok {
-		return &App{}
-	}
-
-	return appCtx
 }
