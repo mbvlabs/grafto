@@ -17,8 +17,8 @@ import (
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/routes/contexts"
 	"github.com/mbvlabs/grafto/services"
-	"github.com/mbvlabs/grafto/views/contexts"
 )
 
 var AuthenticatedSessionName = fmt.Sprintf(
