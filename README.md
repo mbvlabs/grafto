@@ -4,6 +4,8 @@ The kickstarter repository for full-stack Go apps using your grandfather's techn
 
 Quick heads-up, this is still work in progress so expect lots of changes to come.
 
+Made by Morten, creator of the [Golang Blog Course](https://golangblogcourse.com?utm_source=github&utm_campaign=grafto).
+
 ## Aim
 
 The aim of Grafto is to be starter template that provides most of what you'll need to get a new web project off the 
