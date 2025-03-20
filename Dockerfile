@@ -36,6 +36,5 @@ WORKDIR /
 COPY --from=build-go /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build-go app app
 COPY --from=build-go static static 
-COPY --from=build-go resources/seo resources/seo
 
 CMD ["./app"]
