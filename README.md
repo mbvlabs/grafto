@@ -18,3 +18,7 @@ new business.
 It's important to note that there currently exists a much more feature complete starter template, called [pagado](https://github.com/mikestefanello/pagoda).
 This is not an attempt at replacing that, but rather offer another approach and view to full-stack web development
 in Go.
+
+## Usage
+
+TODO
