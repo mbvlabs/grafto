@@ -1,7 +1,8 @@
 set dotenv-load
 
 # alias
-alias r := run-app
+alias r := run
+alias ra := run-app
 alias rw := run-worker
 alias re := run-email
 
