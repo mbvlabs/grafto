@@ -25,7 +25,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 				Don't have an account?
 				<a
 					class="btn btn-xs btn-outline btn-success"
-					href={ paths.GSP(ctx, paths.NewUser) }
+					href={ paths.GSP(ctx, paths.CreateUser) }
 				>
 					Register
 				</a>
@@ -84,7 +84,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 						</div>
 						<a
 							class="btn"
-							href={ paths.GSP(ctx, paths.ForgotPassword) }
+							href={ paths.GSP(ctx, paths.CreateForgotPassword) }
 						>
 							Forgotten password?
 						</a>

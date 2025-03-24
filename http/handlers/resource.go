@@ -7,16 +7,13 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/routes/paths"
 )
 
-type Resource struct {
-	db psql.Postgres
-}
+type Resource struct{}
 
-func newResource(db psql.Postgres) Resource {
-	return Resource{db}
+func newResource() Resource {
+	return Resource{}
 }
 
 func (r Resource) Sitemap(c echo.Context) error {
@@ -56,7 +53,8 @@ func createSitemap(c echo.Context) (Sitemap, error) {
 
 	routes := c.Echo().Routes()
 	for _, r := range routes {
-		switch paths.Name(r.Name) {
+		n := paths.Path{Name: r.Name, URL: r.Path}
+		switch n {
 		case paths.About:
 			urls = append(urls, URL{
 				Loc: fmt.Sprintf(

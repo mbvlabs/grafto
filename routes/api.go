@@ -10,7 +10,7 @@ func apiV1Routes(
 	router *echo.Group,
 	handlers handlers.Api,
 ) {
-	router.GET("/health", func(c echo.Context) error {
+	router.GET(paths.APIHealth.URL, func(c echo.Context) error {
 		return handlers.AppHealth(c)
-	}).Name = paths.APIHealth.String()
+	}).Name = paths.APIHealth.Name
 }
