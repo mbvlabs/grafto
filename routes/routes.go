@@ -32,6 +32,14 @@ func NewRoutes(
 	router := echo.New()
 	router.Debug = true
 
+	router.Use(
+		session.Middleware(
+			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
+		),
+		http.RegisterAppContext,
+		http.RegisterFlashMessagesContext,
+	)
+
 	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		router.Debug = false
 		router.Use(
@@ -66,10 +74,6 @@ func NewRoutes(
 	}
 
 	router.Use(
-		session.Middleware(
-			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
-		),
-		http.RegisterAppContext,
 		slogecho.NewWithConfig(slog.Default(), slogechoCfg),
 		echomw.Recover(),
 	)

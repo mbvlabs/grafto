@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
@@ -28,6 +29,7 @@ var AuthenticatedSessionName = fmt.Sprintf(
 )
 
 const (
+	FlashSessionKey  = "flash_messages"
 	SessIsAuthName   = "is_authenticated"
 	SessUserID       = "user_id"
 	SessUserEmail    = "user_email"
@@ -44,14 +46,41 @@ type Handlers struct {
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
-	appCtxKey := contexts.AppKey{}
-	appCtx := ctx.Get(appCtxKey.String())
+	appcKey := contexts.AppKey{}
+	appc := ctx.Get(appcKey.String())
+
+	cOne := context.WithValue(
+		ctx.Request().Context(),
+		appcKey,
+		appc,
+	)
+
+	flashCKey := contexts.FlashKey{}
+	flashC := ctx.Get(flashCKey.String())
 
 	return context.WithValue(
-		ctx.Request().Context(),
-		appCtxKey,
-		appCtx,
+		cOne,
+		flashCKey,
+		flashC,
 	)
+}
+
+func addFlash(
+	c echo.Context, flashType contexts.FlashType, msg string,
+) error {
+	sess, err := session.Get(FlashSessionKey, c)
+	if err != nil {
+		return err
+	}
+
+	sess.AddFlash(contexts.FlashMessage{
+		ID:        uuid.New(),
+		Type:      flashType,
+		CreatedAt: time.Now(),
+		Message:   msg,
+	}, FlashSessionKey)
+
+	return sess.Save(c.Request(), c.Response())
 }
 
 func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
@@ -71,6 +100,7 @@ func NewHandlers(
 	emailSvc EmailService,
 ) Handlers {
 	gob.Register(uuid.UUID{})
+	gob.Register(contexts.FlashMessage{})
 
 	api := newApi()
 	app := newApp(db, cache)

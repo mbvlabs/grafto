@@ -3,6 +3,7 @@ package views
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/routes/contexts"
 )
@@ -70,6 +71,8 @@ func Head(ctx context.Context, opts ...headDataOption) templ.Component {
 	if appCtx.CurrentPath != "" {
 		slug = slug + appCtx.CurrentPath
 	}
+
+	slog.Info("AUTHED", "a", appCtx.IsAuthenticated)
 
 	data := &headData{
 		title:       config.Cfg.ProjectName,
