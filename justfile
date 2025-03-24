@@ -5,8 +5,6 @@ alias r := run-app
 alias rw := run-worker
 alias re := run-email
 
-alias wc := watch-css
-
 alias cm := create-migration
 alias ms := migration-status
 alias um := up-migrations
@@ -29,11 +27,7 @@ alias tu := test-unit
 default:
     @just --list
 
-# CSS
-watch-css:
-    npm run dev
-
-# Database 
+# database 
 create-migration name:
 	@goose -dir psql/migrations postgres $DB_KIND://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME create {{name}} sql
 
@@ -61,21 +55,27 @@ reset-db:
 generate-db-functions:
 	@sqlc compile && sqlc generate
 
-# Application
-run-app:
-    wgo -xdir ./views/emails -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/app/main.go
+# application
+run:
+    wgo -dir views -xdir views/emails -file=.go -file=.templ -xfile=_templ.go just compile-css-dev :: just compile-templates :: just run-app
 
-# Worker
+run-app:
+    go run cmd/app/main.go
+
+# worker
 run-worker:
     @go run ./cmd/worker/main.go
 
-# Emails
+# emails
 run-email:
     wgo -dir ./emails -file=.txt -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/*.go
 
-# templates
+# assets
 compile-templates:
     templ generate
+
+compile-css-dev:
+    npm run dev
 
 fmt-templates:
     cd views && templ fmt .
