@@ -72,8 +72,6 @@ func Head(ctx context.Context, opts ...headDataOption) templ.Component {
 		slug = slug + appCtx.CurrentPath
 	}
 
-	slog.Info("AUTHED", "a", appCtx.IsAuthenticated)
-
 	data := &headData{
 		title:       config.Cfg.ProjectName,
 		description: "A starter template for building one-man businesses using Golang.",
