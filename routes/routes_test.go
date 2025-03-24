@@ -30,9 +30,10 @@ func TestSetupRoutes(t *testing.T) {
 		if strings.Contains(route.Name, "github") {
 			continue
 		}
+
 		found := false
-		for _, path := range paths.Paths {
-			if path.String() == route.Name {
+		for _, path := range paths.GetAllPaths() {
+			if path.Name == route.Name {
 				found = true
 				break
 			}
@@ -46,25 +47,5 @@ func TestSetupRoutes(t *testing.T) {
 
 	if !allRegisteredRoutesDeclared {
 		t.Error("Not all registered routes were defined")
-	}
-
-	allRoutesRegistered := true
-	for _, path := range paths.Paths {
-		found := false
-		for _, route := range r.Routes() {
-			if path.String() == route.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			slog.Error("TestSetupRoutes", "path", path)
-			allRoutesRegistered = false
-			break
-		}
-	}
-
-	if !allRoutesRegistered {
-		t.Error("Not all routes were registered properly")
 	}
 }

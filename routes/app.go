@@ -9,16 +9,16 @@ import (
 )
 
 func appRoutes(router *echo.Echo, handlers handlers.App) {
-	router.GET("/", func(c echo.Context) error {
+	router.GET(paths.LandingPage.URL, func(c echo.Context) error {
 		return handlers.LandingPage(c)
-	}).Name = paths.Home.String()
+	}).Name = paths.LandingPage.Name
 
-	router.GET("/about", func(c echo.Context) error {
+	router.GET(paths.About.URL, func(c echo.Context) error {
 		return handlers.AboutPage(c)
-	}).Name = paths.About.String()
+	}).Name = paths.About.Name
 
-	router.GET("/redirect", func(c echo.Context) error {
+	router.GET(paths.Redirect.URL, func(c echo.Context) error {
 		qp := c.QueryParam("to")
 		return c.Redirect(http.StatusPermanentRedirect, qp)
-	}).Name = paths.Redirect.String()
+	}).Name = paths.Redirect.Name
 }

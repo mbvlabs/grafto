@@ -153,7 +153,7 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		ResetLink: fmt.Sprintf(
 			"%s/%s?token=%s",
 			config.Cfg.GetFullDomain(),
-			paths.GP(ctx.Request().Context(), paths.ResetPassword),
+			paths.GP(ctx.Request().Context(), paths.CreateResetPassword),
 			tkn.Hash,
 		),
 	}.Generate(ctx.Request().Context())

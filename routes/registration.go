@@ -10,14 +10,14 @@ func registrationRoutes(
 	router *echo.Echo,
 	handlers handlers.Registration,
 ) {
-	router.GET("/register", func(c echo.Context) error {
+	router.GET(paths.CreateUser.URL, func(c echo.Context) error {
 		return handlers.CreateUser(c)
-	}).Name = paths.NewUser.String()
-	router.POST("/register", func(c echo.Context) error {
+	}).Name = paths.CreateUser.Name
+	router.POST(paths.StoreUser.URL, func(c echo.Context) error {
 		return handlers.StoreUser(c)
-	}).Name = paths.CreateUser.String()
+	}).Name = paths.StoreUser.Name
 
-	router.GET("/verify-email", func(c echo.Context) error {
+	router.GET(paths.VerifyEmail.URL, func(c echo.Context) error {
 		return handlers.VerifyUserEmail(c)
-	}).Name = paths.VerifyEmail.String()
+	}).Name = paths.VerifyEmail.Name
 }

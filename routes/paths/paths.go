@@ -7,43 +7,31 @@ import (
 	"github.com/a-h/templ"
 )
 
+type Path struct {
+	Name string
+	URL  string
+}
+
+var registry = make(map[string]Path)
+
+func register(p Path) Path {
+	registry[p.Name] = p
+	return p
+}
+
+func GetAllPaths() []Path {
+	paths := make([]Path, 0, len(registry))
+	for _, p := range registry {
+		paths = append(paths, p)
+	}
+
+	return paths
+}
+
 type (
-	Name        string
 	Params      map[string]string
 	QueryParams map[string]string
 )
-
-func (n Name) String() string {
-	return string(n)
-}
-
-type paths []Name
-
-var Paths = []Name{
-	APIHealth,
-
-	Home,
-	About,
-
-	CreateAuthenticatedSession,
-	StoreAuthenticatedSession,
-	ForgotPassword,
-	StoreForgotPassword,
-	ResetPassword,
-	StoreResetPassword,
-
-	NewUser,
-	CreateUser,
-	VerifyEmail,
-
-	Redirect,
-
-	Dashboard,
-
-	Robots,
-	Sitemap,
-	Favicon,
-}
 
 type Option func(*pathOptions)
 
@@ -66,10 +54,10 @@ func WithQueryParams(queryParams QueryParams) Option {
 
 func GP(
 	ctx context.Context,
-	name Name,
+	path Path,
 	opts ...Option,
 ) string {
-	p, ok := ctx.Value(name).(string)
+	p, ok := ctx.Value(path.Name).(string)
 	if !ok {
 		return ""
 	}
@@ -105,8 +93,8 @@ func GP(
 
 func GSP(
 	ctx context.Context,
-	name Name,
+	path Path,
 	opts ...Option,
 ) templ.SafeURL {
-	return templ.SafeURL(GP(ctx, name, opts...))
+	return templ.SafeURL(GP(ctx, path, opts...))
 }

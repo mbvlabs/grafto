@@ -8,8 +8,8 @@ import (
 )
 
 func fragmentRoutes(router *echo.Echo) {
-	router.GET("/load-csrf", func(c echo.Context) error {
+	router.GET(paths.LoadCsrfToken.URL, func(c echo.Context) error {
 		return fragments.CsrfToken(csrf.Token(c.Request())).
 			Render(c.Request().Context(), c.Response())
-	}).Name = paths.LoadCsrfToken.String()
+	}).Name = paths.LoadCsrfToken.Name
 }

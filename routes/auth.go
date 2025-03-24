@@ -10,24 +10,24 @@ func authRoutes(
 	router *echo.Echo,
 	handlers handlers.Authentication,
 ) {
-	router.GET("/login", func(c echo.Context) error {
+	router.GET(paths.CreateAuthenticatedSession.URL, func(c echo.Context) error {
 		return handlers.CreateAuthenticatedSession(c)
-	}).Name = paths.CreateAuthenticatedSession.String()
-	router.POST("/login", func(c echo.Context) error {
+	}).Name = paths.CreateAuthenticatedSession.Name
+	router.POST(paths.StoreAuthenticatedSession.URL, func(c echo.Context) error {
 		return handlers.StoreAuthenticatedSession(c)
-	}).Name = paths.StoreAuthenticatedSession.String()
+	}).Name = paths.StoreAuthenticatedSession.Name
 
-	router.GET("/forgot-password", func(c echo.Context) error {
+	router.GET(paths.CreateForgotPassword.URL, func(c echo.Context) error {
 		return handlers.CreatePasswordReset(c)
-	}).Name = paths.ForgotPassword.String()
-	router.POST("/forgot-password", func(c echo.Context) error {
+	}).Name = paths.CreateForgotPassword.Name
+	router.POST(paths.StoreForgotPassword.URL, func(c echo.Context) error {
 		return handlers.StorePasswordReset(c)
-	}).Name = paths.StoreForgotPassword.String()
+	}).Name = paths.StoreForgotPassword.Name
 
-	router.GET("/reset-password", func(c echo.Context) error {
+	router.GET(paths.CreateResetPassword.URL, func(c echo.Context) error {
 		return handlers.CreateResetPassword(c)
-	}).Name = paths.ResetPassword.String()
-	router.POST("/reset-password", func(c echo.Context) error {
+	}).Name = paths.CreateResetPassword.Name
+	router.POST(paths.StoreResetPassword.URL, func(c echo.Context) error {
 		return handlers.StoreResetPassword(c)
-	}).Name = paths.StoreResetPassword.String()
+	}).Name = paths.StoreResetPassword.Name
 }

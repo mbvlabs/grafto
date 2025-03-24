@@ -11,9 +11,7 @@ func dashboardRoutes(
 	router *echo.Echo,
 	ctrl handlers.Dashboard,
 ) {
-	dashboardRouter := router.Group("/dashboard")
-
-	dashboardRouter.GET("", func(c echo.Context) error {
+	router.GET(paths.DashboardHome.URL, func(c echo.Context) error {
 		return ctrl.Index(c)
-	}, http.AuthOnly).Name = paths.Dashboard.String()
+	}, http.AuthOnly).Name = paths.DashboardHome.Name
 }
