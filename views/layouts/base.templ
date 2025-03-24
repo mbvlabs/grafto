@@ -1,6 +1,9 @@
 package layouts
 
-import "github.com/mbvlabs/grafto/views/components"
+import (
+	"github.com/mbvlabs/grafto/views/components"
+	"github.com/mbvlabs/grafto/routes/contexts"
+)
 
 templ Base(head templ.Component) {
 	<!DOCTYPE html>
@@ -12,5 +15,10 @@ templ Base(head templ.Component) {
 			<script src="/static/js/htmx.min.js"></script>
 			<script src="/static/js/alpine.js"></script>
 		</body>
+		<div class="toast toast-end">
+			for _, flash := range contexts.ExtractFlashMessages(ctx) {
+				@components.ToastMessage(flash)
+			}
+		</div>
 	</html>
 }

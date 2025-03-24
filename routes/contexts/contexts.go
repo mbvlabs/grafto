@@ -1,6 +1,8 @@
 package contexts
 
-import "context"
+import (
+	"context"
+)
 
 func ExtractApp(ctx context.Context) App {
 	appCtx, ok := ctx.Value(AppKey{}).(App)
@@ -9,4 +11,13 @@ func ExtractApp(ctx context.Context) App {
 	}
 
 	return appCtx
+}
+
+func ExtractFlashMessages(ctx context.Context) []FlashMessage {
+	value, ok := ctx.Value(FlashKey{}).([]FlashMessage)
+	if !ok {
+		return nil
+	}
+
+	return value
 }
