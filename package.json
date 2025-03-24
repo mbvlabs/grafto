@@ -5,7 +5,7 @@
 	"author": "",
 	"license": "ISC",
 	"scripts": {
-		"dev": "vite build --mode dev --watch",
+		"dev": "vite build --mode dev",
 		"build": "vite build --mode prod"
 	},
 	"repository": {
