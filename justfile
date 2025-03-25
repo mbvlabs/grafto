@@ -26,7 +26,7 @@ alias ft := fmt-templates
 alias ex := explore
 
 alias ti := test-integrations
-alias tu := test-unit
+alias tu := test-units
 
 default:
     @just --list
@@ -99,8 +99,8 @@ vet:
 	@go vet ./...
 
 # testing
-test-unit:
-	@go test -tags=unit -v ./...
+test-units:
+	@go test -tags=unit ./...
 
 test-integrations:
 	@go test -tags=integration ./...
