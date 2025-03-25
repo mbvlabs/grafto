@@ -9,7 +9,7 @@ COPY package-lock.json package-lock.json
 COPY vite.config.js vite.config.js
 
 RUN npm ci
-RUN npm run build
+RUN npm run prod
 
 FROM golang:1.24 AS build-go
 
@@ -19,11 +19,7 @@ ENV APP_RELEASE=$appRelease
 
 WORKDIR /
 
-RUN go install github.com/a-h/templ/cmd/templ@latest
-
 COPY . .
-
-RUN templ generate
 
 COPY --from=build-resources static/css static/css
 
