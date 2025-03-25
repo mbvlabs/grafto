@@ -43,6 +43,7 @@ type Handlers struct {
 	Authentication Authentication
 	Dashboard      Dashboard
 	Registration   Registration
+	Assets         Assets
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
@@ -65,6 +66,7 @@ func setAppCtx(ctx echo.Context) context.Context {
 	)
 }
 
+//nolint:unused // needed helper method
 func addFlash(
 	c echo.Context, flashType contexts.FlashType, msg string,
 ) error {
@@ -107,6 +109,7 @@ func NewHandlers(
 	auth := newAuthentication(db, emailSvc)
 	dashboard := newDashboard()
 	registration := newRegistration(db, emailSvc)
+	assets := newAssets()
 
 	return Handlers{
 		api,
@@ -114,9 +117,11 @@ func NewHandlers(
 		auth,
 		dashboard,
 		registration,
+		assets,
 	}
 }
 
+//nolint:unused // needed helper method
 func redirectHx(w http.ResponseWriter, url string) error {
 	w.Header().Set("HX-Redirect", url)
 	w.WriteHeader(http.StatusSeeOther)
@@ -124,10 +129,7 @@ func redirectHx(w http.ResponseWriter, url string) error {
 	return nil
 }
 
-func getContext(c echo.Context) context.Context {
-	return c.Request().Context()
-}
-
+//nolint:unused // needed helper method
 func redirect(
 	w http.ResponseWriter,
 	r *http.Request,

@@ -86,6 +86,7 @@ func (m Email) Send(
 
 	_, err := m.client.SendEmail(input)
 	if err != nil {
+		//nolint:errorlint //todo
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
 			case ses.ErrCodeMessageRejected:

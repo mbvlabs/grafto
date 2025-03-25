@@ -93,14 +93,14 @@ func CreatePooledConnection(
 	return dbpool, nil
 }
 
-// getFreePort returns a random available port number between 1024-65535
-func getFreePort() (int, error) {
+func getFreePort() (uint32, error) {
 	const (
 		minPort = 1024
 		maxPort = 65535
 	)
 
-	for attempts := 0; attempts < 10; attempts++ {
+	for range 10 {
+		//nolint:gosec //only used for testing
 		port := rand.Intn(maxPort-minPort) + minPort
 
 		addr := fmt.Sprintf(":%d", port)
@@ -110,7 +110,8 @@ func getFreePort() (int, error) {
 		}
 
 		conn.Close()
-		return port, nil
+		//nolint:gosec //only used for testing
+		return uint32(port), nil
 	}
 
 	return 0, fmt.Errorf("could not find an available port after 10 attempts")

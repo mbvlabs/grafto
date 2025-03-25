@@ -8,8 +8,6 @@ import (
 	"github.com/mbvlabs/grafto/views"
 )
 
-const landingPageCacheKey = "LandingPage"
-
 type App struct {
 	db    psql.Postgres
 	cache otter.CacheWithVariableTTL[string, templ.Component]

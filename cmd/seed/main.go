@@ -25,6 +25,7 @@ func main() {
 		panic(err)
 	}
 
+	///nolint:errcheck
 	defer tx.Rollback(ctx)
 
 	slog.Info("Starting seed script...")

@@ -30,9 +30,9 @@ var (
 )
 
 type MetaInformation struct {
-	Resource   Resource  `validate:"required"`
-	ResourceID uuid.UUID `validate:"required,uuid"`
-	Scope      Scope     `validate:"required"`
+	Resource   Resource  `validate:"required"      json:"resource"`
+	ResourceID uuid.UUID `validate:"required,uuid" json:"resource_id"`
+	Scope      Scope     `validate:"required"      json:"scope"`
 }
 
 type Token struct {
@@ -49,7 +49,7 @@ func (te Token) IsValid() bool {
 
 type NewTokenPayload struct {
 	Expiration time.Time       `validate:"required"`
-	Meta       MetaInformation `validate:"required"`
+	Meta       MetaInformation `validate:"required" json:"meta"`
 }
 
 func NewToken(

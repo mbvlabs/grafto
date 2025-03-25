@@ -2,9 +2,8 @@ name: Docker Build Test
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - 'master'
 
 jobs:
   docker-build-test:

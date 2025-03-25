@@ -10,13 +10,13 @@ import (
 	"github.com/mbvlabs/grafto/routes/paths"
 )
 
-type Resource struct{}
+type Assets struct{}
 
-func newResource() Resource {
-	return Resource{}
+func newAssets() Assets {
+	return Assets{}
 }
 
-func (r Resource) Sitemap(c echo.Context) error {
+func (a Assets) Sitemap(c echo.Context) error {
 	sitemap, err := createSitemap(c)
 	if err != nil {
 		return err
