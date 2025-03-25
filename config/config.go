@@ -16,9 +16,7 @@ type Config struct {
 func NewConfig() Config {
 	var cfg Config
 
-	app := newApp()
-
-	switch app.Environment {
+	switch os.Getenv("ENVIRONMENT") {
 	case DEV_ENVIRONMENT, PROD_ENVIRONMENT:
 		awsAccessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
 		if awsAccessKeyID == "" {
@@ -32,7 +30,7 @@ func NewConfig() Config {
 		cfg = Config{
 			newDatabase(),
 			newAuthentication(),
-			app,
+			newApp(),
 			awsAccessKeyID,
 			awsSecretAccessKey,
 		}
