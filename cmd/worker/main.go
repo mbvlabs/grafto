@@ -18,8 +18,6 @@ import (
 	"github.com/riverqueue/river"
 )
 
-var appRelease string
-
 func main() {
 	ctx := context.Background()
 	cfg := config.NewConfig()

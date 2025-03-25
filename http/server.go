@@ -71,30 +71,27 @@ func (s *Server) Start(ctx context.Context) error {
 	// Start server
 	eg.Go(func() error {
 		slog.Info("starting server on", "host", s.host, "port", s.port)
-		if err := s.srv.ListenAndServe(); err != nil {
+		if err := s.srv.ListenAndServe(); err != nil &&
+			err != http.ErrServerClosed {
 			return fmt.Errorf("server error: %w", err)
 		}
-
 		return nil
 	})
 
 	// Handle shutdown on context cancellation
-	// eg.Go(func() error {
-	<-egCtx.Done()
-	slog.Info("initiating graceful shutdown")
-
-	shutdownCtx, cancel := context.WithTimeout(
-		context.Background(),
-		10*time.Second,
-	)
-	defer cancel()
-
-	if err := s.srv.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("shutdown error: %w", err)
-	}
-
-	// 	return nil
-	// })
+	eg.Go(func() error {
+		<-egCtx.Done()
+		slog.Info("initiating graceful shutdown")
+		shutdownCtx, cancel := context.WithTimeout(
+			ctx,
+			10*time.Second,
+		)
+		defer cancel()
+		if err := s.srv.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("shutdown error: %w", err)
+		}
+		return nil
+	})
 
 	// Wait for either server error or successful shutdown
 	if err := eg.Wait(); err != nil {
@@ -102,6 +99,5 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
-	slog.Info("done")
 	return nil
 }

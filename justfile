@@ -7,6 +7,8 @@ alias rw := run-worker
 alias re := run-email
 alias rcc := compile-css-dev 
 
+alias ci := golangci
+
 alias cm := create-migration
 alias ms := migration-status
 alias um := up-migrations
@@ -59,7 +61,7 @@ generate-db-functions:
 
 # application
 run:
-    wgo -dir views -xdir views/emails -file=.go -file=.templ -xfile=_templ.go just compile-css-dev :: just compile-templates :: just run-app
+    wgo -xdir views/emails -file=.go -file=.templ -xfile=_templ.go just compile-css-dev :: just compile-templates :: just run-app
 
 run-app:
     go run cmd/app/main.go
@@ -89,6 +91,14 @@ explore:
 seed:
 	@go run ./cmd/seed/main.go
 
+# code quality
+golangci:
+	golangci-lint run
+
+vet:
+	@go vet ./...
+
+# testing
 test-unit:
 	@go test -tags=unit -v ./...
 

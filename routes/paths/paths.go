@@ -7,6 +7,8 @@ import (
 	"github.com/a-h/templ"
 )
 
+type RouteCtxKey string
+
 type Path struct {
 	Name string
 	URL  string
@@ -57,7 +59,7 @@ func GP(
 	path Path,
 	opts ...Option,
 ) string {
-	p, ok := ctx.Value(path.Name).(string)
+	p, ok := ctx.Value(RouteCtxKey(path.Name)).(string)
 	if !ok {
 		return ""
 	}

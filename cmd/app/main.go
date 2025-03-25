@@ -22,8 +22,6 @@ import (
 	"riverqueue.com/riverui"
 )
 
-var appRelease string
-
 func developmentLogger() *slog.Logger {
 	return slog.New(
 		tint.NewHandler(os.Stderr, &tint.Options{
