@@ -349,7 +349,7 @@ func TestStoreResetPassword(t *testing.T) {
 				http.MethodPost,
 				fmt.Sprintf(
 					"http://localhost:8080%s",
-					paths.GP(ctx, paths.ResetPassword),
+					paths.GP(ctx, paths.StoreResetPassword),
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
