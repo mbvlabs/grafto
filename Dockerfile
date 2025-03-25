@@ -11,7 +11,7 @@ COPY vite.config.js vite.config.js
 RUN npm ci
 RUN npm run build
 
-FROM golang:1.23 AS build-go
+FROM golang:1.24 AS build-go
 
 ARG appRelease=0.0.1
 
