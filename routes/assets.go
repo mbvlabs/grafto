@@ -26,23 +26,25 @@ func assetsRoutes(
 
 	// css
 	router.GET(paths.MainCss.URL, func(c echo.Context) error {
+		file := strings.Split(paths.MainCss.URL, "/")[2]
 		stylesheet, err := static.Files.ReadFile(
-			fmt.Sprintf("css/%s", strings.Split(paths.MainCss.URL, "/")[2]),
+			fmt.Sprintf("css/%s", file),
 		)
 		if err != nil {
 			return err
 		}
 
 		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			hash := strings.Split(file, "-")
 			c.Response().
 				Header().
 				Set("Cache-Control", "public, max-age=86400, immutable")
 			c.Response().
 				Header().
 				Set("Vary", "Accept-Encoding")
-			// c.Response().
-			// 	Header().
-			// 	Set("ETag", "\"bootstrap-v5_3_0\"")
+			c.Response().
+				Header().
+				Set("ETag", hash[2])
 		}
 
 		return c.Blob(http.StatusOK, "text/css", stylesheet)
@@ -50,20 +52,25 @@ func assetsRoutes(
 
 	// htmx
 	router.GET(paths.HtmxJS.URL, func(c echo.Context) error {
+		file := strings.Split(paths.HtmxJS.URL, "/")[2]
 		script, err := static.Files.ReadFile(
-			fmt.Sprintf("js/%s", strings.Split(paths.HtmxJS.URL, "/")[2]),
+			fmt.Sprintf("js/%s", file),
 		)
 		if err != nil {
 			return err
 		}
 
 		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			hash := strings.Split(file, "-")
 			c.Response().
 				Header().
 				Set("Cache-Control", "public, max-age=604800, immutable")
 			c.Response().
 				Header().
 				Set("Vary", "Accept-Encoding")
+			c.Response().
+				Header().
+				Set("ETag", hash[1])
 		}
 
 		return c.Blob(http.StatusOK, "text/javascript", script)
@@ -71,20 +78,25 @@ func assetsRoutes(
 
 	// alpine.js
 	router.GET(paths.AlpineJS.URL, func(c echo.Context) error {
+		file := strings.Split(paths.AlpineJS.URL, "/")[2]
 		script, err := static.Files.ReadFile(
-			fmt.Sprintf("js/%s", strings.Split(paths.AlpineJS.URL, "/")[2]),
+			fmt.Sprintf("js/%s", file),
 		)
 		if err != nil {
 			return err
 		}
 
 		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			hash := strings.Split(file, "-")
 			c.Response().
 				Header().
 				Set("Cache-Control", "public, max-age=604800, immutable")
 			c.Response().
 				Header().
 				Set("Vary", "Accept-Encoding")
+			c.Response().
+				Header().
+				Set("ETag", hash[1])
 		}
 
 		return c.Blob(http.StatusOK, "text/javascript", script)

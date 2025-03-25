@@ -81,6 +81,9 @@ compile-templates:
 compile-css-dev:
     npm run dev
 
+compile-css-prod:
+    npm run prod
+
 fmt-templates:
     cd views && templ fmt .
 

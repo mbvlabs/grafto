@@ -6,7 +6,7 @@
 	"license": "ISC",
 	"scripts": {
 		"dev": "vite build --mode dev",
-		"build": "vite build --mode prod"
+		"prod": "vite build --mode prod"
 	},
 	"repository": {
 		"type": "git",
