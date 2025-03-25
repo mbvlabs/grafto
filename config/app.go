@@ -23,7 +23,12 @@ type App struct {
 
 func (a App) GetFullDomain() string {
 	if a.Environment == DEV_ENVIRONMENT {
-		return fmt.Sprintf("%v://%v:%v", a.AppProtocol, a.AppDomain, a.ServerPort)
+		return fmt.Sprintf(
+			"%v://%v:%v",
+			a.AppProtocol,
+			a.AppDomain,
+			a.ServerPort,
+		)
 	}
 	return fmt.Sprintf("%v://%v", a.AppProtocol, a.AppDomain)
 }
@@ -34,7 +39,7 @@ func newApp() App {
 	if err := env.ParseWithOptions(&appCfg, env.Options{
 		RequiredIfNoDef: true,
 	}); err != nil {
-		panic(err)
+		// panic(err)
 	}
 
 	return appCfg
