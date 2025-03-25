@@ -1,22 +1,9 @@
 name: Integration Tests
 
-# on:
-#   push:
-#     branches:
-#       - 'master'
-
 on:
   push:
     branches:
-      - '**'
-      - '!master'
-
-  pull_request:
-    types:
-      - reopened
-    branches:
-      - '**'
-      - '!master'
+      - 'master'
 
 jobs:
   integration-tests:
