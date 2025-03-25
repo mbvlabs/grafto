@@ -13,7 +13,6 @@ import (
 	"github.com/mbvlabs/grafto/http"
 	"github.com/mbvlabs/grafto/http/handlers"
 	"github.com/mbvlabs/grafto/routes/paths"
-	"github.com/mbvlabs/grafto/static"
 	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
 
@@ -60,9 +59,6 @@ func NewRoutes(
 
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
-
-	echo.MustSubFS(static.Files, "static")
-	router.StaticFS("/static", static.Files)
 
 	slogechoCfg := slogecho.Config{
 		WithRequestID: false,
