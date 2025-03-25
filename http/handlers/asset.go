@@ -3,23 +3,77 @@ package handlers
 import (
 	"encoding/xml"
 	"fmt"
+	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/routes/paths"
+	"gopkg.in/yaml.v2"
 )
 
-type Assets struct{}
+const sitemapCacheKey = "assets.sitemap"
+
+type Assets struct {
+	sitemapCache otter.Cache[string, Sitemap]
+}
 
 func newAssets() Assets {
-	return Assets{}
+	sitemapCacheBuilder, err := otter.NewBuilder[string, Sitemap](1)
+	if err != nil {
+		panic(err)
+	}
+
+	sitemapCache, err := sitemapCacheBuilder.WithTTL(24 * time.Hour).Build()
+	if err != nil {
+		panic(err)
+	}
+
+	return Assets{sitemapCache}
+}
+
+func (a Assets) Robots(c echo.Context) error {
+	type robotsTxt struct {
+		UserAgent string `yaml:"User-agent"`
+		Allow     string `yaml:"Allow"`
+		Sitemap   string `yaml:"Sitemap"`
+	}
+
+	robots, err := yaml.Marshal(robotsTxt{
+		UserAgent: "*",
+		Allow:     "/",
+		Sitemap: fmt.Sprintf(
+			"%s%s",
+			config.Cfg.GetFullDomain(),
+			paths.Sitemap.URL,
+		),
+	})
+	if err != nil {
+		return err
+	}
+
+	return c.String(http.StatusOK, string(robots))
 }
 
 func (a Assets) Sitemap(c echo.Context) error {
+	if value, ok := a.sitemapCache.Get(sitemapCacheKey); ok {
+		return c.XML(http.StatusOK, value)
+	}
+
 	sitemap, err := createSitemap(c)
 	if err != nil {
 		return err
+	}
+
+	if ok := a.sitemapCache.Set(sitemapCacheKey, sitemap); !ok {
+		slog.ErrorContext(
+			c.Request().Context(),
+			"could not set sitemap cache",
+			"error",
+			err,
+		)
 	}
 
 	return c.XML(http.StatusOK, sitemap)

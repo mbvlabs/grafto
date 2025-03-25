@@ -26,7 +26,7 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
   		  outDir: './static/css',
   		  rollupOptions: {
   		  		output: {
-  		  		  assetFileNames: 'css/main-prod-[hash].css'
+  		  		  assetFileNames: 'main-prod-[hash].css'
   		  		},
   		  		input: './resources/css/base.css',
   		  }
