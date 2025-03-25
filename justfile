@@ -26,7 +26,7 @@ alias ft := fmt-templates
 alias ex := explore
 
 alias ti := test-integrations
-alias tu := test-unit
+alias tu := test-units
 
 default:
     @just --list
