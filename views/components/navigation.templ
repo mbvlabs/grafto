@@ -3,10 +3,20 @@ package components
 import (
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/routes/contexts"
 )
 
+templ NavItem(name string, p paths.Path, attrs templ.Attributes) {
+	<a
+		{ attrs... }
+		data-navItemPath={ p.Name }
+		class="font-medium text-gray-300 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600"
+		href={ paths.GSP(ctx, p) }
+	>{ name }</a>
+}
+
 templ Nav() {
-	<header class="container mx-auto flex flex-wrap sm:justify-start sm:flex-nowrap z-50 text-sm py-4">
+	<header id="navigation" class="container mx-auto flex flex-wrap sm:justify-start sm:flex-nowrap z-50 text-sm py-4">
 		<nav class="max-w-[85rem] w-full mx-auto px-4 sm:flex sm:items-center sm:justify-between" aria-label="Global">
 			<div class="flex items-center justify-between">
 				<a class="flex-none text-xl font-semibold text-white" href={ paths.GSP(ctx, paths.LandingPage) }>{ config.Cfg.ProjectName }</a>
@@ -19,9 +29,13 @@ templ Nav() {
 			</div>
 			<div id="navbar-collapse-with-animation" class="hs-collapse hidden overflow-hidden transition-all duration-300 basis-full grow sm:block">
 				<div class="flex flex-col gap-5 mt-5 sm:flex-row sm:items-center sm:justify-end sm:mt-0 sm:ps-5">
-					<a class="font-medium text-blue-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href={ paths.GSP(ctx, paths.LandingPage) }>Home</a>
-					<a class="font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href={ paths.GSP(ctx, paths.About) }>About</a>
-					<a class="font-medium text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600" href={ paths.GSP(ctx, paths.CreateAuthenticatedSession) }>Login</a>
+					@NavItem("Home", paths.LandingPage, nil)
+					@NavItem("About", paths.About, nil)
+					if contexts.ExtractApp(ctx).IsAuthenticated {
+						@NavItem("Logout", paths.DestroyAuthenticatedSession, nil)
+					} else {
+						@NavItem("Login", paths.CreateAuthenticatedSession, nil)
+					}
 				</div>
 			</div>
 		</nav>

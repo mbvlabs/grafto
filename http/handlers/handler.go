@@ -29,12 +29,12 @@ var AuthenticatedSessionName = fmt.Sprintf(
 )
 
 const (
-	FlashSessionKey  = "flash_messages"
-	SessIsAuthName   = "is_authenticated"
-	SessUserID       = "user_id"
-	SessUserEmail    = "user_email"
-	SessIsAdmin      = "is_admin"
-	oneWeekInSeconds = 604800
+	FlashSessionKey     = "flash_messages"
+	SessIsAuthenticated = "is_authenticated"
+	SessUserID          = "user_id"
+	SessUserEmail       = "user_email"
+	SessIsAdmin         = "is_admin"
+	oneWeekInSeconds    = 604800
 )
 
 type Handlers struct {
@@ -134,8 +134,35 @@ func redirect(
 	w http.ResponseWriter,
 	r *http.Request,
 	url string,
-) {
+) error {
 	http.Redirect(w, r, url, http.StatusSeeOther)
+	return nil
+}
+
+func destroyAuthSession(
+	c echo.Context,
+) error {
+	sess, err := session.Get(AuthenticatedSessionName, c)
+	if err != nil {
+		return err
+	}
+
+	sess.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	}
+
+	sess.Values[SessIsAuthenticated] = false
+	sess.Values[SessUserID] = ""
+	sess.Values[SessUserEmail] = ""
+	sess.Values[SessIsAdmin] = false
+
+	if err := sess.Save(c.Request(), c.Response()); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func createAuthSession(
@@ -158,7 +185,7 @@ func createAuthSession(
 		MaxAge:   maxAge,
 		HttpOnly: true,
 	}
-	sess.Values[SessIsAuthName] = true
+	sess.Values[SessIsAuthenticated] = true
 	sess.Values[SessUserID] = user.ID
 	sess.Values[SessUserEmail] = user.Email
 	sess.Values[SessIsAdmin] = user.IsAdmin
