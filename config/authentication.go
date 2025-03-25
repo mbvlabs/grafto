@@ -16,7 +16,7 @@ func newAuthentication() Authentication {
 	if err := env.ParseWithOptions(&authenticationCfg, env.Options{
 		RequiredIfNoDef: true,
 	}); err != nil {
-		// panic(err)
+		panic(err)
 	}
 
 	return authenticationCfg

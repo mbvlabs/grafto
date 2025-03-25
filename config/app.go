@@ -8,6 +8,7 @@ import (
 
 const (
 	DEV_ENVIRONMENT  = "development"
+	TEST_ENVIRONMENT = "testing"
 	PROD_ENVIRONMENT = "production"
 )
 
@@ -39,7 +40,7 @@ func newApp() App {
 	if err := env.ParseWithOptions(&appCfg, env.Options{
 		RequiredIfNoDef: true,
 	}); err != nil {
-		// panic(err)
+		panic(err)
 	}
 
 	return appCfg

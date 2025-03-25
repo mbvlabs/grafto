@@ -29,7 +29,7 @@ func newDatabase() Database {
 	if err := env.ParseWithOptions(&dataCfg, env.Options{
 		RequiredIfNoDef: true,
 	}); err != nil {
-		// panic(err)
+		panic(err)
 	}
 
 	return dataCfg
