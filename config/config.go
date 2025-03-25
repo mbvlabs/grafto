@@ -15,13 +15,13 @@ type Config struct {
 
 func NewConfig() Config {
 	awsAccessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
-	if awsAccessKeyID == "" {
-		panic("missing 'AWS_ACCESS_KEY_ID'")
-	}
+	// if awsAccessKeyID == "" {
+	// 	panic("missing 'AWS_ACCESS_KEY_ID'")
+	// }
 	awsSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	if awsSecretAccessKey == "" {
-		panic("missing 'AWS_SECRET_ACCESS_KEY'")
-	}
+	// if awsSecretAccessKey == "" {
+	// 	panic("missing 'AWS_SECRET_ACCESS_KEY'")
+	// }
 
 	return Config{
 		newDatabase(),
