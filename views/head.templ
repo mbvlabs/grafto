@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/routes/contexts"
+	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 type metaContent struct {
@@ -94,10 +95,9 @@ templ head(data headData) {
 		<title>
 			{ data.title }
 		</title>
-		<link href="/static/css/main-dev.css" rel="stylesheet"/>
-		<link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png"/>
-		<link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png"/>
-		<link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png"/>
+		<link href={ paths.GP(ctx, paths.MainCss) } rel="stylesheet"/>
+		<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
+		<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
 		<meta property="og:type" content={ data.metaType }/>
 		<meta property="og:title" content={ data.title }/>
 		<meta property="og:description" content={ data.description }/>
