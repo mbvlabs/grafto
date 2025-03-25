@@ -5,6 +5,7 @@ alias r := run
 alias ra := run-app
 alias rw := run-worker
 alias re := run-email
+alias rcc := compile-css-dev 
 
 alias cm := create-migration
 alias ms := migration-status
