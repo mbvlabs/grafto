@@ -2,7 +2,7 @@ package paths
 
 import "github.com/mbvlabs/grafto/static"
 
-const assetPrefix = "/assets"
+const AssetPrefix = "/assets"
 
 var (
 	Robots = register(
@@ -23,7 +23,7 @@ var (
 		Path{
 			Name: "assets.main_css",
 			URL: func() string {
-				return assetPrefix + "/" + static.MainCssFile
+				return AssetPrefix + "/" + static.MainCssFile
 			}(),
 		},
 	)
@@ -31,14 +31,14 @@ var (
 	HtmxJS = register(
 		Path{
 			Name: "assets.htmx",
-			URL:  assetPrefix + "/" + "htmx-2_0_4.min.js",
+			URL:  AssetPrefix + "/" + "htmx-2_0_4.min.js",
 		},
 	)
 
 	AlpineJS = register(
 		Path{
 			Name: "assets.alpine",
-			URL:  assetPrefix + "/" + "alpine-3_14_8.min.js",
+			URL:  AssetPrefix + "/" + "alpine-3_14_8.min.js",
 		},
 	)
 
@@ -51,13 +51,13 @@ var (
 	Favicon16 = register(
 		Path{
 			Name: "assets.favicon_16_16",
-			URL:  assetPrefix + "/" + "favicon-16x16.png",
+			URL:  AssetPrefix + "/" + "favicon-16x16.png",
 		},
 	)
 	Favicon32 = register(
 		Path{
 			Name: "assets.favicon_32_32",
-			URL:  assetPrefix + "/" + "favicon-32x32.png",
+			URL:  AssetPrefix + "/" + "favicon-32x32.png",
 		},
 	)
 )

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/routes"
 	"github.com/mbvlabs/grafto/routes/paths"
 )

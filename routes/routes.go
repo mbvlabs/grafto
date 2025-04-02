@@ -10,8 +10,8 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/http"
-	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/handlers"
+	"github.com/mbvlabs/grafto/routes/middleware"
 	"github.com/mbvlabs/grafto/routes/paths"
 	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
@@ -35,8 +35,8 @@ func NewRoutes(
 		session.Middleware(
 			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
 		),
-		http.RegisterAppContext,
-		http.RegisterFlashMessagesContext,
+		middleware.RegisterAppContext,
+		middleware.RegisterFlashMessagesContext,
 	)
 
 	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
@@ -74,7 +74,7 @@ func NewRoutes(
 		echomw.Recover(),
 	)
 
-	router.Any("/river*", echo.WrapHandler(riverUI), http.AuthOnly)
+	router.Any("/river*", echo.WrapHandler(riverUI), middleware.AuthOnly)
 
 	return &Routes{
 		router,
