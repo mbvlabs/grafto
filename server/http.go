@@ -1,4 +1,4 @@
-package http
+package server
 
 import (
 	"context"
@@ -15,17 +15,17 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type Server struct {
+type Http struct {
 	router *echo.Echo
 	host   string
 	port   string
 	srv    *http.Server
 }
 
-func NewServer(
+func NewHttp(
 	ctx context.Context,
 	router *echo.Echo,
-) Server {
+) Http {
 	port := config.Cfg.ServerPort
 	host := config.Cfg.ServerHost
 
@@ -57,7 +57,7 @@ func NewServer(
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },
 	}
 
-	return Server{
+	return Http{
 		router,
 		host,
 		port,
@@ -65,7 +65,7 @@ func NewServer(
 	}
 }
 
-func (s *Server) Start(ctx context.Context) error {
+func (s *Http) Start(ctx context.Context) error {
 	eg, egCtx := errgroup.WithContext(ctx)
 
 	// Start server

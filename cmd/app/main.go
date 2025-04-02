@@ -12,12 +12,12 @@ import (
 	"github.com/lmittmann/tint"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/http"
-	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/queue"
 	"github.com/mbvlabs/grafto/queue/workers"
 	"github.com/mbvlabs/grafto/routes"
+	"github.com/mbvlabs/grafto/server"
 	"github.com/mbvlabs/grafto/services"
 	"riverqueue.com/riverui"
 )
@@ -123,7 +123,7 @@ func run(ctx context.Context) error {
 
 	router, c := routes.SetupRoutes(ctx)
 
-	server := http.NewServer(c, router)
+	server := server.NewHttp(c, router)
 
 	if err := riverClient.Start(ctx); err != nil {
 		return err

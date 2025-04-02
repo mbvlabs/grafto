@@ -7,7 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/static"
 )
