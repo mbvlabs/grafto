@@ -13,9 +13,14 @@ func authRoutes(
 	router.GET(paths.CreateAuthenticatedSession.URL, func(c echo.Context) error {
 		return handlers.CreateAuthenticatedSession(c)
 	}).Name = paths.CreateAuthenticatedSession.Name
+
 	router.POST(paths.StoreAuthenticatedSession.URL, func(c echo.Context) error {
 		return handlers.StoreAuthenticatedSession(c)
 	}).Name = paths.StoreAuthenticatedSession.Name
+
+	router.GET(paths.DestroyAuthenticatedSession.URL, func(c echo.Context) error {
+		return handlers.DestroyAuthenticatedSession(c)
+	}).Name = paths.DestroyAuthenticatedSession.Name
 
 	router.GET(paths.CreateForgotPassword.URL, func(c echo.Context) error {
 		return handlers.CreatePasswordReset(c)

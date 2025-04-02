@@ -109,6 +109,18 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		Render(renderArgs(ctx))
 }
 
+func (a *Authentication) DestroyAuthenticatedSession(ctx echo.Context) error {
+	if err := destroyAuthSession(ctx); err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
+
+	return redirect(
+		ctx.Response(),
+		ctx.Request(),
+		paths.CreateAuthenticatedSession.URL,
+	)
+}
+
 func (a *Authentication) CreatePasswordReset(ctx echo.Context) error {
 	return authentication.ForgottenPasswordPage(csrf.Token(ctx.Request())).
 		Render(renderArgs(ctx))

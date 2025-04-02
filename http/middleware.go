@@ -18,7 +18,7 @@ func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 			return next(c)
 		}
 
-		isAuth, _ := sess.Values[handlers.SessIsAuthName].(bool)
+		isAuth, _ := sess.Values[handlers.SessIsAuthenticated].(bool)
 		if isAuth {
 			return next(c)
 		}
@@ -41,7 +41,7 @@ func RegisterAppContext(
 			return err
 		}
 
-		isAuth, _ := sess.Values[handlers.SessIsAuthName].(bool)
+		isAuth, _ := sess.Values[handlers.SessIsAuthenticated].(bool)
 		userID, _ := sess.Values[handlers.SessUserID].(uuid.UUID)
 		userEmail, _ := sess.Values[handlers.SessUserEmail].(string)
 		isAdmin, _ := sess.Values[handlers.SessIsAdmin].(bool)
