@@ -85,7 +85,7 @@ func Dashboard() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"></head><body class=\"flex flex-col min-w-screen h-screen\"><header class=\"bsc-fluid\"><div class=\"flex justify-between p-0 navbar bg-base-100\"><div class=\"navbar-left\"><a href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"></head><body class=\"flex flex-col min-w-screen h-screen\"><header class=\"bsc-fluid\"><div class=\"flex justify-between navbar bg-base-100\"><div class=\"navbar-left\"><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
