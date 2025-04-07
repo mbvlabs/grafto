@@ -1,4 +1,4 @@
-package services
+package clients
 
 import (
 	"context"
