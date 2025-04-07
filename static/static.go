@@ -3,7 +3,6 @@ package static
 import (
 	"embed"
 	"io/fs"
-	"log/slog"
 	"strings"
 )
 
@@ -27,8 +26,6 @@ func GetMainCssFile() string {
 	}); err != nil {
 		panic("could not walk files dir")
 	}
-
-	slog.Info(filename)
 
 	return filename
 }

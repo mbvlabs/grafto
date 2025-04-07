@@ -25,6 +25,29 @@ func assetsRoutes(
 	}).Name = paths.Sitemap.Name
 
 	// css
+	router.GET(paths.BootstrapGrid.URL, func(c echo.Context) error {
+		stylesheet, err := static.Files.ReadFile(
+			fmt.Sprintf("css/%s", "bootstrap-v5_3_3.min.css"),
+		)
+		if err != nil {
+			return err
+		}
+
+		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			c.Response().
+				Header().
+				Set("Cache-Control", "public, max-age=604800, immutable")
+			c.Response().
+				Header().
+				Set("Vary", "Accept-Encoding")
+			c.Response().
+				Header().
+				Set("ETag", "v5.3.3")
+		}
+
+		return c.Blob(http.StatusOK, "text/css", stylesheet)
+	}).Name = paths.BootstrapGrid.Name
+
 	router.GET(paths.MainCss.URL, func(c echo.Context) error {
 		file := strings.Split(paths.MainCss.URL, "/")[2]
 		stylesheet, err := static.Files.ReadFile(
