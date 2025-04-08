@@ -89,7 +89,7 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
-type EmailService interface {
+type EmailClient interface {
 	Send(
 		ctx context.Context,
 		payload clients.EmailPayload,
@@ -99,7 +99,7 @@ type EmailService interface {
 func NewHandlers(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
-	emailSvc EmailService,
+	emailSvc EmailClient,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 	gob.Register(contexts.FlashMessage{})

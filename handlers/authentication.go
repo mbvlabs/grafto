@@ -2,16 +2,10 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/emails"
-	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/services"
@@ -20,15 +14,15 @@ import (
 )
 
 type Authentication struct {
-	db       psql.Postgres
-	emailSvc EmailService
+	db          psql.Postgres
+	emailClient EmailClient
 }
 
 func newAuthentication(
 	db psql.Postgres,
-	emailSvc EmailService,
+	emailClient EmailClient,
 ) Authentication {
-	return Authentication{db, emailSvc}
+	return Authentication{db, emailClient}
 }
 
 func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
@@ -122,50 +116,9 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	user, err := models.GetUserByEmail(
-		ctx.Request().Context(),
-		payload.Email,
-		a.db.Pool,
-	)
-	if err != nil {
+	if err := services.SendResetPasswordEmail(ctx.Request().Context(), a.db, a.emailClient, payload.Email); err != nil {
+		// TODO: show proper error page with info
 		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	tkn, err := models.NewToken(
-		ctx.Request().Context(),
-		a.db.Pool,
-		models.NewTokenPayload{
-			Expiration: models.ResetPasswordExpirary,
-			Meta: models.MetaInformation{
-				Resource:   models.ResourceUser,
-				ResourceID: user.ID,
-				Scope:      models.ScopeResetPassword,
-			},
-		},
-	)
-	if err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	html, txt, err := emails.PasswordReset{
-		ResetLink: fmt.Sprintf(
-			"%s/%s?token=%s",
-			config.Cfg.GetFullDomain(),
-			paths.GP(ctx.Request().Context(), paths.CreateResetPassword),
-			tkn.Hash,
-		),
-	}.Generate(ctx.Request().Context())
-	if err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	if err := a.emailSvc.Send(ctx.Request().Context(), clients.EmailPayload{
-		To:       user.Email,
-		Subject:  "Action Required | Password reset requested",
-		HtmlBody: html.String(),
-		TextBody: txt.String(),
-	}); err != nil {
-		return err
 	}
 
 	return authentication.ForgottenPasswordForm(authentication.ForgottenPasswordFormProps{
@@ -202,36 +155,8 @@ func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	token, err := models.GetToken(
-		ctx.Request().Context(),
-		a.db.Pool,
-		payload.Token,
-	)
-	if err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	if !token.IsValid() || token.Meta.Scope != models.ScopeResetPassword {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	if err := models.UpdateUserPassword(
-		ctx.Request().Context(),
-		a.db.Pool,
-		models.UpdateUserPasswordPayload{
-			ID:        token.Meta.ResourceID,
-			UpdatedAt: time.Now(),
-			Password: models.PasswordPair{
-				Password:        payload.Password,
-				ConfirmPassword: payload.ConfirmPassword,
-			},
-		},
-	); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	if err := models.DeleteToken(
-		ctx.Request().Context(), a.db.Pool, token.ID); err != nil {
+	if err := services.ChangeUserPassword(ctx.Request().Context(), a.db, payload.Token, payload.Password, payload.ConfirmPassword); err != nil {
+		// TODO: show proper error page with info
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 

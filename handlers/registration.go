@@ -12,15 +12,15 @@ import (
 )
 
 type Registration struct {
-	db       psql.Postgres
-	emailSvc EmailService
+	db          psql.Postgres
+	emailClient EmailClient
 }
 
 func newRegistration(
 	db psql.Postgres,
-	emailSvc EmailService,
+	emailClient EmailClient,
 ) Registration {
-	return Registration{db, emailSvc}
+	return Registration{db, emailClient}
 }
 
 func (r *Registration) CreateUser(ctx echo.Context) error {
