@@ -11,6 +11,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/lmittmann/tint"
 	"github.com/maypok86/otter"
+	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/psql"
@@ -18,7 +19,6 @@ import (
 	"github.com/mbvlabs/grafto/queue/workers"
 	"github.com/mbvlabs/grafto/routes"
 	"github.com/mbvlabs/grafto/server"
-	"github.com/mbvlabs/grafto/services"
 	"riverqueue.com/riverui"
 )
 
@@ -98,7 +98,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	emailSvc := services.NewEmail()
+	emailClient := clients.NewEmail()
 
 	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
 	if err != nil {
@@ -113,7 +113,7 @@ func run(ctx context.Context) error {
 	handlers := handlers.NewHandlers(
 		psql,
 		pageCacher,
-		emailSvc,
+		emailClient,
 	)
 
 	routes := routes.NewRoutes(

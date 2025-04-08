@@ -1,11 +1,9 @@
-package services
+package clients
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -57,7 +55,7 @@ func (m Email) Send(
 	if payload.From == "" {
 		from = defaultSender
 	}
-	// Assemble the email.
+
 	input := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			CcAddresses: []*string{},
@@ -86,30 +84,6 @@ func (m Email) Send(
 
 	_, err := m.client.SendEmail(input)
 	if err != nil {
-		//nolint:errorlint //todo
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case ses.ErrCodeMessageRejected:
-				fmt.Println(ses.ErrCodeMessageRejected, aerr.Error())
-			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				fmt.Println(
-					ses.ErrCodeMailFromDomainNotVerifiedException,
-					aerr.Error(),
-				)
-			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				fmt.Println(
-					ses.ErrCodeConfigurationSetDoesNotExistException,
-					aerr.Error(),
-				)
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
-		}
-
 		return err
 	}
 

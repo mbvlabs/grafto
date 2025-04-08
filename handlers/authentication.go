@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/emails"
 	"github.com/mbvlabs/grafto/models"
@@ -54,53 +56,37 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	user, err := models.GetUserByEmail(
+	authenticatedUser, err := services.AuthenticateUser(
 		ctx.Request().Context(),
+		a.db,
 		payload.Mail,
-		a.db.Pool,
+		payload.Password,
 	)
 	if err != nil {
-		return authentication.LoginForm(
-			csrf.Token(
-				ctx.Request(),
-			),
-			false,
-			views.Errors{
-				authentication.ErrEmailNotValidated: "The email or password you entered is incorrect.",
-			},
-		).
-			Render(renderArgs(ctx))
-	}
-
-	if !user.IsVerified() {
-		return authentication.LoginForm(
-			csrf.Token(
-				ctx.Request(),
-			),
-			false,
-			views.Errors{
+		var userErr views.Errors
+		if errors.Is(err, services.ErrUserEmailNotVerified) {
+			userErr = views.Errors{
 				authentication.ErrEmailNotValidated: "Your email has not yet been verified.",
-			},
-		).
-			Render(renderArgs(ctx))
-	}
+			}
+		}
+		if errors.Is(err, services.ErrInvalidAuthDetail) {
+			userErr = views.Errors{
+				authentication.ErrEmailNotValidated: "The email or password you entered is incorrect.",
+			}
+		}
 
-	if err := user.ValidatePassword(
-		payload.Password); err != nil {
 		return authentication.LoginForm(
 			csrf.Token(
 				ctx.Request(),
 			),
 			false,
-			views.Errors{
-				authentication.ErrAuthDetailsWrong: "The email or password you entered is incorrect.",
-			},
+			userErr,
 		).
 			Render(renderArgs(ctx))
 	}
 
 	if err := createAuthSession(
-		ctx, payload.RememberMe == "on", user); err != nil {
+		ctx, payload.RememberMe == "on", authenticatedUser); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
@@ -173,7 +159,7 @@ func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if err := a.emailSvc.Send(ctx.Request().Context(), services.EmailPayload{
+	if err := a.emailSvc.Send(ctx.Request().Context(), clients.EmailPayload{
 		To:       user.Email,
 		Subject:  "Action Required | Password reset requested",
 		HtmlBody: html.String(),
