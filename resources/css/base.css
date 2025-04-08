@@ -4,4 +4,8 @@
   themes: light --default, dark --prefersdark, gbc;
 }
 
+@utility navbar {
+  @apply p-0;
+}
+
 @source "../../views";

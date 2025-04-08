@@ -1,7 +1,6 @@
 package layouts
 
 import (
-	"github.com/mbvlabs/grafto/views/components"
 	"github.com/mbvlabs/grafto/routes/paths"
 )
 
@@ -12,12 +11,30 @@ templ Dashboard() {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Grafto</title>
+			<link href={ paths.GP(ctx, paths.BootstrapGrid) } rel="stylesheet"/>
 			<link href={ paths.GP(ctx, paths.MainCss) } rel="stylesheet"/>
 			<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
 			<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
 		</head>
 		<body class="flex flex-col min-w-screen h-screen">
-			@components.Nav()
+			<header class="bsc-fluid">
+				<div class="flex justify-between navbar bg-base-100">
+					<div class="navbar-left">
+						<a href={ paths.GSP(ctx, paths.DashboardHome) }>Grafto Dashboard</a>
+					</div>
+					<div class="navbar-end">
+						<button class="btn btn-ghost btn-circle">
+							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path> </svg>
+						</button>
+						<button class="btn btn-ghost btn-circle">
+							<div class="indicator">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path> </svg>
+								<span class="badge badge-xs badge-primary indicator-item"></span>
+							</div>
+						</button>
+					</div>
+				</div>
+			</header>
 			{ children... }
 			<script src={ paths.GP(ctx, paths.HtmxJS) }></script>
 			<script src={ paths.GP(ctx, paths.AlpineJS) }></script>

@@ -19,6 +19,15 @@ var (
 		},
 	)
 
+	BootstrapGrid = register(
+		Path{
+			Name: "assets.bootstrap_grid",
+			URL: func() string {
+				return AssetPrefix + "/" + "bootstrap-v5_3_3.min.css"
+			}(),
+		},
+	)
+
 	MainCss = register(
 		Path{
 			Name: "assets.main_css",
