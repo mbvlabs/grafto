@@ -1,15 +1,15 @@
 package layouts
 
 import (
-	"github.com/mbvlabs/grafto/views/components"
+	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/routes/contexts"
 	"github.com/mbvlabs/grafto/routes/paths"
 )
 
-templ Base(head templ.Component) {
+templ Base(headOpts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="grafto">
-		@head
+		@components.SetupHead(ctx, headOpts...)
 		<body class="flex flex-col min-w-screen h-screen">
 			@components.Nav()
 			{ children... }

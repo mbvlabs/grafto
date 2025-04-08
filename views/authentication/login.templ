@@ -2,8 +2,8 @@ package authentication
 
 import (
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/components"
-	"github.com/mbvlabs/grafto/views/layouts"
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
 	"github.com/mbvlabs/grafto/routes/paths"
 	"fmt"
 )
@@ -122,10 +122,7 @@ type LoginPageProps struct {
 
 templ LoginPage(data LoginPageProps) {
 	@layouts.Base(
-		views.Head(
-			ctx,
-			views.WithTitle("Login"),
-		),
+		views.WithTitle("Login"),
 	) {
 		<main class="container mx-auto my-auto flex flex-col">
 			@LoginForm(data.CsrfToken, false, data.Errors)

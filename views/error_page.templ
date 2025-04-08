@@ -1,6 +1,6 @@
 package views
 
-import "github.com/mbvlabs/grafto/views/layouts"
+import "github.com/mbvlabs/grafto/views/internal/layouts"
 
 type errorPageData struct {
 	link      string
@@ -36,7 +36,7 @@ func WithErrPageLinkTitle(title string) errorPageOption {
 }
 
 templ errorPage(data errorPageData) {
-	@layouts.Base(Head(ctx)) {
+	@layouts.Base(WithTitle("Error Page")) {
 		<div class="h-full flex-1 bg-base-100 container mx-auto flex justify-center items-center">
 			<div class="w-full md:w-2/5 flex flex-col">
 				<h1 class="text-2xl font-bold text-base-content mb-2">{ data.title }</h1>

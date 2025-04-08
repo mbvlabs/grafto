@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/layouts"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
 func VerifyEmailPage(tokenInvalid bool) templ.Component {
@@ -64,7 +64,7 @@ func VerifyEmailPage(tokenInvalid bool) templ.Component {
 				var templ_7745c5c3_Var3 string
 				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(paths.GP(ctx, paths.Redirect, paths.WithQueryParams(paths.QueryParams{"to": "dashboard"})))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/verify_mail.templ`, Line: 23, Col: 107}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/verify_mail.templ`, Line: 20, Col: 107}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 				if templ_7745c5c3_Err != nil {
@@ -82,10 +82,7 @@ func VerifyEmailPage(tokenInvalid bool) templ.Component {
 			return nil
 		})
 		templ_7745c5c3_Err = layouts.Base(
-			views.Head(
-				ctx,
-				views.WithTitle("Verify Email"),
-			),
+			views.WithTitle("Verify Email"),
 		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

@@ -8,7 +8,7 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/mbvlabs/grafto/views/layouts"
+import "github.com/mbvlabs/grafto/views/internal/layouts"
 
 type errorPageData struct {
 	link      string
@@ -130,7 +130,7 @@ func errorPage(data errorPageData) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layouts.Base(Head(ctx)).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layouts.Base(WithTitle("Error Page")).Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

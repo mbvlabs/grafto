@@ -1,0 +1,91 @@
+package components
+
+import "github.com/mbvlabs/grafto/routes/paths"
+import "context"
+import "github.com/mbvlabs/grafto/config"
+
+type HeadDataOption func(*HeadData)
+
+type MetaContent struct {
+	Content  string
+	Name     string
+	Property string
+}
+
+type HeadData struct {
+	Title           string
+	Description     string
+	Image           string
+	Slug            string
+	MetaType        string
+	StylesheetHrefs []string
+	ExtraMeta       []MetaContent
+}
+
+templ head(data HeadData) {
+	<head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<meta name="twitter:card" content="summary_large_image"/>
+		<meta name="twitter:creator" content="@mbvlabs"/>
+		<title>
+			{ data.Title }
+		</title>
+		for _, href := range data.StylesheetHrefs {
+			<link href={ href } rel="stylesheet"/>
+		}
+		<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
+		<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
+		<meta property="og:type" content={ data.MetaType }/>
+		<meta property="og:title" content={ data.Title }/>
+		<meta property="og:description" content={ data.Description }/>
+		<meta property="og:url" content={ data.Slug }/>
+		<meta property="og:site_name" content={ data.Title }/>
+		if data.Image != "" {
+			<meta property="og:image" content={ data.Image }/>
+		}
+		for _, extraMeta := range data.ExtraMeta {
+			<meta
+				if extraMeta.Name != "" {
+					name={ extraMeta.Name }
+				}
+				if extraMeta.Property != "" {
+					property={ extraMeta.Property }
+				}
+				if extraMeta.Content != "" {
+					content={ extraMeta.Content }
+				}
+			/>
+		}
+		<meta name="description" content={ data.Description }/>
+		<link
+			rel="canonical"
+			href={ data.Slug }
+		/>
+	</head>
+}
+
+func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
+	//slug := config.Cfg.GetFullDomain()
+	//appCtx := contexts.ExtractApp(ctx)
+	//if appCtx.CurrentPath != "" {
+	//	slug = slug + appCtx.CurrentPath
+	//}
+
+	data := &HeadData{
+		Title:       config.Cfg.ProjectName,
+		Description: "A starter template for building one-man businesses using Golang.",
+		Slug:        "/",
+		MetaType:    "website",
+		StylesheetHrefs: []string{
+			paths.GP(ctx, paths.BootstrapGrid),
+			paths.GP(ctx, paths.MainCss),
+		},
+	}
+
+	for _, opt := range opts {
+		opt(data)
+	}
+
+	return head(*data)
+}

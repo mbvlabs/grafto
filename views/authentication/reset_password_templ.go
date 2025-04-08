@@ -11,8 +11,8 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/components"
-	"github.com/mbvlabs/grafto/views/layouts"
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
 type ResetPasswordFormProps struct {
@@ -234,10 +234,7 @@ func ResetPasswordPage(invalidToken, internalErr bool, csrfToken, resetToken str
 			return nil
 		})
 		templ_7745c5c3_Err = layouts.Base(
-			views.Head(
-				ctx,
-				views.WithTitle("Reset Password"),
-			),
+			views.WithTitle("Reset Password"),
 		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

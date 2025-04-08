@@ -2,8 +2,8 @@ package authentication
 
 import (
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/components"
-	"github.com/mbvlabs/grafto/views/layouts"
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
 	"github.com/mbvlabs/grafto/routes/paths"
 )
 
@@ -72,10 +72,7 @@ templ RegisterForm(data RegisterFormProps) {
 
 templ RegisterPage(data RegisterFormProps) {
 	@layouts.Base(
-		views.Head(
-			ctx,
-			views.WithTitle("Registration"),
-		),
+		views.WithTitle("Registration"),
 	) {
 		<main class="container mx-auto my-auto grid grid-cols-4 px-4 md:grid-cols-6 lg:grid-cols-12">
 			@RegisterForm(data)
