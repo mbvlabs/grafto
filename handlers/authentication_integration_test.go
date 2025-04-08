@@ -16,11 +16,11 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jackc/pgx/v5"
-	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/clients"
+	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
 	"github.com/mbvlabs/grafto/routes/paths"
-	"github.com/mbvlabs/grafto/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -191,7 +191,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 				emailSvc.On(
 					"Send",
 					mock.Anything,
-					mock.MatchedBy(func(payload services.EmailPayload) bool {
+					mock.MatchedBy(func(payload clients.EmailPayload) bool {
 						correctEmail := payload.To == tt.user.Email
 						correctSubject := payload.Subject == "Action Required | Password reset requested"
 
@@ -210,7 +210,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 					t,
 					"Send",
 					mock.Anything,
-					services.EmailPayload{},
+					clients.EmailPayload{},
 				); !ok {
 					assert.FailNow(
 						t,

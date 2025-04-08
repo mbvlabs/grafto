@@ -12,10 +12,10 @@ import (
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/http/handlers"
+	"github.com/mbvlabs/grafto/clients"
+	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/routes"
-	"github.com/mbvlabs/grafto/services"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -44,7 +44,7 @@ type mockedEmailService struct {
 
 func (m *mockedEmailService) Send(
 	ctx context.Context,
-	payload services.EmailPayload,
+	payload clients.EmailPayload,
 ) error {
 	args := m.Called(ctx, payload)
 	return args.Error(0)
