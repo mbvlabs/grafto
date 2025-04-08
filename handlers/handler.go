@@ -15,11 +15,11 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
+	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/routes/contexts"
-	"github.com/mbvlabs/grafto/services"
 )
 
 var AuthenticatedSessionName = fmt.Sprintf(
@@ -92,7 +92,7 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 type EmailService interface {
 	Send(
 		ctx context.Context,
-		payload services.EmailPayload,
+		payload clients.EmailPayload,
 	) error
 }
 

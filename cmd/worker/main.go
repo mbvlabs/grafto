@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/queue"
 	"github.com/mbvlabs/grafto/queue/workers"
-	"github.com/mbvlabs/grafto/services"
 	"github.com/riverqueue/river"
 )
 
@@ -22,7 +22,7 @@ func main() {
 	ctx := context.Background()
 	cfg := config.NewConfig()
 
-	emailSvc := services.NewEmail()
+	emailClient := clients.NewEmail()
 
 	conn, err := psql.CreatePooledConnection(
 		ctx,
@@ -36,8 +36,8 @@ func main() {
 	jobStarted := make(chan struct{})
 
 	workers, err := workers.SetupWorkers(workers.WorkerDependencies{
-		DB:       db.Pool,
-		EmailSvc: emailSvc,
+		DB:          db.Pool,
+		EmailClient: emailClient,
 	})
 	if err != nil {
 		panic(err)
