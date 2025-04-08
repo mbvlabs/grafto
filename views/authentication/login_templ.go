@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"github.com/mbvlabs/grafto/routes/paths"
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/components"
-	"github.com/mbvlabs/grafto/views/layouts"
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
 var (
@@ -237,10 +237,7 @@ func LoginPage(data LoginPageProps) templ.Component {
 			return nil
 		})
 		templ_7745c5c3_Err = layouts.Base(
-			views.Head(
-				ctx,
-				views.WithTitle("Login"),
-			),
+			views.WithTitle("Login"),
 		).Render(templ.WithChildren(ctx, templ_7745c5c3_Var9), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

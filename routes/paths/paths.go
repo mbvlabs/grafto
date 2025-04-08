@@ -2,9 +2,11 @@ package paths
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/a-h/templ"
+	"github.com/mbvlabs/grafto/config"
 )
 
 type RouteCtxKey string
@@ -100,3 +102,26 @@ func GSP(
 ) templ.SafeURL {
 	return templ.SafeURL(GP(ctx, path, opts...))
 }
+
+func GetFull(
+	ctx context.Context,
+	path Path,
+	opts ...Option,
+) string {
+	return fmt.Sprintf("%v%s",
+		config.Cfg.GetFullDomain(),
+		GP(ctx, path, opts...),
+	)
+}
+
+// func GetFull(
+// 	ctx context.Context,
+// 	dsmaldasl Option,
+// ) string {
+// 	l := GP(ctx, p, dsmaldasl)
+//
+// 	return fmt.Sprintf("%v%s",
+// 		config.Cfg.GetFullDomain(),
+// 		l,
+// 	)
+// }
