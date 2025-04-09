@@ -16,13 +16,26 @@ func main() {
 	ctx := context.Background()
 	e := echo.New()
 
+	tester := emails.Tester{}
+	testerHtml, _, _ := tester.Generate(ctx)
+
 	passwordReset := emails.PasswordReset{
-		ResetLink: fmt.Sprintf("%s/%s?token=%s", config.Cfg.GetFullDomain(), "reset-password", "wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y"),
+		ResetLink: fmt.Sprintf(
+			"%s/%s?token=%s",
+			config.Cfg.GetFullDomain(),
+			"reset-password",
+			"wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
+		),
 	}
 	passwordResetHtml, passwordResetText, _ := passwordReset.Generate(ctx)
 
 	signupWelcome := emails.SignupWelcome{
-		ConfirmationLink: fmt.Sprintf("%s/%s?token=%s", config.Cfg.GetFullDomain(), "reset-password", "wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y"),
+		ConfirmationLink: fmt.Sprintf(
+			"%s/%s?token=%s",
+			config.Cfg.GetFullDomain(),
+			"reset-password",
+			"wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
+		),
 	}
 	signupWelcomeHtml, signupWelcomeText, _ := signupWelcome.Generate(ctx)
 
@@ -40,6 +53,10 @@ func main() {
 	})
 	htmlGroup.GET("/signup-welcome", func(c echo.Context) error {
 		return c.HTML(http.StatusOK, signupWelcomeHtml.String())
+	})
+
+	htmlGroup.GET("/tester", func(c echo.Context) error {
+		return c.HTML(http.StatusOK, testerHtml.String())
 	})
 
 	slog.Info("starting the password server on port: 4444")

@@ -1,0 +1,39 @@
+package emails
+
+import "context"
+
+type Tester struct {
+}
+
+var _ TemplateHandler = (*Tester)(nil)
+
+func (p Tester) Generate(ctx context.Context) (Html, Text, error) {
+	html, plainText, err := processEmail(ctx, p.template())
+	if err != nil {
+		return Html(""), Text(""), err
+	}
+
+	return Html(html), Text(plainText), nil
+}
+
+templ (p Tester) template() {
+	@base()
+}
+
+type TesterTwo struct {
+}
+
+var _ TemplateHandler = (*TesterTwo)(nil)
+
+func (p TesterTwo) Generate(ctx context.Context) (Html, Text, error) {
+	html, plainText, err := processEmail(ctx, p.template())
+	if err != nil {
+		return Html(""), Text(""), err
+	}
+
+	return Html(html), Text(plainText), nil
+}
+
+templ (p TesterTwo) template() {
+	@baseTwo()
+}

@@ -72,7 +72,7 @@ run-worker:
 
 # emails
 run-email:
-    wgo -dir ./emails -file=.txt -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/*.go
+    wgo -dir ./emails  -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/main.go
 
 # assets
 compile-templates:
