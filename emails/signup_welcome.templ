@@ -2,7 +2,6 @@ package emails
 
 import (
 	"context"
-	"fmt"
 	"github.com/mbvlabs/grafto/config"
 )
 
@@ -22,16 +21,21 @@ func (s SignupWelcome) Generate(ctx context.Context) (Html, Text, error) {
 }
 
 templ (s SignupWelcome) template() {
-	@base() {
-		@header(fmt.Sprintf("Thanks for signing up for %s", config.Cfg.ProjectName))
-		@section() {
-			<p>Thanks for signing up for { config.Cfg.ProjectName }. We’re thrilled to have you on board.</p>
+	@baseTwo("Grafto Newsleter") {
+		@logo()
+		@mainContent() {
+			@headerNew() {
+				Hi there,
+			}
+			@paragraph() {
+				Thanks for signing up for { config.Cfg.ProjectName }. We’re thrilled to have you on board.
+			}
+			@paragraph() {
+				To continue, we need you to confirm your mail.
+			}
+			@btn("Confirm mail", s.ConfirmationLink) {
+			}
 		}
-		@section() {
-			<p>To continue, we need you to confirm your mail.</p>
-		}
-		@section() {
-			@link(linkProps{text: "Confirm mail", url: s.ConfirmationLink, style: "success"})
-		}
+		@footerNew("https://mbvlabs.com")
 	}
 }
