@@ -83,8 +83,8 @@ type URL struct {
 	XMLName    xml.Name `xml:"url"`
 	Loc        string   `xml:"loc"`
 	ChangeFreq string   `xml:"changefreq"`
-	LastMod    string   `xml:"lastmod"`
-	Priority   string   `xml:"priority"`
+	LastMod    string   `xml:"lastmod,omitempty"`
+	Priority   string   `xml:"priority,omitempty"`
 }
 
 type Sitemap struct {
