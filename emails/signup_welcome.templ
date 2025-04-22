@@ -22,7 +22,7 @@ func (s SignupWelcome) Generate(ctx context.Context) (Html, Text, error) {
 
 templ (s SignupWelcome) template() {
 	@baseTwo("Grafto Newsleter") {
-		@logo()
+		@brandBanner()
 		@mainContent() {
 			@headerNew() {
 				Hi there,

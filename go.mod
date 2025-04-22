@@ -6,7 +6,7 @@ toolchain go1.24.1
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.1
-	github.com/a-h/templ v0.3.833
+	github.com/a-h/templ v0.3.857
 	github.com/dromara/carbon/v2 v2.5.4
 	github.com/fergusstrange/embedded-postgres v1.30.0
 	github.com/google/uuid v1.6.0
@@ -17,10 +17,10 @@ require (
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.2
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.20.2
-	golang.org/x/crypto v0.35.0
-	golang.org/x/net v0.36.0
-	golang.org/x/sync v0.11.0
-	golang.org/x/text v0.22.0
+	golang.org/x/crypto v0.36.0
+	golang.org/x/net v0.37.0
+	golang.org/x/sync v0.12.0
+	golang.org/x/text v0.23.0
 	gopkg.in/yaml.v2 v2.4.0
 	riverqueue.com/riverui v0.6.0
 )
@@ -91,8 +91,8 @@ require (
 	github.com/labstack/echo-contrib v0.17.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/maypok86/otter v1.2.4
-	github.com/pkg/errors v0.9.1
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pressly/goose/v3 v3.23.0
 	github.com/samber/slog-echo v1.14.4
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 )
