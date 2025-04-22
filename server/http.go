@@ -6,30 +6,24 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
 	"time"
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
-	"golang.org/x/sync/errgroup"
 )
 
-type Http struct {
-	router *echo.Echo
-	host   string
-	port   string
-	srv    *http.Server
-}
-
-func NewHttp(
+func StartHttp(
 	ctx context.Context,
 	router *echo.Echo,
-) Http {
+) error {
 	port := config.Cfg.ServerPort
 	host := config.Cfg.ServerHost
 
-	srv := &http.Server{
+	srv := http.Server{
 		Addr: fmt.Sprintf("%v:%v", host, port),
 		Handler: func(handler http.Handler) http.Handler {
 			return http.HandlerFunc(
@@ -57,46 +51,31 @@ func NewHttp(
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },
 	}
 
-	return Http{
-		router,
-		host,
-		port,
-		srv,
-	}
-}
+	srvErrors := make(chan error, 1)
 
-func (s *Http) Start(ctx context.Context) error {
-	eg, egCtx := errgroup.WithContext(ctx)
+	go func() {
+		slog.InfoContext(ctx, "api server started", "port", "8080")
+		srvErrors <- srv.ListenAndServe()
+	}()
 
-	// Start server
-	eg.Go(func() error {
-		slog.Info("starting server on", "host", s.host, "port", s.port)
-		if err := s.srv.ListenAndServe(); err != nil &&
-			err != http.ErrServerClosed {
-			return fmt.Errorf("server error: %w", err)
-		}
-		return nil
-	})
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt)
 
-	// Handle shutdown on context cancellation
-	eg.Go(func() error {
-		<-egCtx.Done()
-		slog.Info("initiating graceful shutdown")
-		shutdownCtx, cancel := context.WithTimeout(
-			ctx,
-			10*time.Second,
-		)
-		defer cancel()
-		if err := s.srv.Shutdown(shutdownCtx); err != nil {
-			return fmt.Errorf("shutdown error: %w", err)
-		}
-		return nil
-	})
-
-	// Wait for either server error or successful shutdown
-	if err := eg.Wait(); err != nil {
-		slog.Info("wait error", "e", err)
+	select {
+	case err := <-srvErrors:
+		slog.ErrorContext(ctx, "server error", "error", err)
 		return err
+	case sig := <-shutdown:
+		ctxTimeout, cancel := context.WithTimeout(ctx, 20*time.Second)
+		defer cancel()
+
+		slog.InfoContext(ctx, "server shutdown initiated", "cause", sig)
+
+		if err := srv.Shutdown(ctxTimeout); err != nil {
+			slog.ErrorContext(ctx, "server shutdown failed", "error", err)
+		}
+
+		slog.InfoContext(ctx, "server shutdown completed")
 	}
 
 	return nil

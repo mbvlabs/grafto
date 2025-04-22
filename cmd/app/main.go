@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"os/signal"
 	"time"
 
 	"github.com/a-h/templ"
@@ -25,7 +24,7 @@ import (
 func developmentLogger() *slog.Logger {
 	return slog.New(
 		tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      slog.LevelDebug,
+			Level:      slog.LevelInfo,
 			TimeFormat: time.Kitchen,
 		}),
 	)
@@ -52,12 +51,10 @@ func productionLogger() *slog.Logger {
 func run(ctx context.Context) error {
 	cfg := config.NewConfig()
 
-	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-	defer cancel()
-
 	if cfg.Environment == config.DEV_ENVIRONMENT {
 		slog.SetDefault(developmentLogger())
 	}
+
 	if cfg.Environment == config.PROD_ENVIRONMENT {
 		slog.SetDefault(productionLogger())
 	}
@@ -117,18 +114,14 @@ func run(ctx context.Context) error {
 	)
 
 	routes := routes.NewRoutes(
+		ctx,
 		handlers,
-		riverUI,
+		nil,
 	)
 
-	router, c := routes.SetupRoutes(ctx)
+	router, ctx := routes.SetupRoutes(ctx)
 
-	server := server.NewHttp(c, router)
-
-	if err := riverClient.Start(ctx); err != nil {
-		return err
-	}
-	return server.Start(c)
+	return server.StartHttp(ctx, router)
 }
 
 func main() {
