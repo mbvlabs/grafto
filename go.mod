@@ -88,6 +88,7 @@ require (
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/gorilla/csrf v1.7.1
 	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/labstack/echo-contrib v0.17.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/maypok86/otter v1.2.4

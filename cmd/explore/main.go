@@ -16,7 +16,7 @@ func main() {
 
 	signupWelcome := emails.SignupWelcome{
 		ConfirmationLink: fmt.Sprintf(
-			"%s/%s?token=%s",
+			"https://mbvlabs.com?token=%s",
 			config.Cfg.GetFullDomain(),
 			"reset-password",
 			"wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
@@ -26,17 +26,8 @@ func main() {
 		context.Background(),
 	)
 	if err := emailClient.Send(context.Background(), clients.EmailPayload{
-		To:       "heymbv@gmail.com",
-		From:     "noreply@golangblogcourse.com",
-		Subject:  "Tester",
-		HtmlBody: signupWelcomeHtml.String(),
-		TextBody: signupWelcomeText.String(),
-	}); err != nil {
-		slog.Error("EEEEEEEEEEEEEEEEERROR", "e", err)
-	}
-	if err := emailClient.Send(context.Background(), clients.EmailPayload{
-		To:       "morten@mbvlabs.com",
-		From:     "noreply@golangblogcourse.com",
+		To:       "vanilla.beetle.spider@aboutmy.email",
+		From:     "Morten <noreply@golangblogcourse.com>",
 		Subject:  "Tester",
 		HtmlBody: signupWelcomeHtml.String(),
 		TextBody: signupWelcomeText.String(),
