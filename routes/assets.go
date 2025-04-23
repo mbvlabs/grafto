@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	na "github.com/mbvlabs/grafto/assets"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/routes/paths"
@@ -72,6 +73,121 @@ func assetsRoutes(
 
 		return c.Blob(http.StatusOK, "text/css", stylesheet)
 	}).Name = paths.MainCss.Name
+
+	router.GET(paths.NewCss.URL, func(c echo.Context) error {
+		stylesheet, err := na.Files.ReadFile(
+			"css/styles.css",
+		)
+		if err != nil {
+			return err
+		}
+
+		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			c.Response().
+				Header().
+				Set("Cache-Control", "public, max-age=86400, immutable")
+			c.Response().
+				Header().
+				Set("Vary", "Accept-Encoding")
+			// c.Response().
+			// 	Header().
+			// 	Set("ETag", hash[2])
+		}
+
+		return c.Blob(http.StatusOK, "text/css", stylesheet)
+	}).Name = paths.NewCss.Name
+
+	router.GET(paths.NormalizeCss.URL, func(c echo.Context) error {
+		stylesheet, err := na.Files.ReadFile(
+			"css/normalize.css",
+		)
+		if err != nil {
+			return err
+		}
+
+		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			c.Response().
+				Header().
+				Set("Cache-Control", "public, max-age=86400, immutable")
+			c.Response().
+				Header().
+				Set("Vary", "Accept-Encoding")
+			// c.Response().
+			// 	Header().
+			// 	Set("ETag", hash[2])
+		}
+
+		return c.Blob(http.StatusOK, "text/css", stylesheet)
+	}).Name = paths.NormalizeCss.Name
+
+	router.GET(paths.LayoutCss.URL, func(c echo.Context) error {
+		stylesheet, err := na.Files.ReadFile(
+			"css/layout.css",
+		)
+		if err != nil {
+			return err
+		}
+
+		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			c.Response().
+				Header().
+				Set("Cache-Control", "public, max-age=86400, immutable")
+			c.Response().
+				Header().
+				Set("Vary", "Accept-Encoding")
+			// c.Response().
+			// 	Header().
+			// 	Set("ETag", hash[2])
+		}
+
+		return c.Blob(http.StatusOK, "text/css", stylesheet)
+	}).Name = paths.LayoutCss.Name
+
+	router.GET(paths.BaseCss.URL, func(c echo.Context) error {
+		stylesheet, err := na.Files.ReadFile(
+			"css/base.css",
+		)
+		if err != nil {
+			return err
+		}
+
+		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			c.Response().
+				Header().
+				Set("Cache-Control", "public, max-age=86400, immutable")
+			c.Response().
+				Header().
+				Set("Vary", "Accept-Encoding")
+			// c.Response().
+			// 	Header().
+			// 	Set("ETag", hash[2])
+		}
+
+		return c.Blob(http.StatusOK, "text/css", stylesheet)
+	}).Name = paths.BaseCss.Name
+
+	router.GET(paths.NavCss.URL, func(c echo.Context) error {
+		stylesheet, err := na.Files.ReadFile(
+			"css/nav.css",
+		)
+		if err != nil {
+			return err
+		}
+
+		if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+			c.Response().
+				Header().
+				Set("Cache-Control", "public, max-age=86400, immutable")
+			c.Response().
+				Header().
+				Set("Vary", "Accept-Encoding")
+			// c.Response().
+			// 	Header().
+			// 	Set("ETag", hash[2])
+		}
+
+		return c.Blob(http.StatusOK, "text/css", stylesheet)
+	}).Name = paths.NavCss.Name
 
 	// htmx
 	router.GET(paths.HtmxJS.URL, func(c echo.Context) error {

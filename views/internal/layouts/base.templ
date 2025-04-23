@@ -10,7 +10,7 @@ templ Base(headOpts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="grafto">
 		@components.SetupHead(ctx, headOpts...)
-		<body class="flex flex-col min-w-screen h-screen">
+		<body>
 			@components.Nav()
 			{ children... }
 			<script src={ paths.GP(ctx, paths.HtmxJS) }></script>

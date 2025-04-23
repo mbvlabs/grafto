@@ -1,6 +1,8 @@
 package paths
 
-import "github.com/mbvlabs/grafto/static"
+import (
+	"github.com/mbvlabs/grafto/static"
+)
 
 const AssetPrefix = "/assets"
 
@@ -24,6 +26,51 @@ var (
 			Name: "assets.bootstrap_grid",
 			URL: func() string {
 				return AssetPrefix + "/" + "bootstrap-v5_3_3.min.css"
+			}(),
+		},
+	)
+
+	NewCss = register(
+		Path{
+			Name: "assets.new_css",
+			URL: func() string {
+				return AssetPrefix + "/" + "styles.css"
+			}(),
+		},
+	)
+
+	NormalizeCss = register(
+		Path{
+			Name: "assets.normalize_css",
+			URL: func() string {
+				return AssetPrefix + "/" + "normalize.css"
+			}(),
+		},
+	)
+
+	LayoutCss = register(
+		Path{
+			Name: "assets.layout_css",
+			URL: func() string {
+				return AssetPrefix + "/" + "layout.css"
+			}(),
+		},
+	)
+
+	BaseCss = register(
+		Path{
+			Name: "assets.base_css",
+			URL: func() string {
+				return AssetPrefix + "/" + "base.css"
+			}(),
+		},
+	)
+
+	NavCss = register(
+		Path{
+			Name: "assets.nav_css",
+			URL: func() string {
+				return AssetPrefix + "/" + "nav.css"
 			}(),
 		},
 	)
