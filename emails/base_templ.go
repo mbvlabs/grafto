@@ -94,68 +94,42 @@ func mainContent() templ.Component {
 }
 
 func baseStyles() string {
-	//darkScheme := fmt.Sprintf(`@media (prefers-color-scheme: dark) {
-	//	  body {
-	//	    	background-color: %v !important;
-	//	    	color: %v !important;
-	//	  	}
+	darkScheme := fmt.Sprintf(`@media (prefers-color-scheme: dark) {
+  		body {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#brandBanner {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#mainContent {
+  		  background-color: %v !important;
+  		}
+	}`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent)
 
-	//	  	#brandBanner {
-	//	  	  	background-color: %v !important;
-	//	 	  	color: %v !important;
-	//	  	}
+	lightScheme := fmt.Sprintf(`@media (prefers-color-scheme: light), (prefers-color-scheme: no-preference) {
+  		body {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#brandBanner {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#mainContent {
+  		  background-color: %v !important;
+  		}
+	}`, bgLightScheme, colorLightScheme, bgLightBrandBanner, colorLightScheme, bgLightMainContent)
 
-	//	  	#mainContent {
-	//	  	  	background-color: %v !important;
-	//	  	}
-	//	  }
-	//	}`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent,
-	//)
-
-	//lightScheme := fmt.Sprintf(`@media (prefers-color-scheme: light) {
-	//	 	body {
-	//	 	  	background-color: %v !important;
-	//	 	  	color: %v !important;
-	//	 	}
-
-	//	 	#brandBanner {
-	//	 	  	background-color: %v !important;
-	//	 	  	color: %v !important;
-	//	 	}
-
-	//	 	#mainContent {
-	//	 	  	background-color: %v !important;
-	//	 	}
-	//	 }
-	//	}`, bgLightScheme, colorLightScheme, bgLightBrandBanner, colorLightScheme, bgLightMainContent,
-	//)
-
-	//schemes := lightScheme + darkScheme
-
-	scheme := fmt.Sprintf(`
-		  body {
-		    	background-color: %v !important;
-		    	color: %v !important;
-		  	}
-
-		  	#brandBanner {
-		  	  	background-color: %v !important;
-		 	  	color: %v !important;
-		  	}
-
-		  	#mainContent {
-		  	  	background-color: %v !important;
-		  	}
-		  }
-	`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent)
+	schemes := lightScheme + "\n" + darkScheme
 
 	return `
 		<style media="all" type="text/css">
 			:root {
     		  color-scheme: light dark;
-    		  supported-color-schemes: light dark;
     		}
-
+		` + schemes + `
 			@media only screen and (max-width: 640px) {
 				.main p,
 				.main td,
@@ -227,8 +201,7 @@ func baseStyles() string {
 			    	line-height: inherit;
 			  	}
 			}
-			` + scheme +
-		"</style>"
+			</style>`
 }
 
 func unsafe(html string) templ.Component {
@@ -266,7 +239,7 @@ func base(title string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `emails/base.templ`, Line: 199, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `emails/base.templ`, Line: 172, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {

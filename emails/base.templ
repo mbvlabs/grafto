@@ -44,68 +44,42 @@ templ mainContent() {
 }
 
 func baseStyles() string {
-	//darkScheme := fmt.Sprintf(`@media (prefers-color-scheme: dark) {
-	//	  body {
-	//	    	background-color: %v !important;
-	//	    	color: %v !important;
-	//	  	}
+	darkScheme := fmt.Sprintf(`@media (prefers-color-scheme: dark) {
+  		body {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#brandBanner {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#mainContent {
+  		  background-color: %v !important;
+  		}
+	}`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent)
 
-	//	  	#brandBanner {
-	//	  	  	background-color: %v !important;
-	//	 	  	color: %v !important;
-	//	  	}
+	lightScheme := fmt.Sprintf(`@media (prefers-color-scheme: light), (prefers-color-scheme: no-preference) {
+  		body {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#brandBanner {
+  		  background-color: %v !important;
+  		  color: %v !important;
+  		}
+  		#mainContent {
+  		  background-color: %v !important;
+  		}
+	}`, bgLightScheme, colorLightScheme, bgLightBrandBanner, colorLightScheme, bgLightMainContent)
 
-	//	  	#mainContent {
-	//	  	  	background-color: %v !important;
-	//	  	}
-	//	  }
-	//	}`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent,
-	//)
-
-	//lightScheme := fmt.Sprintf(`@media (prefers-color-scheme: light) {
-	//	 	body {
-	//	 	  	background-color: %v !important;
-	//	 	  	color: %v !important;
-	//	 	}
-
-	//	 	#brandBanner {
-	//	 	  	background-color: %v !important;
-	//	 	  	color: %v !important;
-	//	 	}
-
-	//	 	#mainContent {
-	//	 	  	background-color: %v !important;
-	//	 	}
-	//	 }
-	//	}`, bgLightScheme, colorLightScheme, bgLightBrandBanner, colorLightScheme, bgLightMainContent,
-	//)
-
-	//schemes := lightScheme + darkScheme
-
-	scheme := fmt.Sprintf(`
-		  body {
-		    	background-color: %v !important;
-		    	color: %v !important;
-		  	}
-
-		  	#brandBanner {
-		  	  	background-color: %v !important;
-		 	  	color: %v !important;
-		  	}
-
-		  	#mainContent {
-		  	  	background-color: %v !important;
-		  	}
-		  }
-	`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent)
+	schemes := lightScheme + "\n" + darkScheme
 
 	return `
 		<style media="all" type="text/css">
 			:root {
     		  color-scheme: light dark;
-    		  supported-color-schemes: light dark;
     		}
-
+		` + schemes + `
 			@media only screen and (max-width: 640px) {
 				.main p,
 				.main td,
@@ -177,8 +151,7 @@ func baseStyles() string {
 			    	line-height: inherit;
 			  	}
 			}
-			` + scheme +
-		"</style>"
+			</style>`
 }
 
 func unsafe(html string) templ.Component {
