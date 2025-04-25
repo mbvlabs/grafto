@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
@@ -14,10 +13,16 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const sitemapCacheKey = "assets.sitemap"
+const (
+	sitemapCacheKey = "assets.sitemap"
+	robotsCacheKey  = "assets.robots"
+	weekInHours     = 168
+	threeInHours    = 72
+)
 
 type Assets struct {
 	sitemapCache otter.Cache[string, Sitemap]
+	assetsCache  otter.Cache[string, string]
 }
 
 func newAssets() Assets {
@@ -26,15 +31,29 @@ func newAssets() Assets {
 		panic(err)
 	}
 
-	sitemapCache, err := sitemapCacheBuilder.WithTTL(24 * time.Hour).Build()
+	sitemapCache, err := sitemapCacheBuilder.WithTTL(threeInHours).Build()
 	if err != nil {
 		panic(err)
 	}
 
-	return Assets{sitemapCache}
+	robotsCacheBuilder, err := otter.NewBuilder[string, string](1)
+	if err != nil {
+		panic(err)
+	}
+
+	robotsCache, err := robotsCacheBuilder.WithTTL(weekInHours).Build()
+	if err != nil {
+		panic(err)
+	}
+
+	return Assets{sitemapCache, robotsCache}
 }
 
 func (a Assets) Robots(c echo.Context) error {
+	if value, ok := a.assetsCache.Get(robotsCacheKey); ok {
+		return c.String(http.StatusOK, string(value))
+	}
+
 	type robotsTxt struct {
 		UserAgent string `yaml:"User-agent"`
 		Allow     string `yaml:"Allow"`
@@ -83,8 +102,8 @@ type URL struct {
 	XMLName    xml.Name `xml:"url"`
 	Loc        string   `xml:"loc"`
 	ChangeFreq string   `xml:"changefreq"`
-	LastMod    string   `xml:"lastmod"`
-	Priority   string   `xml:"priority"`
+	LastMod    string   `xml:"lastmod,omitempty"`
+	Priority   string   `xml:"priority,omitempty"`
 }
 
 type Sitemap struct {
