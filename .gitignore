@@ -28,3 +28,4 @@ tmp
 
 OpenCode.md
 .opencode/
+cmd/explore/main.go
