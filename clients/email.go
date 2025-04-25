@@ -2,11 +2,13 @@ package clients
 
 import (
 	"context"
+	"net/textproto"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	jwEmail "github.com/jordan-wright/email"
 	"github.com/mbvlabs/grafto/config"
 )
 
@@ -16,6 +18,12 @@ type EmailPayload struct {
 	Subject  string
 	HtmlBody string
 	TextBody string
+}
+
+// TODO: complete this flow
+type Unsubscribe struct {
+	Email string
+	Link  string
 }
 
 const (
@@ -47,42 +55,45 @@ func NewEmail() Email {
 	}
 }
 
-func (m Email) Send(
+func (e Email) Send(
 	ctx context.Context,
 	payload EmailPayload,
+	unsub Unsubscribe,
 ) error {
 	from := payload.From
 	if payload.From == "" {
 		from = defaultSender
 	}
 
-	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(payload.To),
-			},
-		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
-					Charset: aws.String(charSet),
-					Data:    aws.String(payload.HtmlBody),
-				},
-				Text: &ses.Content{
-					Charset: aws.String(charSet),
-					Data:    aws.String(payload.TextBody),
-				},
-			},
-			Subject: &ses.Content{
-				Charset: aws.String(charSet),
-				Data:    aws.String(payload.Subject),
-			},
-		},
-		Source: aws.String(from),
+	baseEmail := &jwEmail.Email{
+		To:      []string{payload.To},
+		From:    from,
+		Subject: payload.Subject,
+		Text:    []byte(payload.TextBody),
+		HTML:    []byte(payload.HtmlBody),
 	}
 
-	_, err := m.client.SendEmail(input)
+	if unsub.Email != "" && unsub.Link != "" {
+		baseEmail.Headers = textproto.MIMEHeader{
+			"List-Unsubscribe": []string{
+				"<" + unsub.Link + ">, <mailto:" + unsub.Email + ">",
+			},
+			"List-Unsubscribe-Post": []string{"List-Unsubscribe=One-Click"},
+		}
+	}
+
+	rawMessage, err := baseEmail.Bytes()
+	if err != nil {
+		return err
+	}
+
+	input := &ses.SendRawEmailInput{
+		RawMessage: &ses.RawMessage{
+			Data: rawMessage,
+		},
+	}
+
+	_, err = e.client.SendRawEmailWithContext(ctx, input)
 	if err != nil {
 		return err
 	}

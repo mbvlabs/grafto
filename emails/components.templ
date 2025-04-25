@@ -1,102 +1,147 @@
 package emails
 
-import (
-	"github.com/mbvlabs/grafto/config"
-	"strconv"
-	"time"
-)
+import "fmt"
 
-templ header(text string) {
-	<tr>
-		<td>
-			<h1>{ text }</h1>
-		</td>
-	</tr>
+css anchorPrimary() {
+	border-radius: 4px; 
+	box-sizing: border-box; 
+	cursor: pointer; 
+	display: inline-block; 
+	font-size: 16px; 
+	font-weight: bold; 
+	margin: 0; 
+	padding: 10px 20px; 
+	text-decoration: none; 
+	color: #ffffff;
+	background-color: { primaryColor };
+	border-color: { primaryColor };
+	border: { primaryBorder };
 }
 
-templ subHeader(text string) {
-	<tr>
-		<td>
-			<h2>{ text }</h2>
-		</td>
-	</tr>
+templ brandBanner() {
+	<table
+		id="brandBanner"
+		role="presentation"
+		border="0"
+		cellpadding="0"
+		cellspacing="0"
+		class="main"
+		style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-bottom: 24px;"
+		width="100%"
+	>
+		<tr>
+			<td
+				class="wrapper"
+				style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; text-align: left"
+				valign="top"
+			>
+				<p style="font-family: Helvetica, sans-serif; font-size: 32px; font-weight: bold; margin: 0">Grafto</p>
+				<p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0;">The full-stack web development template for Go</p>
+				<hr/>
+			</td>
+		</tr>
+	</table>
+}
+
+templ btn(title, href string) {
+	<table
+		role="presentation"
+		border="0"
+		cellpadding="0"
+		cellspacing="0"
+		class="btn"
+		style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; box-sizing: border-box; width: 100%; min-width: 100%;"
+		width="100%"
+	>
+		<tbody>
+			<tr>
+				<td
+					align="left"
+					style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; padding-bottom: 16px;"
+					valign="top"
+				>
+					<table
+						role="presentation"
+						border="0"
+						cellpadding="0"
+						cellspacing="0"
+						style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto; margin: auto;"
+					>
+						<tbody>
+							<tr>
+								<td
+									style={ fmt.Sprintf("font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; border-radius: 4px; text-align: center; color: #fffff; background-color: %s;", primaryColor) }
+									valign="top"
+									align="center"
+									bgcolor={ fmt.Sprintf("%s", primaryColor) }
+								>
+									<a
+										href={ templ.SafeURL(href) }
+										target="_blank"
+										class={ anchorPrimary() }
+									>
+										{ title }
+									</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+}
+
+templ preHeader(text string) {
+	<span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">{ text }</span>
+}
+
+templ header() {
+	<h2 style="font-family: Helvetica, sans-serif; font-weight: normal; margin: 0; margin-bottom: 16px;">
+		{ children... }
+	</h2>
+}
+
+templ footerWithUnsubscribe(unsubscribeLink string) {
+	<div class="footer" style="clear: both; padding-top: 24px; padding-bottom: 24px; text-align: center; width: 100%;">
+		<table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
+			<tr>
+				<td class="content-block" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
+					<span class="apple-link" style="color: #9a9ea6; font-size: 16px; text-align: center;">mbvlabs inc</span>
+					if unsubscribeLink != "" {
+						<br/>
+						Don't like these emails? <a href={ templ.SafeURL(unsubscribeLink) } style="text-decoration: underline; color: #9a9ea6; font-size: 16px; text-align: center;">Unsubscribe</a>.
+					}
+				</td>
+			</tr>
+			<tr>
+				<td class="content-block powered-by" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
+					Powered by <a href="https://github.com/mbvlabs/grafto" style="color: #9a9ea6; font-size: 16px; text-align: center; text-decoration: none;">Grafto</a>
+				</td>
+			</tr>
+		</table>
+	</div>
 }
 
 templ footer() {
-	<tr>
-		<td style="text-align: center;">
-			<p>© { strconv.Itoa(time.Now().Year()) } { config.Cfg.ProjectName } </p>
-		</td>
-	</tr>
-}
-
-templ footerWithUnsub(unsubURl string) {
-	<tr>
-		<td>
-			<table align="center" width="100%" cellpadding="0" cellspacing="0">
-				<tr>
-					<td style="color: #999999; text-align: center;">
-						<p>
-							If you didn't signup, or want to stop receiving these emails, click here:
-						</p>
-						<p>
-							<a href={ templ.SafeURL(unsubURl) } target="_blank">Unsubscribe me!</a>
-						</p>
-					</td>
-				</tr>
-			</table>
-		</td>
-		<table align="center" width="100%" cellpadding="0" cellspacing="0">
-			@footer()
+	<div class="footer" style="clear: both; padding-top: 24px; padding-bottom: 24px; text-align: center; width: 100%;">
+		<table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
+			<tr>
+				<td class="content-block" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
+					<span class="apple-link" style="color: #9a9ea6; font-size: 16px; text-align: center;">mbvlabs inc</span>
+				</td>
+			</tr>
+			<tr>
+				<td class="content-block powered-by" style="font-family: Helvetica, sans-serif; vertical-align: top; color: #9a9ea6; font-size: 16px; text-align: center;" valign="top" align="center">
+					Powered by <a href="https://github.com/mbvlabs/grafto" style="color: #9a9ea6; font-size: 16px; text-align: center; text-decoration: none;">Grafto</a>
+				</td>
+			</tr>
 		</table>
-	</tr>
+	</div>
 }
 
-type linkProps struct {
-	text  string
-	url   string
-	style string
-}
-
-templ link(props linkProps) {
-	<style>
-	.link {
-      background-color: #3869D4;
-      border-top: 10px solid #3869D4;
-      border-right: 18px solid #3869D4;
-      border-bottom: 10px solid #3869D4;
-      border-left: 18px solid #3869D4;
-      display: inline-block;
-      color: #FFF;
-      text-decoration: none;
-      border-radius: 3px;
-      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);
-      -webkit-text-size-adjust: none;
-      box-sizing: border-box;
-	}
-	.link--success {
-      background-color: #22BC66;
-      border-top: 10px solid #22BC66;
-      border-right: 18px solid #22BC66;
-      border-bottom: 10px solid #22BC66;
-      border-left: 18px solid #22BC66;
-  }
-
-    .link--danger {
-      background-color: #FF6136;
-      border-top: 10px solid #FF6136;
-      border-right: 18px solid #FF6136;
-      border-bottom: 10px solid #FF6136;
-      border-left: 18px solid #FF6136;
-    }
-  </style>
-	<a class={ "link", templ.KV("link--success", props.style=="success"), templ.KV("link--danger", props.style=="danger") } href={ templ.SafeURL(props.url) } target="_blank">{ props.text }</a>
-}
-
-templ section() {
-	<tr>
-		<td>
-			{ children... }
-		</td>
-	</tr>
+templ paragraph() {
+	<p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+		{ children... }
+	</p>
 }
