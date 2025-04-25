@@ -13,8 +13,8 @@ import (
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/queue"
-	"github.com/mbvlabs/grafto/queue/workers"
+	"github.com/mbvlabs/grafto/psql/queue"
+	"github.com/mbvlabs/grafto/psql/queue/workers"
 	"github.com/riverqueue/river"
 )
 
@@ -47,14 +47,13 @@ func main() {
 		river.QueueDefault: {MaxWorkers: 5},
 		"high":             {MaxWorkers: 100},
 	}
-	riverClient := queue.NewClient(
-		conn,
+	db.NewQueue(
 		queue.WithQueues(q),
 		queue.WithWorkers(workers),
 		queue.WithLogger(slog.Default()),
 	)
 
-	if err := riverClient.Start(ctx); err != nil {
+	if err := db.Queue().Start(ctx); err != nil {
 		panic(err)
 	}
 
@@ -94,7 +93,7 @@ func main() {
 			}
 		}()
 
-		err := riverClient.Stop(softStopCtx)
+		err := db.Queue().Stop(softStopCtx)
 		if err != nil && !errors.Is(err, context.DeadlineExceeded) &&
 			!errors.Is(err, context.Canceled) {
 			panic(err)
@@ -114,7 +113,7 @@ func main() {
 		// always work. However, in the case of a bug where a job blocks despite
 		// being cancelled, it may be necessary to either ignore River's stop
 		// result (what's shown here) or have a supervisor kill the process.
-		err = riverClient.StopAndCancel(hardStopCtx)
+		err = db.Queue().StopAndCancel(hardStopCtx)
 		if err != nil && errors.Is(err, context.DeadlineExceeded) {
 			fmt.Printf(
 				"Hard stop timeout; ignoring stop procedure and exiting unsafely\n",
@@ -139,13 +138,13 @@ func main() {
 	// respects context cancellation, but wait a short amount of time to give it
 	// a chance. After it elapses, send another SIGTERM to initiate a hard stop.
 	select {
-	case <-riverClient.Stopped():
+	case <-db.Queue().Stopped():
 		// Will never be reached in this example because our job will only ever
 		// finish on context cancellation.
 		fmt.Printf("Soft stop succeeded\n")
 
 	case <-time.After(100 * time.Millisecond):
 		sigintOrTerm <- syscall.SIGTERM
-		<-riverClient.Stopped()
+		<-db.Queue().Stopped()
 	}
 }

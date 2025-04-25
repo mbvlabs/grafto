@@ -20,6 +20,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/pressly/goose/v3"
 	"github.com/pressly/goose/v3/lock"
 	"github.com/riverqueue/river"
@@ -42,17 +43,25 @@ var (
 
 type Postgres struct {
 	Pool  *pgxpool.Pool
-	Queue *river.Client[pgx.Tx]
+	queue *river.Client[pgx.Tx]
 }
 
 func NewPostgres(dbPool *pgxpool.Pool, queue *river.Client[pgx.Tx]) Postgres {
 	return Postgres{
-		dbPool,
-		queue,
+		Pool:  dbPool,
+		queue: queue,
 	}
 }
 
-func (p Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
+func (p *Postgres) Queue() *river.Client[pgx.Tx] {
+	return p.queue
+}
+
+func (p *Postgres) NewQueue(opts ...queue.ClientCfgOpts) {
+	p.queue = queue.NewClient(p.Pool, opts...)
+}
+
+func (p *Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	tx, err := p.Pool.Begin(ctx)
 	if err != nil {
 		slog.ErrorContext(ctx, "could not begin transaction", "reason", err)
@@ -62,7 +71,7 @@ func (p Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	return tx, nil
 }
 
-func (p Postgres) RollBackTx(ctx context.Context, tx pgx.Tx) error {
+func (p *Postgres) RollBackTx(ctx context.Context, tx pgx.Tx) error {
 	if err := tx.Rollback(ctx); err != nil {
 		slog.ErrorContext(ctx, "could not rollback transaction", "reason", err)
 		return errors.Join(ErrRollbackTx, err)
@@ -71,7 +80,7 @@ func (p Postgres) RollBackTx(ctx context.Context, tx pgx.Tx) error {
 	return nil
 }
 
-func (p Postgres) CommitTx(ctx context.Context, tx pgx.Tx) error {
+func (p *Postgres) CommitTx(ctx context.Context, tx pgx.Tx) error {
 	if err := tx.Commit(ctx); err != nil {
 		slog.ErrorContext(ctx, "could not commit transaction", "reason", err)
 		return errors.Join(ErrCommitTx, err)
