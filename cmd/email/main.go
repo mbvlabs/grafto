@@ -16,12 +16,6 @@ func main() {
 	ctx := context.Background()
 	e := echo.New()
 
-	tester := emails.Tester{}
-	testerHtml, _, _ := tester.Generate(ctx)
-
-	testerTwo := emails.TesterTwo{}
-	testerHtmlTwo, testerTxtTwo, _ := testerTwo.Generate(ctx)
-
 	passwordReset := emails.PasswordReset{
 		ResetLink: fmt.Sprintf(
 			"%s/%s?token=%s",
@@ -49,9 +43,6 @@ func main() {
 	textGroup.GET("/signup-welcome", func(c echo.Context) error {
 		return c.String(http.StatusOK, signupWelcomeText.String())
 	})
-	textGroup.GET("/tester-two", func(c echo.Context) error {
-		return c.String(http.StatusOK, testerTxtTwo.String())
-	})
 
 	htmlGroup := e.Group("/html")
 	htmlGroup.GET("/password-reset", func(c echo.Context) error {
@@ -59,14 +50,6 @@ func main() {
 	})
 	htmlGroup.GET("/signup-welcome", func(c echo.Context) error {
 		return c.HTML(http.StatusOK, signupWelcomeHtml.String())
-	})
-
-	htmlGroup.GET("/tester", func(c echo.Context) error {
-		return c.HTML(http.StatusOK, testerHtml.String())
-	})
-
-	htmlGroup.GET("/tester-two", func(c echo.Context) error {
-		return c.HTML(http.StatusOK, testerHtmlTwo.String())
 	})
 
 	slog.Info("starting the password server on port: 4444")
