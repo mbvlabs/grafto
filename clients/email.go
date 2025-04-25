@@ -53,10 +53,10 @@ func (e Email) Send(
 	ctx context.Context,
 	payload EmailPayload,
 ) error {
-	// from := payload.From
-	// if payload.From == "" {
-	// 	from = defaultSender
-	// }
+	from := payload.From
+	if payload.From == "" {
+		from = defaultSender
+	}
 
 	// Create the unsubscribe URL with a token to identify the user
 	unsubscribeURL := "https://mbvlabs.com/unsubscribe?token=" + "mkdasmdldsa"
@@ -64,7 +64,7 @@ func (e Email) Send(
 
 	baseEmail := &jwEmail.Email{
 		To:      []string{payload.To},
-		From:    payload.From,
+		From:    from,
 		Subject: payload.Subject,
 		Text:    []byte(payload.TextBody),
 		HTML:    []byte(payload.HtmlBody),
