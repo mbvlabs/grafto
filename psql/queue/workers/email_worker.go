@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/queue/jobs"
+	"github.com/mbvlabs/grafto/psql/queue/jobs"
 	"github.com/riverqueue/river"
 )
 

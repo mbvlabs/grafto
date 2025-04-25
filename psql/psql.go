@@ -20,6 +20,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/pressly/goose/v3"
 	"github.com/pressly/goose/v3/lock"
 	"github.com/riverqueue/river"
@@ -42,14 +43,22 @@ var (
 
 type Postgres struct {
 	Pool  *pgxpool.Pool
-	Queue *river.Client[pgx.Tx]
+	queue *river.Client[pgx.Tx]
 }
 
 func NewPostgres(dbPool *pgxpool.Pool, queue *river.Client[pgx.Tx]) Postgres {
 	return Postgres{
-		dbPool,
-		queue,
+		Pool:  dbPool,
+		queue: queue,
 	}
+}
+
+func (p *Postgres) Queue() *river.Client[pgx.Tx] {
+	return p.queue
+}
+
+func (p *Postgres) NewQueue(opts ...queue.ClientCfgOpts) {
+	p.queue = queue.NewClient(p.Pool, opts...)
 }
 
 func (p Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
