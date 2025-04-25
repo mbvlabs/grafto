@@ -203,6 +203,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 
 						return false
 					}),
+					mock.Anything,
 				).Return(nil)
 			}
 			if !tt.expectedToSucceed {
@@ -230,7 +231,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 				)
 				assert.NoError(t, err)
 
-				href, ok := doc.Find("a.link").First().Attr("href")
+				href, ok := doc.Find("a#link").First().Attr("href")
 				assert.True(t, ok)
 
 				assert.NotEmpty(t, href, "reset password link was empty")

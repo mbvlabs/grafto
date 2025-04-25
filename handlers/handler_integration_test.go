@@ -45,8 +45,9 @@ type mockedEmailService struct {
 func (m *mockedEmailService) Send(
 	ctx context.Context,
 	payload clients.EmailPayload,
+	unsub clients.Unsubscribe,
 ) error {
-	args := m.Called(ctx, payload)
+	args := m.Called(ctx, payload, unsub)
 	return args.Error(0)
 }
 
