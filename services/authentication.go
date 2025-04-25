@@ -60,6 +60,7 @@ type emailSender interface {
 	Send(
 		ctx context.Context,
 		payload clients.EmailPayload,
+		unsub clients.Unsubscribe,
 	) error
 }
 
@@ -117,7 +118,7 @@ func SendResetPasswordEmail(
 		Subject:  "Action Required | Password reset requested",
 		HtmlBody: html.String(),
 		TextBody: txt.String(),
-	}); err != nil {
+	}, clients.Unsubscribe{}); err != nil {
 		return err
 	}
 

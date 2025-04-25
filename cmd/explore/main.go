@@ -28,7 +28,7 @@ func main() {
 		Subject:  "Tester",
 		HtmlBody: signupWelcomeHtml.String(),
 		TextBody: signupWelcomeText.String(),
-	}); err != nil {
+	}, clients.Unsubscribe{}); err != nil {
 		slog.Error("EEEEEEEEEEEEEEEEERROR", "e", err)
 	}
 }

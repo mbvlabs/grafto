@@ -93,6 +93,7 @@ type EmailClient interface {
 	Send(
 		ctx context.Context,
 		payload clients.EmailPayload,
+		unsub clients.Unsubscribe,
 	) error
 }
 

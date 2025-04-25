@@ -26,5 +26,6 @@ func (w *EmailJobWorker) Work(
 			HtmlBody: job.Args.HtmlVersion,
 			TextBody: job.Args.TextVersion,
 		},
+		clients.Unsubscribe{},
 	)
 }
