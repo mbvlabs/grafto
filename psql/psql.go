@@ -61,7 +61,7 @@ func (p *Postgres) NewQueue(opts ...queue.ClientCfgOpts) {
 	p.queue = queue.NewClient(p.Pool, opts...)
 }
 
-func (p Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
+func (p *Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	tx, err := p.Pool.Begin(ctx)
 	if err != nil {
 		slog.ErrorContext(ctx, "could not begin transaction", "reason", err)
@@ -71,7 +71,7 @@ func (p Postgres) BeginTx(ctx context.Context) (pgx.Tx, error) {
 	return tx, nil
 }
 
-func (p Postgres) RollBackTx(ctx context.Context, tx pgx.Tx) error {
+func (p *Postgres) RollBackTx(ctx context.Context, tx pgx.Tx) error {
 	if err := tx.Rollback(ctx); err != nil {
 		slog.ErrorContext(ctx, "could not rollback transaction", "reason", err)
 		return errors.Join(ErrRollbackTx, err)
@@ -80,7 +80,7 @@ func (p Postgres) RollBackTx(ctx context.Context, tx pgx.Tx) error {
 	return nil
 }
 
-func (p Postgres) CommitTx(ctx context.Context, tx pgx.Tx) error {
+func (p *Postgres) CommitTx(ctx context.Context, tx pgx.Tx) error {
 	if err := tx.Commit(ctx); err != nil {
 		slog.ErrorContext(ctx, "could not commit transaction", "reason", err)
 		return errors.Join(ErrCommitTx, err)
