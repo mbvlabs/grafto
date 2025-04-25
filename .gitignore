@@ -25,3 +25,6 @@ go.work
 node_modules
 
 tmp
+
+OpenCode.md
+.opencode/
