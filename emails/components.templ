@@ -18,11 +18,6 @@ css anchorPrimary() {
 	border: { primaryBorder };
 }
 
-css brandBannerStyling() {
-	width: 100%; 
-  	margin-bottom: 10px;
-}
-
 templ brandBanner() {
 	<table
 		id="brandBanner"
@@ -30,18 +25,19 @@ templ brandBanner() {
 		border="0"
 		cellpadding="0"
 		cellspacing="0"
-		class={ "main", brandBannerStyling(), borders() }
-		style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt;"
+		class="main"
+		style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; margin-bottom: 24px;"
 		width="100%"
 	>
 		<tr>
 			<td
 				class="wrapper"
-				style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; padding: 24px; text-align: center;"
+				style="font-family: Helvetica, sans-serif; font-size: 16px; vertical-align: top; box-sizing: border-box; text-align: left"
 				valign="top"
 			>
-				<p style="font-family: Helvetica, sans-serif; font-size: 24px; font-weight: bold; margin: 0;">Grafto</p>
+				<p style="font-family: Helvetica, sans-serif; font-size: 32px; font-weight: bold; margin: 0">Grafto</p>
 				<p style="font-family: Helvetica, sans-serif; font-size: 16px; font-weight: normal; margin: 0;">The full-stack web development template for Go</p>
+				<hr/>
 			</td>
 		</tr>
 	</table>

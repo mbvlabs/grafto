@@ -12,12 +12,12 @@ const (
 	bgDarkScheme      = "#121212"
 	colorDarkScheme   = "#FFFFFF"
 	bgDarkMainContent = "#212121"
-	bgDarkBrandBanner = "#2A2A2A"
+	bgDarkBrandBanner = "#212121"
 
 	bgLightScheme      = "#F5F5F5"
 	colorLightScheme   = "#333333"
 	bgLightMainContent = "#FFFFFF"
-	bgLightBrandBanner = "#E0E0E0"
+	bgLightBrandBanner = "#FFFFFF"
 )
 
 css borders() {
@@ -49,28 +49,20 @@ func baseStyles() string {
   		  background-color: %v !important;
   		  color: %v !important;
   		}
-  		#brandBanner {
-  		  background-color: %v !important;
-  		  color: %v !important;
-  		}
   		#mainContent {
   		  background-color: %v !important;
   		}
-	}`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent)
+	}`, bgDarkScheme, colorDarkScheme, bgDarkMainContent)
 
 	lightScheme := fmt.Sprintf(`@media (prefers-color-scheme: light), (prefers-color-scheme: no-preference) {
   		body {
   		  background-color: %v !important;
   		  color: %v !important;
   		}
-  		#brandBanner {
-  		  background-color: %v !important;
-  		  color: %v !important;
-  		}
   		#mainContent {
   		  background-color: %v !important;
   		}
-	}`, bgLightScheme, colorLightScheme, bgLightBrandBanner, colorLightScheme, bgLightMainContent)
+	}`, bgLightScheme, colorLightScheme, bgLightMainContent)
 
 	schemes := lightScheme + "\n" + darkScheme
 

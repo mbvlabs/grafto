@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/emails"
 )
 
@@ -17,8 +16,6 @@ func main() {
 	signupWelcome := emails.SignupWelcome{
 		ConfirmationLink: fmt.Sprintf(
 			"https://mbvlabs.com?token=%s",
-			config.Cfg.GetFullDomain(),
-			"reset-password",
 			"wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
 		),
 	}

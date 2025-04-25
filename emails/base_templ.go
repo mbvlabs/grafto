@@ -20,12 +20,12 @@ const (
 	bgDarkScheme      = "#121212"
 	colorDarkScheme   = "#FFFFFF"
 	bgDarkMainContent = "#212121"
-	bgDarkBrandBanner = "#2A2A2A"
+	bgDarkBrandBanner = "#212121"
 
 	bgLightScheme      = "#F5F5F5"
 	colorLightScheme   = "#333333"
 	bgLightMainContent = "#FFFFFF"
-	bgLightBrandBanner = "#E0E0E0"
+	bgLightBrandBanner = "#FFFFFF"
 )
 
 func borders() templ.CSSClass {
@@ -99,28 +99,20 @@ func baseStyles() string {
   		  background-color: %v !important;
   		  color: %v !important;
   		}
-  		#brandBanner {
-  		  background-color: %v !important;
-  		  color: %v !important;
-  		}
   		#mainContent {
   		  background-color: %v !important;
   		}
-	}`, bgDarkScheme, colorDarkScheme, bgDarkBrandBanner, colorDarkScheme, bgDarkMainContent)
+	}`, bgDarkScheme, colorDarkScheme, bgDarkMainContent)
 
 	lightScheme := fmt.Sprintf(`@media (prefers-color-scheme: light), (prefers-color-scheme: no-preference) {
   		body {
   		  background-color: %v !important;
   		  color: %v !important;
   		}
-  		#brandBanner {
-  		  background-color: %v !important;
-  		  color: %v !important;
-  		}
   		#mainContent {
   		  background-color: %v !important;
   		}
-	}`, bgLightScheme, colorLightScheme, bgLightBrandBanner, colorLightScheme, bgLightMainContent)
+	}`, bgLightScheme, colorLightScheme, bgLightMainContent)
 
 	schemes := lightScheme + "\n" + darkScheme
 
@@ -239,7 +231,7 @@ func base(title string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `emails/base.templ`, Line: 172, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `emails/base.templ`, Line: 164, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
