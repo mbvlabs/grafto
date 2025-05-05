@@ -23,13 +23,13 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 				templ.Attributes{"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", routes.LoginPage.Name)},
 			)
 			<div class="mb-4">
-				//@components.SuccessFlag(
-				//	"You've been authenticated and will be redirect to the dashboard.",
-				//	templ.Attributes{
-				//		"hx-get":     paths.GP(ctx, paths.Redirect, paths.WithQueryParams(paths.QueryParams{"to": paths.DashboardHome.Name})),
-				//		"hx-trigger": "load delay:4s",
-				//	},
-				//)
+				@components.SuccessFlag(
+					"You've been authenticated and will be redirect to the dashboard.",
+					templ.Attributes{
+						"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
+						"hx-trigger": "load delay:4s",
+					},
+				)
 			</div>
 		}
 		<div hx-target="this" hx-swap="outerHTML" class="rounded-lg p-4 bg-base-200 flex flex-col items-center col-span-4 md:col-start-2 md:col-end-6 lg:col-span-4 lg:col-start-5 shadow-xl">
@@ -98,7 +98,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 							</div>
 							<a
 								class="btn"
-								href={ "" }
+								href={ templ.SafeURL(routes.ForgotPasswordPage.Path) }
 							>
 								Forgotten password?
 							</a>

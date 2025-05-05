@@ -29,16 +29,15 @@ func (a App) AboutPage(ctx echo.Context) error {
 }
 
 func (a App) Redirect(ctx echo.Context) error {
-	// qp := ctx.QueryParam("to")
-	// paths := paths.GetAllPaths()
+	to := ctx.QueryParam("to")
 
-	var url string
+	// var url string
+	//
+	// // for _, p := range paths {
+	// // 	if p.Name == qp {
+	// // 		url = p.URL
+	// // 	}
+	// // }
 
-	// for _, p := range paths {
-	// 	if p.Name == qp {
-	// 		url = p.URL
-	// 	}
-	// }
-
-	return redirectHx(ctx.Response(), url)
+	return redirectHx(ctx.Response(), to)
 }

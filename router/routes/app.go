@@ -1,14 +1,16 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 )
 
-const appNamePrefix = "auth"
+const appNamePrefix = "app"
 
 var App = []Route{
 	LandingPage,
 	AboutPage,
+	Redirect.Route,
 }
 
 var LandingPage = Route{
@@ -23,4 +25,21 @@ var AboutPage = Route{
 	Path:     "/about",
 	Method:   http.MethodGet,
 	CtrlName: "AboutPage",
+}
+
+var Redirect = redirect{
+	Route: Route{
+		Name:     appNamePrefix + ".redirect",
+		Path:     "/redirect",
+		CtrlName: "Redirect",
+		Method:   http.MethodGet,
+	},
+}
+
+type redirect struct {
+	Route
+}
+
+func (r redirect) WithQuery(route Route) string {
+	return fmt.Sprintf("%s?to=%s", r.Path, route.Path)
 }
