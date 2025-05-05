@@ -31,13 +31,5 @@ func (a App) AboutPage(ctx echo.Context) error {
 func (a App) Redirect(ctx echo.Context) error {
 	to := ctx.QueryParam("to")
 
-	// var url string
-	//
-	// // for _, p := range paths {
-	// // 	if p.Name == qp {
-	// // 		url = p.URL
-	// // 	}
-	// // }
-
 	return redirectHx(ctx.Response(), to)
 }
