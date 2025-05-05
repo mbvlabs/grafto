@@ -6,7 +6,7 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
     return {
   		build: {
 		  emptyOutDir: false,
-  		  outDir: './static/css',
+  		  outDir: './assets/css',
   		  rollupOptions: {
   		  		output: {
   		  		  assetFileNames: 'main-dev.css'
@@ -23,7 +23,7 @@ export default defineConfig(({ command, mode, isSsrBuild, isPreview }) => {
   if (mode === 'prod') {
     return {
   		build: {
-  		  outDir: './static/css',
+  		  outDir: './assets/css',
   		  rollupOptions: {
   		  		output: {
   		  		  assetFileNames: 'main-prod-[hash].css'
