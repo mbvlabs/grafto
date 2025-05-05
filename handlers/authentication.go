@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
@@ -15,10 +16,6 @@ import (
 type Authentication struct {
 	db          psql.Postgres
 	emailClient EmailClient
-}
-
-func HH(ctx echo.Context) error {
-	return nil
 }
 
 func newAuthentication(
@@ -100,8 +97,7 @@ func (a Authentication) DestroyAuthenticatedSession(ctx echo.Context) error {
 	return redirect(
 		ctx.Response(),
 		ctx.Request(),
-		"",
-		// paths.CreateAuthenticatedSession.URL,
+		routes.LoginPage.Path,
 	)
 }
 
