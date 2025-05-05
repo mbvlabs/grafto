@@ -10,9 +10,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
+	"github.com/mbvlabs/grafto/assets"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/router/routes"
-	"github.com/mbvlabs/grafto/static"
 	"gopkg.in/yaml.v2"
 )
 
@@ -171,7 +171,7 @@ func createSitemap(c echo.Context) (Sitemap, error) {
 }
 
 func (a Assets) Htmx(c echo.Context) error {
-	script, err := static.Files.ReadFile("js/htmx-2_0_4.min.js")
+	script, err := assets.Files.ReadFile("js/htmx-2_0_4.min.js")
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (a Assets) Htmx(c echo.Context) error {
 }
 
 func (a Assets) AlpineJS(c echo.Context) error {
-	script, err := static.Files.ReadFile("js/alpine-3_14_8.min.js")
+	script, err := assets.Files.ReadFile("js/alpine-3_14_8.min.js")
 	if err != nil {
 		return err
 	}
@@ -193,8 +193,8 @@ func (a Assets) AlpineJS(c echo.Context) error {
 }
 
 func (a Assets) MainCss(c echo.Context) error {
-	stylesheet, err := static.Files.ReadFile(
-		fmt.Sprintf("css/%s", static.MainCssFile),
+	stylesheet, err := assets.Files.ReadFile(
+		fmt.Sprintf("css/%s", assets.MainCssFile),
 	)
 	if err != nil {
 		return err
@@ -206,7 +206,7 @@ func (a Assets) MainCss(c echo.Context) error {
 }
 
 func (a Assets) BootstrapGrid(c echo.Context) error {
-	stylesheet, err := static.Files.ReadFile(
+	stylesheet, err := assets.Files.ReadFile(
 		"css/bootstrap-v5_3_3.min.css",
 	)
 	if err != nil {
@@ -219,7 +219,7 @@ func (a Assets) BootstrapGrid(c echo.Context) error {
 }
 
 func (a Assets) Favicon16(c echo.Context) error {
-	img, err := static.Files.ReadFile(
+	img, err := assets.Files.ReadFile(
 		"images/favicon-16x16.png",
 	)
 	if err != nil {
@@ -232,7 +232,7 @@ func (a Assets) Favicon16(c echo.Context) error {
 }
 
 func (a Assets) Favicon32(c echo.Context) error {
-	img, err := static.Files.ReadFile(
+	img, err := assets.Files.ReadFile(
 		"images/favicon-32x32.png",
 	)
 	if err != nil {
