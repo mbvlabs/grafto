@@ -102,7 +102,7 @@ func RegisterForm(data RegisterFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 templ.SafeURL = ""
+		var templ_7745c5c3_Var4 templ.SafeURL = templ.SafeURL(routes.LoginPage.Path)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

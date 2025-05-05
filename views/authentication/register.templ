@@ -39,7 +39,7 @@ templ RegisterForm(data RegisterFormProps) {
 				Already have an account?
 				<a
 					class="btn btn-xs btn-outline btn-secondary"
-					href={ "" }
+					href={ templ.SafeURL(routes.LoginPage.Path) }
 				>
 					Sign in
 				</a>
