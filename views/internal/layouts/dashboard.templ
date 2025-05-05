@@ -1,8 +1,6 @@
 package layouts
 
-import (
-	"github.com/mbvlabs/grafto/routes/paths"
-)
+import "github.com/mbvlabs/grafto/router/routes"
 
 templ Dashboard() {
 	<!DOCTYPE html>
@@ -11,16 +9,16 @@ templ Dashboard() {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Grafto</title>
-			<link href={ paths.GP(ctx, paths.BootstrapGrid) } rel="stylesheet"/>
-			<link href={ paths.GP(ctx, paths.MainCss) } rel="stylesheet"/>
-			<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
-			<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
+			<link href={ routes.Bootstrap.Path } rel="stylesheet"/>
+			<link href={ routes.MainCss.Path } rel="stylesheet"/>
+			<link rel="icon" type="image/png" sizes="16x16" href={ routes.Favicon16.Path }/>
+			<link rel="icon" type="image/png" sizes="32x32" href={ routes.Favicon32.Path }/>
 		</head>
 		<body class="flex flex-col min-w-screen h-screen">
 			<header class="bsc-fluid">
 				<div class="flex justify-between navbar bg-base-100">
 					<div class="navbar-left">
-						<a href={ paths.GSP(ctx, paths.DashboardHome) }>Grafto Dashboard</a>
+						<a href={ templ.SafeURL(routes.DashboardHome.Path) }>Grafto Dashboard</a>
 					</div>
 					<div class="navbar-end">
 						<button class="btn btn-ghost btn-circle">
@@ -36,8 +34,8 @@ templ Dashboard() {
 				</div>
 			</header>
 			{ children... }
-			<script src={ paths.GP(ctx, paths.HtmxJS) }></script>
-			<script src={ paths.GP(ctx, paths.AlpineJS) }></script>
+			<script src={ routes.Htmx.Path }></script>
+			<script src={ routes.AlpineJS.Path }></script>
 		</body>
 	</html>
 }

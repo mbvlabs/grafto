@@ -4,7 +4,7 @@ import (
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
-	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/router/routes"
 	"fmt"
 )
 
@@ -18,14 +18,15 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 		if success {
 			@components.NavItem(
 				"Logout",
-				paths.DestroyAuthenticatedSession,
-				templ.Attributes{"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", paths.CreateAuthenticatedSession.Name)},
+				routes.DestroyAuthSession.Name,
+				routes.DestroyAuthSession.Path,
+				templ.Attributes{"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", routes.LoginPage.Name)},
 			)
 			<div class="mb-4">
 				@components.SuccessFlag(
 					"You've been authenticated and will be redirect to the dashboard.",
 					templ.Attributes{
-						"hx-get":     paths.GP(ctx, paths.Redirect, paths.WithQueryParams(paths.QueryParams{"to": paths.DashboardHome.Name})),
+						"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
 						"hx-trigger": "load delay:4s",
 					},
 				)
@@ -38,7 +39,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 					Don't have an account?
 					<a
 						class="btn btn-xs btn-outline btn-success"
-						href={ paths.GSP(ctx, paths.CreateUser) }
+						href={ templ.SafeURL(routes.CreateUserPage.Path) }
 					>
 						Register
 					</a>
@@ -79,7 +80,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 						<h2 class="text-yellow-400">{ errors[ErrEmailNotValidated] }</h2>
 					</div>
 				}
-				<form hx-post={ paths.GP(ctx, paths.CreateAuthenticatedSession) } method="post">
+				<form hx-post={ routes.StoreAuthSession.Path } method="post">
 					<input type="hidden" name="gorilla.csrf.Token" value={ csrfToken }/>
 					<div class="grid gap-y-4">
 						<div>
@@ -97,7 +98,7 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 							</div>
 							<a
 								class="btn"
-								href={ paths.GSP(ctx, paths.CreateForgotPassword) }
+								href={ templ.SafeURL(routes.ForgotPasswordPage.Path) }
 							>
 								Forgotten password?
 							</a>

@@ -8,9 +8,9 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/mbvlabs/grafto/routes/paths"
 import "context"
 import "github.com/mbvlabs/grafto/config"
+import "github.com/mbvlabs/grafto/router/routes"
 
 type HeadDataOption func(*HeadData)
 
@@ -92,9 +92,9 @@ func head(data HeadData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(paths.GP(ctx, paths.Favicon16))
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(routes.Favicon16.Path)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 37, Col: 87}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 37, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -105,9 +105,9 @@ func head(data HeadData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(paths.GP(ctx, paths.Favicon32))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(routes.Favicon32.Path)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 38, Col: 87}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 38, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -315,8 +315,8 @@ func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 		Slug:        "/",
 		MetaType:    "website",
 		StylesheetHrefs: []string{
-			paths.GP(ctx, paths.BootstrapGrid),
-			paths.GP(ctx, paths.MainCss),
+			routes.Bootstrap.Path,
+			routes.MainCss.Path,
 		},
 	}
 

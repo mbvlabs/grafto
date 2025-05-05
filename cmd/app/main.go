@@ -17,7 +17,7 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/mbvlabs/grafto/psql/queue/workers"
-	"github.com/mbvlabs/grafto/routes"
+	"github.com/mbvlabs/grafto/router"
 	"github.com/mbvlabs/grafto/server"
 	"riverqueue.com/riverui"
 )
@@ -115,7 +115,7 @@ func run(ctx context.Context) error {
 		emailClient,
 	)
 
-	routes := routes.NewRoutes(
+	routes := router.New(
 		handlers,
 		riverUI,
 	)

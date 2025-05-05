@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
@@ -49,8 +49,9 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if success {
 			templ_7745c5c3_Err = components.NavItem(
 				"Logout",
-				paths.DestroyAuthenticatedSession,
-				templ.Attributes{"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", paths.CreateAuthenticatedSession.Name)},
+				routes.DestroyAuthSession.Name,
+				routes.DestroyAuthSession.Path,
+				templ.Attributes{"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", routes.LoginPage.Name)},
 			).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -62,7 +63,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 			templ_7745c5c3_Err = components.SuccessFlag(
 				"You've been authenticated and will be redirect to the dashboard.",
 				templ.Attributes{
-					"hx-get":     paths.GP(ctx, paths.Redirect, paths.WithQueryParams(paths.QueryParams{"to": paths.DashboardHome.Name})),
+					"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
 					"hx-trigger": "load delay:4s",
 				},
 			).Render(ctx, templ_7745c5c3_Buffer)
@@ -78,7 +79,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 templ.SafeURL = paths.GSP(ctx, paths.CreateUser)
+		var templ_7745c5c3_Var2 templ.SafeURL = templ.SafeURL(routes.CreateUserPage.Path)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var2)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -95,7 +96,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(errors[ErrAuthDetailsWrong])
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 62, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 63, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -114,7 +115,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(errors[ErrEmailNotValidated])
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 79, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 80, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -130,9 +131,9 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(paths.GP(ctx, paths.CreateAuthenticatedSession))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(routes.StoreAuthSession.Path)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 82, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 83, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -145,7 +146,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 83, Col: 69}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/authentication/login.templ`, Line: 84, Col: 69}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -171,7 +172,7 @@ func LoginForm(csrfToken string, success bool, errors views.Errors) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var7 templ.SafeURL = paths.GSP(ctx, paths.CreateForgotPassword)
+		var templ_7745c5c3_Var7 templ.SafeURL = templ.SafeURL(routes.ForgotPasswordPage.Path)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var7)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

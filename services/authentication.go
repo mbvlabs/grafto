@@ -13,7 +13,6 @@ import (
 	"github.com/mbvlabs/grafto/emails"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 func rollback(ctx context.Context, tx pgx.Tx) {
@@ -105,7 +104,8 @@ func SendResetPasswordEmail(
 		ResetLink: fmt.Sprintf(
 			"%s/%s?token=%s",
 			config.Cfg.GetFullDomain(),
-			paths.GP(ctx, paths.CreateResetPassword),
+			"",
+			// paths.GP(ctx, paths.CreateResetPassword),
 			tkn.Hash,
 		),
 	}.Generate(ctx)

@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/dromara/carbon/v2"
-	"github.com/mbvlabs/grafto/routes/contexts"
+	"github.com/mbvlabs/grafto/router/contexts"
 )
 
 func toastBase(tType string, flash contexts.FlashMessage) templ.Component {

@@ -1,8 +1,8 @@
 package components
 
-import "github.com/mbvlabs/grafto/routes/paths"
 import "context"
 import "github.com/mbvlabs/grafto/config"
+import "github.com/mbvlabs/grafto/router/routes"
 
 type HeadDataOption func(*HeadData)
 
@@ -34,8 +34,8 @@ templ head(data HeadData) {
 		for _, href := range data.StylesheetHrefs {
 			<link href={ href } rel="stylesheet"/>
 		}
-		<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
-		<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
+		<link rel="icon" type="image/png" sizes="16x16" href={ routes.Favicon16.Path }/>
+		<link rel="icon" type="image/png" sizes="32x32" href={ routes.Favicon32.Path }/>
 		<meta property="og:type" content={ data.MetaType }/>
 		<meta property="og:title" content={ data.Title }/>
 		<meta property="og:description" content={ data.Description }/>
@@ -78,8 +78,8 @@ func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 		Slug:        "/",
 		MetaType:    "website",
 		StylesheetHrefs: []string{
-			paths.GP(ctx, paths.BootstrapGrid),
-			paths.GP(ctx, paths.MainCss),
+			routes.Bootstrap.Path,
+			routes.MainCss.Path,
 		},
 	}
 
