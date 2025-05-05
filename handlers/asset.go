@@ -10,7 +10,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/router/paths"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/static"
 	"gopkg.in/yaml.v2"
@@ -89,7 +88,6 @@ func (a Assets) Robots(c echo.Context) error {
 		Sitemap: fmt.Sprintf(
 			"%s%s",
 			config.Cfg.GetFullDomain(),
-			"",
 			routes.Sitemap.Path,
 		),
 	})
@@ -148,11 +146,9 @@ func createSitemap(c echo.Context) (Sitemap, error) {
 		Priority:   "1",
 	})
 
-	routes := c.Echo().Routes()
-	for _, r := range routes {
-		n := paths.Path{Name: r.Name, URL: r.Path}
-		switch n {
-		case paths.About:
+	for _, r := range c.Echo().Routes() {
+		switch r.Name {
+		case routes.AboutPage.Name:
 			urls = append(urls, URL{
 				Loc: fmt.Sprintf(
 					"%s%s",
