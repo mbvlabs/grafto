@@ -1,17 +1,17 @@
 package components
 
 import (
+	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/routes/paths"
-	"github.com/mbvlabs/grafto/routes/contexts"
 )
 
-templ NavItem(name string, p paths.Path, attrs templ.Attributes) {
+templ NavItem(name, pathName, path string, attrs templ.Attributes) {
 	<a
 		{ attrs... }
-		data-navItemPath={ p.Name }
+		data-navItemPath={ pathName }
 		class="font-medium text-gray-300 hover:text-gray-500 focus:outline-none focus:ring-1 focus:ring-gray-600"
-		href={ paths.GSP(ctx, p) }
+		href={ templ.SafeURL(path) }
 	>{ name }</a>
 }
 
@@ -19,21 +19,21 @@ templ Nav() {
 	<header id="navigation" class="bsc">
 		<div class="navbar flex justify-between">
 			<div class="flex-1">
-				<a class="btn btn-ghost text-xl" href={ paths.GSP(ctx, paths.LandingPage) }>{ config.Cfg.ProjectName }</a>
+				<a class="btn btn-ghost text-xl" href={ templ.SafeURL(routes.LandingPage.Path) }>{ config.Cfg.ProjectName }</a>
 			</div>
 			<div class="md:flex-none md:block hidden">
 				<ul class="menu menu-horizontal px-1">
 					<li>
-						@NavItem("Home", paths.LandingPage, nil)
+						@NavItem("Home", routes.LandingPage.Name, routes.LandingPage.Path, nil)
 					</li>
 					<li>
-						@NavItem("About", paths.About, nil)
+						@NavItem("About", routes.AboutPage.Name, routes.AboutPage.Path, nil)
 					</li>
 					<li>
 						if contexts.ExtractApp(ctx).IsAuthenticated {
-							@NavItem("Logout", paths.DestroyAuthenticatedSession, nil)
+							@NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, nil)
 						} else {
-							@NavItem("Login", paths.CreateAuthenticatedSession, nil)
+							@NavItem("Login", routes.LoginPage.Name, routes.LoginPage.Path, nil)
 						}
 					</li>
 				</ul>
@@ -59,16 +59,16 @@ templ Nav() {
 					<label for="mobile-drawer-nav" aria-label="close sidebar" class="drawer-overlay"></label>
 					<ul class="menu bg-base-200 min-h-full w-80 p-4">
 						<li>
-							@NavItem("Home", paths.LandingPage, nil)
+							@NavItem("Home", routes.LandingPage.Name, routes.LandingPage.Path, nil)
 						</li>
 						<li>
-							@NavItem("About", paths.About, nil)
+							@NavItem("About", routes.AboutPage.Name, routes.AboutPage.Path, nil)
 						</li>
 						<li>
 							if contexts.ExtractApp(ctx).IsAuthenticated {
-								@NavItem("Logout", paths.DestroyAuthenticatedSession, nil)
+								@NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, nil)
 							} else {
-								@NavItem("Login", paths.CreateAuthenticatedSession, nil)
+								@NavItem("Login", routes.LoginPage.Name, routes.LoginPage.Path, nil)
 							}
 						</li>
 					</ul>

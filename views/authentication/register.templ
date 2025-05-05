@@ -4,7 +4,6 @@ import (
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
-	"github.com/mbvlabs/grafto/routes/paths"
 )
 
 var (
@@ -39,14 +38,14 @@ templ RegisterForm(data RegisterFormProps) {
 				Already have an account?
 				<a
 					class="btn btn-xs btn-outline btn-secondary"
-					href={ paths.GSP(ctx, paths.CreateAuthenticatedSession) }
+					href={ "" }
 				>
 					Sign in
 				</a>
 			</p>
 		</div>
 		<div class="mt-5 w-full">
-			<form hx-post={ paths.GP(ctx, paths.CreateUser) } method="post">
+			<form hx-post={ "" } method="post">
 				<input type="hidden" name="gorilla.csrf.Token" value={ data.CsrfToken }/>
 				<div class="grid gap-y-4">
 					<div>

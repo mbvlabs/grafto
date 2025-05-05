@@ -1,9 +1,5 @@
 package layouts
 
-import (
-	"github.com/mbvlabs/grafto/routes/paths"
-)
-
 templ Dashboard() {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -11,16 +7,16 @@ templ Dashboard() {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Grafto</title>
-			<link href={ paths.GP(ctx, paths.BootstrapGrid) } rel="stylesheet"/>
-			<link href={ paths.GP(ctx, paths.MainCss) } rel="stylesheet"/>
-			<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
-			<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
+			//<link href={ paths.GP(ctx, paths.BootstrapGrid) } rel="stylesheet"/>
+			//<link href={ paths.GP(ctx, paths.MainCss) } rel="stylesheet"/>
+			//<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
+			//<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
 		</head>
 		<body class="flex flex-col min-w-screen h-screen">
 			<header class="bsc-fluid">
 				<div class="flex justify-between navbar bg-base-100">
 					<div class="navbar-left">
-						<a href={ paths.GSP(ctx, paths.DashboardHome) }>Grafto Dashboard</a>
+						//<a href={ paths.GSP(ctx, paths.DashboardHome) }>Grafto Dashboard</a>
 					</div>
 					<div class="navbar-end">
 						<button class="btn btn-ghost btn-circle">
@@ -36,8 +32,8 @@ templ Dashboard() {
 				</div>
 			</header>
 			{ children... }
-			<script src={ paths.GP(ctx, paths.HtmxJS) }></script>
-			<script src={ paths.GP(ctx, paths.AlpineJS) }></script>
+			//<script src={ paths.GP(ctx, paths.HtmxJS) }></script>
+			//<script src={ paths.GP(ctx, paths.AlpineJS) }></script>
 		</body>
 	</html>
 }

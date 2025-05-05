@@ -10,11 +10,11 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/routes/contexts"
-	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/routes"
 )
 
-func NavItem(name string, p paths.Path, attrs templ.Attributes) templ.Component {
+func NavItem(name, pathName, path string, attrs templ.Attributes) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -48,9 +48,9 @@ func NavItem(name string, p paths.Path, attrs templ.Attributes) templ.Component 
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(p.Name)
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(pathName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 12, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 12, Col: 29}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -60,7 +60,7 @@ func NavItem(name string, p paths.Path, attrs templ.Attributes) templ.Component 
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 templ.SafeURL = paths.GSP(ctx, p)
+		var templ_7745c5c3_Var3 templ.SafeURL = templ.SafeURL(path)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var3)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -111,7 +111,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var6 templ.SafeURL = paths.GSP(ctx, paths.LandingPage)
+		var templ_7745c5c3_Var6 templ.SafeURL = templ.SafeURL(routes.LandingPage.Path)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var6)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -123,7 +123,7 @@ func Nav() templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(config.Cfg.ProjectName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 22, Col: 104}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 22, Col: 109}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -133,7 +133,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = NavItem("Home", paths.LandingPage, nil).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavItem("Home", routes.LandingPage.Name, routes.LandingPage.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -141,7 +141,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = NavItem("About", paths.About, nil).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavItem("About", routes.AboutPage.Name, routes.AboutPage.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -150,12 +150,12 @@ func Nav() templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if contexts.ExtractApp(ctx).IsAuthenticated {
-			templ_7745c5c3_Err = NavItem("Logout", paths.DestroyAuthenticatedSession, nil).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = NavItem("Login", paths.CreateAuthenticatedSession, nil).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = NavItem("Login", routes.LoginPage.Name, routes.LoginPage.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -164,7 +164,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = NavItem("Home", paths.LandingPage, nil).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavItem("Home", routes.LandingPage.Name, routes.LandingPage.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -172,7 +172,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = NavItem("About", paths.About, nil).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = NavItem("About", routes.AboutPage.Name, routes.AboutPage.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -181,12 +181,12 @@ func Nav() templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if contexts.ExtractApp(ctx).IsAuthenticated {
-			templ_7745c5c3_Err = NavItem("Logout", paths.DestroyAuthenticatedSession, nil).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = NavItem("Login", paths.CreateAuthenticatedSession, nil).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = NavItem("Login", routes.LoginPage.Name, routes.LoginPage.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

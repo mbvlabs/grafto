@@ -1,10 +1,9 @@
 package views
 
 import "github.com/mbvlabs/grafto/views/internal/layouts"
-import "github.com/mbvlabs/grafto/routes/paths"
 
 templ AboutPage() {
-	@layouts.Base(WithSlug(paths.GetFull(ctx, paths.About))) {
+	@layouts.Base(WithSlug("")) {
 		<main class="container mx-auto my-auto">About</main>
 	}
 }

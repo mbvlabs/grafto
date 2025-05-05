@@ -1,14 +1,13 @@
 package views
 
 import "github.com/mbvlabs/grafto/views/internal/layouts"
-import "github.com/mbvlabs/grafto/routes/paths"
 
 templ loadCsrfToken() {
 	<span hx-get="/load-csrf" hx-target="this" hx-trigger="load" hx-swap="outerHTML"></span>
 }
 
 templ HomePage() {
-	@layouts.Base(WithSlug(paths.GetFull(ctx, paths.LandingPage))) {
+	@layouts.Base(WithSlug("")) {
 		<main class="container mx-auto my-auto">
 			<div class="py-10 px-4 sm:px-6 lg:px-8 xl:px-32 2xl:px-56">
 				<h1 class="block text-2xl font-bold text-white sm:text-4xl">Grafto</h1>

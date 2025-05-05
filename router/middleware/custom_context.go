@@ -6,8 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/handlers"
-	"github.com/mbvlabs/grafto/routes/contexts"
+	"github.com/mbvlabs/grafto/router/contexts"
 )
 
 func RegisterAppContext(
@@ -19,15 +18,15 @@ func RegisterAppContext(
 			return next(c)
 		}
 
-		sess, err := session.Get(handlers.AuthenticatedSessionName, c)
+		sess, err := session.Get(AuthenticatedSessionName, c)
 		if err != nil {
 			return err
 		}
 
-		isAuth, _ := sess.Values[handlers.SessIsAuthenticated].(bool)
-		userID, _ := sess.Values[handlers.SessUserID].(uuid.UUID)
-		userEmail, _ := sess.Values[handlers.SessUserEmail].(string)
-		isAdmin, _ := sess.Values[handlers.SessIsAdmin].(bool)
+		isAuth, _ := sess.Values[SessIsAuthenticated].(bool)
+		userID, _ := sess.Values[SessUserID].(uuid.UUID)
+		userEmail, _ := sess.Values[SessUserEmail].(string)
+		isAdmin, _ := sess.Values[SessIsAdmin].(bool)
 
 		ac := contexts.App{
 			Context:         c,
@@ -52,13 +51,13 @@ func RegisterFlashMessagesContext(
 			return next(c)
 		}
 
-		sess, err := session.Get(handlers.FlashSessionKey, c)
+		sess, err := session.Get(FlashSessionKey, c)
 		if err != nil {
 			return err
 		}
 
 		flashMessages := []contexts.FlashMessage{}
-		if flashes := sess.Flashes(handlers.FlashSessionKey); len(
+		if flashes := sess.Flashes(FlashSessionKey); len(
 			flashes,
 		) > 0 {
 			for _, flash := range flashes {

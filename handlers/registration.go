@@ -23,7 +23,7 @@ func newRegistration(
 	return Registration{db, emailClient}
 }
 
-func (r *Registration) CreateUser(ctx echo.Context) error {
+func (r Registration) CreateUser(ctx echo.Context) error {
 	return authentication.RegisterPage(authentication.RegisterFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}).Render(renderArgs(ctx))
@@ -36,7 +36,7 @@ type StoreUserPayload struct {
 }
 
 // TODO: send email validation email
-func (r *Registration) StoreUser(ctx echo.Context) error {
+func (r Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
@@ -64,7 +64,7 @@ type verificationTokenPayload struct {
 	Token string `query:"token"`
 }
 
-func (r *Registration) VerifyUserEmail(ctx echo.Context) error {
+func (r Registration) VerifyUserEmail(ctx echo.Context) error {
 	var payload verificationTokenPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
