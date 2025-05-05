@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	//nolint:gosec //only needed for browser caching
 	"crypto/md5"
 	"encoding/xml"
 	"fmt"
@@ -54,6 +55,7 @@ func newAssets() Assets {
 
 func (a Assets) enableCaching(c echo.Context, content []byte) echo.Context {
 	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+		//nolint:gosec //only needed for browser caching
 		hash := md5.Sum(content)
 		etag := fmt.Sprintf(`W/"%x-%x"`, hash, len(content))
 
@@ -205,7 +207,7 @@ func (a Assets) MainCss(c echo.Context) error {
 
 func (a Assets) BootstrapGrid(c echo.Context) error {
 	stylesheet, err := static.Files.ReadFile(
-		fmt.Sprintf("css/bootstrap-v5_3_3.min.css"),
+		"css/bootstrap-v5_3_3.min.css",
 	)
 	if err != nil {
 		return err
@@ -218,7 +220,7 @@ func (a Assets) BootstrapGrid(c echo.Context) error {
 
 func (a Assets) Favicon16(c echo.Context) error {
 	img, err := static.Files.ReadFile(
-		fmt.Sprintf("images/favicon-16x16.png"),
+		"images/favicon-16x16.png",
 	)
 	if err != nil {
 		return err
@@ -231,7 +233,7 @@ func (a Assets) Favicon16(c echo.Context) error {
 
 func (a Assets) Favicon32(c echo.Context) error {
 	img, err := static.Files.ReadFile(
-		fmt.Sprintf("images/favicon-32x32.png"),
+		"images/favicon-32x32.png",
 	)
 	if err != nil {
 		return err
