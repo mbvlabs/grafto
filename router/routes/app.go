@@ -19,7 +19,7 @@ var LandingPage = Route{
 }
 
 var AboutPage = Route{
-	Name:     appNamePrefix + "..about_page",
+	Name:     appNamePrefix + ".about_page",
 	Path:     "/about",
 	Method:   http.MethodGet,
 	CtrlName: "AboutPage",

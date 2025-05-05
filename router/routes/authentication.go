@@ -9,7 +9,7 @@ var Authentication = []Route{
 	StoreAuthSession,
 	DestroyAuthSession,
 	ForgotPasswordPage,
-	StoreForgotPasswordPage,
+	StoreForgotPassword,
 	ResetPasswordPage,
 	StoreResetPasswordPage,
 }
@@ -42,7 +42,7 @@ var ForgotPasswordPage = Route{
 	CtrlName: "CreatePasswordReset",
 }
 
-var StoreForgotPasswordPage = Route{
+var StoreForgotPassword = Route{
 	Name:     authNamePrefix + ".store_forgot_password",
 	Path:     "/forgot-password",
 	Method:   http.MethodPost,
