@@ -78,7 +78,7 @@ func New(
 		echomw.Recover(),
 	)
 
-	// router.Any("/river*", echo.WrapHandler(riverUI), middleware.AuthOnly)
+	router.Any("/river*", echo.WrapHandler(riverUI), middleware.AuthOnly)
 
 	return &Routes{
 		router,
@@ -86,25 +86,15 @@ func New(
 	}
 }
 
-func (r *Routes) web() {
+func (r *Routes) SetupRoutes(
+	ctx context.Context,
+) (*echo.Echo, context.Context) {
 	setupRoutes(r.router, routes.Assets, r.handlers.Assets)
 	setupRoutes(r.router, routes.Authentication, r.handlers.Authentication)
 	setupRoutes(r.router, routes.Dashboard, r.handlers.Dashboard)
 	setupRoutes(r.router, routes.App, r.handlers.App)
 	setupRoutes(r.router, routes.Registration, r.handlers.Registration)
-	// setupRoutes(r.router, routes.Fragments, r.handlers.Fragments)
-}
-
-func (r *Routes) api() {
-	// apiV1Router := r.router.Group("/api/v1")
-	// apiV1Routes(apiV1Router, r.handlers.Api)
-}
-
-func (r *Routes) SetupRoutes(
-	ctx context.Context,
-) (*echo.Echo, context.Context) {
-	r.web()
-	r.api()
+	setupRoutes(r.router, routes.ApiV1, r.handlers.Api)
 
 	return r.router, ctx
 }
