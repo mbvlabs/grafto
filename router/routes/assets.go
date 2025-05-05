@@ -14,6 +14,8 @@ var Assets = []Route{
 	MainCss,
 	AlpineJS,
 	Htmx,
+	Favicon16,
+	Favicon32,
 }
 
 var Robots = Route{
@@ -56,4 +58,18 @@ var AlpineJS = Route{
 	Path:     "/alpine",
 	Method:   http.MethodGet,
 	CtrlName: "AlpineJS",
+}
+
+var Favicon16 = Route{
+	Name:     assetsNamePrefix + ".favicon_16",
+	Path:     "/favicon",
+	Method:   http.MethodGet,
+	CtrlName: "Favicon16",
+}
+
+var Favicon32 = Route{
+	Name:     assetsNamePrefix + ".favicon_32",
+	Path:     "/favicon",
+	Method:   http.MethodGet,
+	CtrlName: "Favicon32",
 }

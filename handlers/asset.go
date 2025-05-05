@@ -219,3 +219,29 @@ func (a Assets) BootstrapGrid(c echo.Context) error {
 
 	return c.Blob(http.StatusOK, "text/css", stylesheet)
 }
+
+func (a Assets) Favicon16(c echo.Context) error {
+	img, err := static.Files.ReadFile(
+		fmt.Sprintf("images/favicon-16x16.png"),
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, img)
+
+	return c.Blob(http.StatusOK, "image/png", img)
+}
+
+func (a Assets) Favicon32(c echo.Context) error {
+	img, err := static.Files.ReadFile(
+		fmt.Sprintf("images/favicon-32x32.png"),
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, img)
+
+	return c.Blob(http.StatusOK, "image/png", img)
+}

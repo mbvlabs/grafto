@@ -34,8 +34,8 @@ templ head(data HeadData) {
 		for _, href := range data.StylesheetHrefs {
 			<link href={ href } rel="stylesheet"/>
 		}
-		//<link rel="icon" type="image/png" sizes="16x16" href={ paths.GP(ctx, paths.Favicon16) }/>
-		//<link rel="icon" type="image/png" sizes="32x32" href={ paths.GP(ctx, paths.Favicon32) }/>
+		<link rel="icon" type="image/png" sizes="16x16" href={ routes.Favicon16.Path }/>
+		<link rel="icon" type="image/png" sizes="32x32" href={ routes.Favicon32.Path }/>
 		<meta property="og:type" content={ data.MetaType }/>
 		<meta property="og:title" content={ data.Title }/>
 		<meta property="og:description" content={ data.Description }/>
