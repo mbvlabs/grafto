@@ -143,18 +143,16 @@ func setupRoutes(router *echo.Echo, r []routes.Route, handlers any) {
 		switch route.Method {
 		case http.MethodGet:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.GET(route.Path, func(c echo.Context) error {
-				return getHandlerFunc(handlers, route.CtrlName)(c)
-			}).Name = route.Name
+			router.GET(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
 		case http.MethodPost:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.POST(route.Path, getHandlerFunc(handlers, route.CtrlName)).Name = route.Name
+			router.POST(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
 		case http.MethodPut:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.PUT(route.Path, getHandlerFunc(handlers, route.CtrlName)).Name = route.Name
+			router.PUT(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
 		case http.MethodDelete:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.DELETE(route.Path, getHandlerFunc(handlers, route.CtrlName)).Name = route.Name
+			router.DELETE(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
 		}
 	}
 }
