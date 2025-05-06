@@ -3,6 +3,8 @@ package components
 import "context"
 import "github.com/mbvlabs/grafto/config"
 import "github.com/mbvlabs/grafto/router/routes"
+import "time"
+import "fmt"
 
 type HeadDataOption func(*HeadData)
 
@@ -13,13 +15,14 @@ type MetaContent struct {
 }
 
 type HeadData struct {
-	Title           string
-	Description     string
-	Image           string
-	Slug            string
-	MetaType        string
-	StylesheetHrefs []string
-	ExtraMeta       []MetaContent
+	Title          string
+	Description    string
+	Image          string
+	Slug           string
+	MetaType       string
+	StylesheetHref string
+	ScriptSrc      string
+	ExtraMeta      []MetaContent
 }
 
 templ head(data HeadData) {
@@ -31,9 +34,7 @@ templ head(data HeadData) {
 		<title>
 			{ data.Title }
 		</title>
-		for _, href := range data.StylesheetHrefs {
-			<link href={ href } rel="stylesheet"/>
-		}
+		<link href={ data.StylesheetHref } rel="stylesheet"/>
 		<link rel="icon" type="image/png" sizes="16x16" href={ routes.Favicon16.Path }/>
 		<link rel="icon" type="image/png" sizes="32x32" href={ routes.Favicon32.Path }/>
 		<meta property="og:type" content={ data.MetaType }/>
@@ -62,6 +63,7 @@ templ head(data HeadData) {
 			rel="canonical"
 			href={ data.Slug }
 		/>
+		<script src={ data.ScriptSrc } type="module"></script>
 	</head>
 }
 
@@ -73,14 +75,12 @@ func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 	//}
 
 	data := &HeadData{
-		Title:       config.Cfg.ProjectName,
-		Description: "A starter template for building one-man businesses using Golang.",
-		Slug:        "/",
-		MetaType:    "website",
-		StylesheetHrefs: []string{
-			routes.Bootstrap.Path,
-			routes.MainCss.Path,
-		},
+		Title:          config.Cfg.ProjectName,
+		Description:    "A starter template for building one-man businesses using Golang.",
+		Slug:           "/",
+		MetaType:       "website",
+		StylesheetHref: fmt.Sprintf("%v?%v", routes.CssEntrypoint.Path, time.Now().Unix()),
+		ScriptSrc:      fmt.Sprintf("%v?%v", routes.JsEntrypoint.Path, time.Now().Unix()),
 	}
 
 	for _, opt := range opts {

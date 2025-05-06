@@ -1,6 +1,8 @@
 package layouts
 
 import "github.com/mbvlabs/grafto/router/routes"
+import "time"
+import "fmt"
 
 templ Dashboard() {
 	<!DOCTYPE html>
@@ -9,10 +11,10 @@ templ Dashboard() {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Grafto</title>
-			<link href={ routes.Bootstrap.Path } rel="stylesheet"/>
-			<link href={ routes.MainCss.Path } rel="stylesheet"/>
+			<link href={ routes.CssEntrypoint.Path } rel="stylesheet"/>
 			<link rel="icon" type="image/png" sizes="16x16" href={ routes.Favicon16.Path }/>
 			<link rel="icon" type="image/png" sizes="32x32" href={ routes.Favicon32.Path }/>
+			<script src={ fmt.Sprintf("%v?%v", routes.JsEntrypoint.Path, time.Now().Unix()) } type="module"></script>
 		</head>
 		<body class="flex flex-col min-w-screen h-screen">
 			<header class="bsc-fluid">
@@ -34,8 +36,6 @@ templ Dashboard() {
 				</div>
 			</header>
 			{ children... }
-			<script src={ routes.Htmx.Path }></script>
-			<script src={ routes.AlpineJS.Path }></script>
 		</body>
 	</html>
 }

@@ -1,0 +1,70 @@
+body {
+	font-family: var(--font-system-ui);
+	background-color: var(--color-base-100);
+
+	color: var(--color-black);
+	display: flex;
+	flex-direction: column;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-style: normal;
+	font-weight: 400;
+	letter-spacing: -0.0125em;
+	line-height: var(--line-height);
+	min-height: 100vh;
+	-webkit-tap-highlight-color: rgba(var(--rgb-black), 0);
+	text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+	color: var(--color-base-content)
+}
+
+
+.main {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+.container {
+	width: 100%;
+	padding-right: 1rem;
+	padding-left: 1rem;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+@media (min-width: 576px) {
+	.container {
+		max-width: 540px;
+	}
+}
+
+@media (min-width: 768px) {
+	.container {
+		max-width: 720px;
+	}
+}
+
+@media (min-width: 992px) {
+	.container {
+		max-width: 960px;
+	}
+}
+
+@media (min-width: 1200px) {
+	.container {
+		max-width: 1140px;
+	}
+}
+
+@media (min-width: 1400px) {
+	.container {
+		max-width: 1320px;
+	}
+}
