@@ -16,8 +16,6 @@ var Assets = []Route{
 	AllCss,
 	JsEntrypoint,
 	AllJs,
-	// AlpineJS,
-	// Htmx,
 	Favicon16,
 	Favicon32,
 }
@@ -63,20 +61,6 @@ var AllJs = Route{
 	Method:   http.MethodGet,
 	CtrlName: "AllJs",
 }
-
-// var Htmx = Route{
-// 	Name:     assetsNamePrefix + ".htmx",
-// 	Path:     assetsNamePrefix + "/htmx",
-// 	Method:   http.MethodGet,
-// 	CtrlName: "Htmx",
-// }
-//
-// var AlpineJS = Route{
-// 	Name:     assetsNamePrefix + ".alpine",
-// 	Path:     assetsNamePrefix + "/alpine",
-// 	Method:   http.MethodGet,
-// 	CtrlName: "AlpineJS",
-// }
 
 var Favicon16 = Route{
 	Name:     assetsNamePrefix + ".favicon_16",

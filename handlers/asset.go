@@ -54,21 +54,21 @@ func newAssets() Assets {
 }
 
 func (a Assets) enableCaching(c echo.Context, content []byte) echo.Context {
-	// if config.Cfg.Environment == config.PROD_ENVIRONMENT {
-	//nolint:gosec //only needed for browser caching
-	hash := md5.Sum(content)
-	etag := fmt.Sprintf(`W/"%x-%x"`, hash, len(content))
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+		//nolint:gosec //only needed for browser caching
+		hash := md5.Sum(content)
+		etag := fmt.Sprintf(`W/"%x-%x"`, hash, len(content))
 
-	c.Response().
-		Header().
-		Set("Cache-Control", fmt.Sprintf("public, max-age=%s", threeMonthsCache))
-	c.Response().
-		Header().
-		Set("Vary", "Accept-Encoding")
-	c.Response().
-		Header().
-		Set("ETag", etag)
-	// }
+		c.Response().
+			Header().
+			Set("Cache-Control", fmt.Sprintf("public, max-age=%s", threeMonthsCache))
+		c.Response().
+			Header().
+			Set("Vary", "Accept-Encoding")
+		c.Response().
+			Header().
+			Set("ETag", etag)
+	}
 
 	return c
 }
@@ -169,28 +169,6 @@ func createSitemap(c echo.Context) (Sitemap, error) {
 
 	return sitemap, nil
 }
-
-// func (a Assets) Htmx(c echo.Context) error {
-// 	script, err := assets.Files.ReadFile("js/htmx-2_0_4.min.js")
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	c = a.enableCaching(c, script)
-//
-// 	return c.Blob(http.StatusOK, "text/javascript", script)
-// }
-//
-// func (a Assets) AlpineJS(c echo.Context) error {
-// 	script, err := assets.Files.ReadFile("js/alpine-3_14_8.min.js")
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	c = a.enableCaching(c, script)
-//
-// 	return c.Blob(http.StatusOK, "text/javascript", script)
-// }
 
 func (a Assets) Styles(c echo.Context) error {
 	stylesheet, err := assets.Files.ReadFile(
