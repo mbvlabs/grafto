@@ -3,18 +3,19 @@ package layouts
 import (
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/router/contexts"
-	"github.com/mbvlabs/grafto/router/routes"
+
+// "github.com/mbvlabs/grafto/router/routes"
 )
 
 templ Base(headOpts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="grafto">
 		@components.SetupHead(ctx, headOpts...)
-		<body class="flex flex-col min-w-screen h-screen">
+		<body>
 			@components.Nav()
 			{ children... }
-			<script src={ routes.Htmx.Path }></script>
-			<script src={ routes.AlpineJS.Path }></script>
+			//<script src={ routes.Htmx.Path }></script>
+			//<script src={ routes.AlpineJS.Path }></script>
 		</body>
 		<div class="toast toast-end">
 			for _, flash := range contexts.ExtractFlashMessages(ctx) {

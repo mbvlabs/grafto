@@ -1,6 +1,8 @@
 package routes
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const (
 	assetsRoutePrefix = "/assets"
@@ -10,66 +12,82 @@ const (
 var Assets = []Route{
 	Robots,
 	Sitemap,
-	Bootstrap,
-	MainCss,
-	AlpineJS,
-	Htmx,
+	CssEntrypoint,
+	AllCss,
+	JsEntrypoint,
+	AllJs,
+	// AlpineJS,
+	// Htmx,
 	Favicon16,
 	Favicon32,
 }
 
 var Robots = Route{
 	Name:     assetsNamePrefix + ".robots",
-	Path:     "/robots.txt",
+	Path:     assetsNamePrefix + "/robots.txt",
 	Method:   http.MethodGet,
 	CtrlName: "Robots",
 }
 
 var Sitemap = Route{
 	Name:     assetsNamePrefix + ".sitemap",
-	Path:     "/sitemap.xml",
+	Path:     assetsNamePrefix + "/sitemap.xml",
 	Method:   http.MethodGet,
 	CtrlName: "Sitemap",
 }
 
-var Bootstrap = Route{
-	Name:     assetsNamePrefix + ".bootstrap_grid",
-	Path:     "/bootstrap-v5_3_3.min.css",
+var CssEntrypoint = Route{
+	Name:     assetsNamePrefix + "css.entry",
+	Path:     assetsNamePrefix + "/css/styles.css",
 	Method:   http.MethodGet,
-	CtrlName: "BootstrapGrid",
+	CtrlName: "Styles",
 }
 
-var MainCss = Route{
-	Name:     assetsNamePrefix + ".styles",
-	Path:     "/styles.css",
+var AllCss = Route{
+	Name:     assetsNamePrefix + "css.all",
+	Path:     assetsNamePrefix + "/css/:file",
 	Method:   http.MethodGet,
-	CtrlName: "MainCss",
+	CtrlName: "AllCss",
 }
 
-var Htmx = Route{
-	Name:     assetsNamePrefix + ".htmx",
-	Path:     "/htmx",
+var JsEntrypoint = Route{
+	Name:     assetsNamePrefix + "js.entry",
+	Path:     assetsNamePrefix + "/js/script.js",
 	Method:   http.MethodGet,
-	CtrlName: "Htmx",
+	CtrlName: "Scripts",
 }
 
-var AlpineJS = Route{
-	Name:     assetsNamePrefix + ".alpine",
-	Path:     "/alpine",
+var AllJs = Route{
+	Name:     assetsNamePrefix + "js.all",
+	Path:     assetsNamePrefix + "/js/:file",
 	Method:   http.MethodGet,
-	CtrlName: "AlpineJS",
+	CtrlName: "AllJs",
 }
+
+// var Htmx = Route{
+// 	Name:     assetsNamePrefix + ".htmx",
+// 	Path:     assetsNamePrefix + "/htmx",
+// 	Method:   http.MethodGet,
+// 	CtrlName: "Htmx",
+// }
+//
+// var AlpineJS = Route{
+// 	Name:     assetsNamePrefix + ".alpine",
+// 	Path:     assetsNamePrefix + "/alpine",
+// 	Method:   http.MethodGet,
+// 	CtrlName: "AlpineJS",
+// }
 
 var Favicon16 = Route{
 	Name:     assetsNamePrefix + ".favicon_16",
-	Path:     "/favicon",
+	Path:     assetsNamePrefix + "/favicon",
 	Method:   http.MethodGet,
 	CtrlName: "Favicon16",
 }
 
 var Favicon32 = Route{
 	Name:     assetsNamePrefix + ".favicon_32",
-	Path:     "/favicon",
+	Path:     assetsNamePrefix + "/favicon",
 	Method:   http.MethodGet,
 	CtrlName: "Favicon32",
 }

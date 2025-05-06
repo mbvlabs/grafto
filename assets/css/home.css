@@ -1,0 +1,17 @@
+.main--grow {
+	flex: 1;
+}
+
+.hero {
+	margin: auto;
+}
+
+.hero--cta {
+	margin-top: var(--size-2);
+	color: var(--color-primary);
+	display: flex;
+
+	& svg {
+		margin-right: var(--size-2);
+	}
+}

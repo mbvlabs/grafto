@@ -61,7 +61,7 @@ generate-db-functions:
 
 # application
 run:
-    wgo -xdir views/emails -file=.go -file=.templ -xfile=_templ.go just compile-css-dev :: just compile-templates :: just run-app
+    wgo -xdir views/emails -file=.js -file=.css -file=.go -file=.templ -xfile=_templ.go just compile-templates :: just run-app
 
 run-app:
     go run cmd/app/main.go

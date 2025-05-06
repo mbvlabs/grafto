@@ -40,6 +40,12 @@ func WithMetaType(metaType string) components.HeadDataOption {
 	}
 }
 
+func WithStyles(filename string) components.HeadDataOption {
+	return func(hd *components.HeadData) {
+		hd.StylesheetHref = filename
+	}
+}
+
 func WithExtraMeta(content, name, property string) components.HeadDataOption {
 	return func(hd *components.HeadData) {
 		hd.ExtraMeta = append(hd.ExtraMeta, components.MetaContent{
