@@ -17,7 +17,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
-	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -88,7 +88,7 @@ func TestStoreUser(t *testing.T) {
 				http.MethodPost,
 				fmt.Sprintf(
 					"http://localhost:8080%s",
-					paths.GP(ctx, paths.CreateUser),
+					routes.CreateUserPage.Path,
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
@@ -189,14 +189,9 @@ func TestVerifyEmail(t *testing.T) {
 				ctx,
 				http.MethodGet,
 				fmt.Sprintf(
-					"http://localhost:8080%s",
-					paths.GP(
-						ctx,
-						paths.VerifyEmail,
-						paths.WithQueryParams(
-							paths.QueryParams{"token": token.Hash},
-						),
-					),
+					"http://localhost:8080%s?token=%s",
+					routes.VerifyEmail.Path,
+					token.Hash,
 				),
 				nil,
 			)

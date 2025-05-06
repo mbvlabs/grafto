@@ -17,10 +17,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
-	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/router/middleware"
+	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -90,7 +90,7 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 				http.MethodPost,
 				fmt.Sprintf(
 					"http://localhost:8080%s",
-					paths.GP(ctx, paths.StoreAuthenticatedSession),
+					routes.StoreAuthSession.Path,
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
@@ -104,7 +104,7 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 			cookies := rec.Result().Cookies()
 			var authToken string
 			for _, cookie := range cookies {
-				if cookie.Name == handlers.AuthenticatedSessionName {
+				if cookie.Name == middleware.AuthenticatedSessionName {
 					authToken = cookie.Value
 					break
 				}
@@ -178,7 +178,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 				http.MethodPost,
 				fmt.Sprintf(
 					"http://localhost:8080%s",
-					paths.GP(ctx, paths.StoreForgotPassword),
+					routes.StoreForgotPassword.Path,
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
@@ -350,7 +350,7 @@ func TestStoreResetPassword(t *testing.T) {
 				http.MethodPost,
 				fmt.Sprintf(
 					"http://localhost:8080%s",
-					paths.GP(ctx, paths.StoreResetPassword),
+					routes.StoreResetPasswordPage.Path,
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
