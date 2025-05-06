@@ -5,7 +5,6 @@ alias r := run
 alias ra := run-app
 alias rw := run-worker
 alias re := run-email
-alias rcc := compile-css-dev 
 
 alias ci := golangci
 
@@ -77,12 +76,6 @@ run-email:
 # assets
 compile-templates:
     templ generate
-
-compile-css-dev:
-    npm run dev
-
-compile-css-prod:
-    npm run prod
 
 fmt-templates:
     cd views && templ fmt .
