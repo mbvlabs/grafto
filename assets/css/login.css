@@ -1,0 +1,177 @@
+.login-container {
+	width: 100%;
+	max-width: 400px;
+	margin: 0 auto;
+}
+
+.login-form {
+	background-color: var(--color-base-200);
+	padding: 2rem;
+	border-radius: 8px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	color: var(--color-base-content);
+}
+
+.login-header {
+	text-align: center;
+	margin-bottom: 1.5rem;
+}
+
+.login-header h1 {
+	font-size: 1.75rem;
+	font-weight: bold;
+	color: var(--color-base-content);
+	margin-bottom: 0.5rem;
+}
+
+.login-header p {
+	font-size: 0.9rem;
+	color: var(--color-base-content);
+}
+
+.login-body {
+	width: 100%;
+}
+
+.form-fields {
+	display: grid;
+	gap: 1rem;
+}
+
+.form-actions {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 1rem 0;
+	font-size: 0.9rem;
+}
+
+.remember-me {
+	display: flex;
+	align-items: center;
+}
+
+.label-remember-me span {
+	margin-right: 0.5rem;
+	color: var(--color-base-content);
+}
+
+/* Basic Input Styling (assuming components.InputField handles its own structure) */
+/* You might need to target specific classes within components.InputField if not */
+.input {
+	/* General class for input fields, adjust if your component uses something else */
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid var(--color-neutral);
+	border-radius: 4px;
+	background-color: var(--color-base-100);
+	color: var(--color-base-content);
+}
+
+.input:focus {
+	outline: none;
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 2px var(--color-primary-content);
+}
+
+.btn {
+	padding: 0.75rem 1.5rem;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: bold;
+	text-align: center;
+	transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.btn-primary {
+	background-color: var(--color-primary);
+	color: var(--color-primary-content);
+}
+
+.btn-primary:hover {
+	background-color: oklch(from var(--color-primary) calc(l + 0.05) c h);
+	/* Lighten primary */
+	transform: translateY(-1px);
+}
+
+.link {
+	color: var(--color-accent);
+	text-decoration: none;
+	transition: color 0.2s ease-in-out, text-decoration 0.2s ease-in-out;
+}
+
+.link:hover {
+	color: oklch(from var(--color-accent) calc(l + 0.1) c h);
+	/* Lighten accent */
+	text-decoration: underline;
+}
+
+.link-success {
+	color: var(--color-success);
+}
+
+.link-success:hover {
+	color: oklch(from var(--color-success) calc(l + 0.1) c h);
+	/* Lighten success */
+	text-decoration: underline;
+}
+
+.link-secondary {
+	color: var(--color-secondary);
+}
+
+.link-secondary:hover {
+	color: oklch(from var(--color-secondary) calc(l + 0.1) c h);
+	/* Lighten secondary */
+	text-decoration: underline;
+}
+
+.error-message,
+.warning-message {
+	display: flex;
+	align-items: center;
+	padding: 0.75rem;
+	margin-bottom: 1rem;
+	border-radius: 4px;
+}
+
+.error-message {
+	background-color: oklch(from var(--color-error) l c h / 0.15);
+	color: var(--color-error);
+}
+
+.error-message h2 {
+	color: var(--color-error);
+	font-size: 0.9rem;
+}
+
+.icon-error {
+	height: 1.25rem;
+	width: 1.25rem;
+	fill: currentColor;
+	margin-right: 0.75rem;
+}
+
+.warning-message {
+	background-color: oklch(from var(--color-warning) l c h / 0.15);
+	color: var(--color-warning);
+}
+
+.warning-message h2 {
+	color: var(--color-warning);
+	font-size: 0.9rem;
+}
+
+.icon-warning {
+	height: 1.25rem;
+	width: 1.25rem;
+	fill: currentColor;
+	margin-right: 0.75rem;
+}
+
+/* Ensure checkbox is styled */
+input[type="checkbox"] {
+	accent-color: var(--color-primary);
+	margin-left: 0.25rem;
+}
