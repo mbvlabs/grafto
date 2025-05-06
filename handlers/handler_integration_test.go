@@ -15,7 +15,7 @@ import (
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/routes"
+	"github.com/mbvlabs/grafto/router"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -75,6 +75,6 @@ func setupTestRouter(
 	}))
 	slog.SetDefault(logger)
 
-	routes := routes.NewRoutes(handlers, nil)
-	return routes.SetupRoutes(ctx)
+	router := router.New(handlers, nil)
+	return router.SetupRoutes(ctx)
 }
