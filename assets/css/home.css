@@ -4,6 +4,11 @@
 
 .hero {
 	margin: auto;
+	width: var(--size-md);
+
+	& p {
+		max-inline-size: var(--size-md);
+	}
 }
 
 .hero--cta {
