@@ -1,17 +1,6 @@
-/* Login Page Styles */
-.page-container-center {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	min-height: calc(100vh - var(--nav-height, 60px)); /* Adjust based on actual nav height */
-	padding: 1rem;
-	background-color: var(--color-base-100);
-}
-
 .login-container {
 	width: 100%;
-	max-width: 400px; /* Or your preferred max width */
+	max-width: 400px;
 	margin: 0 auto;
 }
 
@@ -19,7 +8,7 @@
 	background-color: var(--color-base-200);
 	padding: 2rem;
 	border-radius: 8px;
-	box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	color: var(--color-base-content);
 }
 
@@ -69,7 +58,8 @@
 
 /* Basic Input Styling (assuming components.InputField handles its own structure) */
 /* You might need to target specific classes within components.InputField if not */
-.input { /* General class for input fields, adjust if your component uses something else */
+.input {
+	/* General class for input fields, adjust if your component uses something else */
 	width: 100%;
 	padding: 0.75rem;
 	border: 1px solid var(--color-neutral);
@@ -100,7 +90,8 @@
 }
 
 .btn-primary:hover {
-	background-color: oklch(from var(--color-primary) calc(l + 0.05) c h); /* Lighten primary */
+	background-color: oklch(from var(--color-primary) calc(l + 0.05) c h);
+	/* Lighten primary */
 	transform: translateY(-1px);
 }
 
@@ -111,19 +102,33 @@
 }
 
 .link:hover {
-	color: oklch(from var(--color-accent) calc(l + 0.1) c h); /* Lighten accent */
+	color: oklch(from var(--color-accent) calc(l + 0.1) c h);
+	/* Lighten accent */
 	text-decoration: underline;
 }
 
 .link-success {
 	color: var(--color-success);
 }
+
 .link-success:hover {
-	color: oklch(from var(--color-success) calc(l + 0.1) c h); /* Lighten success */
+	color: oklch(from var(--color-success) calc(l + 0.1) c h);
+	/* Lighten success */
 	text-decoration: underline;
 }
 
-.error-message, .warning-message {
+.link-secondary {
+	color: var(--color-secondary);
+}
+
+.link-secondary:hover {
+	color: oklch(from var(--color-secondary) calc(l + 0.1) c h);
+	/* Lighten secondary */
+	text-decoration: underline;
+}
+
+.error-message,
+.warning-message {
 	display: flex;
 	align-items: center;
 	padding: 0.75rem;
@@ -167,6 +172,6 @@
 
 /* Ensure checkbox is styled */
 input[type="checkbox"] {
-    accent-color: var(--color-primary);
-    margin-left: 0.25rem;
+	accent-color: var(--color-primary);
+	margin-left: 0.25rem;
 }

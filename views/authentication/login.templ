@@ -123,7 +123,7 @@ type LoginPageProps struct {
 
 templ LoginPage(data LoginPageProps) {
 	@layouts.Base(views.WithTitle("Login")) {
-		<main class="page-container-center">
+		<main class="container main">
 			@LoginForm(data.CsrfToken, false, data.Errors)
 		</main>
 	}
