@@ -10,7 +10,7 @@ import (
 
 	"github.com/aarondl/opt/omit"
 	"github.com/jaswdr/faker/v2"
-	models "github.com/mbvlabs/grafto/models_new"
+	models "github.com/mbvlabs/grafto/models_new/internal/models"
 	"github.com/stephenafamo/bob"
 )
 

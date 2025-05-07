@@ -7,25 +7,30 @@ toolchain go1.24.1
 require (
 	github.com/PuerkitoBio/goquery v1.10.1
 	github.com/a-h/templ v0.3.833
+	github.com/aarondl/opt v0.0.0-20240623220848-083f18ab9536
 	github.com/dromara/carbon/v2 v2.5.4
 	github.com/fergusstrange/embedded-postgres v1.30.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.2.2
+	github.com/jaswdr/faker/v2 v2.5.0
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
+	github.com/lib/pq v1.10.9
 	github.com/lmittmann/tint v1.0.1
 	github.com/riverqueue/river v0.14.2
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.2
+	github.com/stephenafamo/bob v0.34.2
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.20.2
 	golang.org/x/crypto v0.35.0
 	golang.org/x/net v0.36.0
-	golang.org/x/sync v0.11.0
+	golang.org/x/sync v0.12.0
 	golang.org/x/text v0.22.0
 	gopkg.in/yaml.v2 v2.4.0
 	riverqueue.com/riverui v0.6.0
 )
 
 require (
+	github.com/aarondl/json v0.0.0-20221020222930-8b0db17ef1bf // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -46,7 +51,6 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.2 // indirect
@@ -57,12 +61,14 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.53.0 // indirect
 	github.com/prometheus/procfs v0.13.0 // indirect
+	github.com/qdm12/reprint v0.0.0-20200326205758-722754a53494 // indirect
 	github.com/riverqueue/river/riverdriver v0.14.2 // indirect
 	github.com/riverqueue/river/rivershared v0.14.2 // indirect
 	github.com/riverqueue/river/rivertype v0.14.2 // indirect
 	github.com/samber/lo v1.44.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
+	github.com/stephenafamo/scan v0.6.2 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
@@ -93,5 +99,5 @@ require (
 	github.com/maypok86/otter v1.2.4
 	github.com/pressly/goose/v3 v3.23.0
 	github.com/samber/slog-echo v1.14.4
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
 )

@@ -14,7 +14,7 @@ import (
 	"github.com/aarondl/opt/omitnull"
 	"github.com/jaswdr/faker/v2"
 	"github.com/lib/pq"
-	models "github.com/mbvlabs/grafto/models_new"
+	models "github.com/mbvlabs/grafto/models_new/internal/models"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/types"
 )

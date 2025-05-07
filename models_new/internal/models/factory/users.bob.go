@@ -13,7 +13,7 @@ import (
 	"github.com/aarondl/opt/omitnull"
 	"github.com/google/uuid"
 	"github.com/jaswdr/faker/v2"
-	models "github.com/mbvlabs/grafto/models_new"
+	models "github.com/mbvlabs/grafto/models_new/internal/models"
 	"github.com/stephenafamo/bob"
 )
 

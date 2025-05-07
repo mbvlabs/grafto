@@ -3,7 +3,7 @@
 
 package factory
 
-import models "github.com/mbvlabs/grafto/models_new"
+import models "github.com/mbvlabs/grafto/models_new/internal/models"
 
 type (
 	RiverJobState = models.RiverJobState

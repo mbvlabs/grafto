@@ -6,7 +6,7 @@ package factory
 import (
 	"context"
 
-	models "github.com/mbvlabs/grafto/models_new"
+	models "github.com/mbvlabs/grafto/models_new/internal/models"
 )
 
 type contextKey string
