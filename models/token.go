@@ -80,7 +80,7 @@ func NewToken(
 			Time:  tkn.CreatedAt,
 			Valid: true,
 		},
-		Hash: hash,
+		Hash: tkn.Hash,
 		ExpiresAt: pgtype.Timestamptz{
 			Time:  tkn.Expiration,
 			Valid: true,

@@ -36,6 +36,7 @@ var (
 
 func GenerateToken() string {
 	bytes := make([]byte, 15)
+	//nolint:errcheck //can't error
 	rand.Read(bytes)
 	return base32.StdEncoding.EncodeToString(bytes)
 }
