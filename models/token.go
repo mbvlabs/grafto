@@ -2,8 +2,6 @@ package models
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"time"
@@ -49,7 +47,8 @@ func (te Token) IsValid() bool {
 
 type NewTokenPayload struct {
 	Expiration time.Time       `validate:"required"`
-	Meta       MetaInformation `validate:"required" json:"meta"`
+	Meta       MetaInformation `validate:"required"        json:"meta"`
+	Token      string          `validate:"required,min=15"`
 }
 
 func NewToken(
@@ -61,19 +60,12 @@ func NewToken(
 		return Token{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
-		return Token{}, err
-	}
-
-	hash := base64.URLEncoding.EncodeToString(b)
-
 	now := time.Now()
 	tkn := Token{
 		ID:         uuid.New(),
 		CreatedAt:  now,
 		Expiration: data.Expiration,
-		Hash:       hash,
+		Hash:       data.Token,
 		Meta:       data.Meta,
 	}
 
@@ -88,7 +80,7 @@ func NewToken(
 			Time:  tkn.CreatedAt,
 			Valid: true,
 		},
-		Hash: hash,
+		Hash: tkn.Hash,
 		ExpiresAt: pgtype.Timestamptz{
 			Time:  tkn.Expiration,
 			Valid: true,
