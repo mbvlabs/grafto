@@ -2,6 +2,10 @@ package services
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base32"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -13,6 +17,7 @@ import (
 	"github.com/mbvlabs/grafto/emails"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/router/routes"
 )
 
 func rollback(ctx context.Context, tx pgx.Tx) {
@@ -28,6 +33,22 @@ var (
 	)
 	ErrInvalidResetToken = errors.New("provided token is invalid")
 )
+
+func GenerateToken() string {
+	bytes := make([]byte, 15)
+	rand.Read(bytes)
+	return base32.StdEncoding.EncodeToString(bytes)
+}
+
+func GenerateHash(token string) string {
+	hash := sha256.New()
+
+	hash.Write([]byte(token))
+
+	hashedToken := hash.Sum(nil)
+
+	return hex.EncodeToString(hashedToken)
+}
 
 func AuthenticateUser(
 	ctx context.Context,
@@ -88,6 +109,7 @@ func SendResetPasswordEmail(
 		ctx,
 		tx,
 		models.NewTokenPayload{
+			Token:      GenerateHash(GenerateToken()),
 			Expiration: models.ResetPasswordExpirary,
 			Meta: models.MetaInformation{
 				Resource:   models.ResourceUser,
@@ -104,8 +126,7 @@ func SendResetPasswordEmail(
 		ResetLink: fmt.Sprintf(
 			"%s/%s?token=%s",
 			config.Cfg.GetFullDomain(),
-			"",
-			// paths.GP(ctx, paths.CreateResetPassword),
+			routes.ResetPasswordPage.Path,
 			tkn.Hash,
 		),
 	}.Generate(ctx)
@@ -128,7 +149,7 @@ func SendResetPasswordEmail(
 func ChangeUserPassword(
 	ctx context.Context,
 	db psql.Postgres,
-	hash string,
+	providedToken string,
 	password string,
 	confirmPassword string,
 ) error {
@@ -145,7 +166,7 @@ func ChangeUserPassword(
 	token, err := models.GetToken(
 		ctx,
 		tx,
-		hash,
+		GenerateHash(providedToken),
 	)
 	if err != nil {
 		return err
