@@ -317,7 +317,7 @@ func TestStoreResetPassword(t *testing.T) {
 			payload: url.Values{
 				"password":         {"reset_password"},
 				"confirm_password": {"reset_password"},
-				"token":            {validToken.Hash},
+				"token":            {validToken.Value},
 			},
 			expectedToSucceed: true,
 		},
@@ -327,7 +327,7 @@ func TestStoreResetPassword(t *testing.T) {
 			payload: url.Values{
 				"password":         {"reset_password"},
 				"confirm_password": {"reset_password"},
-				"token":            {invalidScopedToken.Hash},
+				"token":            {invalidScopedToken.Value},
 			},
 			expectedToSucceed: false,
 		},
@@ -337,7 +337,7 @@ func TestStoreResetPassword(t *testing.T) {
 			payload: url.Values{
 				"password":         {"reset_password"},
 				"confirm_password": {"reset_password"},
-				"token":            {expiredToken.Hash},
+				"token":            {expiredToken.Value},
 			},
 			expectedToSucceed: false,
 		},
@@ -372,7 +372,7 @@ func TestStoreResetPassword(t *testing.T) {
 
 				assert.NoError(t, user.ValidatePassword("reset_password"))
 
-				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Hash)
+				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Value)
 				assert.ErrorIs(t, err, pgx.ErrNoRows)
 			}
 
@@ -386,7 +386,7 @@ func TestStoreResetPassword(t *testing.T) {
 
 				assert.NoError(t, user.ValidatePassword("password"))
 
-				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Hash)
+				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Value)
 				assert.NoError(t, err)
 			}
 		})

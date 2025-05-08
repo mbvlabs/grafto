@@ -2,8 +2,13 @@ package models
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base32"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,7 +42,7 @@ type Token struct {
 	ID         uuid.UUID
 	CreatedAt  time.Time
 	Expiration time.Time
-	Hash       string
+	Value      string
 	Meta       MetaInformation
 }
 
@@ -47,8 +52,40 @@ func (te Token) IsValid() bool {
 
 type NewTokenPayload struct {
 	Expiration time.Time       `validate:"required"`
-	Meta       MetaInformation `validate:"required"        json:"meta"`
-	Token      string          `validate:"required,min=15"`
+	Meta       MetaInformation `validate:"required" json:"meta"`
+}
+
+func generateToken() string {
+	bytes := make([]byte, 15)
+	//nolint:errcheck //can't error
+	rand.Read(bytes)
+	return base32.StdEncoding.EncodeToString(bytes)
+}
+
+func generateHash(token string) string {
+	hash := sha256.New()
+
+	hash.Write([]byte(token))
+
+	hashedToken := hash.Sum(nil)
+
+	return hex.EncodeToString(hashedToken)
+}
+
+func generateRandomAlphanumeric(length int) (string, error) {
+	const charset = "abcdefghjklmnpqrstuvwxyz23456789"
+	result := make([]byte, length)
+	for i := range result {
+		randomIndex, err := rand.Int(
+			rand.Reader,
+			big.NewInt(int64(len(charset))),
+		)
+		if err != nil {
+			return "", err
+		}
+		result[i] = charset[randomIndex.Int64()]
+	}
+	return string(result), nil
 }
 
 func NewToken(
@@ -60,16 +97,98 @@ func NewToken(
 		return Token{}, errors.Join(ErrDomainValidation, err)
 	}
 
+	return newToken(ctx, dbtx, data.Expiration, data.Meta, generateToken())
+}
+
+func NewHashedToken(
+	ctx context.Context,
+	dbtx db.DBTX,
+	data NewTokenPayload,
+) (Token, error) {
+	if err := validate.Struct(data); err != nil {
+		return Token{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	tkn := generateToken()
+	hashedToken := generateHash(tkn)
+
+	newToken, err := newToken(
+		ctx,
+		dbtx,
+		data.Expiration,
+		data.Meta,
+		hashedToken,
+	)
+	if err != nil {
+		return Token{}, err
+	}
+
+	return Token{
+		ID:         newToken.ID,
+		CreatedAt:  newToken.CreatedAt,
+		Expiration: newToken.Expiration,
+		Value:      tkn,
+		Meta:       newToken.Meta,
+	}, nil
+}
+
+func NewCodeToken(
+	ctx context.Context,
+	dbtx db.DBTX,
+	data NewTokenPayload,
+) (Token, error) {
+	if err := validate.Struct(data); err != nil {
+		return Token{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	if err := validate.Struct(data); err != nil {
+		return Token{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	codeTkn, err := generateRandomAlphanumeric(6)
+	if err != nil {
+		return Token{}, err
+	}
+	hashedToken := generateHash(codeTkn)
+
+	newToken, err := newToken(
+		ctx,
+		dbtx,
+		data.Expiration,
+		data.Meta,
+		hashedToken,
+	)
+	if err != nil {
+		return Token{}, err
+	}
+
+	return Token{
+		ID:         newToken.ID,
+		CreatedAt:  newToken.CreatedAt,
+		Expiration: newToken.Expiration,
+		Value:      codeTkn,
+		Meta:       newToken.Meta,
+	}, nil
+}
+
+func newToken(
+	ctx context.Context,
+	dbtx db.DBTX,
+	expiration time.Time,
+	meta MetaInformation,
+	token string,
+) (Token, error) {
 	now := time.Now()
+
 	tkn := Token{
 		ID:         uuid.New(),
 		CreatedAt:  now,
-		Expiration: data.Expiration,
-		Hash:       data.Token,
-		Meta:       data.Meta,
+		Expiration: expiration,
+		Value:      token,
+		Meta:       meta,
 	}
 
-	metaData, err := json.Marshal(data.Meta)
+	metaData, err := json.Marshal(meta)
 	if err != nil {
 		return Token{}, err
 	}
@@ -80,7 +199,7 @@ func NewToken(
 			Time:  tkn.CreatedAt,
 			Valid: true,
 		},
-		Hash: tkn.Hash,
+		Hash: tkn.Value,
 		ExpiresAt: pgtype.Timestamptz{
 			Time:  tkn.Expiration,
 			Valid: true,
@@ -99,21 +218,45 @@ func GetToken(
 	dbtx db.DBTX,
 	token string,
 ) (Token, error) {
-	tkn, err := db.Stmts.QueryTokenByHash(ctx, dbtx, token)
+	tokenRow, err := db.Stmts.QueryTokenByHash(ctx, dbtx, token)
 	if err != nil {
 		return Token{}, err
 	}
 
 	var meta MetaInformation
-	if err := json.Unmarshal(tkn.MetaInformation, &meta); err != nil {
+	if err := json.Unmarshal(tokenRow.MetaInformation, &meta); err != nil {
 		return Token{}, err
 	}
 
 	return Token{
-		ID:         tkn.ID,
-		CreatedAt:  tkn.CreatedAt.Time,
-		Expiration: tkn.ExpiresAt.Time,
-		Hash:       tkn.Hash,
+		ID:         tokenRow.ID,
+		CreatedAt:  tokenRow.CreatedAt.Time,
+		Expiration: tokenRow.ExpiresAt.Time,
+		Value:      tokenRow.Hash,
+		Meta:       meta,
+	}, nil
+}
+
+func GetHashedToken(
+	ctx context.Context,
+	dbtx db.DBTX,
+	token string,
+) (Token, error) {
+	tokenRow, err := db.Stmts.QueryTokenByHash(ctx, dbtx, generateHash(token))
+	if err != nil {
+		return Token{}, err
+	}
+
+	var meta MetaInformation
+	if err := json.Unmarshal(tokenRow.MetaInformation, &meta); err != nil {
+		return Token{}, err
+	}
+
+	return Token{
+		ID:         tokenRow.ID,
+		CreatedAt:  tokenRow.CreatedAt.Time,
+		Expiration: tokenRow.ExpiresAt.Time,
+		Value:      tokenRow.Hash,
 		Meta:       meta,
 	}, nil
 }

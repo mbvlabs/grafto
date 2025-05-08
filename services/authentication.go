@@ -2,10 +2,6 @@ package services
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/sha256"
-	"encoding/base32"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -33,23 +29,6 @@ var (
 	)
 	ErrInvalidResetToken = errors.New("provided token is invalid")
 )
-
-func GenerateToken() string {
-	bytes := make([]byte, 15)
-	//nolint:errcheck //can't error
-	rand.Read(bytes)
-	return base32.StdEncoding.EncodeToString(bytes)
-}
-
-func GenerateHash(token string) string {
-	hash := sha256.New()
-
-	hash.Write([]byte(token))
-
-	hashedToken := hash.Sum(nil)
-
-	return hex.EncodeToString(hashedToken)
-}
 
 func AuthenticateUser(
 	ctx context.Context,
@@ -128,7 +107,7 @@ func SendResetPasswordEmail(
 			"%s/%s?token=%s",
 			config.Cfg.GetFullDomain(),
 			routes.ResetPasswordPage.Path,
-			tkn.Hash,
+			tkn.Value,
 		),
 	}.Generate(ctx)
 	if err != nil {

@@ -191,7 +191,7 @@ func TestVerifyEmail(t *testing.T) {
 				fmt.Sprintf(
 					"http://localhost:8080%s?token=%s",
 					routes.VerifyEmail.Path,
-					token.Hash,
+					token.Value,
 				),
 				nil,
 			)
