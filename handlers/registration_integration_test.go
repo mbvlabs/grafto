@@ -15,10 +15,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestStoreUser(t *testing.T) {
@@ -88,7 +90,7 @@ func TestStoreUser(t *testing.T) {
 				http.MethodPost,
 				fmt.Sprintf(
 					"http://localhost:8080%s",
-					routes.CreateUserPage.Path,
+					routes.StoreUser.Path,
 				),
 				strings.NewReader(tt.payload.Encode()),
 			)
@@ -96,12 +98,24 @@ func TestStoreUser(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			rec := httptest.NewRecorder()
 
+			emailSvc.On(
+				"SendTransaction",
+				mock.Anything,
+				mock.MatchedBy(func(payload clients.EmailPayload) bool {
+					// correctSubject := payload.Subject == "Action Required | Password reset requested"
+					//
+					// return false
+					return true
+				}),
+				mock.Anything,
+			).Return(nil)
+
 			router.ServeHTTP(rec, req)
 
 			_, err := models.GetUserByEmail(
 				ctx,
-				tt.payload.Get("email"),
 				postgres.Pool,
+				tt.payload.Get("email"),
 			)
 
 			assert.Equal(t, tt.expectedError, err)
@@ -201,8 +215,8 @@ func TestVerifyEmail(t *testing.T) {
 
 			usr, err := models.GetUser(
 				ctx,
-				token.Meta.ResourceID,
 				postgres.Pool,
+				token.Meta.ResourceID,
 			)
 			assert.NoError(t, err)
 

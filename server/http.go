@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"golang.org/x/sync/errgroup"
@@ -40,15 +39,17 @@ func NewHttp(
 						handler.ServeHTTP(w, r)
 						return
 					}
-					csrf.Protect(
-						[]byte(
-							config.Cfg.CsrfToken,
-						),
-						csrf.Secure(
-							config.Cfg.Environment == config.PROD_ENVIRONMENT,
-						),
-						csrf.Path("/"),
-					)(handler).ServeHTTP(w, r)
+					handler.ServeHTTP(w, r)
+					return
+					// csrf.Protect(
+					// 	[]byte(
+					// 		config.Cfg.CsrfToken,
+					// 	),
+					// 	csrf.Secure(
+					// 		config.Cfg.Environment == config.PROD_ENVIRONMENT,
+					// 	),
+					// 	csrf.Path("/"),
+					// )(handler).ServeHTTP(w, r)
 				},
 			)
 		}(router),

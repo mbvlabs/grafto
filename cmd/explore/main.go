@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"github.com/mbvlabs/grafto/clients"
@@ -14,21 +13,18 @@ func main() {
 	emailClient := clients.NewEmail()
 
 	signupWelcome := emails.SignupWelcome{
-		ConfirmationLink: fmt.Sprintf(
-			"https://mbvlabs.com?token=%s",
-			"wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
-		),
+		VerificationCode: "d4sss13",
 	}
 	signupWelcomeHtml, signupWelcomeText, _ := signupWelcome.Generate(
 		context.Background(),
 	)
-	if err := emailClient.Send(context.Background(), clients.EmailPayload{
+	if err := emailClient.SendTransaction(context.Background(), clients.EmailPayload{
 		To:       "vanilla.beetle.spider@aboutmy.email",
 		From:     "Morten <noreply@golangblogcourse.com>",
 		Subject:  "Tester",
 		HtmlBody: signupWelcomeHtml.String(),
 		TextBody: signupWelcomeText.String(),
-	}, clients.Unsubscribe{}); err != nil {
+	}); err != nil {
 		slog.Error("EEEEEEEEEEEEEEEEERROR", "e", err)
 	}
 }

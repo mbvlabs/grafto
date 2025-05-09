@@ -189,7 +189,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 
 			if tt.expectedToSucceed {
 				emailSvc.On(
-					"Send",
+					"SendTransaction",
 					mock.Anything,
 					mock.MatchedBy(func(payload clients.EmailPayload) bool {
 						correctEmail := payload.To == tt.user.Email
@@ -209,7 +209,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 			if !tt.expectedToSucceed {
 				if ok := emailSvc.AssertNotCalled(
 					t,
-					"Send",
+					"SendTransaction",
 					mock.Anything,
 					clients.EmailPayload{},
 				); !ok {
@@ -365,8 +365,8 @@ func TestStoreResetPassword(t *testing.T) {
 			if tt.expectedToSucceed {
 				user, err := models.GetUser(
 					ctx,
-					tt.token.Meta.ResourceID,
 					postgres.Pool,
+					tt.token.Meta.ResourceID,
 				)
 				assert.NoError(t, err)
 
@@ -379,8 +379,8 @@ func TestStoreResetPassword(t *testing.T) {
 			if !tt.expectedToSucceed {
 				user, err := models.GetUser(
 					ctx,
-					tt.token.Meta.ResourceID,
 					postgres.Pool,
+					tt.token.Meta.ResourceID,
 				)
 				assert.NoError(t, err)
 
