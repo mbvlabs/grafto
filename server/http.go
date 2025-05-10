@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -29,30 +28,8 @@ func NewHttp(
 	host := config.Cfg.ServerHost
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf("%v:%v", host, port),
-		Handler: func(handler http.Handler) http.Handler {
-			return http.HandlerFunc(
-				func(w http.ResponseWriter, r *http.Request) {
-					if strings.HasPrefix(r.URL.Path, "/api") ||
-						strings.HasPrefix(r.URL.Path, "/river") {
-
-						handler.ServeHTTP(w, r)
-						return
-					}
-					handler.ServeHTTP(w, r)
-					return
-					// csrf.Protect(
-					// 	[]byte(
-					// 		config.Cfg.CsrfToken,
-					// 	),
-					// 	csrf.Secure(
-					// 		config.Cfg.Environment == config.PROD_ENVIRONMENT,
-					// 	),
-					// 	csrf.Path("/"),
-					// )(handler).ServeHTTP(w, r)
-				},
-			)
-		}(router),
+		Addr:         fmt.Sprintf("%v:%v", host, port),
+		Handler:      router,
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 5 * time.Second,
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },
