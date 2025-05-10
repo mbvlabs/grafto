@@ -44,7 +44,7 @@ func NewConfig() Config {
 func newTestConfig() Config {
 	return Config{
 		Authentication: Authentication{
-			PasswordPepper:       "pepper",
+			PasswordSalt:         "salty",
 			SessionKey:           "session",
 			SessionEncryptionKey: "session_enc_key",
 			TokenSigningKey:      "token_signing_key",
