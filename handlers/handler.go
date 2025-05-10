@@ -13,11 +13,11 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/contexts"
 	"github.com/mbvlabs/grafto/router/middleware"
+	"github.com/mbvlabs/grafto/services"
 )
 
 const (
@@ -77,18 +77,10 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
-type EmailClient interface {
-	Send(
-		ctx context.Context,
-		payload clients.EmailPayload,
-		unsub clients.Unsubscribe,
-	) error
-}
-
 func NewHandlers(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
-	emailSvc EmailClient,
+	emailSvc services.EmailSender,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 	gob.Register(contexts.FlashMessage{})

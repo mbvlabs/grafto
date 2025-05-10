@@ -55,7 +55,22 @@ func NewEmail() Email {
 	}
 }
 
-func (e Email) Send(
+func (e Email) SendTransaction(
+	ctx context.Context,
+	payload EmailPayload,
+) error {
+	return e.send(ctx, payload, Unsubscribe{})
+}
+
+func (e Email) SendMarketing(
+	ctx context.Context,
+	payload EmailPayload,
+	unsub Unsubscribe,
+) error {
+	return e.send(ctx, payload, unsub)
+}
+
+func (e Email) send(
 	ctx context.Context,
 	payload EmailPayload,
 	unsub Unsubscribe,

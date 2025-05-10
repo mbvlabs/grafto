@@ -15,12 +15,12 @@ import (
 
 type Authentication struct {
 	db          psql.Postgres
-	emailClient EmailClient
+	emailClient services.EmailSender
 }
 
 func newAuthentication(
 	db psql.Postgres,
-	emailClient EmailClient,
+	emailClient services.EmailSender,
 ) Authentication {
 	return Authentication{db, emailClient}
 }
@@ -157,6 +157,7 @@ func (a Authentication) StoreResetPassword(ctx echo.Context) error {
 
 	if err := services.ChangeUserPassword(ctx.Request().Context(), a.db, payload.Token, payload.Password, payload.ConfirmPassword); err != nil {
 		// TODO: show proper error page with info
+		slog.Error("could not change user password", "err", err)
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 

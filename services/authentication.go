@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/emails"
@@ -15,12 +13,6 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/routes"
 )
-
-func rollback(ctx context.Context, tx pgx.Tx) {
-	if err := tx.Rollback(ctx); err != nil {
-		slog.ErrorContext(ctx, "could not rollback transaction", "err", err)
-	}
-}
 
 var (
 	ErrUserEmailNotVerified = errors.New("user email is not verified")
@@ -38,8 +30,8 @@ func AuthenticateUser(
 ) (models.UserEntity, error) {
 	user, err := models.GetUserByEmail(
 		ctx,
-		email,
 		db.Pool,
+		email,
 	)
 	if err != nil {
 		return models.UserEntity{}, ErrInvalidAuthDetail
@@ -56,40 +48,31 @@ func AuthenticateUser(
 	return user, nil
 }
 
-type emailSender interface {
-	Send(
-		ctx context.Context,
-		payload clients.EmailPayload,
-		unsub clients.Unsubscribe,
-	) error
-}
-
 func SendResetPasswordEmail(
 	ctx context.Context,
 	db psql.Postgres,
-	emailClient emailSender,
+	emailClient EmailSender,
 	email string,
 ) error {
 	tx, err := db.BeginTx(ctx)
 	if err != nil {
 		return err
 	}
-	defer rollback(ctx, tx)
+	defer tx.Rollback(ctx)
 
 	user, err := models.GetUserByEmail(
 		ctx,
-		email,
 		tx,
+		email,
 	)
 	if err != nil {
 		return err
 	}
 
-	tkn, err := models.NewToken(
+	tkn, err := models.NewHashedToken(
 		ctx,
 		tx,
 		models.NewTokenPayload{
-			Token:      GenerateHash(GenerateToken()),
 			Expiration: models.ResetPasswordExpirary,
 			Meta: models.MetaInformation{
 				Resource:   models.ResourceUser,
@@ -104,7 +87,7 @@ func SendResetPasswordEmail(
 
 	html, txt, err := emails.PasswordReset{
 		ResetLink: fmt.Sprintf(
-			"%s/%s?token=%s",
+			"%s%s?token=%s",
 			config.Cfg.GetFullDomain(),
 			routes.ResetPasswordPage.Path,
 			tkn.Value,
@@ -114,12 +97,12 @@ func SendResetPasswordEmail(
 		return err
 	}
 
-	if err := emailClient.Send(ctx, clients.EmailPayload{
+	if err := emailClient.SendTransaction(ctx, clients.EmailPayload{
 		To:       user.Email,
 		Subject:  "Action Required | Password reset requested",
 		HtmlBody: html.String(),
 		TextBody: txt.String(),
-	}, clients.Unsubscribe{}); err != nil {
+	}); err != nil {
 		return err
 	}
 
@@ -137,16 +120,12 @@ func ChangeUserPassword(
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err := tx.Rollback(ctx); err != nil {
-			slog.ErrorContext(ctx, "could not rollback transaction", "err", err)
-		}
-	}()
+	defer tx.Rollback(ctx)
 
-	token, err := models.GetToken(
+	token, err := models.GetHashedToken(
 		ctx,
 		tx,
-		GenerateHash(providedToken),
+		providedToken,
 	)
 	if err != nil {
 		return err

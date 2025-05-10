@@ -53,8 +53,8 @@ func HashAndPepperPassword(password string) (string, error) {
 
 func GetUserByEmail(
 	ctx context.Context,
-	email string,
 	dbtx db.DBTX,
+	email string,
 ) (UserEntity, error) {
 	user, err := db.Stmts.QueryUserByEmail(ctx, dbtx, email)
 	if err != nil {
@@ -74,8 +74,8 @@ func GetUserByEmail(
 
 func GetUser(
 	ctx context.Context,
-	id uuid.UUID,
 	dbtx db.DBTX,
+	id uuid.UUID,
 ) (UserEntity, error) {
 	row, err := db.Stmts.QueryUserByID(ctx, dbtx, id)
 	if err != nil {
@@ -100,8 +100,8 @@ type NewUserPayload struct {
 
 func NewUser(
 	ctx context.Context,
-	data NewUserPayload,
 	dbtx db.DBTX,
+	data NewUserPayload,
 ) (UserEntity, error) {
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
@@ -143,8 +143,8 @@ type UpdateUserPayload struct {
 
 func UpdateUser(
 	ctx context.Context,
-	data UpdateUserPayload,
 	dbtx db.DBTX,
+	data UpdateUserPayload,
 ) (UserEntity, error) {
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
@@ -210,8 +210,8 @@ type UpdateUserEmailToVerifiedPayload struct {
 
 func UpdateUserEmailToVerified(
 	ctx context.Context,
-	data UpdateUserEmailToVerifiedPayload,
 	dbtx db.DBTX,
+	data UpdateUserEmailToVerifiedPayload,
 ) error {
 	if err := validate.Struct(data); err != nil {
 		return errors.Join(ErrDomainValidation, err)
@@ -237,14 +237,14 @@ type MakeUserAdminPayload struct {
 
 func MakeUserAdmin(
 	ctx context.Context,
-	data MakeUserAdminPayload,
 	dbtx db.DBTX,
+	data MakeUserAdminPayload,
 ) (UserEntity, error) {
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	actor, err := GetUser(ctx, data.ActorID, dbtx)
+	actor, err := GetUser(ctx, dbtx, data.ActorID)
 	if err != nil {
 		return UserEntity{}, err
 	}

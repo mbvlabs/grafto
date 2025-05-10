@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -59,13 +60,13 @@ func generateToken() string {
 	bytes := make([]byte, 15)
 	//nolint:errcheck //can't error
 	rand.Read(bytes)
-	return base32.StdEncoding.EncodeToString(bytes)
+	return strings.ToLower(base32.StdEncoding.EncodeToString(bytes))
 }
 
 func generateHash(token string) string {
 	hash := sha256.New()
 
-	hash.Write([]byte(token))
+	hash.Write([]byte(strings.ToLower(token)))
 
 	hashedToken := hash.Sum(nil)
 
@@ -141,22 +142,17 @@ func NewCodeToken(
 		return Token{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	if err := validate.Struct(data); err != nil {
-		return Token{}, errors.Join(ErrDomainValidation, err)
-	}
-
 	codeTkn, err := generateRandomAlphanumeric(6)
 	if err != nil {
 		return Token{}, err
 	}
-	hashedToken := generateHash(codeTkn)
 
 	newToken, err := newToken(
 		ctx,
 		dbtx,
 		data.Expiration,
 		data.Meta,
-		hashedToken,
+		generateHash(codeTkn),
 	)
 	if err != nil {
 		return Token{}, err

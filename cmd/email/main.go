@@ -27,7 +27,7 @@ func main() {
 	passwordResetHtml, passwordResetText, _ := passwordReset.Generate(ctx)
 
 	signupWelcome := emails.SignupWelcome{
-		VerificationCode: "34cj34",
+		VerificationCode: "43dd1w",
 	}
 	signupWelcomeHtml, signupWelcomeText, _ := signupWelcome.Generate(ctx)
 

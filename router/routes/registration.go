@@ -29,6 +29,6 @@ var StoreUser = Route{
 var VerifyEmail = Route{
 	Name:     registrationNamePrefix + ".verify_email",
 	Path:     "/verify-email",
-	Method:   http.MethodGet,
+	Method:   http.MethodPost,
 	CtrlName: "VerifyUserEmail",
 }

@@ -42,12 +42,11 @@ type mockedEmailService struct {
 	mock.Mock
 }
 
-func (m *mockedEmailService) Send(
+func (m *mockedEmailService) SendTransaction(
 	ctx context.Context,
 	payload clients.EmailPayload,
-	unsub clients.Unsubscribe,
 ) error {
-	args := m.Called(ctx, payload, unsub)
+	args := m.Called(ctx, payload)
 	return args.Error(0)
 }
 
