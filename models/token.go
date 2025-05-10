@@ -26,8 +26,7 @@ var (
 	ScopeEmailVerification Scope = "email_verification"
 	ScopeUnsubscribe       Scope = "unsubscribe"
 
-	ResetPasswordExpirary time.Time = time.Now().Add(1 * time.Hour)
-	ScopeResetPassword    Scope     = "password_reset"
+	ScopeResetPassword Scope = "password_reset"
 
 	ResourceUser       Resource = "users"
 	ResourceSubscriber Resource = "subscribers"

@@ -74,7 +74,7 @@ func SendResetPasswordEmail(
 		ctx,
 		tx,
 		models.NewTokenPayload{
-			Expiration: models.ResetPasswordExpirary,
+			Expiration: time.Now().Add(1 * time.Hour),
 			Meta: models.MetaInformation{
 				Resource:   models.ResourceUser,
 				ResourceID: user.ID,
