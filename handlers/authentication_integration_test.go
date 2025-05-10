@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -30,10 +29,6 @@ import (
 
 func TestStoreAuthenticatedSession(t *testing.T) {
 	t.Parallel()
-
-	if err := os.Setenv("SESSION_ENCRYPTION_KEY", "SxU2/SCjnH5KKyAUUGnxPA=="); err != nil {
-		assert.Panics(t, t.Fail, "could not set session encryption key")
-	}
 
 	ctx := context.Background()
 	postgres, cleanup, stopEmbedded := setupTestDB(ctx, t)
