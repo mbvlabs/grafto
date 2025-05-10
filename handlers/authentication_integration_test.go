@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/models"
@@ -97,9 +99,16 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			rec := httptest.NewRecorder()
 
-			router.ServeHTTP(rec, req)
+			c := router.NewContext(req, rec)
 
-			assert.Equal(t, http.StatusOK, rec.Code)
+			store := sessions.NewCookieStore([]byte("secret"))
+
+			mw := testMiddleware(store)
+			h := mw(testHandlers.Authentication.StoreAuthenticatedSession)
+
+			if tt.expectedToSucceed {
+				assert.NoError(t, h(c))
+			}
 
 			cookies := rec.Result().Cookies()
 			var authToken string
@@ -186,10 +195,11 @@ func TestStoreForgottenPassword(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			var sentHtml string
+			slog.Info(sentHtml)
 
 			if tt.expectedToSucceed {
 				emailSvc.On(
-					"Send",
+					"SendTransaction",
 					mock.Anything,
 					mock.MatchedBy(func(payload clients.EmailPayload) bool {
 						correctEmail := payload.To == tt.user.Email
@@ -209,7 +219,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 			if !tt.expectedToSucceed {
 				if ok := emailSvc.AssertNotCalled(
 					t,
-					"Send",
+					"SendTransaction",
 					mock.Anything,
 					clients.EmailPayload{},
 				); !ok {
@@ -220,7 +230,8 @@ func TestStoreForgottenPassword(t *testing.T) {
 				}
 			}
 
-			router.ServeHTTP(rec, req)
+			c := router.NewContext(req, rec)
+			err := testHandlers.Authentication.StorePasswordReset(c)
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -237,8 +248,11 @@ func TestStoreForgottenPassword(t *testing.T) {
 				assert.NotEmpty(t, href, "reset password link was empty")
 
 				token := strings.Split(href, "?token=")[1]
-
-				resetPwTkn, err := models.GetToken(ctx, postgres.Pool, token)
+				resetPwTkn, err := models.GetHashedToken(
+					ctx,
+					postgres.Pool,
+					token,
+				)
 				assert.NoError(t, err)
 
 				assert.True(t, resetPwTkn.IsValid())
@@ -274,6 +288,7 @@ func TestStoreResetPassword(t *testing.T) {
 			ResourceID: validUser.ID,
 			Scope:      models.ScopeResetPassword,
 		}),
+		seeds.WithHashedToken(),
 	)
 	assert.NoError(t, err)
 
@@ -317,7 +332,7 @@ func TestStoreResetPassword(t *testing.T) {
 			payload: url.Values{
 				"password":         {"reset_password"},
 				"confirm_password": {"reset_password"},
-				"token":            {validToken.Hash},
+				"token":            {validToken.Value},
 			},
 			expectedToSucceed: true,
 		},
@@ -327,7 +342,7 @@ func TestStoreResetPassword(t *testing.T) {
 			payload: url.Values{
 				"password":         {"reset_password"},
 				"confirm_password": {"reset_password"},
-				"token":            {invalidScopedToken.Hash},
+				"token":            {invalidScopedToken.Value},
 			},
 			expectedToSucceed: false,
 		},
@@ -337,7 +352,7 @@ func TestStoreResetPassword(t *testing.T) {
 			payload: url.Values{
 				"password":         {"reset_password"},
 				"confirm_password": {"reset_password"},
-				"token":            {expiredToken.Hash},
+				"token":            {expiredToken.Value},
 			},
 			expectedToSucceed: false,
 		},
@@ -357,36 +372,39 @@ func TestStoreResetPassword(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
+
+			c := router.NewContext(req, rec)
+			err := testHandlers.Authentication.StoreResetPassword(c)
 
 			assert.NoError(t, err)
+
 			assert.Equal(t, http.StatusOK, rec.Code)
 
 			if tt.expectedToSucceed {
 				user, err := models.GetUser(
 					ctx,
-					tt.token.Meta.ResourceID,
 					postgres.Pool,
+					tt.token.Meta.ResourceID,
 				)
 				assert.NoError(t, err)
 
 				assert.NoError(t, user.ValidatePassword("reset_password"))
 
-				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Hash)
+				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Value)
 				assert.ErrorIs(t, err, pgx.ErrNoRows)
 			}
 
 			if !tt.expectedToSucceed {
 				user, err := models.GetUser(
 					ctx,
-					tt.token.Meta.ResourceID,
 					postgres.Pool,
+					tt.token.Meta.ResourceID,
 				)
 				assert.NoError(t, err)
 
 				assert.NoError(t, user.ValidatePassword("password"))
 
-				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Hash)
+				_, err = models.GetToken(ctx, postgres.Pool, tt.token.Value)
 				assert.NoError(t, err)
 			}
 		})

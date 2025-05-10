@@ -3,10 +3,11 @@ package emails
 import (
 	"context"
 	"github.com/mbvlabs/grafto/config"
+	"strings"
 )
 
 type SignupWelcome struct {
-	ConfirmationLink string
+	VerificationCode string
 }
 
 var _ TemplateHandler = (*SignupWelcome)(nil)
@@ -25,16 +26,15 @@ templ (s SignupWelcome) template() {
 		@mainContent() {
 			@brandBanner()
 			@header() {
-				Hi there,
+				Welcome onboard!
 			}
 			@paragraph() {
 				Thanks for signing up for { config.Cfg.ProjectName }. We’re thrilled to have you on board.
 			}
 			@paragraph() {
-				To continue, we need you to confirm your mail.
+				To start using our service, you need to verify your email address. Please enter the code below into the form shown on the page after you signed up.
 			}
-			@btn("Confirm mail", s.ConfirmationLink) {
-			}
+			@codeBlock(strings.ToUpper(s.VerificationCode))
 		}
 		@footer()
 	}

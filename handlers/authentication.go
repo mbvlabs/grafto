@@ -15,12 +15,12 @@ import (
 
 type Authentication struct {
 	db          psql.Postgres
-	emailClient EmailClient
+	emailClient services.EmailSender
 }
 
 func newAuthentication(
 	db psql.Postgres,
-	emailClient EmailClient,
+	emailClient services.EmailSender,
 ) Authentication {
 	return Authentication{db, emailClient}
 }

@@ -1,24 +1,25 @@
 package handlers
 
 import (
-	"time"
+	"log/slog"
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
+	"github.com/mbvlabs/grafto/views/fragments"
 )
 
 type Registration struct {
 	db          psql.Postgres
-	emailClient EmailClient
+	emailClient services.EmailSender
 }
 
 func newRegistration(
 	db psql.Postgres,
-	emailClient EmailClient,
+	emailClient services.EmailSender,
 ) Registration {
 	return Registration{db, emailClient}
 }
@@ -35,76 +36,57 @@ type StoreUserPayload struct {
 	ConfirmPassword string `form:"confirm_password"`
 }
 
-// TODO: send email validation email
 func (r Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if _, err := models.NewUser(ctx.Request().Context(), models.NewUserPayload{
-		Email: payload.Email,
-		Password: models.PasswordPair{
-			Password:        payload.Password,
-			ConfirmPassword: payload.ConfirmPassword,
-		},
-	}, r.db.Pool); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
+	if err := services.RegisterUser(
+		ctx.Request().Context(), r.db, r.emailClient, payload.Email, payload.Password, payload.ConfirmPassword); err != nil {
+		slog.InfoContext(
+			ctx.Request().Context(),
+			"could not register user",
+			"err",
+			err,
+		)
+
+		// TODO handle err
+		return err
 	}
 
-	props := authentication.RegisterFormProps{
-		SuccessRegister: true,
-		CsrfToken:       csrf.Token(ctx.Request()),
-	}
-	return authentication.RegisterForm(props).
-		Render(renderArgs(ctx))
+	return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
+		CsrfToken:   csrf.Token(ctx.Request()),
+		CodeInvalid: false,
+		Success:     false,
+	}).Render(renderArgs(ctx))
 }
 
-type verificationTokenPayload struct {
-	Token string `query:"token"`
+type verificationCodePayload struct {
+	Code string `form:"code"`
 }
 
 func (r Registration) VerifyUserEmail(ctx echo.Context) error {
-	var payload verificationTokenPayload
+	var payload verificationCodePayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	token, err := models.GetToken(
+	if err := services.ValidateUserEmail(
 		ctx.Request().Context(),
-		r.db.Pool,
-		payload.Token,
-	)
-	if err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	if !token.IsValid() || token.Meta.Scope != models.ScopeEmailVerification {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	user, err := models.GetUser(
-		ctx.Request().Context(),
-		token.Meta.ResourceID,
-		r.db.Pool,
-	)
-	if err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
-	}
-
-	if err := models.UpdateUserEmailToVerified(
-		ctx.Request().Context(),
-		models.UpdateUserEmailToVerifiedPayload{
-			ID:         user.ID,
-			Email:      user.Email,
-			VerifiedAt: time.Now(),
-		},
-		r.db.Pool,
+		r.db,
+		payload.Code,
 	); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
+		return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
+			CsrfToken:   csrf.Token(ctx.Request()),
+			CodeInvalid: true,
+			Success:     false,
+		}).Render(renderArgs(ctx))
 	}
 
-	// TODO: create auth session
-	return authentication.VerifyEmailPage(false).
-		Render(renderArgs(ctx))
+	return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
+		CsrfToken:   csrf.Token(ctx.Request()),
+		CodeInvalid: false,
+		Success:     true,
+	}).Render(renderArgs(ctx))
 }

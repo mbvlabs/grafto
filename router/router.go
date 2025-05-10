@@ -41,6 +41,29 @@ func New(
 		),
 		middleware.RegisterAppContext,
 		middleware.RegisterFlashMessagesContext,
+
+		echomw.CSRFWithConfig(echomw.CSRFConfig{
+			Skipper: func(c echo.Context) bool {
+				if strings.HasPrefix(c.Request().URL.Path, "/api") ||
+					strings.HasPrefix(c.Request().URL.Path, "/river") {
+					return true
+				}
+
+				return false
+			},
+			TokenLookup: "cookie:_csrf",
+			CookiePath:  "/",
+			CookieDomain: func() string {
+				if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+					return config.Cfg.GetFullDomain()
+				}
+
+				return ""
+			}(),
+			CookieSecure:   config.Cfg.Environment == config.PROD_ENVIRONMENT,
+			CookieHTTPOnly: true,
+			CookieSameSite: http.SameSiteStrictMode,
+		}),
 	)
 
 	if config.Cfg.Environment == config.PROD_ENVIRONMENT {

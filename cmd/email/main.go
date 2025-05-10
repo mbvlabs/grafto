@@ -27,12 +27,7 @@ func main() {
 	passwordResetHtml, passwordResetText, _ := passwordReset.Generate(ctx)
 
 	signupWelcome := emails.SignupWelcome{
-		ConfirmationLink: fmt.Sprintf(
-			"%s/%s?token=%s",
-			config.Cfg.GetFullDomain(),
-			"reset-password",
-			"wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
-		),
+		VerificationCode: "43dd1w",
 	}
 	signupWelcomeHtml, signupWelcomeText, _ := signupWelcome.Generate(ctx)
 

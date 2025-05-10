@@ -10,7 +10,9 @@ import (
 	"testing"
 
 	"github.com/a-h/templ"
+	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
+	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/handlers"
@@ -42,12 +44,11 @@ type mockedEmailService struct {
 	mock.Mock
 }
 
-func (m *mockedEmailService) Send(
+func (m *mockedEmailService) SendTransaction(
 	ctx context.Context,
 	payload clients.EmailPayload,
-	unsub clients.Unsubscribe,
 ) error {
-	args := m.Called(ctx, payload, unsub)
+	args := m.Called(ctx, payload)
 	return args.Error(0)
 }
 
@@ -77,4 +78,44 @@ func setupTestRouter(
 
 	router := router.New(handlers, nil)
 	return router.SetupRoutes(ctx)
+}
+
+type (
+	config struct {
+		Skipper echomw.Skipper
+		Store   sessions.Store
+	}
+)
+
+const (
+	key = "_session_store"
+)
+
+var testDefaultConfig = config{
+	Skipper: echomw.DefaultSkipper,
+}
+
+func testMiddleware(store sessions.Store) echo.MiddlewareFunc {
+	c := testDefaultConfig
+	c.Store = store
+	return testMiddlewareWithConfig(c)
+}
+
+func testMiddlewareWithConfig(config config) echo.MiddlewareFunc {
+	if config.Skipper == nil {
+		config.Skipper = testDefaultConfig.Skipper
+	}
+	if config.Store == nil {
+		panic("echo: session middleware requires store")
+	}
+
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if config.Skipper(c) {
+				return next(c)
+			}
+			c.Set(key, config.Store)
+			return next(c)
+		}
+	}
 }

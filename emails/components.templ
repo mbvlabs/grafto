@@ -146,3 +146,9 @@ templ paragraph() {
 		{ children... }
 	</p>
 }
+
+templ codeBlock(code string) {
+	<p style="font-family: 'Courier New', Courier, monospace; font-size: 2em; font-weight: bold; margin: 0; margin-bottom: 16px; background-color: #333333; color: #f0f0f0; padding: 10px; border: 1px solid #555555; border-radius: 4px; text-align: center; letter-spacing: 10px;">
+		{ code }
+	</p>
+}
