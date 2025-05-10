@@ -102,9 +102,6 @@ func TestStoreUser(t *testing.T) {
 				"SendTransaction",
 				mock.Anything,
 				mock.MatchedBy(func(payload clients.EmailPayload) bool {
-					// correctSubject := payload.Subject == "Action Required | Password reset requested"
-					//
-					// return false
 					return true
 				}),
 				mock.Anything,

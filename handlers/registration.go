@@ -50,24 +50,10 @@ func (r Registration) StoreUser(ctx echo.Context) error {
 			"err",
 			err,
 		)
+
 		// TODO handle err
 		return err
 	}
-
-	// if _, err := models.NewUser(ctx.Request().Context(), models.NewUserPayload{
-	// 	Email: payload.Email,
-	// 	Password: models.PasswordPair{
-	// 		Password:        payload.Password,
-	// 		ConfirmPassword: payload.ConfirmPassword,
-	// 	},
-	// }, r.db.Pool); err != nil {
-	// 	return views.ErrorPage().Render(renderArgs(ctx))
-	// }
-
-	// props := authentication.RegisterFormProps{
-	// 	SuccessRegister: true,
-	// 	CsrfToken:       csrf.Token(ctx.Request()),
-	// }
 
 	return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
 		CsrfToken:   csrf.Token(ctx.Request()),
