@@ -7,15 +7,20 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
+	"github.com/labstack/echo/v4"
+	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
@@ -25,8 +30,61 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+type (
+	// Config defines the config for Session middleware.
+	Config struct {
+		// Skipper defines a function to skip middleware.
+		Skipper echomw.Skipper
+
+		// Session store.
+		// Required.
+		Store sessions.Store
+	}
+)
+
+const (
+	key = "_session_store"
+)
+
+// testDefaultConfig is the default Session middleware config.
+var testDefaultConfig = Config{
+	Skipper: echomw.DefaultSkipper,
+}
+
+func testMiddleware(store sessions.Store) echo.MiddlewareFunc {
+	c := testDefaultConfig
+	c.Store = store
+	return testMiddlewareWithConfig(c)
+}
+
+// testMiddlewareWithConfig returns a Sessions middleware with config.
+// See `Middleware()`.
+func testMiddlewareWithConfig(config Config) echo.MiddlewareFunc {
+	// Defaults
+	if config.Skipper == nil {
+		config.Skipper = testDefaultConfig.Skipper
+	}
+	if config.Store == nil {
+		panic("echo: session middleware requires store")
+	}
+
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			if config.Skipper(c) {
+				return next(c)
+			}
+			c.Set(key, config.Store)
+			return next(c)
+		}
+	}
+}
+
 func TestStoreAuthenticatedSession(t *testing.T) {
 	t.Parallel()
+
+	if err := os.Setenv("SESSION_ENCRYPTION_KEY", "SxU2/SCjnH5KKyAUUGnxPA=="); err != nil {
+		assert.Panics(t, t.Fail, "could not set session encryption key")
+	}
 
 	ctx := context.Background()
 	postgres, cleanup, stopEmbedded := setupTestDB(ctx, t)
@@ -97,9 +155,16 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			rec := httptest.NewRecorder()
 
-			router.ServeHTTP(rec, req)
+			c := router.NewContext(req, rec)
 
-			assert.Equal(t, http.StatusOK, rec.Code)
+			store := sessions.NewCookieStore([]byte("secret"))
+
+			mw := testMiddleware(store)
+			h := mw(testHandlers.Authentication.StoreAuthenticatedSession)
+
+			if tt.expectedToSucceed {
+				assert.NoError(t, h(c))
+			}
 
 			cookies := rec.Result().Cookies()
 			var authToken string
@@ -186,6 +251,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			var sentHtml string
+			slog.Info(sentHtml)
 
 			if tt.expectedToSucceed {
 				emailSvc.On(
@@ -220,7 +286,8 @@ func TestStoreForgottenPassword(t *testing.T) {
 				}
 			}
 
-			router.ServeHTTP(rec, req)
+			c := router.NewContext(req, rec)
+			err := testHandlers.Authentication.StorePasswordReset(c)
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -237,8 +304,11 @@ func TestStoreForgottenPassword(t *testing.T) {
 				assert.NotEmpty(t, href, "reset password link was empty")
 
 				token := strings.Split(href, "?token=")[1]
-
-				resetPwTkn, err := models.GetToken(ctx, postgres.Pool, token)
+				resetPwTkn, err := models.GetHashedToken(
+					ctx,
+					postgres.Pool,
+					token,
+				)
 				assert.NoError(t, err)
 
 				assert.True(t, resetPwTkn.IsValid())
@@ -274,6 +344,7 @@ func TestStoreResetPassword(t *testing.T) {
 			ResourceID: validUser.ID,
 			Scope:      models.ScopeResetPassword,
 		}),
+		seeds.WithHashedToken(),
 	)
 	assert.NoError(t, err)
 
@@ -357,9 +428,12 @@ func TestStoreResetPassword(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 			rec := httptest.NewRecorder()
-			router.ServeHTTP(rec, req)
+
+			c := router.NewContext(req, rec)
+			err := testHandlers.Authentication.StoreResetPassword(c)
 
 			assert.NoError(t, err)
+
 			assert.Equal(t, http.StatusOK, rec.Code)
 
 			if tt.expectedToSucceed {

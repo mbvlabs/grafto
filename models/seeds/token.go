@@ -13,6 +13,7 @@ type tokenSeedData struct {
 	CreatedAt  time.Time
 	Expiration time.Time
 	Meta       models.MetaInformation
+	Type       string
 }
 
 type tokenSeedOption func(*tokenSeedData)
@@ -41,6 +42,18 @@ func WithTokenMeta(meta models.MetaInformation) tokenSeedOption {
 	}
 }
 
+func WithHashedToken() tokenSeedOption {
+	return func(tsd *tokenSeedData) {
+		tsd.Type = "HASHED"
+	}
+}
+
+func WithCodeToken() tokenSeedOption {
+	return func(tsd *tokenSeedData) {
+		tsd.Type = "CODE"
+	}
+}
+
 func (s Seeder) PlantToken(
 	ctx context.Context,
 	opts ...tokenSeedOption,
@@ -56,21 +69,46 @@ func (s Seeder) PlantToken(
 			ResourceID: uuid.New(),
 			Scope:      models.ScopeEmailVerification,
 		},
+		Type: "REGULAR",
 	}
 
 	for _, opt := range opts {
 		opt(data)
 	}
 
-	token, err := models.NewToken(ctx, s.dbtx, models.NewTokenPayload{
-		Expiration: data.Expiration,
-		Meta:       data.Meta,
-	})
-	if err != nil {
-		return models.Token{}, err
+	var tkn models.Token
+
+	switch data.Type {
+	case "REGULAR":
+		token, err := models.NewToken(ctx, s.dbtx, models.NewTokenPayload{
+			Expiration: data.Expiration,
+			Meta:       data.Meta,
+		})
+		if err != nil {
+			return models.Token{}, err
+		}
+		tkn = token
+	case "HASHED":
+		token, err := models.NewHashedToken(ctx, s.dbtx, models.NewTokenPayload{
+			Expiration: data.Expiration,
+			Meta:       data.Meta,
+		})
+		if err != nil {
+			return models.Token{}, err
+		}
+		tkn = token
+	case "CODE":
+		token, err := models.NewCodeToken(ctx, s.dbtx, models.NewTokenPayload{
+			Expiration: data.Expiration,
+			Meta:       data.Meta,
+		})
+		if err != nil {
+			return models.Token{}, err
+		}
+		tkn = token
 	}
 
-	return token, nil
+	return tkn, nil
 }
 
 func (s Seeder) PlantTokens(

@@ -36,14 +36,14 @@ type StoreUserPayload struct {
 	ConfirmPassword string `form:"confirm_password"`
 }
 
-// TODO: send email validation email
 func (r Registration) StoreUser(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if err := services.RegisterUser(ctx.Request().Context(), r.db, r.emailClient, payload.Email, payload.Password, payload.ConfirmPassword); err != nil {
+	if err := services.RegisterUser(
+		ctx.Request().Context(), r.db, r.emailClient, payload.Email, payload.Password, payload.ConfirmPassword); err != nil {
 		slog.InfoContext(
 			ctx.Request().Context(),
 			"could not register user",
@@ -77,13 +77,6 @@ func (r Registration) VerifyUserEmail(ctx echo.Context) error {
 		r.db,
 		payload.Code,
 	); err != nil {
-		slog.InfoContext(
-			ctx.Request().Context(),
-			"invalid verification code",
-			"err",
-			err,
-		)
-
 		return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
 			CsrfToken:   csrf.Token(ctx.Request()),
 			CodeInvalid: true,

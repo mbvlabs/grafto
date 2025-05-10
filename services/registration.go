@@ -125,5 +125,5 @@ func ValidateUserEmail(
 		return err
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }

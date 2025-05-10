@@ -70,7 +70,8 @@ func setupTestRouter(
 	handlers handlers.Handlers,
 ) (*echo.Echo, context.Context) {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		Level: slog.LevelError,
+		// Level: slog.LevelError,
+		Level: slog.LevelInfo,
 	}))
 	slog.SetDefault(logger)
 

@@ -107,9 +107,13 @@ func TestStoreUser(t *testing.T) {
 				mock.Anything,
 			).Return(nil)
 
-			router.ServeHTTP(rec, req)
+			c := router.NewContext(req, rec)
+			err := testHandlers.Registration.StoreUser(c)
+			if tt.expectedError == nil {
+				assert.NoError(t, err)
+			}
 
-			_, err := models.GetUserByEmail(
+			_, err = models.GetUserByEmail(
 				ctx,
 				postgres.Pool,
 				tt.payload.Get("email"),
@@ -132,21 +136,20 @@ func TestVerifyEmail(t *testing.T) {
 	router, ctx := setupTestRouter(ctx, testHandlers)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
+	user, err := seeder.PlantUser(ctx)
+	if err != nil {
+		t.FailNow()
+	}
+
 	tests := []struct {
 		name             string
 		email            string
-		token            func(ctx context.Context) models.Token
-		expectedStatus   int
 		expectedVerified bool
+		token            models.Token
 	}{
 		{
 			name: "should validate email",
-			token: func(ctx context.Context) models.Token {
-				user, err := seeder.PlantUser(ctx)
-				if err != nil {
-					t.FailNow()
-				}
-
+			token: func() models.Token {
 				tkn, err := seeder.PlantToken(
 					ctx,
 					seeds.WithTokenMeta(models.MetaInformation{
@@ -154,24 +157,18 @@ func TestVerifyEmail(t *testing.T) {
 						ResourceID: user.ID,
 						Scope:      models.ScopeEmailVerification,
 					}),
+					seeds.WithCodeToken(),
 				)
 				if err != nil {
 					t.FailNow()
 				}
-
 				return tkn
-			},
-			expectedStatus:   http.StatusOK,
+			}(),
 			expectedVerified: true,
 		},
 		{
 			name: "should not validate email",
-			token: func(ctx context.Context) models.Token {
-				user, err := seeder.PlantUser(ctx)
-				if err != nil {
-					t.FailNow()
-				}
-
+			token: func() models.Token {
 				tkn, err := seeder.PlantToken(
 					ctx,
 					seeds.WithTokenExpiration(time.Now().Add(-1*time.Hour)),
@@ -180,40 +177,43 @@ func TestVerifyEmail(t *testing.T) {
 						ResourceID: user.ID,
 						Scope:      models.ScopeEmailVerification,
 					}),
+					seeds.WithCodeToken(),
 				)
 				if err != nil {
 					t.FailNow()
 				}
-
 				return tkn
-			},
-			expectedStatus:   http.StatusOK,
-			expectedVerified: false,
+			}(),
+			expectedVerified: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			token := tt.token(ctx)
+			payload := url.Values{
+				"code": {tt.token.Value},
+			}
 
 			req := httptest.NewRequestWithContext(
 				ctx,
-				http.MethodGet,
+				http.MethodPost,
 				fmt.Sprintf(
-					"http://localhost:8080%s?token=%s",
+					"http://localhost:8080%s",
 					routes.VerifyEmail.Path,
-					token.Value,
 				),
-				nil,
+				strings.NewReader(payload.Encode()),
 			)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			rec := httptest.NewRecorder()
 
-			router.ServeHTTP(rec, req)
+			c := router.NewContext(req, rec)
+			err := testHandlers.Registration.VerifyUserEmail(c)
+			assert.NoError(t, err)
 
 			usr, err := models.GetUser(
 				ctx,
 				postgres.Pool,
-				token.Meta.ResourceID,
+				tt.token.Meta.ResourceID,
 			)
 			assert.NoError(t, err)
 

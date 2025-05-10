@@ -47,6 +47,7 @@ func (a Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 			err,
 		)
 
+		slog.Info("YOOOO", "err", err)
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
