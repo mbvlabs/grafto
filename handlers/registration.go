@@ -62,10 +62,6 @@ func (r Registration) StoreUser(ctx echo.Context) error {
 	}).Render(renderArgs(ctx))
 }
 
-type verificationTokenPayload struct {
-	Token string `query:"token"`
-}
-
 type verificationCodePayload struct {
 	Code string `form:"code"`
 }

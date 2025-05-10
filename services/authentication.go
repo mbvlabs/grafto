@@ -58,6 +58,7 @@ func SendResetPasswordEmail(
 	if err != nil {
 		return err
 	}
+	//nolint:errcheck //how the setup should be
 	defer tx.Rollback(ctx)
 
 	user, err := models.GetUserByEmail(
@@ -120,6 +121,7 @@ func ChangeUserPassword(
 	if err != nil {
 		return err
 	}
+	//nolint:errcheck //how the setup should be
 	defer tx.Rollback(ctx)
 
 	token, err := models.GetHashedToken(

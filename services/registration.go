@@ -30,6 +30,7 @@ func RegisterUser(
 	if err != nil {
 		return err
 	}
+	//nolint:errcheck //how the setup should be
 	defer tx.Rollback(ctx)
 
 	if _, err := models.GetUserByEmail(ctx, tx, email); err == nil {
@@ -87,6 +88,7 @@ func ValidateUserEmail(
 	if err != nil {
 		return err
 	}
+	//nolint:errcheck //how the setup should be
 	defer tx.Rollback(ctx)
 
 	token, err := models.GetHashedToken(ctx, tx, tokenValue)

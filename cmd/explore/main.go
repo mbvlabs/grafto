@@ -1,34 +1,8 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base32"
 	"log/slog"
-	"math/big"
 )
-
-func generateRandomAlphanumeric(length int) (string, error) {
-	const charset = "abcdefghjklmnpqrstuvwxyz23456789"
-	result := make([]byte, length)
-	for i := range result {
-		randomIndex, err := rand.Int(
-			rand.Reader,
-			big.NewInt(int64(len(charset))),
-		)
-		if err != nil {
-			return "", err
-		}
-		result[i] = charset[randomIndex.Int64()]
-	}
-	return string(result), nil
-}
-
-func generateToken() string {
-	bytes := make([]byte, 15)
-	//nolint:errcheck //can't error
-	rand.Read(bytes)
-	return base32.StdEncoding.EncodeToString(bytes)
-}
 
 func main() {
 	slog.Info("explore")
