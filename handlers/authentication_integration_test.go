@@ -19,8 +19,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
-	"github.com/labstack/echo/v4"
-	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
@@ -29,55 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-type (
-	// Config defines the config for Session middleware.
-	Config struct {
-		// Skipper defines a function to skip middleware.
-		Skipper echomw.Skipper
-
-		// Session store.
-		// Required.
-		Store sessions.Store
-	}
-)
-
-const (
-	key = "_session_store"
-)
-
-// testDefaultConfig is the default Session middleware config.
-var testDefaultConfig = Config{
-	Skipper: echomw.DefaultSkipper,
-}
-
-func testMiddleware(store sessions.Store) echo.MiddlewareFunc {
-	c := testDefaultConfig
-	c.Store = store
-	return testMiddlewareWithConfig(c)
-}
-
-// testMiddlewareWithConfig returns a Sessions middleware with config.
-// See `Middleware()`.
-func testMiddlewareWithConfig(config Config) echo.MiddlewareFunc {
-	// Defaults
-	if config.Skipper == nil {
-		config.Skipper = testDefaultConfig.Skipper
-	}
-	if config.Store == nil {
-		panic("echo: session middleware requires store")
-	}
-
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if config.Skipper(c) {
-				return next(c)
-			}
-			c.Set(key, config.Store)
-			return next(c)
-		}
-	}
-}
 
 func TestStoreAuthenticatedSession(t *testing.T) {
 	t.Parallel()
