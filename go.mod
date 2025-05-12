@@ -13,14 +13,14 @@ require (
 	github.com/gorilla/sessions v1.2.2
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
 	github.com/lmittmann/tint v1.0.1
-	github.com/riverqueue/river v0.14.2
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.2
+	github.com/riverqueue/river v0.22.0
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.22.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.20.2
 	golang.org/x/crypto v0.36.0
 	golang.org/x/net v0.37.0
-	golang.org/x/sync v0.12.0
-	golang.org/x/text v0.23.0
+	golang.org/x/sync v0.13.0
+	golang.org/x/text v0.24.0
 	gopkg.in/yaml.v2 v2.4.0
 	riverqueue.com/riverui v0.6.0
 )
@@ -57,9 +57,9 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.53.0 // indirect
 	github.com/prometheus/procfs v0.13.0 // indirect
-	github.com/riverqueue/river/riverdriver v0.14.2 // indirect
-	github.com/riverqueue/river/rivershared v0.14.2 // indirect
-	github.com/riverqueue/river/rivertype v0.14.2 // indirect
+	github.com/riverqueue/river/riverdriver v0.22.0 // indirect
+	github.com/riverqueue/river/rivershared v0.22.0 // indirect
+	github.com/riverqueue/river/rivertype v0.22.0 // indirect
 	github.com/samber/lo v1.44.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
@@ -87,7 +87,7 @@ require (
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/gorilla/csrf v1.7.3
-	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jackc/pgx/v5 v5.7.4
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/labstack/echo-contrib v0.17.1
 	github.com/labstack/echo/v4 v4.12.0
