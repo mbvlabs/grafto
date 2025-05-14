@@ -16,7 +16,7 @@
 		"@rails/actiontext": "^7.2.102",
 		"@vimeo/player": "^2.24.0",
 		"html-to-text": "^9.0.5",
-		"trix": "^2.1.7"
+		"trix": "^2.1.15"
 	}
 }
 
