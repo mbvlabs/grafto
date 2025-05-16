@@ -34,7 +34,7 @@ func New() MW {
 		panic(err)
 	}
 
-	rateLimit, err := rateLimitCacheBuilder.WithTTL(1 * time.Minute).Build()
+	rateLimit, err := rateLimitCacheBuilder.WithTTL(10 * time.Minute).Build()
 	if err != nil {
 		panic(err)
 	}
