@@ -16,21 +16,21 @@ func (m MW) LoginRateLimiter() echo.MiddlewareFunc {
 					return next(c)
 				}
 			}
-			if hits <= 2 {
+			if hits <= 5 {
 				if ok := m.rateLimiter.Set(ip, hits+1); !ok {
 					return next(c)
 				}
 			}
 
-			if hits >= 5 {
+			if hits > 5 {
 				c.Response().
 					Header().
-					Set("HX-Retarget", "div[class='warning-message']")
+					Set("HX-Retarget", "div[id='login-flag']")
 				c.Response().
 					Header().
 					Set("HX-Reswap", "outerHTML")
 
-				return authentication.LoginWarning().
+				return authentication.LoginError("Too many failed attemps!").
 					Render(c.Request().Context(), c.Response())
 			}
 

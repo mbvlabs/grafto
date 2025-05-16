@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/router/contexts"
-	// "github.com/mbvlabs/grafto/router/contexts"
 )
 
 func (m MW) RegisterAppContext(
