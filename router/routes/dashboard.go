@@ -17,7 +17,7 @@ var DashboardHome = Route{
 	Name:     dashboardNamePrefix + ".home",
 	Path:     dashboardRoutePrefix,
 	Method:   http.MethodGet,
-	CtrlName: "Index",
+	HandlerName: "Index",
 	Middleware: []string{
 		"AuthOnly",
 	},

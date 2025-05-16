@@ -269,16 +269,16 @@ func setupRoutes(
 		switch route.Method {
 		case http.MethodGet:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.GET(route.Path, getHandlerFunc(handlers, route.CtrlName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
+			router.GET(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		case http.MethodPost:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.POST(route.Path, getHandlerFunc(handlers, route.CtrlName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
+			router.POST(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		case http.MethodPut:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.PUT(route.Path, getHandlerFunc(handlers, route.CtrlName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
+			router.PUT(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		case http.MethodDelete:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.DELETE(route.Path, getHandlerFunc(handlers, route.CtrlName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
+			router.DELETE(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		}
 	}
 }
