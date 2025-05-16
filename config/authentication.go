@@ -3,7 +3,7 @@ package config
 import "github.com/caarlos0/env/v10"
 
 type Authentication struct {
-	PasswordPepper       string `env:"PASSWORD_PEPPER"`
+	PasswordSalt         string `env:"PASSWORD_SALT"`
 	SessionKey           string `env:"SESSION_KEY"`
 	SessionEncryptionKey string `env:"SESSION_ENCRYPTION_KEY"`
 	TokenSigningKey      string `env:"TOKEN_SIGNING_KEY"`
