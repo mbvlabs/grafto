@@ -2,9 +2,6 @@ package routes
 
 import (
 	"net/http"
-
-	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/router/middleware"
 )
 
 const (
@@ -21,7 +18,7 @@ var DashboardHome = Route{
 	Path:     dashboardRoutePrefix,
 	Method:   http.MethodGet,
 	CtrlName: "Index",
-	Middleware: []echo.MiddlewareFunc{
-		middleware.AuthOnly,
+	Middleware: []string{
+		"AuthOnly",
 	},
 }

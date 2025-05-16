@@ -1,6 +1,8 @@
 package routes
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const authNamePrefix = "auth"
 
@@ -26,6 +28,9 @@ var StoreAuthSession = Route{
 	Path:     "/login",
 	Method:   http.MethodPost,
 	CtrlName: "StoreAuthenticatedSession",
+	Middleware: []string{
+		"LoginRateLimiter",
+	},
 }
 
 var DestroyAuthSession = Route{

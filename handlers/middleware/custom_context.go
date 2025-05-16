@@ -7,9 +7,10 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/router/contexts"
+	// "github.com/mbvlabs/grafto/router/contexts"
 )
 
-func RegisterAppContext(
+func (m MW) RegisterAppContext(
 	next echo.HandlerFunc,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -43,7 +44,7 @@ func RegisterAppContext(
 	}
 }
 
-func RegisterFlashMessagesContext(
+func (m MW) RegisterFlashMessagesContext(
 	next echo.HandlerFunc,
 ) echo.HandlerFunc {
 	return func(c echo.Context) error {

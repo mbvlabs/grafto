@@ -16,7 +16,6 @@ import (
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/contexts"
-	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/services"
 )
 
@@ -58,7 +57,7 @@ func setAppCtx(ctx echo.Context) context.Context {
 func addFlash(
 	c echo.Context, flashType contexts.FlashType, msg string,
 ) error {
-	sess, err := session.Get(middleware.FlashSessionKey, c)
+	sess, err := session.Get("", c)
 	if err != nil {
 		return err
 	}
@@ -68,7 +67,7 @@ func addFlash(
 		Type:      flashType,
 		CreatedAt: time.Now(),
 		Message:   msg,
-	}, middleware.FlashSessionKey)
+	}, "")
 
 	return sess.Save(c.Request(), c.Response())
 }
@@ -124,7 +123,7 @@ func redirect(
 func destroyAuthSession(
 	c echo.Context,
 ) error {
-	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
+	sess, err := session.Get("", c)
 	if err != nil {
 		return err
 	}
@@ -135,10 +134,10 @@ func destroyAuthSession(
 		HttpOnly: true,
 	}
 
-	sess.Values[middleware.SessIsAuthenticated] = false
-	sess.Values[middleware.SessUserID] = ""
-	sess.Values[middleware.SessUserEmail] = ""
-	sess.Values[middleware.SessIsAdmin] = false
+	sess.Values[""] = false
+	sess.Values[""] = ""
+	sess.Values[""] = ""
+	sess.Values[""] = false
 
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
 		return err
@@ -152,7 +151,7 @@ func createAuthSession(
 	extend bool,
 	user models.UserEntity,
 ) error {
-	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
+	sess, err := session.Get("", c)
 	if err != nil {
 		return err
 	}
@@ -167,10 +166,10 @@ func createAuthSession(
 		MaxAge:   maxAge,
 		HttpOnly: true,
 	}
-	sess.Values[middleware.SessIsAuthenticated] = true
-	sess.Values[middleware.SessUserID] = user.ID
-	sess.Values[middleware.SessUserEmail] = user.Email
-	sess.Values[middleware.SessIsAdmin] = user.IsAdmin
+	sess.Values[""] = true
+	sess.Values[""] = user.ID
+	sess.Values[""] = user.Email
+	sess.Values[""] = user.IsAdmin
 
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
 		return err

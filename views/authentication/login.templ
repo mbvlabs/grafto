@@ -13,6 +13,24 @@ var (
 	ErrEmailNotValidated string = "ErrEmailNotValidated"
 )
 
+templ LoginWarning() {
+	<div class="error-message">
+		<svg
+			class="icon-error"
+			width="16"
+			height="16"
+			fill="currentColor"
+			viewBox="0 0 16 16"
+			aria-hidden="true"
+		>
+			<path
+				d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+			></path>
+		</svg>
+		<h2>Too many failed attemps!</h2>
+	</div>
+}
+
 templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 	<div class="login-container">
 		if success {
