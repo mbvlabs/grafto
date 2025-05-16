@@ -37,7 +37,7 @@ var DestroyAuthSession = Route{
 	Name:        authNamePrefix + ".destroy_auth_session",
 	Path:        "/logout",
 	Method:      http.MethodGet,
-	HandlerName: "CreateAuthenticatedSession",
+	HandlerName: "DestroyAuthenticatedSession",
 }
 
 var ForgotPasswordPage = Route{
