@@ -32,7 +32,8 @@ func TestStoreUser(t *testing.T) {
 	defer stopEmbedded()
 
 	testHandlers := setupTestHandlers(t, postgres)
-	router, ctx := setupTestRouter(ctx, testHandlers)
+	testMiddleware := setupTestMiddleware(t)
+	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
 
 	tests := []struct {
 		name          string
@@ -133,7 +134,8 @@ func TestVerifyEmail(t *testing.T) {
 	defer stopEmbedded()
 
 	testHandlers := setupTestHandlers(t, postgres)
-	router, ctx := setupTestRouter(ctx, testHandlers)
+	testMiddleware := setupTestMiddleware(t)
+	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	user, err := seeder.PlantUser(ctx)

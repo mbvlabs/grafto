@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -124,6 +125,11 @@ func redirect(
 func destroyAuthSession(
 	c echo.Context,
 ) error {
+	slog.Info(
+		"SEEEEEEEEEEEEEEEEEEEEES",
+		"s",
+		middleware.AuthenticatedSessionName,
+	)
 	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
 	if err != nil {
 		return err
