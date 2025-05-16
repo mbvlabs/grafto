@@ -110,6 +110,7 @@ func setupLogger(ctx context.Context) echo.MiddlewareFunc {
 		LogMethod:   true,
 		LogURI:      true,
 		LogError:    true,
+		LogRemoteIP: true,
 		HandleError: true,
 		Skipper: func(c echo.Context) bool {
 			return strings.HasPrefix(c.Request().URL.Path, "/assets")
@@ -125,7 +126,7 @@ func setupLogger(ctx context.Context) echo.MiddlewareFunc {
 				slog.String("uri", v.URI),
 				slog.String("method", v.Method),
 				slog.String("host", v.Host),
-				slog.String("ip", c.RealIP()),
+				slog.String("ip", v.RemoteIP),
 				slog.String("latency", v.Latency.String()),
 			}
 
