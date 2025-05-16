@@ -14,10 +14,11 @@ import (
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/handlers"
+	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/queue"
-	"github.com/mbvlabs/grafto/queue/workers"
-	"github.com/mbvlabs/grafto/routes"
+	"github.com/mbvlabs/grafto/psql/queue"
+	"github.com/mbvlabs/grafto/psql/queue/workers"
+	"github.com/mbvlabs/grafto/router"
 	"github.com/mbvlabs/grafto/server"
 	"riverqueue.com/riverui"
 )
@@ -73,15 +74,14 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	riverClient := queue.NewClient(
-		conn,
+	psql := psql.NewPostgres(conn, nil)
+	psql.NewQueue(
 		queue.WithLogger(queueLogger()),
 		queue.WithWorkers(queueWorkers),
 	)
-	psql := psql.NewPostgres(conn, riverClient)
 
 	opts := &riverui.ServerOpts{
-		Client: riverClient,
+		Client: psql.Queue(),
 		DB:     conn,
 		Logger: slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			Level: slog.SetLogLoggerLevel(slog.LevelError),
@@ -116,8 +116,9 @@ func run(ctx context.Context) error {
 		emailClient,
 	)
 
-	routes := routes.NewRoutes(
+	routes := router.New(
 		handlers,
+		middleware.New(),
 		riverUI,
 	)
 
@@ -125,7 +126,7 @@ func run(ctx context.Context) error {
 
 	server := server.NewHttp(c, router)
 
-	if err := riverClient.Start(ctx); err != nil {
+	if err := psql.Queue().Start(ctx); err != nil {
 		return err
 	}
 	return server.Start(c)

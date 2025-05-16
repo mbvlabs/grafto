@@ -25,3 +25,8 @@ go.work
 node_modules
 
 tmp
+
+OpenCode.md
+.opencode/
+cmd/explore/main.go
+task.xml

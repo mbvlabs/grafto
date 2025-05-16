@@ -5,8 +5,8 @@ go 1.24
 toolchain go1.24.1
 
 require (
-	github.com/PuerkitoBio/goquery v1.10.1
-	github.com/a-h/templ v0.3.833
+	github.com/PuerkitoBio/goquery v1.10.3
+	github.com/a-h/templ v0.3.857
 	github.com/dromara/carbon/v2 v2.5.4
 	github.com/fergusstrange/embedded-postgres v1.30.0
 	github.com/google/uuid v1.6.0
@@ -17,10 +17,10 @@ require (
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.2
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.20.2
-	golang.org/x/crypto v0.35.0
-	golang.org/x/net v0.36.0
-	golang.org/x/sync v0.11.0
-	golang.org/x/text v0.22.0
+	golang.org/x/crypto v0.38.0
+	golang.org/x/net v0.40.0
+	golang.org/x/sync v0.14.0
+	golang.org/x/text v0.25.0
 	gopkg.in/yaml.v2 v2.4.0
 	riverqueue.com/riverui v0.6.0
 )
@@ -56,7 +56,7 @@ require (
 	github.com/prometheus/client_golang v1.19.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.53.0 // indirect
-	github.com/prometheus/procfs v0.13.0 // indirect
+	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/riverqueue/river/riverdriver v0.14.2 // indirect
 	github.com/riverqueue/river/rivershared v0.14.2 // indirect
 	github.com/riverqueue/river/rivertype v0.14.2 // indirect
@@ -72,12 +72,12 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vanng822/css v1.0.1 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	go.opentelemetry.io/otel v1.29.0 // indirect
-	go.opentelemetry.io/otel/trace v1.29.0 // indirect
+	go.opentelemetry.io/otel v1.35.0 // indirect
+	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -87,11 +87,12 @@ require (
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/go-playground/validator/v10 v10.23.0
 	github.com/gorilla/csrf v1.7.3
-	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jackc/pgx/v5 v5.7.4
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/labstack/echo-contrib v0.17.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/maypok86/otter v1.2.4
-	github.com/pressly/goose/v3 v3.23.0
+	github.com/pressly/goose/v3 v3.24.3
 	github.com/samber/slog-echo v1.14.4
-	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 )

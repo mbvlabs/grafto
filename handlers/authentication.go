@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
@@ -15,17 +15,17 @@ import (
 
 type Authentication struct {
 	db          psql.Postgres
-	emailClient EmailClient
+	emailClient services.EmailSender
 }
 
 func newAuthentication(
 	db psql.Postgres,
-	emailClient EmailClient,
+	emailClient services.EmailSender,
 ) Authentication {
 	return Authentication{db, emailClient}
 }
 
-func (a *Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
+func (a Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
 	return authentication.LoginPage(authentication.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}).Render(renderArgs(ctx))
@@ -37,7 +37,7 @@ type StoreAuthenticatedSessionPayload struct {
 	RememberMe string `form:"remember_me"`
 }
 
-func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
+func (a Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 	var payload StoreAuthenticatedSessionPayload
 	if err := ctx.Bind(&payload); err != nil {
 		slog.ErrorContext(
@@ -89,7 +89,7 @@ func (a *Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		Render(renderArgs(ctx))
 }
 
-func (a *Authentication) DestroyAuthenticatedSession(ctx echo.Context) error {
+func (a Authentication) DestroyAuthenticatedSession(ctx echo.Context) error {
 	if err := destroyAuthSession(ctx); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
@@ -97,11 +97,11 @@ func (a *Authentication) DestroyAuthenticatedSession(ctx echo.Context) error {
 	return redirect(
 		ctx.Response(),
 		ctx.Request(),
-		paths.CreateAuthenticatedSession.URL,
+		routes.LoginPage.Path,
 	)
 }
 
-func (a *Authentication) CreatePasswordReset(ctx echo.Context) error {
+func (a Authentication) CreatePasswordReset(ctx echo.Context) error {
 	return authentication.ForgottenPasswordPage(csrf.Token(ctx.Request())).
 		Render(renderArgs(ctx))
 }
@@ -110,7 +110,7 @@ type StorePasswordResetPayload struct {
 	Email string `form:"email"`
 }
 
-func (a *Authentication) StorePasswordReset(ctx echo.Context) error {
+func (a Authentication) StorePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
@@ -132,7 +132,7 @@ type PasswordResetTokenPayload struct {
 	Token string `query:"token"`
 }
 
-func (a *Authentication) CreateResetPassword(ctx echo.Context) error {
+func (a Authentication) CreateResetPassword(ctx echo.Context) error {
 	var passwordResetToken PasswordResetTokenPayload
 	if err := ctx.Bind(&passwordResetToken); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
@@ -149,7 +149,7 @@ type ResetPasswordPayload struct {
 	Token           string `form:"token"`
 }
 
-func (a *Authentication) StoreResetPassword(ctx echo.Context) error {
+func (a Authentication) StoreResetPassword(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))

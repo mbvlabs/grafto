@@ -19,7 +19,7 @@ update users set updated_at=$2, password=$3 where id=$1
 type ChangeUserPasswordParams struct {
 	ID        uuid.UUID
 	UpdatedAt pgtype.Timestamptz
-	Password  string
+	Password  []byte
 }
 
 func (q *Queries) ChangeUserPassword(ctx context.Context, db DBTX, arg ChangeUserPasswordParams) error {
@@ -49,7 +49,7 @@ type InsertUserParams struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Email     string
-	Password  string
+	Password  []byte
 	IsAdmin   bool
 }
 

@@ -135,6 +135,6 @@ type User struct {
 	UpdatedAt       pgtype.Timestamptz
 	Email           string
 	EmailVerifiedAt pgtype.Timestamptz
-	Password        string
+	Password        []byte
 	IsAdmin         bool
 }

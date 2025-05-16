@@ -3,6 +3,7 @@ package views
 import (
 	"fmt"
 
+	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/views/internal/components"
 )
 
@@ -26,13 +27,22 @@ func WithImage(image string) components.HeadDataOption {
 
 func WithSlug(slug string) components.HeadDataOption {
 	return func(hd *components.HeadData) {
-		hd.Slug = slug
+		hd.Slug = fmt.Sprintf("%v%s",
+			config.Cfg.GetFullDomain(),
+			slug,
+		)
 	}
 }
 
 func WithMetaType(metaType string) components.HeadDataOption {
 	return func(hd *components.HeadData) {
 		hd.MetaType = metaType
+	}
+}
+
+func WithStyles(filename string) components.HeadDataOption {
+	return func(hd *components.HeadData) {
+		hd.StylesheetHref = filename
 	}
 }
 

@@ -3,10 +3,8 @@ package handlers
 import (
 	"context"
 	"encoding/gob"
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -15,26 +13,15 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/routes/contexts"
-)
-
-var AuthenticatedSessionName = fmt.Sprintf(
-	"ua-%s-%s",
-	strings.ToLower(config.Cfg.ProjectName),
-	config.Cfg.Environment,
+	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/services"
 )
 
 const (
-	FlashSessionKey     = "flash_messages"
-	SessIsAuthenticated = "is_authenticated"
-	SessUserID          = "user_id"
-	SessUserEmail       = "user_email"
-	SessIsAdmin         = "is_admin"
-	oneWeekInSeconds    = 604800
+	oneWeekInSeconds = 604800
 )
 
 type Handlers struct {
@@ -44,6 +31,7 @@ type Handlers struct {
 	Dashboard      Dashboard
 	Registration   Registration
 	Assets         Assets
+	Fragments      Fragments
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
@@ -70,7 +58,7 @@ func setAppCtx(ctx echo.Context) context.Context {
 func addFlash(
 	c echo.Context, flashType contexts.FlashType, msg string,
 ) error {
-	sess, err := session.Get(FlashSessionKey, c)
+	sess, err := session.Get(middleware.FlashSessionKey, c)
 	if err != nil {
 		return err
 	}
@@ -80,7 +68,7 @@ func addFlash(
 		Type:      flashType,
 		CreatedAt: time.Now(),
 		Message:   msg,
-	}, FlashSessionKey)
+	}, middleware.FlashSessionKey)
 
 	return sess.Save(c.Request(), c.Response())
 }
@@ -89,17 +77,10 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
-type EmailClient interface {
-	Send(
-		ctx context.Context,
-		payload clients.EmailPayload,
-	) error
-}
-
 func NewHandlers(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
-	emailSvc EmailClient,
+	emailSvc services.EmailSender,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 	gob.Register(contexts.FlashMessage{})
@@ -118,6 +99,7 @@ func NewHandlers(
 		dashboard,
 		registration,
 		assets,
+		Fragments{},
 	}
 }
 
@@ -142,7 +124,7 @@ func redirect(
 func destroyAuthSession(
 	c echo.Context,
 ) error {
-	sess, err := session.Get(AuthenticatedSessionName, c)
+	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
 	if err != nil {
 		return err
 	}
@@ -153,10 +135,10 @@ func destroyAuthSession(
 		HttpOnly: true,
 	}
 
-	sess.Values[SessIsAuthenticated] = false
-	sess.Values[SessUserID] = ""
-	sess.Values[SessUserEmail] = ""
-	sess.Values[SessIsAdmin] = false
+	sess.Values[middleware.SessIsAuthenticated] = false
+	sess.Values[middleware.SessUserID] = ""
+	sess.Values[middleware.SessUserEmail] = ""
+	sess.Values[middleware.SessIsAdmin] = false
 
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
 		return err
@@ -170,7 +152,7 @@ func createAuthSession(
 	extend bool,
 	user models.UserEntity,
 ) error {
-	sess, err := session.Get(AuthenticatedSessionName, c)
+	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
 	if err != nil {
 		return err
 	}
@@ -185,10 +167,10 @@ func createAuthSession(
 		MaxAge:   maxAge,
 		HttpOnly: true,
 	}
-	sess.Values[SessIsAuthenticated] = true
-	sess.Values[SessUserID] = user.ID
-	sess.Values[SessUserEmail] = user.Email
-	sess.Values[SessIsAdmin] = user.IsAdmin
+	sess.Values[middleware.SessIsAuthenticated] = true
+	sess.Values[middleware.SessUserID] = user.ID
+	sess.Values[middleware.SessUserEmail] = user.Email
+	sess.Values[middleware.SessIsAdmin] = user.IsAdmin
 
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
 		return err

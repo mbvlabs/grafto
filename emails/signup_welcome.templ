@@ -2,12 +2,12 @@ package emails
 
 import (
 	"context"
-	"fmt"
 	"github.com/mbvlabs/grafto/config"
+	"strings"
 )
 
 type SignupWelcome struct {
-	ConfirmationLink string
+	VerificationCode string
 }
 
 var _ TemplateHandler = (*SignupWelcome)(nil)
@@ -22,16 +22,20 @@ func (s SignupWelcome) Generate(ctx context.Context) (Html, Text, error) {
 }
 
 templ (s SignupWelcome) template() {
-	@base() {
-		@header(fmt.Sprintf("Thanks for signing up for %s", config.Cfg.ProjectName))
-		@section() {
-			<p>Thanks for signing up for { config.Cfg.ProjectName }. We’re thrilled to have you on board.</p>
+	@base("Grafto Newsleter") {
+		@mainContent() {
+			@brandBanner()
+			@header() {
+				Welcome onboard!
+			}
+			@paragraph() {
+				Thanks for signing up for { config.Cfg.ProjectName }. We’re thrilled to have you on board.
+			}
+			@paragraph() {
+				To start using our service, you need to verify your email address. Please enter the code below into the form shown on the page after you signed up.
+			}
+			@codeBlock(strings.ToUpper(s.VerificationCode))
 		}
-		@section() {
-			<p>To continue, we need you to confirm your mail.</p>
-		}
-		@section() {
-			@link(linkProps{text: "Confirm mail", url: s.ConfirmationLink, style: "success"})
-		}
+		@footer()
 	}
 }

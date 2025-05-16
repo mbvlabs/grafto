@@ -11,6 +11,6 @@ func newDashboard() Dashboard {
 	return Dashboard{}
 }
 
-func (d *Dashboard) Index(ctx echo.Context) error {
+func (d Dashboard) Index(ctx echo.Context) error {
 	return dashboard.Home().Render(renderArgs(ctx))
 }

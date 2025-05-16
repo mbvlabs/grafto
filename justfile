@@ -5,7 +5,6 @@ alias r := run
 alias ra := run-app
 alias rw := run-worker
 alias re := run-email
-alias rcc := compile-css-dev 
 
 alias ci := golangci
 
@@ -61,7 +60,7 @@ generate-db-functions:
 
 # application
 run:
-    wgo -xdir views/emails -file=.go -file=.templ -xfile=_templ.go just compile-css-dev :: just compile-templates :: just run-app
+    wgo -xdir views/emails -file=.js -file=.css -file=.go -file=.templ -xfile=_templ.go just compile-templates :: just run-app
 
 run-app:
     go run cmd/app/main.go
@@ -72,17 +71,11 @@ run-worker:
 
 # emails
 run-email:
-    wgo -dir ./emails -file=.txt -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/*.go
+    wgo -dir ./emails  -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/main.go
 
 # assets
 compile-templates:
     templ generate
-
-compile-css-dev:
-    npm run dev
-
-compile-css-prod:
-    npm run prod
 
 fmt-templates:
     cd views && templ fmt .

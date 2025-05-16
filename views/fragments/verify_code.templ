@@ -1,0 +1,84 @@
+package fragments
+
+import (
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/router/routes"
+)
+
+type VerifyCodeProps struct {
+	CsrfToken   string
+	CodeInvalid bool
+	Success     bool
+}
+
+templ VerifyCodeForm(props VerifyCodeProps) {
+	<div class="verify-code-container">
+		if props.Success {
+			<div class="mb-4">
+				@components.SuccessFlag(
+					"Your email has been verified successfully. You'll be redirected to the dashboard.",
+					templ.Attributes{
+						"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
+						"hx-trigger": "load delay:4s",
+					},
+				)
+			</div>
+		}
+		if !props.Success {
+			<div hx-target="this" hx-swap="outerHTML" class="verify-code-form">
+				<div class="verify-code-header">
+					<h1>Verify Your Email</h1>
+					<p>
+						Please enter the 6-character code sent to your email.
+					</p>
+				</div>
+				<div class="verify-code-body">
+					if props.CodeInvalid {
+						<div class="error-message">
+							<svg
+								class="icon-error"
+								width="16"
+								height="16"
+								fill="currentColor"
+								viewBox="0 0 16 16"
+								aria-hidden="true"
+							>
+								<path
+									d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+								></path>
+							</svg>
+							<h2>Invalid verification code. Please try again.</h2>
+						</div>
+					}
+					<form hx-post={ routes.VerifyEmail.Path } method="post">
+						<input type="hidden" name="gorilla.csrf.Token" value={ props.CsrfToken }/>
+						<div class="form-fields">
+							<div>
+								@components.InputField(
+									"Verification Code",
+									"text",
+									"code",
+									"Enter 6-character code",
+									templ.Attributes{
+										"required":  true,
+										"minlength": "6",
+										"maxlength": "6",
+										"pattern":   "[A-Za-z0-9]{6}",
+										"style":     "letter-spacing: 0.5em; text-transform: uppercase; font-size: 1.2em; text-align: center;",
+									},
+									components.InputFieldProps{},
+								)
+							</div>
+							<button
+								type="submit"
+								class="btn btn-primary"
+							>
+								Verify Email
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		}
+	</div>
+}

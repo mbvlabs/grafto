@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	//nolint:gosec //only needed for browser caching
+	"crypto/md5"
 	"encoding/xml"
 	"fmt"
 	"log/slog"
@@ -8,16 +10,18 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
+	"github.com/mbvlabs/grafto/assets"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/routes/paths"
+	"github.com/mbvlabs/grafto/router/routes"
 	"gopkg.in/yaml.v2"
 )
 
 const (
-	sitemapCacheKey = "assets.sitemap"
-	robotsCacheKey  = "assets.robots"
-	weekInHours     = 168
-	threeInHours    = 72
+	sitemapCacheKey  = "assets.sitemap"
+	robotsCacheKey   = "assets.robots"
+	weekInHours      = 168
+	threeInHours     = 72
+	threeMonthsCache = "63072000"
 )
 
 type Assets struct {
@@ -49,6 +53,26 @@ func newAssets() Assets {
 	return Assets{sitemapCache, robotsCache}
 }
 
+func (a Assets) enableCaching(c echo.Context, content []byte) echo.Context {
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+		//nolint:gosec //only needed for browser caching
+		hash := md5.Sum(content)
+		etag := fmt.Sprintf(`W/"%x-%x"`, hash, len(content))
+
+		c.Response().
+			Header().
+			Set("Cache-Control", fmt.Sprintf("public, max-age=%s", threeMonthsCache))
+		c.Response().
+			Header().
+			Set("Vary", "Accept-Encoding")
+		c.Response().
+			Header().
+			Set("ETag", etag)
+	}
+
+	return c
+}
+
 func (a Assets) Robots(c echo.Context) error {
 	if value, ok := a.assetsCache.Get(robotsCacheKey); ok {
 		return c.String(http.StatusOK, string(value))
@@ -66,7 +90,7 @@ func (a Assets) Robots(c echo.Context) error {
 		Sitemap: fmt.Sprintf(
 			"%s%s",
 			config.Cfg.GetFullDomain(),
-			paths.Sitemap.URL,
+			routes.Sitemap.Path,
 		),
 	})
 	if err != nil {
@@ -124,11 +148,9 @@ func createSitemap(c echo.Context) (Sitemap, error) {
 		Priority:   "1",
 	})
 
-	routes := c.Echo().Routes()
-	for _, r := range routes {
-		n := paths.Path{Name: r.Name, URL: r.Path}
-		switch n {
-		case paths.About:
+	for _, r := range c.Echo().Routes() {
+		switch r.Name {
+		case routes.AboutPage.Name:
 			urls = append(urls, URL{
 				Loc: fmt.Sprintf(
 					"%s%s",
@@ -146,4 +168,84 @@ func createSitemap(c echo.Context) (Sitemap, error) {
 	}
 
 	return sitemap, nil
+}
+
+func (a Assets) Styles(c echo.Context) error {
+	stylesheet, err := assets.Files.ReadFile(
+		"css/styles.css",
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, stylesheet)
+
+	return c.Blob(http.StatusOK, "text/css", stylesheet)
+}
+
+func (a Assets) AllCss(c echo.Context) error {
+	filename := c.Param("file")
+	stylesheet, err := assets.Files.ReadFile(
+		fmt.Sprintf("css/%s", filename),
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, stylesheet)
+
+	return c.Blob(http.StatusOK, "text/css", stylesheet)
+}
+
+func (a Assets) Scripts(c echo.Context) error {
+	script, err := assets.Files.ReadFile(
+		"js/script.js",
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, script)
+
+	return c.Blob(http.StatusOK, "text/javascript", script)
+}
+
+func (a Assets) AllJs(c echo.Context) error {
+	filename := c.Param("file")
+	script, err := assets.Files.ReadFile(
+		fmt.Sprintf("js/%s", filename),
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, script)
+
+	return c.Blob(http.StatusOK, "text/javascript", script)
+}
+
+func (a Assets) Favicon16(c echo.Context) error {
+	img, err := assets.Files.ReadFile(
+		"images/favicon-16x16.png",
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, img)
+
+	return c.Blob(http.StatusOK, "image/png", img)
+}
+
+func (a Assets) Favicon32(c echo.Context) error {
+	img, err := assets.Files.ReadFile(
+		"images/favicon-32x32.png",
+	)
+	if err != nil {
+		return err
+	}
+
+	c = a.enableCaching(c, img)
+
+	return c.Blob(http.StatusOK, "image/png", img)
 }

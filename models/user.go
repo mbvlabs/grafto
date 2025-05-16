@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/models/internal/db"
-	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/argon2"
 )
 
 type UserEntity struct {
@@ -27,10 +28,11 @@ func (ue UserEntity) IsVerified() bool {
 }
 
 func (ue UserEntity) ValidatePassword(providedPassword string) error {
-	return bcrypt.CompareHashAndPassword(
-		[]byte(ue.HashedPassword),
-		[]byte(providedPassword+config.Cfg.PasswordPepper),
-	)
+	if t := subtle.ConstantTimeCompare(HashPassword(providedPassword), []byte(ue.HashedPassword)); t == 1 {
+		return nil
+	}
+
+	return errors.New("invalid password")
 }
 
 type PasswordPair struct {
@@ -38,23 +40,21 @@ type PasswordPair struct {
 	ConfirmPassword string `validate:"required,gte=6"`
 }
 
-func HashAndPepperPassword(password string) (string, error) {
-	passwordBytes := []byte(password + config.Cfg.PasswordPepper)
-	hashedBytes, err := bcrypt.GenerateFromPassword(
-		passwordBytes,
-		bcrypt.DefaultCost,
+func HashPassword(password string) []byte {
+	return argon2.IDKey(
+		[]byte(password),
+		[]byte(config.Cfg.PasswordSalt),
+		2,
+		19*1024,
+		1,
+		32,
 	)
-	if err != nil {
-		return "", err
-	}
-
-	return string(hashedBytes), nil
 }
 
 func GetUserByEmail(
 	ctx context.Context,
-	email string,
 	dbtx db.DBTX,
+	email string,
 ) (UserEntity, error) {
 	user, err := db.Stmts.QueryUserByEmail(ctx, dbtx, email)
 	if err != nil {
@@ -66,7 +66,7 @@ func GetUserByEmail(
 		CreatedAt:       user.CreatedAt.Time,
 		UpdatedAt:       user.UpdatedAt.Time,
 		Email:           user.Email,
-		HashedPassword:  user.Password,
+		HashedPassword:  string(user.Password),
 		EmailVerifiedAt: user.EmailVerifiedAt.Time,
 		IsAdmin:         user.IsAdmin,
 	}, nil
@@ -74,8 +74,8 @@ func GetUserByEmail(
 
 func GetUser(
 	ctx context.Context,
-	id uuid.UUID,
 	dbtx db.DBTX,
+	id uuid.UUID,
 ) (UserEntity, error) {
 	row, err := db.Stmts.QueryUserByID(ctx, dbtx, id)
 	if err != nil {
@@ -88,7 +88,7 @@ func GetUser(
 		UpdatedAt:       row.UpdatedAt.Time,
 		Email:           row.Email,
 		EmailVerifiedAt: row.EmailVerifiedAt.Time,
-		HashedPassword:  row.Password,
+		HashedPassword:  string(row.Password),
 		IsAdmin:         false,
 	}, nil
 }
@@ -100,8 +100,8 @@ type NewUserPayload struct {
 
 func NewUser(
 	ctx context.Context,
-	data NewUserPayload,
 	dbtx db.DBTX,
+	data NewUserPayload,
 ) (UserEntity, error) {
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
@@ -113,20 +113,15 @@ func NewUser(
 		UpdatedAt: time.Now(),
 		Email:     data.Email,
 	}
+	hp := HashPassword(data.Password.Password)
+	usr.HashedPassword = string(hp)
 
-	hashedPassword, err := HashAndPepperPassword(data.Password.Password)
-	if err != nil {
-		return UserEntity{}, err
-	}
-
-	usr.HashedPassword = hashedPassword
-
-	_, err = db.Stmts.InsertUser(ctx, dbtx, db.InsertUserParams{
+	_, err := db.Stmts.InsertUser(ctx, dbtx, db.InsertUserParams{
 		ID:        usr.ID,
 		CreatedAt: pgtype.Timestamptz{Time: usr.CreatedAt, Valid: true},
 		UpdatedAt: pgtype.Timestamptz{Time: usr.UpdatedAt, Valid: true},
 		Email:     usr.Email,
-		Password:  usr.HashedPassword,
+		Password:  hp,
 	})
 	if err != nil {
 		return UserEntity{}, err
@@ -143,8 +138,8 @@ type UpdateUserPayload struct {
 
 func UpdateUser(
 	ctx context.Context,
-	data UpdateUserPayload,
 	dbtx db.DBTX,
+	data UpdateUserPayload,
 ) (UserEntity, error) {
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
@@ -187,18 +182,13 @@ func UpdateUserPassword(
 		return errors.Join(ErrDomainValidation, err)
 	}
 
-	hashPW, err := HashAndPepperPassword(data.Password.Password)
-	if err != nil {
-		return err
-	}
-
 	return db.Stmts.ChangeUserPassword(ctx, dbtx, db.ChangeUserPasswordParams{
 		ID: data.ID,
 		UpdatedAt: pgtype.Timestamptz{
 			Time:  data.UpdatedAt,
 			Valid: true,
 		},
-		Password: hashPW,
+		Password: HashPassword(data.Password.Password),
 	})
 }
 
@@ -210,8 +200,8 @@ type UpdateUserEmailToVerifiedPayload struct {
 
 func UpdateUserEmailToVerified(
 	ctx context.Context,
-	data UpdateUserEmailToVerifiedPayload,
 	dbtx db.DBTX,
+	data UpdateUserEmailToVerifiedPayload,
 ) error {
 	if err := validate.Struct(data); err != nil {
 		return errors.Join(ErrDomainValidation, err)
@@ -237,14 +227,14 @@ type MakeUserAdminPayload struct {
 
 func MakeUserAdmin(
 	ctx context.Context,
-	data MakeUserAdminPayload,
 	dbtx db.DBTX,
+	data MakeUserAdminPayload,
 ) (UserEntity, error) {
 	if err := validate.Struct(data); err != nil {
 		return UserEntity{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	actor, err := GetUser(ctx, data.ActorID, dbtx)
+	actor, err := GetUser(ctx, dbtx, data.ActorID)
 	if err != nil {
 		return UserEntity{}, err
 	}
