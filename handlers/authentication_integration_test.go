@@ -19,9 +19,9 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/clients"
+	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
-	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -36,7 +36,8 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 	defer stopEmbedded()
 
 	testHandlers := setupTestHandlers(t, postgres)
-	router, ctx := setupTestRouter(ctx, testHandlers)
+	testMiddleware := setupTestMiddleware(t)
+	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -103,7 +104,7 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 
 			store := sessions.NewCookieStore([]byte("secret"))
 
-			mw := testMiddleware(store)
+			mw := testCookieStore(store)
 			h := mw(testHandlers.Authentication.StoreAuthenticatedSession)
 
 			if tt.expectedToSucceed {
@@ -146,7 +147,8 @@ func TestStoreForgottenPassword(t *testing.T) {
 	defer stopEmbedded()
 
 	testHandlers := setupTestHandlers(t, postgres)
-	router, ctx := setupTestRouter(ctx, testHandlers)
+	testMiddleware := setupTestMiddleware(t)
+	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -270,7 +272,8 @@ func TestStoreResetPassword(t *testing.T) {
 	defer stopEmbedded()
 
 	testHandlers := setupTestHandlers(t, postgres)
-	router, ctx := setupTestRouter(ctx, testHandlers)
+	testMiddleware := setupTestMiddleware(t)
+	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -408,5 +411,86 @@ func TestStoreResetPassword(t *testing.T) {
 				assert.NoError(t, err)
 			}
 		})
+	}
+}
+
+func TestDestroyAuthenticatedSession(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	postgres, cleanup, stopEmbedded := setupTestDB(ctx, t)
+	defer cleanup()
+	defer stopEmbedded()
+
+	testHandlers := setupTestHandlers(t, postgres)
+	testMiddleware := setupTestMiddleware(t)
+	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
+
+	seeder := seeds.NewSeeder(postgres.Pool)
+	testUser, err := seeder.PlantUser(
+		ctx,
+		seeds.WithUserEmailVerifiedAt(time.Now()),
+		seeds.WithUserEmail("logout_test@example.com"),
+	)
+	assert.NoError(t, err)
+
+	req := httptest.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"http://localhost:8080%s",
+			routes.DestroyAuthSession.Path,
+		),
+		nil,
+	)
+
+	rec := httptest.NewRecorder()
+
+	store := sessions.NewCookieStore([]byte("secret"))
+
+	sess, err := store.New(req, middleware.AuthenticatedSessionName)
+	assert.NoError(t, err)
+
+	sess.Values[middleware.SessIsAuthenticated] = true
+	sess.Values[middleware.SessUserID] = testUser.ID
+	sess.Values[middleware.SessUserEmail] = testUser.Email
+	sess.Values[middleware.SessIsAdmin] = false
+
+	err = sess.Save(req, rec)
+	assert.NoError(t, err)
+
+	cookies := rec.Result().Cookies()
+	var sessionCookie *http.Cookie
+	for _, cookie := range cookies {
+		if cookie.Name == middleware.AuthenticatedSessionName {
+			sessionCookie = cookie
+			break
+		}
+	}
+	assert.NotNil(t, sessionCookie, "Session cookie should exist before logout")
+
+	rec = httptest.NewRecorder()
+
+	mw := testCookieStore(store)
+	h := mw(testHandlers.Authentication.DestroyAuthenticatedSession)
+
+	c := router.NewContext(req, rec)
+	err = h(c)
+	assert.NoError(t, err)
+
+	assert.Equal(t, http.StatusSeeOther, rec.Code)
+	location := rec.Header().Get("Location")
+	assert.Equal(t, routes.LoginPage.Path, location)
+
+	cookies = rec.Result().Cookies()
+	for _, cookie := range cookies {
+		if cookie.Name == middleware.AuthenticatedSessionName {
+			assert.True(
+				t,
+				cookie.MaxAge < 0,
+				"Session cookie should be set to expire",
+			)
+			break
+		}
 	}
 }
