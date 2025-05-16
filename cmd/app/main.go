@@ -117,6 +117,7 @@ func run(ctx context.Context) error {
 	)
 
 	routes := router.New(
+		ctx,
 		handlers,
 		middleware.New(),
 		riverUI,

@@ -17,7 +17,6 @@ import (
 	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
-	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
 
 	echomw "github.com/labstack/echo/v4/middleware"
@@ -30,6 +29,7 @@ type Routes struct {
 }
 
 func New(
+	ctx context.Context,
 	handlers handlers.Handlers,
 	mw middleware.MW,
 	riverUI *riverui.Server,
@@ -89,17 +89,8 @@ func New(
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
 
-	slogechoCfg := slogecho.Config{
-		WithRequestID: false,
-		WithTraceID:   false,
-		Filters: []slogecho.Filter{
-			slogecho.IgnorePathContains("static"),
-			slogecho.IgnorePathContains("health"),
-		},
-	}
-
 	router.Use(
-		slogecho.NewWithConfig(slog.Default(), slogechoCfg),
+		setupLogger(ctx),
 		echomw.Recover(),
 	)
 
@@ -110,6 +101,57 @@ func New(
 		mw,
 		handlers,
 	}
+}
+
+func setupLogger(ctx context.Context) echo.MiddlewareFunc {
+	return echomw.RequestLoggerWithConfig(echomw.RequestLoggerConfig{
+		LogStatus:   true,
+		LogHost:     true,
+		LogMethod:   true,
+		LogURI:      true,
+		LogError:    true,
+		LogRemoteIP: true,
+		HandleError: true,
+		Skipper: func(c echo.Context) bool {
+			return strings.HasPrefix(c.Request().URL.Path, "/assets")
+		},
+		LogValuesFunc: func(c echo.Context, v echomw.RequestLoggerValues) error {
+			level := slog.LevelInfo
+			attrs := []slog.Attr{
+				slog.String(
+					"timestamp",
+					v.StartTime.Format("2006-01-02 15:04:05 MST -0700"),
+				),
+				slog.Int("status", v.Status),
+				slog.String("uri", v.URI),
+				slog.String("method", v.Method),
+				slog.String("host", v.Host),
+				slog.String("ip", v.RemoteIP),
+				slog.String("latency", v.Latency.String()),
+			}
+
+			if v.QueryParams != nil {
+				attrs = append(
+					attrs,
+					slog.String(
+						"query_params",
+						fmt.Sprintf("%v", v.QueryParams),
+					),
+				)
+			}
+
+			if v.Error != nil {
+				attrs = append(attrs, slog.String("error", v.Error.Error()))
+				level = slog.LevelError
+			}
+
+			slog.Default().LogAttrs(ctx, level, "req",
+				attrs...,
+			)
+
+			return nil
+		},
+	})
 }
 
 func (r *Routes) SetupRoutes(
