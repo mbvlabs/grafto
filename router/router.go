@@ -15,9 +15,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/handlers"
-	"github.com/mbvlabs/grafto/router/middleware"
+	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
-	slogecho "github.com/samber/slog-echo"
 	"riverqueue.com/riverui"
 
 	echomw "github.com/labstack/echo/v4/middleware"
@@ -25,11 +24,14 @@ import (
 
 type Routes struct {
 	router   *echo.Echo
+	mw       middleware.MW
 	handlers handlers.Handlers
 }
 
 func New(
+	ctx context.Context,
 	handlers handlers.Handlers,
+	mw middleware.MW,
 	riverUI *riverui.Server,
 ) *Routes {
 	router := echo.New()
@@ -39,8 +41,8 @@ func New(
 		session.Middleware(
 			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
 		),
-		middleware.RegisterAppContext,
-		middleware.RegisterFlashMessagesContext,
+		mw.RegisterAppContext,
+		mw.RegisterFlashMessagesContext,
 
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			Skipper: func(c echo.Context) bool {
@@ -87,37 +89,90 @@ func New(
 		router.GET("/metrics", echoprometheus.NewHandler())
 	}
 
-	slogechoCfg := slogecho.Config{
-		WithRequestID: false,
-		WithTraceID:   false,
-		Filters: []slogecho.Filter{
-			slogecho.IgnorePathContains("static"),
-			slogecho.IgnorePathContains("health"),
-		},
-	}
-
 	router.Use(
-		slogecho.NewWithConfig(slog.Default(), slogechoCfg),
+		setupLogger(ctx),
 		echomw.Recover(),
 	)
 
-	router.Any("/river*", echo.WrapHandler(riverUI), middleware.AuthOnly)
+	router.Any("/river*", echo.WrapHandler(riverUI), mw.AuthOnly)
 
 	return &Routes{
 		router,
+		mw,
 		handlers,
 	}
+}
+
+func setupLogger(ctx context.Context) echo.MiddlewareFunc {
+	return echomw.RequestLoggerWithConfig(echomw.RequestLoggerConfig{
+		LogStatus:   true,
+		LogHost:     true,
+		LogMethod:   true,
+		LogURI:      true,
+		LogError:    true,
+		LogRemoteIP: true,
+		HandleError: true,
+		Skipper: func(c echo.Context) bool {
+			return strings.HasPrefix(c.Request().URL.Path, "/assets")
+		},
+		LogValuesFunc: func(c echo.Context, v echomw.RequestLoggerValues) error {
+			level := slog.LevelInfo
+			attrs := []slog.Attr{
+				slog.String(
+					"timestamp",
+					v.StartTime.Format("2006-01-02 15:04:05 MST -0700"),
+				),
+				slog.Int("status", v.Status),
+				slog.String("uri", v.URI),
+				slog.String("method", v.Method),
+				slog.String("host", v.Host),
+				slog.String("ip", v.RemoteIP),
+				slog.String("latency", v.Latency.String()),
+			}
+
+			if v.QueryParams != nil {
+				attrs = append(
+					attrs,
+					slog.String(
+						"query_params",
+						fmt.Sprintf("%v", v.QueryParams),
+					),
+				)
+			}
+
+			if v.Error != nil {
+				attrs = append(attrs, slog.String("error", v.Error.Error()))
+				level = slog.LevelError
+			}
+
+			slog.Default().LogAttrs(ctx, level, "req",
+				attrs...,
+			)
+
+			return nil
+		},
+	})
 }
 
 func (r *Routes) SetupRoutes(
 	ctx context.Context,
 ) (*echo.Echo, context.Context) {
-	setupRoutes(r.router, routes.Assets, r.handlers.Assets)
-	setupRoutes(r.router, routes.Authentication, r.handlers.Authentication)
-	setupRoutes(r.router, routes.Dashboard, r.handlers.Dashboard)
-	setupRoutes(r.router, routes.App, r.handlers.App)
-	setupRoutes(r.router, routes.Registration, r.handlers.Registration)
-	setupRoutes(r.router, routes.ApiV1, r.handlers.Api)
+	setupRoutes(r.router, routes.Assets, r.handlers.Assets, r.mw)
+	setupRoutes(
+		r.router,
+		routes.Authentication,
+		r.handlers.Authentication,
+		r.mw,
+	)
+	setupRoutes(r.router, routes.Dashboard, r.handlers.Dashboard, r.mw)
+	setupRoutes(r.router, routes.App, r.handlers.App, r.mw)
+	setupRoutes(
+		r.router,
+		routes.Registration,
+		r.handlers.Registration,
+		r.mw,
+	)
+	setupRoutes(r.router, routes.ApiV1, r.handlers.Api, r.mw)
 
 	return r.router, ctx
 }
@@ -152,7 +207,97 @@ func getHandlerFunc(handlers any, methodName string) echo.HandlerFunc {
 	}
 }
 
-func setupRoutes(router *echo.Echo, r []routes.Route, handlers any) {
+func getAllMiddlewareFuncs(
+	middlewares any,
+	middlewareNames []string,
+) []echo.MiddlewareFunc {
+	var middlewareFuncs []echo.MiddlewareFunc
+
+	for _, name := range middlewareNames {
+		middlewareFuncs = append(
+			middlewareFuncs,
+			getMiddlewareFunc(middlewares, name),
+		)
+	}
+
+	return middlewareFuncs
+}
+
+func getMiddlewareFunc(handlers any, methodName string) echo.MiddlewareFunc {
+	appValue := reflect.ValueOf(handlers)
+	appType := appValue.Type()
+
+	method, found := appType.MethodByName(methodName)
+	if !found {
+		panic(fmt.Sprintf("Handler method %s not found", methodName))
+	}
+
+	methodType := method.Type
+	numIn := methodType.NumIn()
+	numOut := methodType.NumOut()
+
+	if numOut != 1 {
+		panic(
+			fmt.Sprintf("Method %s must return exactly one value", methodName),
+		)
+	}
+
+	returnType := methodType.Out(0)
+	handlerFuncType := reflect.TypeOf((echo.HandlerFunc)(nil))
+	middlewareFuncType := reflect.TypeOf((echo.MiddlewareFunc)(nil))
+
+	switch numIn {
+	case 1:
+		// Signature: func() echo.MiddlewareFunc
+		if !returnType.AssignableTo(middlewareFuncType) {
+			panic(
+				fmt.Sprintf(
+					"Method %s must return echo.MiddlewareFunc",
+					methodName,
+				),
+			)
+		}
+		values := method.Func.Call([]reflect.Value{appValue})
+		middleware, _ := values[0].Interface().(echo.MiddlewareFunc)
+		if middleware == nil {
+			panic(fmt.Sprintf("Method %s returned nil", methodName))
+		}
+		return middleware
+
+	case 2:
+		// Signature: func(echo.HandlerFunc) echo.HandlerFunc
+		if !returnType.AssignableTo(handlerFuncType) {
+			panic(
+				fmt.Sprintf(
+					"Method %s must return echo.HandlerFunc",
+					methodName,
+				),
+			)
+		}
+		return func(next echo.HandlerFunc) echo.HandlerFunc {
+			values := method.Func.Call([]reflect.Value{
+				appValue,
+				reflect.ValueOf(next),
+			})
+			return values[0].Interface().(echo.HandlerFunc)
+		}
+
+	default:
+		panic(
+			fmt.Sprintf(
+				"Method %s has unsupported number of parameters",
+				methodName,
+			),
+		)
+	}
+}
+
+func setupRoutes(
+	router *echo.Echo,
+	r []routes.Route,
+	handlers any,
+	middlewares any,
+) {
 	registeredRoutes := []string{}
 	for _, route := range r {
 		if registered := slices.Contains(registeredRoutes, route.Name); registered {
@@ -166,16 +311,16 @@ func setupRoutes(router *echo.Echo, r []routes.Route, handlers any) {
 		switch route.Method {
 		case http.MethodGet:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.GET(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
+			router.GET(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		case http.MethodPost:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.POST(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
+			router.POST(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		case http.MethodPut:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.PUT(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
+			router.PUT(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		case http.MethodDelete:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.DELETE(route.Path, getHandlerFunc(handlers, route.CtrlName), route.Middleware...).Name = route.Name
+			router.DELETE(route.Path, getHandlerFunc(handlers, route.HandlerName), getAllMiddlewareFuncs(middlewares, route.Middleware)...).Name = route.Name
 		}
 	}
 }

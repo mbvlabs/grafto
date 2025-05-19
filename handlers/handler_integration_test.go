@@ -16,6 +16,7 @@ import (
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/handlers"
+	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router"
 	"github.com/stretchr/testify/mock"
@@ -67,16 +68,23 @@ func setupTestHandlers(
 	return handlers.NewHandlers(postgres, pageCacher, emailSvc)
 }
 
+func setupTestMiddleware(
+	t *testing.T,
+) middleware.MW {
+	return middleware.New()
+}
+
 func setupTestRouter(
 	ctx context.Context,
 	handlers handlers.Handlers,
+	mw middleware.MW,
 ) (*echo.Echo, context.Context) {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 		Level: slog.LevelError,
 	}))
 	slog.SetDefault(logger)
 
-	router := router.New(handlers, nil)
+	router := router.New(ctx, handlers, mw, nil)
 	return router.SetupRoutes(ctx)
 }
 
@@ -95,13 +103,13 @@ var testDefaultConfig = config{
 	Skipper: echomw.DefaultSkipper,
 }
 
-func testMiddleware(store sessions.Store) echo.MiddlewareFunc {
+func testCookieStore(store sessions.Store) echo.MiddlewareFunc {
 	c := testDefaultConfig
 	c.Store = store
-	return testMiddlewareWithConfig(c)
+	return testMiddlewareCookieStoreWithConfig(c)
 }
 
-func testMiddlewareWithConfig(config config) echo.MiddlewareFunc {
+func testMiddlewareCookieStoreWithConfig(config config) echo.MiddlewareFunc {
 	if config.Skipper == nil {
 		config.Skipper = testDefaultConfig.Skipper
 	}

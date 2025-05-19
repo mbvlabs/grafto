@@ -13,8 +13,8 @@ require (
 	github.com/gorilla/sessions v1.2.2
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
 	github.com/lmittmann/tint v1.0.1
-	github.com/riverqueue/river v0.14.2
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.2
+	github.com/riverqueue/river v0.22.0
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.22.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.20.2
 	golang.org/x/crypto v0.38.0
@@ -22,7 +22,7 @@ require (
 	golang.org/x/sync v0.14.0
 	golang.org/x/text v0.25.0
 	gopkg.in/yaml.v2 v2.4.0
-	riverqueue.com/riverui v0.6.0
+	riverqueue.com/riverui v0.10.0
 )
 
 require (
@@ -31,7 +31,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dolthub/maphash v0.1.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/gammazero/deque v0.2.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -56,10 +56,10 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.53.0 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
-	github.com/riverqueue/river/riverdriver v0.14.2 // indirect
-	github.com/riverqueue/river/rivershared v0.14.2 // indirect
-	github.com/riverqueue/river/rivertype v0.14.2 // indirect
-	github.com/samber/lo v1.44.0 // indirect
+	github.com/riverqueue/apiframe v0.0.0-20250408034821-b206bbbd0fb4 // indirect
+	github.com/riverqueue/river/riverdriver v0.22.0 // indirect
+	github.com/riverqueue/river/rivershared v0.22.0 // indirect
+	github.com/riverqueue/river/rivertype v0.22.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
@@ -71,8 +71,6 @@ require (
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/vanng822/css v1.0.1 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	go.opentelemetry.io/otel v1.35.0 // indirect
-	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
@@ -84,7 +82,7 @@ require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-faker/faker/v4 v4.5.0
-	github.com/go-playground/validator/v10 v10.23.0
+	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gorilla/csrf v1.7.3
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
@@ -92,6 +90,5 @@ require (
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/maypok86/otter v1.2.4
 	github.com/pressly/goose/v3 v3.24.3
-	github.com/samber/slog-echo v1.14.4
 	golang.org/x/sys v0.33.0 // indirect
 )

@@ -14,6 +14,7 @@ import (
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/handlers"
+	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/mbvlabs/grafto/psql/queue/workers"
@@ -116,7 +117,9 @@ func run(ctx context.Context) error {
 	)
 
 	routes := router.New(
+		ctx,
 		handlers,
+		middleware.New(),
 		riverUI,
 	)
 

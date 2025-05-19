@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
+func (m MW) AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		sess, err := session.Get(AuthenticatedSessionName, c)
 		if err != nil {

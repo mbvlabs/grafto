@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -13,10 +14,10 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
+	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/contexts"
-	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/services"
 )
 
@@ -124,6 +125,11 @@ func redirect(
 func destroyAuthSession(
 	c echo.Context,
 ) error {
+	slog.Info(
+		"SEEEEEEEEEEEEEEEEEEEEES",
+		"s",
+		middleware.AuthenticatedSessionName,
+	)
 	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
 	if err != nil {
 		return err
