@@ -83,7 +83,7 @@ require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-faker/faker/v4 v4.5.0
-	github.com/go-playground/validator/v10 v10.25.0
+	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gorilla/csrf v1.7.3
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
