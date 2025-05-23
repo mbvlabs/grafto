@@ -2,7 +2,6 @@ package telemetry
 
 import (
 	"context"
-	"io"
 	"log/slog"
 	"os"
 
@@ -10,12 +9,10 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// Logger is an enhanced slog.Logger that automatically includes trace context
 type Logger struct {
 	*slog.Logger
 }
 
-// NewLogger creates a new enhanced logger with trace context support
 func NewLogger(isDevelopment bool) *Logger {
 	var handler slog.Handler
 	var level slog.Level
@@ -37,7 +34,6 @@ func NewLogger(isDevelopment bool) *Logger {
 		})
 	}
 
-	// Wrap the handler to include trace context
 	traceHandler := &traceContextHandler{handler: handler}
 
 	return &Logger{
@@ -46,33 +42,33 @@ func NewLogger(isDevelopment bool) *Logger {
 }
 
 // NewLoggerWithWriter creates a new enhanced logger with a custom writer
-func NewLoggerWithWriter(w io.Writer, isDevelopment bool) *Logger {
-	var handler slog.Handler
-	var level slog.Level
-
-	if isDevelopment {
-		level = slog.LevelDebug
-		handler = tint.NewHandler(w, &tint.Options{
-			Level:      level,
-			TimeFormat: "15:04:05",
-			AddSource:  true,
-		})
-	} else {
-		level = slog.LevelError
-		handler = tint.NewHandler(w, &tint.Options{
-			Level:      level,
-			TimeFormat: "2006-01-02T15:04:05.000Z07:00",
-			AddSource:  false,
-		})
-	}
-
-	// Wrap the handler to include trace context
-	traceHandler := &traceContextHandler{handler: handler}
-
-	return &Logger{
-		Logger: slog.New(traceHandler),
-	}
-}
+// func NewLoggerWithWriter(w io.Writer, isDevelopment bool) *Logger {
+// 	var handler slog.Handler
+// 	var level slog.Level
+//
+// 	if isDevelopment {
+// 		level = slog.LevelDebug
+// 		handler = tint.NewHandler(w, &tint.Options{
+// 			Level:      level,
+// 			TimeFormat: "15:04:05",
+// 			AddSource:  true,
+// 		})
+// 	} else {
+// 		level = slog.LevelError
+// 		handler = tint.NewHandler(w, &tint.Options{
+// 			Level:      level,
+// 			TimeFormat: "2006-01-02T15:04:05.000Z07:00",
+// 			AddSource:  false,
+// 		})
+// 	}
+//
+// 	// Wrap the handler to include trace context
+// 	traceHandler := &traceContextHandler{handler: handler}
+//
+// 	return &Logger{
+// 		Logger: slog.New(traceHandler),
+// 	}
+// }
 
 // WithContext returns a logger that includes trace context from the given context
 func (l *Logger) WithContext(ctx context.Context) *slog.Logger {
@@ -132,9 +128,9 @@ func traceAttrsFromContext(ctx context.Context) []slog.Attr {
 			slog.String("span_id", spanCtx.SpanID().String()),
 		)
 
-		if spanCtx.IsSampled() {
-			attrs = append(attrs, slog.Bool("trace_sampled", true))
-		}
+		// if spanCtx.IsSampled() {
+		// 	attrs = append(attrs, slog.Bool("trace_sampled", true))
+		// }
 	}
 
 	return attrs
