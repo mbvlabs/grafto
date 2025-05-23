@@ -91,7 +91,6 @@ func run(ctx context.Context) error {
 		psql,
 		pageCacher,
 		emailClient,
-		tel,
 	)
 
 	routes := router.New(
