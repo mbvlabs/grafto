@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
@@ -79,16 +78,16 @@ func New(
 					return strings.Contains(c.Path(), "metrics")
 				},
 			}),
-
-			echoprometheus.NewMiddleware(
-				strings.Join(
-					strings.Fields(strings.ToLower(config.Cfg.ProjectName)),
-					"_",
-				),
-			),
 		)
-
-		router.GET("/metrics", echoprometheus.NewHandler())
+		// 	echoprometheus.NewMiddleware(
+		// 		strings.Join(
+		// 			strings.Fields(strings.ToLower(config.Cfg.ProjectName)),
+		// 			"_",
+		// 		),
+		// 	),
+		// )
+		//
+		// router.GET("/metrics", echoprometheus.NewHandler())
 	}
 
 	// Use telemetry middleware

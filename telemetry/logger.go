@@ -27,8 +27,9 @@ func NewLogger(isDevelopment bool) *Logger {
 			TimeFormat: "15:04:05",
 			AddSource:  true,
 		})
-	} else {
-		level = slog.LevelError
+	}
+	if !isDevelopment {
+		level = slog.LevelInfo
 		handler = tint.NewHandler(os.Stdout, &tint.Options{
 			Level:      level,
 			TimeFormat: "2006-01-02T15:04:05.000Z07:00",

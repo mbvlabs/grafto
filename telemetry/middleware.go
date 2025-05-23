@@ -3,8 +3,6 @@ package telemetry
 import (
 	"context"
 	"log/slog"
-	"net/http"
-	"slices"
 	"strings"
 	"time"
 
@@ -15,7 +13,6 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// MiddlewareConfig holds configuration for telemetry middleware
 type MiddlewareConfig struct {
 	Skipper        func(c echo.Context) bool
 	TracerProvider trace.TracerProvider
@@ -23,131 +20,39 @@ type MiddlewareConfig struct {
 	Logger         *Logger
 }
 
-// DefaultMiddlewareConfig provides default configuration
-var DefaultMiddlewareConfig = MiddlewareConfig{}
-
-// Middleware returns Echo middleware that provides comprehensive telemetry
 func Middleware(cfg MiddlewareConfig) echo.MiddlewareFunc {
-	// OPTION 1
-
-	// if cfg.TracerProvider == nil {
-	// 	cfg.TracerProvider = otel.GetTracerProvider()
-	// }
-	//
-	// tracer := cfg.TracerProvider.Tracer(
-	// 	"grafto",
-	// 	oteltrace.WithInstrumentationVersion("0.0.1"),
-	// )
-	// // if cfg.Propagators == nil {
-	// // 	cfg.Propagators = otel.GetTextMapPropagator()
-	// // }
-	//
-	// if cfg.Skipper == nil {
-	// 	cfg.Skipper = middleware.DefaultSkipper
-	// }
-	//
-	// return func(next echo.HandlerFunc) echo.HandlerFunc {
-	// 	return func(c echo.Context) error {
-	// 		if cfg.Skipper(c) {
-	// 			return next(c)
-	// 		}
-	//
-	// 		c.Set("grafto-trace-key", tracer)
-	// 		request := c.Request()
-	// 		savedCtx := request.Context()
-	// 		defer func() {
-	// 			request = request.WithContext(savedCtx)
-	// 			c.SetRequest(request)
-	// 		}()
-	// 		// ctx := cfg.Propagators.Extract(
-	// 		// 	savedCtx,
-	// 		// 	propagation.HeaderCarrier(request.Header),
-	// 		// )
-	// 		opts := []oteltrace.SpanStartOption{
-	// 			oteltrace.WithAttributes(
-	// 			// semconvutil.HTTPServerRequest(
-	// 			// 	service,
-	// 			// 	request,
-	// 			// 	semconvutil.HTTPServerRequestOptions{},
-	// 			// 	nil,
-	// 			// )...),
-	// 			),
-	// 			oteltrace.WithSpanKind(oteltrace.SpanKindServer),
-	// 		}
-	// 		if path := c.Path(); path != "" {
-	// 			rAttr := semconv.HTTPRoute(path)
-	// 			opts = append(opts, oteltrace.WithAttributes(rAttr))
-	// 		}
-	// 		spanName := spanNameFormatter(c)
-	//
-	// 		ctx, span := tracer.Start(c.Request().Context(), spanName, opts...)
-	// 		defer span.End()
-	//
-	// 		// pass the span through the request context
-	// 		c.SetRequest(request.WithContext(ctx))
-	//
-	// 		// serve the request to the next middleware
-	// 		err := next(c)
-	// 		if err != nil {
-	// 			span.SetAttributes(attribute.String("echo.error", err.Error()))
-	// 			// invokes the registered HTTP error handler
-	// 			c.Error(err)
-	// 		}
-	//
-	// 		status := c.Response().Status
-	// 		// span.SetStatus(semconvutil.HTTPServerStatus(status))
-	// 		if status > 0 {
-	// 			span.SetAttributes(semconv.HTTPStatusCode(status))
-	// 		}
-	//
-	// 		statusCode := c.Response().Status
-	// 		// duration := time.Since(start)
-	//
-	// 		slog.InfoContext(ctx, "HTTP request completed",
-	// 			"method", c.Request().Method,
-	// 			"path", c.Request().URL.Path,
-	// 			"status", statusCode,
-	// 			// "duration", duration,
-	// 			"remote_addr", c.RealIP(),
-	// 			"user_agent", c.Request().UserAgent(),
-	// 		)
-	//
-	// 		return err
-	// 	}
-	// }
-
-	// OPTION 2
-	config := DefaultMiddlewareConfig
-
-	config.Skipper = func(c echo.Context) bool {
+	cfg.Skipper = func(c echo.Context) bool {
 		path := c.Request().URL.Path
-
 		return strings.Contains(path, "/assets/")
 	}
 
 	otelMiddleware := otelecho.Middleware(
 		"grafto",
-		otelecho.WithTracerProvider(config.TracerProvider),
+		otelecho.WithTracerProvider(cfg.TracerProvider),
 	)
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			if config.Skipper != nil && config.Skipper(c) {
+			if cfg.Skipper != nil && cfg.Skipper(c) {
 				return next(c)
 			}
 
-			start := time.Now()
-
 			var ctx context.Context
+			var requestDuration time.Duration
+
 			wrappedNext := func(c echo.Context) error {
 				ctx = c.Request().Context()
-				return next(c)
+
+				start := time.Now()
+				err := next(c)
+				requestDuration = time.Since(start)
+
+				return err
 			}
 
 			err := otelMiddleware(wrappedNext)(c)
 
-			if config.Metrics != nil {
-				duration := time.Since(start).Seconds()
+			if cfg.Metrics != nil {
 				statusCode := c.Response().Status
 
 				attrs := []attribute.KeyValue{
@@ -156,26 +61,25 @@ func Middleware(cfg MiddlewareConfig) echo.MiddlewareFunc {
 					attribute.Int("status_code", statusCode),
 				}
 
-				config.Metrics.HTTPRequestCount.Add(
+				cfg.Metrics.HTTPRequestCount.Add(
 					ctx,
 					1,
 					metric.WithAttributes(attrs...),
 				)
-				config.Metrics.HTTPRequestDuration.Record(
+				cfg.Metrics.HTTPRequestDuration.Record(
 					ctx,
-					duration,
+					requestDuration.Seconds(),
 					metric.WithAttributes(attrs...),
 				)
 			}
 
 			statusCode := c.Response().Status
-			duration := time.Since(start)
 
 			slog.InfoContext(ctx, "HTTP request completed",
 				"method", c.Request().Method,
 				"path", c.Request().URL.Path,
 				"status", statusCode,
-				"duration", duration,
+				"duration", requestDuration.Seconds(),
 				"remote_addr", c.RealIP(),
 				"user_agent", c.Request().UserAgent(),
 			)
@@ -203,23 +107,23 @@ func Middleware(cfg MiddlewareConfig) echo.MiddlewareFunc {
 // }
 
 // RecordAuthMetrics records authentication-related metrics
-// func RecordAuthMetrics(
-// 	ctx context.Context,
-// 	metrics *ApplicationMetrics,
-// 	success bool,
-// 	authType string,
-// ) {
-// 	if metrics == nil {
-// 		return
-// 	}
-//
-// 	attrs := []attribute.KeyValue{
-// 		attribute.String("auth_type", authType),
-// 		attribute.Bool("success", success),
-// 	}
-//
-// 	metrics.AuthAttempts.Add(ctx, 1, metric.WithAttributes(attrs...))
-// }
+func RecordAuthMetrics(
+	ctx context.Context,
+	metrics *ApplicationMetrics,
+	success bool,
+	authType string,
+) {
+	if metrics == nil {
+		return
+	}
+
+	attrs := []attribute.KeyValue{
+		attribute.String("auth_type", authType),
+		attribute.Bool("success", success),
+	}
+
+	metrics.AuthAttempts.Add(ctx, 1, metric.WithAttributes(attrs...))
+}
 
 // RecordRegistrationMetrics records user registration metrics
 // func RecordRegistrationMetrics(
@@ -290,27 +194,117 @@ func Middleware(cfg MiddlewareConfig) echo.MiddlewareFunc {
 // 		return
 // 	}
 //
-// 	total := active + idle
-// 	metrics.DBConnections.Add(ctx, int64(total), metric.WithAttributes(
-// 		attribute.String("pool_type", "total"),
+// 	metrics.DBConnections.Add(ctx, int64(active), metric.WithAttributes(
+// 		attribute.String("pool_type", "active"),
 // 	))
 // }
 
-func spanNameFormatter(c echo.Context) string {
-	method, path := strings.ToUpper(c.Request().Method), c.Path()
-	if !slices.Contains([]string{
-		http.MethodGet, http.MethodHead,
-		http.MethodPost, http.MethodPut,
-		http.MethodPatch, http.MethodDelete,
-		http.MethodConnect, http.MethodOptions,
-		http.MethodTrace,
-	}, method) {
-		method = "HTTP"
-	}
+// func spanNameFormatter(c echo.Context) string {
+// 	method, path := strings.ToUpper(c.Request().Method), c.Path()
+// 	if !slices.Contains([]string{
+// 		http.MethodGet, http.MethodHead,
+// 		http.MethodPost, http.MethodPut,
+// 		http.MethodPatch, http.MethodDelete,
+// 		http.MethodConnect, http.MethodOptions,
+// 		http.MethodTrace,
+// 	}, method) {
+// 		method = "HTTP"
+// 	}
+//
+// 	if path != "" {
+// 		return method + " " + path
+// 	}
+//
+// 	return method
+// }
 
-	if path != "" {
-		return method + " " + path
-	}
+// OPTION 1
 
-	return method
-}
+// if cfg.TracerProvider == nil {
+// 	cfg.TracerProvider = otel.GetTracerProvider()
+// }
+//
+// tracer := cfg.TracerProvider.Tracer(
+// 	"grafto",
+// 	oteltrace.WithInstrumentationVersion("0.0.1"),
+// )
+// // if cfg.Propagators == nil {
+// // 	cfg.Propagators = otel.GetTextMapPropagator()
+// // }
+//
+// if cfg.Skipper == nil {
+// 	cfg.Skipper = middleware.DefaultSkipper
+// }
+//
+// return func(next echo.HandlerFunc) echo.HandlerFunc {
+// 	return func(c echo.Context) error {
+// 		if cfg.Skipper(c) {
+// 			return next(c)
+// 		}
+//
+// 		c.Set("grafto-trace-key", tracer)
+// 		request := c.Request()
+// 		savedCtx := request.Context()
+// 		defer func() {
+// 			request = request.WithContext(savedCtx)
+// 			c.SetRequest(request)
+// 		}()
+// 		// ctx := cfg.Propagators.Extract(
+// 		// 	savedCtx,
+// 		// 	propagation.HeaderCarrier(request.Header),
+// 		// )
+// 		opts := []oteltrace.SpanStartOption{
+// 			oteltrace.WithAttributes(
+// 			// semconvutil.HTTPServerRequest(
+// 			// 	service,
+// 			// 	request,
+// 			// 	semconvutil.HTTPServerRequestOptions{},
+// 			// 	nil,
+// 			// )...),
+// 			),
+// 			oteltrace.WithSpanKind(oteltrace.SpanKindServer),
+// 		}
+// 		if path := c.Path(); path != "" {
+// 			rAttr := semconv.HTTPRoute(path)
+// 			opts = append(opts, oteltrace.WithAttributes(rAttr))
+// 		}
+// 		spanName := spanNameFormatter(c)
+//
+// 		ctx, span := tracer.Start(c.Request().Context(), spanName, opts...)
+// 		defer span.End()
+//
+// 		// pass the span through the request context
+// 		c.SetRequest(request.WithContext(ctx))
+//
+// 		// serve the request to the next middleware
+// 		err := next(c)
+// 		if err != nil {
+// 			span.SetAttributes(attribute.String("echo.error", err.Error()))
+// 			// invokes the registered HTTP error handler
+// 			c.Error(err)
+// 		}
+//
+// 		status := c.Response().Status
+// 		// span.SetStatus(semconvutil.HTTPServerStatus(status))
+// 		if status > 0 {
+// 			span.SetAttributes(semconv.HTTPStatusCode(status))
+// 		}
+//
+// 		statusCode := c.Response().Status
+// 		// duration := time.Since(start)
+//
+// 		slog.InfoContext(ctx, "HTTP request completed",
+// 			"method", c.Request().Method,
+// 			"path", c.Request().URL.Path,
+// 			"status", statusCode,
+// 			// "duration", duration,
+// 			"remote_addr", c.RealIP(),
+// 			"user_agent", c.Request().UserAgent(),
+// 		)
+//
+// 		return err
+// 	}
+// }
+
+// OPTION 2
+// if cfg.Skipper == nil {

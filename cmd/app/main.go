@@ -6,10 +6,8 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/a-h/templ"
-	"github.com/lmittmann/tint"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
@@ -23,15 +21,6 @@ import (
 	"github.com/mbvlabs/grafto/telemetry"
 	"riverqueue.com/riverui"
 )
-
-func queueLogger() *slog.Logger {
-	return slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      slog.LevelError,
-			TimeFormat: time.Kitchen,
-		}),
-	)
-}
 
 func run(ctx context.Context) error {
 	cfg := config.NewConfig()
@@ -65,7 +54,7 @@ func run(ctx context.Context) error {
 	}
 	psql := psql.NewPostgres(conn, nil)
 	psql.NewQueue(
-		queue.WithLogger(queueLogger()),
+		queue.WithLogger(slog.Default()),
 		queue.WithWorkers(queueWorkers),
 	)
 
@@ -82,7 +71,6 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	// Start the server to initialize background processes for caching and periodic queries:
 	if err := riverUI.Start(ctx); err != nil {
 		return err
 	}
@@ -103,6 +91,7 @@ func run(ctx context.Context) error {
 		psql,
 		pageCacher,
 		emailClient,
+		tel,
 	)
 
 	routes := router.New(

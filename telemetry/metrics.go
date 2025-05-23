@@ -3,12 +3,12 @@ package telemetry
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mbvlabs/grafto/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
-	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/metric"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -21,32 +21,30 @@ func setupMeterProvider(
 	var exporter sdkmetric.Exporter
 	var err error
 
-	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
-		opts := []otlpmetrichttp.Option{
-			otlpmetrichttp.WithEndpoint(config.Cfg.OtlpEndpoint),
-		}
-		if config.Cfg.OtlpInsecure {
-			opts = append(opts, otlpmetrichttp.WithInsecure())
-		}
-
-		exporter, err = otlpmetrichttp.New(ctx, opts...)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"failed to create OTLP metric exporter: %w",
-				err,
-			)
-		}
+	// Use OTLP exporter for both prod and dev
+	endpoint := config.Cfg.OtlpEndpoint
+	// Remove protocol if present (OTLP HTTP exporter expects just host:port)
+	if strings.HasPrefix(endpoint, "http://") {
+		endpoint = strings.TrimPrefix(endpoint, "http://")
 	}
-	if config.Cfg.Environment == config.DEV_ENVIRONMENT {
-		exporter, err = stdoutmetric.New(
-			stdoutmetric.WithPrettyPrint(),
+	if strings.HasPrefix(endpoint, "https://") {
+		endpoint = strings.TrimPrefix(endpoint, "https://")
+	}
+
+	opts := []otlpmetrichttp.Option{
+		otlpmetrichttp.WithEndpoint(endpoint),
+		otlpmetrichttp.WithURLPath("/v1/metrics"),
+	}
+	if config.Cfg.OtlpInsecure {
+		opts = append(opts, otlpmetrichttp.WithInsecure())
+	}
+
+	exporter, err = otlpmetrichttp.New(ctx, opts...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to create OTLP metric exporter: %w",
+			err,
 		)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"failed to create stdout metric exporter: %w",
-				err,
-			)
-		}
 	}
 
 	mp := sdkmetric.NewMeterProvider(
@@ -54,7 +52,7 @@ func setupMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(
 			exporter,
 			sdkmetric.WithInterval(
-				time.Duration(config.Cfg.MetricsPushInterval),
+				time.Duration(config.Cfg.MetricsPushInterval)*time.Second,
 			),
 		)),
 	)
@@ -92,6 +90,22 @@ func NewApplicationMetrics(meter metric.Meter) (*ApplicationMetrics, error) {
 		"http_request_duration_seconds",
 		metric.WithDescription("Duration of HTTP requests"),
 		metric.WithUnit("s"),
+		metric.WithExplicitBucketBoundaries(
+			0.0001,  // 0.1ms
+			0.0005,  // 0.5ms
+			0.001,   // 1ms
+			0.005,   // 5ms
+			0.01,    // 10ms
+			0.025,   // 25ms
+			0.05,    // 50ms
+			0.1,     // 100ms
+			0.25,    // 250ms
+			0.5,     // 500ms
+			1.0,     // 1s
+			2.5,     // 2.5s
+			5.0,     // 5s
+			10.0,    // 10s
+		),
 	)
 	if err != nil {
 		return nil, fmt.Errorf(
