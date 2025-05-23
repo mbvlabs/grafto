@@ -3,8 +3,8 @@ package telemetry
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
+	"github.com/mbvlabs/grafto/config"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/metric/noop"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -13,7 +13,6 @@ import (
 	tracenoop "go.opentelemetry.io/otel/trace/noop"
 )
 
-// Telemetry holds all telemetry providers and utilities
 type Telemetry struct {
 	tracer   trace.Tracer
 	meter    metric.Meter
@@ -22,13 +21,11 @@ type Telemetry struct {
 	shutdown func(context.Context) error
 }
 
-// New creates and initializes a new Telemetry instance
-func New(ctx context.Context, cfg Config) (*Telemetry, error) {
-	// Create resource
+func New(ctx context.Context) (*Telemetry, error) {
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
-			semconv.ServiceName(cfg.ServiceName),
-			semconv.ServiceVersion(cfg.ServiceVersion),
+			semconv.ServiceName(config.Cfg.ServiceName),
+			semconv.ServiceVersion(config.Cfg.ServiceVersion),
 		),
 	)
 	if err != nil {
@@ -39,29 +36,28 @@ func New(ctx context.Context, cfg Config) (*Telemetry, error) {
 
 	// Setup tracing if enabled
 	var tracer trace.Tracer
-	if cfg.EnableTracing {
-		tp, err := setupTraceProvider(ctx, cfg, res)
+	if config.Cfg.EnableTracing {
+		tp, err := setupTraceProvider(ctx, res)
 		if err != nil {
 			return nil, fmt.Errorf("failed to setup trace provider: %w", err)
 		}
 
-		tracer = getTracer(cfg.ServiceName)
+		tracer = getTracer(config.Cfg.ServiceName)
 		shutdownFuncs = append(shutdownFuncs, tp.Shutdown)
 	}
-	if !cfg.EnableTracing {
-		tracer = tracenoop.NewTracerProvider().Tracer(cfg.ServiceName)
+	if !config.Cfg.EnableTracing {
+		tracer = tracenoop.NewTracerProvider().Tracer(config.Cfg.ServiceName)
 	}
 
-	// Setup metrics if enabled
 	var meter metric.Meter
 	var appMetrics *ApplicationMetrics
-	if cfg.EnableMetrics {
-		mp, err := setupMeterProvider(ctx, cfg, res)
+	if config.Cfg.EnableMetrics {
+		mp, err := setupMeterProvider(ctx, res)
 		if err != nil {
 			return nil, fmt.Errorf("failed to setup meter provider: %w", err)
 		}
 
-		meter = getMeter(cfg.ServiceName)
+		meter = getMeter(config.Cfg.ServiceName)
 
 		// Create application-specific metrics
 		appMetrics, err = NewApplicationMetrics(meter)
@@ -74,16 +70,14 @@ func New(ctx context.Context, cfg Config) (*Telemetry, error) {
 
 		shutdownFuncs = append(shutdownFuncs, mp.Shutdown)
 	}
-	if !cfg.EnableMetrics {
+	if !config.Cfg.EnableMetrics {
 		noopProvider := noop.NewMeterProvider()
-		meter = noopProvider.Meter(cfg.ServiceName)
+		meter = noopProvider.Meter(config.Cfg.ServiceName)
 	}
 
 	// Setup enhanced logger
-	logger := NewLogger(!cfg.IsProduction())
-	slog.SetDefault(logger.Logger)
+	logger := NewLogger(config.Cfg.Environment == config.DEV_ENVIRONMENT)
 
-	// Create shutdown function that calls all provider shutdowns
 	shutdown := func(ctx context.Context) error {
 		for _, fn := range shutdownFuncs {
 			if err := fn(ctx); err != nil {
@@ -102,27 +96,22 @@ func New(ctx context.Context, cfg Config) (*Telemetry, error) {
 	}, nil
 }
 
-// Tracer returns the OpenTelemetry tracer
 func (t *Telemetry) Tracer() trace.Tracer {
 	return t.tracer
 }
 
-// Meter returns the OpenTelemetry meter
 func (t *Telemetry) Meter() metric.Meter {
 	return t.meter
 }
 
-// Logger returns the enhanced logger with trace context support
 func (t *Telemetry) Logger() *Logger {
 	return t.logger
 }
 
-// Metrics returns the application-specific metrics
 func (t *Telemetry) Metrics() *ApplicationMetrics {
 	return t.metrics
 }
 
-// Shutdown gracefully shuts down all telemetry providers
 func (t *Telemetry) Shutdown(ctx context.Context) error {
 	if t.shutdown != nil {
 		return t.shutdown(ctx)
@@ -130,7 +119,6 @@ func (t *Telemetry) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// StartSpan is a convenience method to start a new span
 func (t *Telemetry) StartSpan(
 	ctx context.Context,
 	spanName string,
@@ -140,7 +128,6 @@ func (t *Telemetry) StartSpan(
 	return ctx, span
 }
 
-// RecordMetric is a convenience method to record a metric value
 func (t *Telemetry) RecordMetric(
 	ctx context.Context,
 	name string,

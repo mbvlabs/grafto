@@ -97,7 +97,7 @@ func New(
 			Metrics: tel.Metrics(),
 			Logger:  tel.Logger(),
 		}),
-		telemetry.RequestIDMiddleware(),
+		// telemetry.RequestIDMiddleware(),
 		echomw.Recover(),
 	)
 

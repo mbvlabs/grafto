@@ -12,7 +12,6 @@ import (
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/routes"
-	"github.com/mbvlabs/grafto/telemetry"
 )
 
 var (
@@ -28,9 +27,7 @@ func AuthenticateUser(
 	db psql.Postgres,
 	email string,
 	providedPassword string,
-	logger *telemetry.Logger,
 ) (models.UserEntity, error) {
-	logger.InfoContext(ctx, "getting user")
 	user, err := models.GetUserByEmail(
 		ctx,
 		db.Pool,
@@ -44,12 +41,10 @@ func AuthenticateUser(
 		return models.UserEntity{}, ErrUserEmailNotVerified
 	}
 
-	logger.InfoContext(ctx, "validting passsword user")
 	if err := user.ValidatePassword(providedPassword); err != nil {
 		return models.UserEntity{}, ErrInvalidAuthDetail
 	}
 
-	logger.InfoContext(ctx, "user validated")
 	return user, nil
 }
 

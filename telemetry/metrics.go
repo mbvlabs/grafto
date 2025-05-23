@@ -3,7 +3,9 @@ package telemetry
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/mbvlabs/grafto/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
@@ -12,55 +14,60 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 )
 
-// setupMeterProvider creates and configures a meter provider based on configuration
-func setupMeterProvider(ctx context.Context, cfg Config, resource *resource.Resource) (*sdkmetric.MeterProvider, error) {
+func setupMeterProvider(
+	ctx context.Context,
+	resource *resource.Resource,
+) (*sdkmetric.MeterProvider, error) {
 	var exporter sdkmetric.Exporter
 	var err error
 
-	if cfg.IsProduction() {
-		// Production: Use OTLP HTTP exporter
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		opts := []otlpmetrichttp.Option{
-			otlpmetrichttp.WithEndpoint(cfg.OtlpEndpoint),
+			otlpmetrichttp.WithEndpoint(config.Cfg.OtlpEndpoint),
 		}
-		if cfg.OtlpInsecure {
+		if config.Cfg.OtlpInsecure {
 			opts = append(opts, otlpmetrichttp.WithInsecure())
 		}
 
 		exporter, err = otlpmetrichttp.New(ctx, opts...)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create OTLP metric exporter: %w", err)
+			return nil, fmt.Errorf(
+				"failed to create OTLP metric exporter: %w",
+				err,
+			)
 		}
-	} else {
-		// Development: Use stdout exporter
+	}
+	if config.Cfg.Environment == config.DEV_ENVIRONMENT {
 		exporter, err = stdoutmetric.New(
 			stdoutmetric.WithPrettyPrint(),
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create stdout metric exporter: %w", err)
+			return nil, fmt.Errorf(
+				"failed to create stdout metric exporter: %w",
+				err,
+			)
 		}
 	}
 
-	// Configure meter provider
 	mp := sdkmetric.NewMeterProvider(
 		sdkmetric.WithResource(resource),
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(
 			exporter,
-			sdkmetric.WithInterval(cfg.GetMetricsPushInterval()),
+			sdkmetric.WithInterval(
+				time.Duration(config.Cfg.MetricsPushInterval),
+			),
 		)),
 	)
 
-	// Set as global meter provider
 	otel.SetMeterProvider(mp)
 
 	return mp, nil
 }
 
-// getMeter returns a meter for the given name
 func getMeter(name string) metric.Meter {
 	return otel.Meter(name)
 }
 
-// ApplicationMetrics holds common application metrics
 type ApplicationMetrics struct {
 	HTTPRequestCount    metric.Int64Counter
 	HTTPRequestDuration metric.Float64Histogram
@@ -71,7 +78,6 @@ type ApplicationMetrics struct {
 	BackgroundJobs      metric.Int64Counter
 }
 
-// NewApplicationMetrics creates and initializes application-specific metrics
 func NewApplicationMetrics(meter metric.Meter) (*ApplicationMetrics, error) {
 	httpRequestCount, err := meter.Int64Counter(
 		"http_requests_total",
@@ -88,7 +94,10 @@ func NewApplicationMetrics(meter metric.Meter) (*ApplicationMetrics, error) {
 		metric.WithUnit("s"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create HTTP request duration histogram: %w", err)
+		return nil, fmt.Errorf(
+			"failed to create HTTP request duration histogram: %w",
+			err,
+		)
 	}
 
 	authAttempts, err := meter.Int64Counter(
@@ -97,7 +106,10 @@ func NewApplicationMetrics(meter metric.Meter) (*ApplicationMetrics, error) {
 		metric.WithUnit("1"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create auth attempts counter: %w", err)
+		return nil, fmt.Errorf(
+			"failed to create auth attempts counter: %w",
+			err,
+		)
 	}
 
 	registrationCount, err := meter.Int64Counter(
@@ -133,7 +145,10 @@ func NewApplicationMetrics(meter metric.Meter) (*ApplicationMetrics, error) {
 		metric.WithUnit("1"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create background jobs counter: %w", err)
+		return nil, fmt.Errorf(
+			"failed to create background jobs counter: %w",
+			err,
+		)
 	}
 
 	return &ApplicationMetrics{

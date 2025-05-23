@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mbvlabs/grafto/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -12,48 +13,54 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// setupTraceProvider creates and configures a trace provider based on configuration
-func setupTraceProvider(ctx context.Context, cfg Config, resource *resource.Resource) (*sdktrace.TracerProvider, error) {
+func setupTraceProvider(
+	ctx context.Context,
+	resource *resource.Resource,
+) (*sdktrace.TracerProvider, error) {
 	var exporter sdktrace.SpanExporter
 	var err error
 
-	if cfg.IsProduction() {
-		// Production: Use OTLP HTTP exporter
+	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
 		opts := []otlptracehttp.Option{
-			otlptracehttp.WithEndpoint(cfg.OtlpEndpoint),
+			otlptracehttp.WithEndpoint(config.Cfg.OtlpEndpoint),
 		}
-		if cfg.OtlpInsecure {
+		if config.Cfg.OtlpInsecure {
 			opts = append(opts, otlptracehttp.WithInsecure())
 		}
 
 		exporter, err = otlptracehttp.New(ctx, opts...)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create OTLP trace exporter: %w", err)
+			return nil, fmt.Errorf(
+				"failed to create OTLP trace exporter: %w",
+				err,
+			)
 		}
-	} else {
-		// Development: Use stdout exporter
+	}
+	if config.Cfg.Environment == config.DEV_ENVIRONMENT {
 		exporter, err = stdouttrace.New(
 			stdouttrace.WithPrettyPrint(),
 		)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create stdout trace exporter: %w", err)
+			return nil, fmt.Errorf(
+				"failed to create stdout trace exporter: %w",
+				err,
+			)
 		}
 	}
 
-	// Configure trace provider
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithResource(resource),
 		sdktrace.WithBatcher(exporter),
-		sdktrace.WithSampler(sdktrace.TraceIDRatioBased(cfg.TraceSampleRatio)),
+		sdktrace.WithSampler(
+			sdktrace.TraceIDRatioBased(config.Cfg.TraceSampleRatio),
+		),
 	)
 
-	// Set as global tracer provider
 	otel.SetTracerProvider(tp)
 
 	return tp, nil
 }
 
-// getTracer returns a tracer for the given name
 func getTracer(name string) trace.Tracer {
 	return otel.Tracer(name)
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/services"
-	"github.com/mbvlabs/grafto/telemetry"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/authentication"
 )
@@ -17,15 +16,13 @@ import (
 type Authentication struct {
 	db          psql.Postgres
 	emailClient services.EmailSender
-	logger      *telemetry.Logger
 }
 
 func newAuthentication(
 	db psql.Postgres,
 	emailClient services.EmailSender,
-	logger *telemetry.Logger,
 ) Authentication {
-	return Authentication{db, emailClient, logger}
+	return Authentication{db, emailClient}
 }
 
 func (a Authentication) CreateAuthenticatedSession(ctx echo.Context) error {
@@ -41,7 +38,6 @@ type StoreAuthenticatedSessionPayload struct {
 }
 
 func (a Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
-	a.logger.InfoContext(ctx.Request().Context(), "starting out")
 	var payload StoreAuthenticatedSessionPayload
 	if err := ctx.Bind(&payload); err != nil {
 		slog.ErrorContext(
@@ -59,7 +55,6 @@ func (a Authentication) StoreAuthenticatedSession(ctx echo.Context) error {
 		a.db,
 		payload.Mail,
 		payload.Password,
-		a.logger,
 	)
 	if err != nil {
 		var userErr views.Errors

@@ -39,19 +39,7 @@ func run(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	// Initialize telemetry
-	telemetryConfig := telemetry.Config{
-		EnableTracing:       cfg.EnableTracing,
-		EnableMetrics:       cfg.EnableMetrics,
-		ServiceName:         cfg.ServiceName,
-		ServiceVersion:      cfg.ServiceVersion,
-		OtlpEndpoint:        cfg.OtlpEndpoint,
-		OtlpInsecure:        cfg.OtlpInsecure,
-		TraceSampleRatio:    cfg.TraceSampleRatio,
-		MetricsPushInterval: cfg.MetricsPushInterval,
-	}
-
-	tel, err := telemetry.New(ctx, telemetryConfig)
+	tel, err := telemetry.New(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize telemetry: %w", err)
 	}
@@ -115,7 +103,6 @@ func run(ctx context.Context) error {
 		psql,
 		pageCacher,
 		emailClient,
-		tel.Logger(),
 	)
 
 	routes := router.New(
