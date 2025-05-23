@@ -20,28 +20,11 @@ import (
 	"github.com/mbvlabs/grafto/psql/queue/workers"
 	"github.com/mbvlabs/grafto/router"
 	"github.com/mbvlabs/grafto/server"
+	"github.com/mbvlabs/grafto/telemetry"
 	"riverqueue.com/riverui"
 )
 
-func developmentLogger() *slog.Logger {
-	return slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      slog.LevelDebug,
-			TimeFormat: time.Kitchen,
-		}),
-	)
-}
-
 func queueLogger() *slog.Logger {
-	return slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      slog.LevelError,
-			TimeFormat: time.Kitchen,
-		}),
-	)
-}
-
-func productionLogger() *slog.Logger {
 	return slog.New(
 		tint.NewHandler(os.Stderr, &tint.Options{
 			Level:      slog.LevelError,
@@ -56,12 +39,30 @@ func run(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	if cfg.Environment == config.DEV_ENVIRONMENT {
-		slog.SetDefault(developmentLogger())
+	// Initialize telemetry
+	telemetryConfig := telemetry.Config{
+		EnableTracing:       cfg.EnableTracing,
+		EnableMetrics:       cfg.EnableMetrics,
+		ServiceName:         cfg.ServiceName,
+		ServiceVersion:      cfg.ServiceVersion,
+		OtlpEndpoint:        cfg.OtlpEndpoint,
+		OtlpInsecure:        cfg.OtlpInsecure,
+		TraceSampleRatio:    cfg.TraceSampleRatio,
+		MetricsPushInterval: cfg.MetricsPushInterval,
 	}
-	if cfg.Environment == config.PROD_ENVIRONMENT {
-		slog.SetDefault(productionLogger())
+
+	tel, err := telemetry.New(ctx, telemetryConfig)
+	if err != nil {
+		return fmt.Errorf("failed to initialize telemetry: %w", err)
 	}
+	defer func() {
+		if err := tel.Shutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown telemetry", "error", err)
+		}
+	}()
+
+	// Set telemetry logger as default
+	slog.SetDefault(tel.Logger().Logger)
 
 	conn, err := psql.CreatePooledConnection(
 		ctx,
@@ -114,6 +115,7 @@ func run(ctx context.Context) error {
 		psql,
 		pageCacher,
 		emailClient,
+		tel.Logger(),
 	)
 
 	routes := router.New(
@@ -121,6 +123,7 @@ func run(ctx context.Context) error {
 		handlers,
 		middleware.New(),
 		riverUI,
+		tel,
 	)
 
 	router, c := routes.SetupRoutes(ctx)

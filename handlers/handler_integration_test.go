@@ -5,7 +5,6 @@ package handlers_test
 
 import (
 	"context"
-	"log/slog"
 	"os"
 	"testing"
 
@@ -19,6 +18,7 @@ import (
 	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router"
+	"github.com/mbvlabs/grafto/telemetry"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -65,7 +65,8 @@ func setupTestHandlers(
 	pageCacher, err := cacheBuilder.WithVariableTTL().Build()
 	require.NoError(t, err)
 
-	return handlers.NewHandlers(postgres, pageCacher, emailSvc)
+	testLogger := telemetry.NewLogger(true)
+	return handlers.NewHandlers(postgres, pageCacher, emailSvc, testLogger)
 }
 
 func setupTestMiddleware(

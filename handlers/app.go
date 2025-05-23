@@ -1,29 +1,31 @@
 package handlers
 
 import (
-	"log/slog"
-
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/routes"
+	"github.com/mbvlabs/grafto/telemetry"
 	"github.com/mbvlabs/grafto/views"
 )
 
 type App struct {
-	db    psql.Postgres
-	cache otter.CacheWithVariableTTL[string, templ.Component]
+	db     psql.Postgres
+	cache  otter.CacheWithVariableTTL[string, templ.Component]
+	logger *telemetry.Logger
 }
 
 func newApp(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
+	logger *telemetry.Logger,
 ) App {
-	return App{db, cache}
+	return App{db, cache, logger}
 }
 
 func (a App) LandingPage(c echo.Context) error {
+	a.logger.InfoContext(c.Request().Context(), "yoyoyoy")
 	return views.HomePage().Render(renderArgs(c))
 }
 
@@ -39,12 +41,10 @@ func (a App) Redirect(c echo.Context) error {
 		}
 	}
 
-	slog.Info(
+	a.logger.WithContext(c.Request().Context()).Info(
 		"security warning: someone tried to missue open redirect",
-		"to",
-		to,
-		"ip",
-		c.RealIP(),
+		"to", to,
+		"ip", c.RealIP(),
 	)
 	return redirect(c.Response(), c.Request(), "/")
 }

@@ -18,4 +18,15 @@ type App struct {
 	IsAuthenticated bool
 	IsAdmin         bool
 	CurrentPath     string
+	// TraceID         string
+	// SpanID          string
 }
+
+// GetTraceContext returns trace information from the request context
+// func (a App) GetTraceContext() (traceID, spanID string) {
+// 	spanCtx := trace.SpanContextFromContext(a.Request().Context())
+// 	if spanCtx.IsValid() {
+// 		return spanCtx.TraceID().String(), spanCtx.SpanID().String()
+// 	}
+// 	return a.TraceID, a.SpanID
+// }

@@ -28,6 +28,14 @@ func (m MW) RegisterAppContext(
 		userEmail, _ := sess.Values[SessUserEmail].(string)
 		isAdmin, _ := sess.Values[SessIsAdmin].(bool)
 
+		// // Extract trace context
+		// spanCtx := trace.SpanContextFromContext(c.Request().Context())
+		// var traceID, spanID string
+		// if spanCtx.IsValid() {
+		// 	traceID = spanCtx.TraceID().String()
+		// 	spanID = spanCtx.SpanID().String()
+		// }
+
 		ac := contexts.App{
 			Context:         c,
 			UserID:          userID,
@@ -35,6 +43,8 @@ func (m MW) RegisterAppContext(
 			IsAuthenticated: isAuth,
 			IsAdmin:         isAdmin,
 			CurrentPath:     c.Request().URL.Path,
+			// TraceID:         traceID,
+			// SpanID:          spanID,
 		}
 
 		c.Set(contexts.AppKey{}.String(), ac)

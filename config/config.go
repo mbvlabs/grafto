@@ -1,6 +1,10 @@
 package config
 
-import "os"
+import (
+	"os"
+
+	"github.com/caarlos0/env/v10"
+)
 
 // Cfg instantiate a new cfg but can panic
 var Cfg Config = NewConfig()
@@ -9,8 +13,20 @@ type Config struct {
 	Database
 	Authentication
 	App
+	Telemetry
 	AwsAccessKeyID     string
 	AwsSecretAccessKey string
+}
+
+type Telemetry struct {
+	EnableTracing       bool    `env:"TELEMETRY_ENABLE_TRACING"`
+	EnableMetrics       bool    `env:"TELEMETRY_ENABLE_METRICS"`
+	ServiceName         string  `env:"TELEMETRY_SERVICE_NAME"`
+	ServiceVersion      string  `env:"TELEMETRY_SERVICE_VERSION"`
+	OtlpEndpoint        string  `env:"TELEMETRY_OTLP_ENDPOINT"`
+	OtlpInsecure        bool    `env:"TELEMETRY_OTLP_INSECURE"`
+	TraceSampleRatio    float64 `env:"TELEMETRY_TRACE_SAMPLE_RATIO"`
+	MetricsPushInterval int     `env:"TELEMETRY_METRICS_PUSH_INTERVAL"`
 }
 
 func NewConfig() Config {
@@ -31,6 +47,7 @@ func NewConfig() Config {
 			newDatabase(),
 			newAuthentication(),
 			newApp(),
+			newTelemetry(),
 			awsAccessKeyID,
 			awsSecretAccessKey,
 		}
@@ -59,7 +76,29 @@ func newTestConfig() Config {
 			Environment:            TEST_ENVIRONMENT,
 			DefaultSenderSignature: "test@testing.com",
 		},
+		Telemetry: Telemetry{
+			EnableTracing:       true,
+			EnableMetrics:       true,
+			ServiceName:         "grafto-test",
+			ServiceVersion:      "test",
+			OtlpEndpoint:        "",
+			OtlpInsecure:        true,
+			TraceSampleRatio:    1.0,
+			MetricsPushInterval: 30,
+		},
 		AwsAccessKeyID:     "",
 		AwsSecretAccessKey: "",
 	}
+}
+
+func newTelemetry() Telemetry {
+	telemetryCfg := Telemetry{}
+
+	if err := env.ParseWithOptions(&telemetryCfg, env.Options{
+		RequiredIfNoDef: true,
+	}); err != nil {
+		panic(err)
+	}
+
+	return telemetryCfg
 }

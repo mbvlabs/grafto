@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/gob"
 	"io"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -19,6 +18,7 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/contexts"
 	"github.com/mbvlabs/grafto/services"
+	"github.com/mbvlabs/grafto/telemetry"
 )
 
 const (
@@ -33,6 +33,7 @@ type Handlers struct {
 	Registration   Registration
 	Assets         Assets
 	Fragments      Fragments
+	logger         *telemetry.Logger
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
@@ -82,13 +83,14 @@ func NewHandlers(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
 	emailSvc services.EmailSender,
+	logger *telemetry.Logger,
 ) Handlers {
 	gob.Register(uuid.UUID{})
 	gob.Register(contexts.FlashMessage{})
 
 	api := newApi()
-	app := newApp(db, cache)
-	auth := newAuthentication(db, emailSvc)
+	app := newApp(db, cache, logger)
+	auth := newAuthentication(db, emailSvc, logger)
 	dashboard := newDashboard()
 	registration := newRegistration(db, emailSvc)
 	assets := newAssets()
@@ -101,6 +103,7 @@ func NewHandlers(
 		registration,
 		assets,
 		Fragments{},
+		logger,
 	}
 }
 
@@ -125,11 +128,6 @@ func redirect(
 func destroyAuthSession(
 	c echo.Context,
 ) error {
-	slog.Info(
-		"SEEEEEEEEEEEEEEEEEEEEES",
-		"s",
-		middleware.AuthenticatedSessionName,
-	)
 	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
 	if err != nil {
 		return err
