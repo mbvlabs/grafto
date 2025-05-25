@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   alloy:
     image: grafana/alloy:latest
@@ -82,8 +80,8 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./telemetry/grafana/provisioning:/etc/grafana/provisioning
-      - ./telemetry/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - prometheus
       - tempo

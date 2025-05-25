@@ -40,7 +40,7 @@ func run(ctx context.Context) error {
 		&telemetry.LokiExporter{
 			LogLevel:   slog.LevelDebug,
 			WithTraces: true,
-			URL:        "https://loki.mbvlabs.com/loki/api/v1/push", // Loki push endpoint
+			URL:        "http://localhost:3100/loki/api/v1/push", // Loki push endpoint
 			Labels: map[string]string{
 				"service": "grafto",
 				"env":     "development",
@@ -57,6 +57,14 @@ func run(ctx context.Context) error {
 			slog.Error("Failed to shutdown telemetry", "error", err)
 		}
 	}()
+
+	if err := telemetry.SetupRuntimeMetricsInCallback(telemetry.GetMeter()); err != nil {
+		return fmt.Errorf("failed to setup callback metrics: %w", err)
+	}
+
+	// if err := telemetry.StartRuntimeMetrics(); err != nil {
+	// 	return err
+	// }
 
 	conn, err := psql.CreatePooledConnection(
 		ctx,

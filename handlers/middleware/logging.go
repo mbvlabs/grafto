@@ -27,6 +27,8 @@ func (m MW) Logging() echo.MiddlewareFunc {
 			var ctx context.Context
 			var requestDuration time.Duration
 
+			m.httpInFlight.Add(ctx, 1)
+
 			wrappedNext := func(c echo.Context) error {
 				ctx = c.Request().Context()
 
@@ -39,6 +41,8 @@ func (m MW) Logging() echo.MiddlewareFunc {
 
 			err := otelMiddleware(wrappedNext)(c)
 
+			m.httpInFlight.Add(ctx, -1)
+
 			statusCode := c.Response().Status
 
 			attrs := []attribute.KeyValue{
@@ -47,13 +51,13 @@ func (m MW) Logging() echo.MiddlewareFunc {
 				attribute.Int("status_code", statusCode),
 			}
 
-			m.reqCountMetric.Add(
+			m.httpRequestsTotal.Add(
 				ctx,
 				1,
 				metric.WithAttributes(attrs...),
 			)
 
-			m.latencyMetric.Record(
+			m.httpDuration.Record(
 				ctx,
 				requestDuration.Seconds(),
 				metric.WithAttributes(attrs...),

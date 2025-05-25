@@ -58,7 +58,7 @@ func New(
 
 	shutdownFuncs = append(shutdownFuncs, tp.Shutdown)
 
-	mp, err := newMeterProvider(ctx, res, appMetricExporter, 1*time.Minute)
+	mp, err := newMeterProvider(ctx, res, appMetricExporter, 1*time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("failed to setup meter provider: %w", err)
 	}
