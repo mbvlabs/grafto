@@ -82,8 +82,8 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
     volumes:
       - grafana_data:/var/lib/grafana
-      # - ./telemetry/grafana/provisioning:/etc/grafana/provisioning
-      # - ./telemetry/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./telemetry/grafana/provisioning:/etc/grafana/provisioning
+      - ./telemetry/grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - prometheus
       - tempo
