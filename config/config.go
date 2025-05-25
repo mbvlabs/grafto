@@ -19,14 +19,9 @@ type Config struct {
 }
 
 type Telemetry struct {
-	// EnableTracing bool   `env:"TELEMETRY_ENABLE_TRACING"`
-	// EnableMetrics bool   `env:"TELEMETRY_ENABLE_METRICS"`
 	ServiceName  string `env:"TELEMETRY_SERVICE_NAME"`
 	OtlpEndpoint string `env:"TELEMETRY_OTLP_ENDPOINT"`
-	// TraceSampleRatio    float64 `env:"TELEMETRY_TRACE_SAMPLE_RATIO"`
-	// MetricsPushInterval int     `env:"TELEMETRY_METRICS_PUSH_INTERVAL"`
-	// BetterStackEndpoint string  `env:"BETTERSTACK_ENDPOINT"`
-	// BetterStackToken    string  `env:"BETTERSTACK_TOKEN"`
+	// LokiEndpoint string `env:"TELEMETRY_LOKI_ENDPOINT"`
 }
 
 func NewConfig() Config {
@@ -81,6 +76,7 @@ func newTestConfig() Config {
 			// EnableMetrics:       true,
 			ServiceName:  "grafto-test",
 			OtlpEndpoint: "",
+			// LokiEndpoint: "",
 			// OtlpInsecure:        true,
 			// TraceSampleRatio:    1.0,
 			// MetricsPushInterval: 30,

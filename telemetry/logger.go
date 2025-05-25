@@ -3,9 +3,7 @@ package telemetry
 import (
 	"context"
 	"log/slog"
-	"os"
 
-	"github.com/lmittmann/tint"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -17,40 +15,6 @@ type LogExporter interface {
 
 	Shutdown(ctx context.Context) error
 }
-
-type StdoutExporter struct {
-	LogLevel   slog.Level
-	WithTraces bool
-}
-
-// GetSlogHandler implements LogExporter.
-func (s *StdoutExporter) GetSlogHandler(
-	ctx context.Context,
-) (slog.Handler, error) {
-	handler := tint.NewHandler(os.Stdout, &tint.Options{
-		Level:      s.LogLevel,
-		TimeFormat: "15:04:05",
-		AddSource:  true,
-	})
-
-	if s.WithTraces {
-		return &traceLogHandler{handler: handler}, nil
-	}
-
-	return handler, nil
-}
-
-// Name implements LogExporter.
-func (s *StdoutExporter) Name() string {
-	return "stdout"
-}
-
-// Shutdown implements LogExporter.
-func (s *StdoutExporter) Shutdown(ctx context.Context) error {
-	return nil
-}
-
-var _ LogExporter = new(StdoutExporter)
 
 func NewLogger(
 	ctx context.Context,

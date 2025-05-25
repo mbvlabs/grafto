@@ -37,6 +37,15 @@ func run(ctx context.Context) error {
 			LogLevel:   slog.LevelDebug,
 			WithTraces: true,
 		},
+		// &telemetry.LokiExporter{
+		// 	LogLevel:   slog.LevelDebug,
+		// 	WithTraces: true,
+		// 	URL:        "http://localhost:3100/loki/api/v1/push", // Loki push endpoint
+		// 	Labels: map[string]string{
+		// 		"service": "grafto",
+		// 		"env":     "development",
+		// 	},
+		// },
 		&telemetry.OtlpHttpTraceExporter{OtlpEndpoint: cfg.OtlpEndpoint},
 		&telemetry.OtlpHttpMetricExporter{OtlpEndpoint: cfg.OtlpEndpoint},
 	)

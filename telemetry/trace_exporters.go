@@ -34,10 +34,8 @@ func (o *OtlpHttpTraceExporter) GetSpanExporter(
 	opts := []otlptracehttp.Option{
 		otlptracehttp.WithEndpoint(endpoint),
 		otlptracehttp.WithURLPath("/v1/traces"),
+		// otlptracehttp.WithInsecure(),
 	}
-	// if config.Cfg.OtlpInsecure {
-	// 	opts = append(opts, otlptracehttp.WithInsecure())
-	// }
 
 	exporter, err := otlptracehttp.New(ctx, opts...)
 	if err != nil {

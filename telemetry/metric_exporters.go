@@ -37,6 +37,7 @@ func (o *OtlpHttpMetricExporter) GetSdkMetricExporter(
 		otlpmetrichttp.WithURLPath(
 			"/v1/metrics",
 		),
+		otlpmetrichttp.WithInsecure(),
 	}
 
 	exporter, err := otlpmetrichttp.New(ctx, opts...)
