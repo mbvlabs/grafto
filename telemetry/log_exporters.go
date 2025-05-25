@@ -222,3 +222,227 @@ func (h *lokiHandler) WithGroup(name string) slog.Handler {
 		groups:     newGroups,
 	}
 }
+
+// BetterStackLogExporter implements LogExporter for BetterStack
+type BetterStackLogExporter struct {
+	Endpoint    string
+	SourceToken string
+	LogLevel    slog.Level
+	WithTraces  bool
+	exporter    *betterStackLogHandler
+}
+
+func NewBetterStackLogExporter(endpoint, sourceToken string) *BetterStackLogExporter {
+	return &BetterStackLogExporter{
+		Endpoint:    endpoint,
+		SourceToken: sourceToken,
+		LogLevel:    slog.LevelInfo,
+	}
+}
+
+func (b *BetterStackLogExporter) Name() string {
+	return "betterstack"
+}
+
+func (b *BetterStackLogExporter) GetSlogHandler(ctx context.Context) (slog.Handler, error) {
+	if b.exporter == nil {
+		b.exporter = &betterStackLogHandler{
+			endpoint:   b.Endpoint,
+			token:      b.SourceToken,
+			logLevel:   b.LogLevel,
+			httpClient: &http.Client{Timeout: 10 * time.Second},
+		}
+	}
+
+	if b.WithTraces {
+		return &traceLogHandler{handler: b.exporter}, nil
+	}
+
+	return b.exporter, nil
+}
+
+func (b *BetterStackLogExporter) Shutdown(ctx context.Context) error {
+	return nil
+}
+
+var _ LogExporter = new(BetterStackLogExporter)
+
+// betterStackLogHandler implements slog.Handler for BetterStack OTLP HTTP API
+type betterStackLogHandler struct {
+	endpoint   string
+	token      string
+	httpClient *http.Client
+	logLevel   slog.Level
+	attrs      []slog.Attr
+	groups     []string
+}
+
+// BetterStackOTLPLog represents the OTLP log format for BetterStack
+type BetterStackOTLPLog struct {
+	ResourceLogs []BetterStackResourceLog `json:"resourceLogs"`
+}
+
+type BetterStackResourceLog struct {
+	ScopeLogs []BetterStackScopeLog `json:"scopeLogs"`
+}
+
+type BetterStackScopeLog struct {
+	LogRecords []BetterStackLogRecord `json:"logRecords"`
+}
+
+type BetterStackLogRecord struct {
+	TimeUnixNano   string                       `json:"timeUnixNano"`
+	SeverityNumber int                          `json:"severityNumber"`
+	SeverityText   string                       `json:"severityText"`
+	Body           BetterStackLogBody           `json:"body"`
+	Attributes     []BetterStackLogAttribute    `json:"attributes,omitempty"`
+}
+
+type BetterStackLogBody struct {
+	StringValue string `json:"stringValue"`
+}
+
+type BetterStackLogAttribute struct {
+	Key   string                    `json:"key"`
+	Value BetterStackAttributeValue `json:"value"`
+}
+
+type BetterStackAttributeValue struct {
+	StringValue string `json:"stringValue"`
+}
+
+func (h *betterStackLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return level >= h.logLevel
+}
+
+func (h *betterStackLogHandler) Handle(ctx context.Context, record slog.Record) error {
+	if !h.Enabled(ctx, record.Level) {
+		return nil
+	}
+
+	// Build log message with attributes
+	logMessage := record.Message
+	var attributes []BetterStackLogAttribute
+
+	// Add existing attributes
+	for _, attr := range h.attrs {
+		attributes = append(attributes, BetterStackLogAttribute{
+			Key: attr.Key,
+			Value: BetterStackAttributeValue{
+				StringValue: attr.Value.String(),
+			},
+		})
+	}
+
+	// Add record attributes
+	record.Attrs(func(attr slog.Attr) bool {
+		attributes = append(attributes, BetterStackLogAttribute{
+			Key: attr.Key,
+			Value: BetterStackAttributeValue{
+				StringValue: attr.Value.String(),
+			},
+		})
+		return true
+	})
+
+	// Map slog level to OTLP severity
+	severityNumber := h.mapSlogLevelToOTLP(record.Level)
+
+	// Create OTLP log record
+	logRecord := BetterStackLogRecord{
+		TimeUnixNano:   fmt.Sprintf("%d", record.Time.UnixNano()),
+		SeverityNumber: severityNumber,
+		SeverityText:   record.Level.String(),
+		Body: BetterStackLogBody{
+			StringValue: logMessage,
+		},
+		Attributes: attributes,
+	}
+
+	otlpLog := BetterStackOTLPLog{
+		ResourceLogs: []BetterStackResourceLog{
+			{
+				ScopeLogs: []BetterStackScopeLog{
+					{
+						LogRecords: []BetterStackLogRecord{logRecord},
+					},
+				},
+			},
+		},
+	}
+
+	// Send to BetterStack
+	return h.sendToBetterStack(ctx, otlpLog)
+}
+
+func (h *betterStackLogHandler) mapSlogLevelToOTLP(level slog.Level) int {
+	switch level {
+	case slog.LevelDebug:
+		return 5  // TRACE
+	case slog.LevelInfo:
+		return 9  // INFO
+	case slog.LevelWarn:
+		return 13 // WARN
+	case slog.LevelError:
+		return 17 // ERROR
+	default:
+		return 9  // INFO
+	}
+}
+
+func (h *betterStackLogHandler) sendToBetterStack(ctx context.Context, log BetterStackOTLPLog) error {
+	jsonData, err := json.Marshal(log)
+	if err != nil {
+		return fmt.Errorf("failed to marshal log data: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", h.endpoint, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+h.token)
+
+	resp, err := h.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send log to BetterStack: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("BetterStack returned error status: %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func (h *betterStackLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	newAttrs := make([]slog.Attr, len(h.attrs)+len(attrs))
+	copy(newAttrs, h.attrs)
+	copy(newAttrs[len(h.attrs):], attrs)
+
+	return &betterStackLogHandler{
+		endpoint:   h.endpoint,
+		token:      h.token,
+		httpClient: h.httpClient,
+		logLevel:   h.logLevel,
+		attrs:      newAttrs,
+		groups:     h.groups,
+	}
+}
+
+func (h *betterStackLogHandler) WithGroup(name string) slog.Handler {
+	newGroups := make([]string, len(h.groups)+1)
+	copy(newGroups, h.groups)
+	newGroups[len(h.groups)] = name
+
+	return &betterStackLogHandler{
+		endpoint:   h.endpoint,
+		token:      h.token,
+		httpClient: h.httpClient,
+		logLevel:   h.logLevel,
+		attrs:      h.attrs,
+		groups:     newGroups,
+	}
+}

@@ -113,3 +113,61 @@ func (n *NoopMetricExporter) Shutdown(ctx context.Context) error {
 }
 
 var _ MetricExporter = new(NoopMetricExporter)
+
+type BetterStackMetricExporter struct {
+	Endpoint    string
+	SourceToken string
+	exporter    sdkmetric.Exporter
+}
+
+func NewBetterStackMetricExporter(
+	endpoint, sourceToken string,
+) *BetterStackMetricExporter {
+	return &BetterStackMetricExporter{
+		Endpoint:    endpoint,
+		SourceToken: sourceToken,
+	}
+}
+
+func (b *BetterStackMetricExporter) Name() string {
+	return "betterstack"
+}
+
+func (b *BetterStackMetricExporter) GetSdkMetricExporter(
+	ctx context.Context,
+	res *resource.Resource,
+) (sdkmetric.Exporter, error) {
+	endpoint := strings.TrimPrefix(b.Endpoint, "http://")
+	endpoint = strings.TrimPrefix(endpoint, "https://")
+
+	opts := []otlpmetrichttp.Option{
+		otlpmetrichttp.WithEndpoint(endpoint),
+		otlpmetrichttp.WithURLPath(
+			"/metrics",
+		),
+		otlpmetrichttp.WithHeaders(map[string]string{
+			"Authorization": "Bearer " + b.SourceToken,
+		}),
+	}
+
+	exporter, err := otlpmetrichttp.New(ctx, opts...)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to create BetterStack metric exporter: %w",
+			err,
+		)
+	}
+
+	b.exporter = exporter
+	return exporter, nil
+}
+
+func (b *BetterStackMetricExporter) Shutdown(ctx context.Context) error {
+	if b.exporter != nil {
+		slog.InfoContext(ctx, "BetterStack Metric Exporter shutting down...")
+		return b.exporter.Shutdown(ctx)
+	}
+	return nil
+}
+
+var _ MetricExporter = new(BetterStackMetricExporter)
