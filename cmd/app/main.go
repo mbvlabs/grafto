@@ -22,13 +22,24 @@ import (
 	"riverqueue.com/riverui"
 )
 
+var appVersion string
+
 func run(ctx context.Context) error {
 	cfg := config.NewConfig()
 
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	tel, err := telemetry.New(ctx)
+	tel, err := telemetry.New(
+		ctx,
+		appVersion,
+		&telemetry.StdoutExporter{
+			LogLevel:   slog.LevelDebug,
+			WithTraces: true,
+		},
+		&telemetry.OtlpHttpTraceExporter{OtlpEndpoint: cfg.OtlpEndpoint},
+		&telemetry.OtlpHttpMetricExporter{OtlpEndpoint: cfg.OtlpEndpoint},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to initialize telemetry: %w", err)
 	}
@@ -37,9 +48,6 @@ func run(ctx context.Context) error {
 			slog.Error("Failed to shutdown telemetry", "error", err)
 		}
 	}()
-
-	// Set telemetry logger as default
-	slog.SetDefault(tel.Logger().Logger)
 
 	conn, err := psql.CreatePooledConnection(
 		ctx,
@@ -52,9 +60,23 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	queueLogger, queueLoggerShutdown := telemetry.NewLogger(
+		ctx,
+		&telemetry.StdoutExporter{
+			LogLevel:   slog.LevelError,
+			WithTraces: true,
+		},
+	)
+	defer func() {
+		if err := queueLoggerShutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown telemetry", "error", err)
+		}
+	}()
+
 	psql := psql.NewPostgres(conn, nil)
 	psql.NewQueue(
-		queue.WithLogger(slog.Default()),
+		queue.WithLogger(queueLogger),
 		queue.WithWorkers(queueWorkers),
 	)
 
@@ -93,12 +115,17 @@ func run(ctx context.Context) error {
 		emailClient,
 	)
 
+	mw, err := middleware.New(tel.AppTracerProvider)
+	if err != nil {
+		return err
+	}
+
 	routes := router.New(
 		ctx,
 		handlers,
-		middleware.New(),
+		mw,
 		riverUI,
-		tel,
+		tel.AppTracerProvider,
 	)
 
 	router, c := routes.SetupRoutes(ctx)

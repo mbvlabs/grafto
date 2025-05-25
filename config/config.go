@@ -19,14 +19,14 @@ type Config struct {
 }
 
 type Telemetry struct {
-	EnableTracing       bool    `env:"TELEMETRY_ENABLE_TRACING"`
-	EnableMetrics       bool    `env:"TELEMETRY_ENABLE_METRICS"`
-	ServiceName         string  `env:"TELEMETRY_SERVICE_NAME"`
-	ServiceVersion      string  `env:"TELEMETRY_SERVICE_VERSION"`
-	OtlpEndpoint        string  `env:"TELEMETRY_OTLP_ENDPOINT"`
-	OtlpInsecure        bool    `env:"TELEMETRY_OTLP_INSECURE"`
-	TraceSampleRatio    float64 `env:"TELEMETRY_TRACE_SAMPLE_RATIO"`
-	MetricsPushInterval int     `env:"TELEMETRY_METRICS_PUSH_INTERVAL"`
+	// EnableTracing bool   `env:"TELEMETRY_ENABLE_TRACING"`
+	// EnableMetrics bool   `env:"TELEMETRY_ENABLE_METRICS"`
+	ServiceName  string `env:"TELEMETRY_SERVICE_NAME"`
+	OtlpEndpoint string `env:"TELEMETRY_OTLP_ENDPOINT"`
+	// TraceSampleRatio    float64 `env:"TELEMETRY_TRACE_SAMPLE_RATIO"`
+	// MetricsPushInterval int     `env:"TELEMETRY_METRICS_PUSH_INTERVAL"`
+	// BetterStackEndpoint string  `env:"BETTERSTACK_ENDPOINT"`
+	// BetterStackToken    string  `env:"BETTERSTACK_TOKEN"`
 }
 
 func NewConfig() Config {
@@ -77,14 +77,13 @@ func newTestConfig() Config {
 			DefaultSenderSignature: "test@testing.com",
 		},
 		Telemetry: Telemetry{
-			EnableTracing:       true,
-			EnableMetrics:       true,
-			ServiceName:         "grafto-test",
-			ServiceVersion:      "test",
-			OtlpEndpoint:        "",
-			OtlpInsecure:        true,
-			TraceSampleRatio:    1.0,
-			MetricsPushInterval: 30,
+			// EnableTracing:       true,
+			// EnableMetrics:       true,
+			ServiceName:  "grafto-test",
+			OtlpEndpoint: "",
+			// OtlpInsecure:        true,
+			// TraceSampleRatio:    1.0,
+			// MetricsPushInterval: 30,
 		},
 		AwsAccessKeyID:     "",
 		AwsSecretAccessKey: "",

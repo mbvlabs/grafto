@@ -15,17 +15,16 @@ import (
 	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
-	"github.com/mbvlabs/grafto/telemetry"
+	"go.opentelemetry.io/otel/trace"
 	"riverqueue.com/riverui"
 
 	echomw "github.com/labstack/echo/v4/middleware"
 )
 
 type Routes struct {
-	router    *echo.Echo
-	mw        middleware.MW
-	handlers  handlers.Handlers
-	telemetry *telemetry.Telemetry
+	router   *echo.Echo
+	mw       middleware.MW
+	handlers handlers.Handlers
 }
 
 func New(
@@ -33,7 +32,7 @@ func New(
 	handlers handlers.Handlers,
 	mw middleware.MW,
 	riverUI *riverui.Server,
-	tel *telemetry.Telemetry,
+	traceProvider trace.TracerProvider,
 ) *Routes {
 	router := echo.New()
 	router.Debug = true
@@ -92,10 +91,10 @@ func New(
 
 	// Use telemetry middleware
 	router.Use(
-		telemetry.Middleware(telemetry.MiddlewareConfig{
-			Metrics: tel.Metrics(),
-			Logger:  tel.Logger(),
-		}),
+		mw.Logging(),
+		// telemetry.Middleware(telemetry.MiddlewareConfig{
+		// 	// Metrics: tel.Metrics(),
+		// }),
 		// telemetry.RequestIDMiddleware(),
 		echomw.Recover(),
 	)
@@ -106,7 +105,6 @@ func New(
 		router,
 		mw,
 		handlers,
-		tel,
 	}
 }
 

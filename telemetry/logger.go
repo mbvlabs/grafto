@@ -9,94 +9,77 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type Logger struct {
-	*slog.Logger
+type LogExporter interface {
+	Name() string
+	GetSlogHandler(
+		ctx context.Context,
+	) (slog.Handler, error)
+
+	Shutdown(ctx context.Context) error
 }
 
-func NewLogger(isDevelopment bool) *Logger {
-	var handler slog.Handler
-	var level slog.Level
-
-	if isDevelopment {
-		level = slog.LevelDebug
-		handler = tint.NewHandler(os.Stdout, &tint.Options{
-			Level:      level,
-			TimeFormat: "15:04:05",
-			AddSource:  true,
-		})
-	}
-	if !isDevelopment {
-		level = slog.LevelInfo
-		handler = tint.NewHandler(os.Stdout, &tint.Options{
-			Level:      level,
-			TimeFormat: "2006-01-02T15:04:05.000Z07:00",
-			AddSource:  false,
-		})
-	}
-
-	traceHandler := &traceContextHandler{handler: handler}
-
-	return &Logger{
-		Logger: slog.New(traceHandler),
-	}
+type StdoutExporter struct {
+	LogLevel   slog.Level
+	WithTraces bool
 }
 
-// NewLoggerWithWriter creates a new enhanced logger with a custom writer
-// func NewLoggerWithWriter(w io.Writer, isDevelopment bool) *Logger {
-// 	var handler slog.Handler
-// 	var level slog.Level
-//
-// 	if isDevelopment {
-// 		level = slog.LevelDebug
-// 		handler = tint.NewHandler(w, &tint.Options{
-// 			Level:      level,
-// 			TimeFormat: "15:04:05",
-// 			AddSource:  true,
-// 		})
-// 	} else {
-// 		level = slog.LevelError
-// 		handler = tint.NewHandler(w, &tint.Options{
-// 			Level:      level,
-// 			TimeFormat: "2006-01-02T15:04:05.000Z07:00",
-// 			AddSource:  false,
-// 		})
-// 	}
-//
-// 	// Wrap the handler to include trace context
-// 	traceHandler := &traceContextHandler{handler: handler}
-//
-// 	return &Logger{
-// 		Logger: slog.New(traceHandler),
-// 	}
-// }
+// GetSlogHandler implements LogExporter.
+func (s *StdoutExporter) GetSlogHandler(
+	ctx context.Context,
+) (slog.Handler, error) {
+	handler := tint.NewHandler(os.Stdout, &tint.Options{
+		Level:      s.LogLevel,
+		TimeFormat: "15:04:05",
+		AddSource:  true,
+	})
 
-// WithContext returns a logger that includes trace context from the given context
-func (l *Logger) WithContext(ctx context.Context) *slog.Logger {
-	attrs := traceAttrsFromContext(ctx)
-	args := make([]any, 0, len(attrs)*2)
-	for _, attr := range attrs {
-		args = append(args, attr.Key, attr.Value)
+	if s.WithTraces {
+		return &traceLogHandler{handler: handler}, nil
 	}
-	return l.With(args...)
+
+	return handler, nil
 }
 
-// traceContextHandler wraps an slog.Handler to automatically include trace context
-type traceContextHandler struct {
+// Name implements LogExporter.
+func (s *StdoutExporter) Name() string {
+	return "stdout"
+}
+
+// Shutdown implements LogExporter.
+func (s *StdoutExporter) Shutdown(ctx context.Context) error {
+	return nil
+}
+
+var _ LogExporter = new(StdoutExporter)
+
+func NewLogger(
+	ctx context.Context,
+	exporter LogExporter,
+) (*slog.Logger, func(ctx context.Context) error) {
+	handler, err := exporter.GetSlogHandler(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	return slog.New(handler), exporter.Shutdown
+}
+
+// traceLogHandler wraps an slog.Handler to automatically include trace context
+type traceLogHandler struct {
 	handler slog.Handler
 }
 
-func (h *traceContextHandler) Enabled(
+func (h *traceLogHandler) Enabled(
 	ctx context.Context,
 	level slog.Level,
 ) bool {
 	return h.handler.Enabled(ctx, level)
 }
 
-func (h *traceContextHandler) Handle(
+func (h *traceLogHandler) Handle(
 	ctx context.Context,
 	record slog.Record,
 ) error {
-	// Add trace context attributes to the record
 	traceAttrs := traceAttrsFromContext(ctx)
 	for _, attr := range traceAttrs {
 		record.AddAttrs(attr)
@@ -105,19 +88,18 @@ func (h *traceContextHandler) Handle(
 	return h.handler.Handle(ctx, record)
 }
 
-func (h *traceContextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	return &traceContextHandler{
+func (h *traceLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return &traceLogHandler{
 		handler: h.handler.WithAttrs(attrs),
 	}
 }
 
-func (h *traceContextHandler) WithGroup(name string) slog.Handler {
-	return &traceContextHandler{
+func (h *traceLogHandler) WithGroup(name string) slog.Handler {
+	return &traceLogHandler{
 		handler: h.handler.WithGroup(name),
 	}
 }
 
-// traceAttrsFromContext extracts trace context attributes from the context
 func traceAttrsFromContext(ctx context.Context) []slog.Attr {
 	var attrs []slog.Attr
 
@@ -127,10 +109,6 @@ func traceAttrsFromContext(ctx context.Context) []slog.Attr {
 			slog.String("trace_id", spanCtx.TraceID().String()),
 			slog.String("span_id", spanCtx.SpanID().String()),
 		)
-
-		// if spanCtx.IsSampled() {
-		// 	attrs = append(attrs, slog.Bool("trace_sampled", true))
-		// }
 	}
 
 	return attrs

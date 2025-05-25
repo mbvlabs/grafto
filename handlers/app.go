@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
@@ -25,6 +26,7 @@ func newApp(
 
 func (a App) LandingPage(c echo.Context) error {
 	slog.InfoContext(c.Request().Context(), "yoyoyoy")
+	time.Sleep(4 * time.Second)
 	return views.HomePage().Render(renderArgs(c))
 }
 

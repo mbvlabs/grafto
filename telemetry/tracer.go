@@ -6,38 +6,29 @@ import (
 
 	"github.com/mbvlabs/grafto/config"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 )
 
-func setupTraceProvider(
+type TraceExporter interface {
+	Name() string
+
+	GetSpanExporter(
+		ctx context.Context,
+		res *resource.Resource,
+	) (sdktrace.SpanExporter, error)
+
+	Shutdown(ctx context.Context) error
+}
+
+func newTraceProvider(
 	ctx context.Context,
 	resource *resource.Resource,
+	traceExporter TraceExporter,
+	sampleRatio float64,
 ) (*sdktrace.TracerProvider, error) {
-	var exporter sdktrace.SpanExporter
-	var err error
-
-	// Use OTLP exporter for both prod and dev
-	endpoint := config.Cfg.OtlpEndpoint
-	// // Remove protocol if present (OTLP HTTP exporter expects just host:port)
-	// if strings.HasPrefix(endpoint, "http://") {
-	// 	endpoint = strings.TrimPrefix(endpoint, "http://")
-	// }
-	// if strings.HasPrefix(endpoint, "https://") {
-	// 	endpoint = strings.TrimPrefix(endpoint, "https://")
-	// }
-
-	opts := []otlptracehttp.Option{
-		otlptracehttp.WithEndpoint(endpoint),
-		otlptracehttp.WithURLPath("/v1/traces"),
-	}
-	if config.Cfg.OtlpInsecure {
-		opts = append(opts, otlptracehttp.WithInsecure())
-	}
-
-	exporter, err = otlptracehttp.New(ctx, opts...)
+	exporter, err := traceExporter.GetSpanExporter(ctx, resource)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"failed to create OTLP trace exporter: %w",
@@ -49,15 +40,13 @@ func setupTraceProvider(
 		sdktrace.WithResource(resource),
 		sdktrace.WithBatcher(exporter),
 		sdktrace.WithSampler(
-			sdktrace.TraceIDRatioBased(config.Cfg.TraceSampleRatio),
+			sdktrace.TraceIDRatioBased(sampleRatio),
 		),
 	)
-
-	otel.SetTracerProvider(tp)
 
 	return tp, nil
 }
 
-func getTracer(name string) trace.Tracer {
-	return otel.Tracer(name)
+func GetTracer() trace.Tracer {
+	return otel.Tracer(config.Cfg.ServiceName)
 }

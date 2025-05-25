@@ -1,14 +1,7 @@
 package telemetry
 
 import (
-	"context"
-	"log/slog"
-	"strings"
-	"time"
-
 	"github.com/labstack/echo/v4"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -16,77 +9,7 @@ import (
 type MiddlewareConfig struct {
 	Skipper        func(c echo.Context) bool
 	TracerProvider trace.TracerProvider
-	Metrics        *ApplicationMetrics
-	Logger         *Logger
-}
-
-func Middleware(cfg MiddlewareConfig) echo.MiddlewareFunc {
-	cfg.Skipper = func(c echo.Context) bool {
-		path := c.Request().URL.Path
-		return strings.Contains(path, "/assets/")
-	}
-
-	otelMiddleware := otelecho.Middleware(
-		"grafto",
-		otelecho.WithTracerProvider(cfg.TracerProvider),
-	)
-
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if cfg.Skipper != nil && cfg.Skipper(c) {
-				return next(c)
-			}
-
-			var ctx context.Context
-			var requestDuration time.Duration
-
-			wrappedNext := func(c echo.Context) error {
-				ctx = c.Request().Context()
-
-				start := time.Now()
-				err := next(c)
-				requestDuration = time.Since(start)
-
-				return err
-			}
-
-			err := otelMiddleware(wrappedNext)(c)
-
-			if cfg.Metrics != nil {
-				statusCode := c.Response().Status
-
-				attrs := []attribute.KeyValue{
-					attribute.String("method", c.Request().Method),
-					attribute.String("route", c.Path()),
-					attribute.Int("status_code", statusCode),
-				}
-
-				cfg.Metrics.HTTPRequestCount.Add(
-					ctx,
-					1,
-					metric.WithAttributes(attrs...),
-				)
-				cfg.Metrics.HTTPRequestDuration.Record(
-					ctx,
-					requestDuration.Seconds(),
-					metric.WithAttributes(attrs...),
-				)
-			}
-
-			statusCode := c.Response().Status
-
-			slog.InfoContext(ctx, "HTTP request completed",
-				"method", c.Request().Method,
-				"path", c.Request().URL.Path,
-				"status", statusCode,
-				"duration", requestDuration.Seconds(),
-				"remote_addr", c.RealIP(),
-				"user_agent", c.Request().UserAgent(),
-			)
-
-			return err
-		}
-	}
+	MetricProvider metric.MeterProvider
 }
 
 // RequestIDMiddleware adds a request ID to the context and response headers
@@ -107,23 +30,23 @@ func Middleware(cfg MiddlewareConfig) echo.MiddlewareFunc {
 // }
 
 // RecordAuthMetrics records authentication-related metrics
-func RecordAuthMetrics(
-	ctx context.Context,
-	metrics *ApplicationMetrics,
-	success bool,
-	authType string,
-) {
-	if metrics == nil {
-		return
-	}
-
-	attrs := []attribute.KeyValue{
-		attribute.String("auth_type", authType),
-		attribute.Bool("success", success),
-	}
-
-	metrics.AuthAttempts.Add(ctx, 1, metric.WithAttributes(attrs...))
-}
+// func RecordAuthMetrics(
+// 	ctx context.Context,
+// 	metrics *ApplicationMetrics,
+// 	success bool,
+// 	authType string,
+// ) {
+// 	if metrics == nil {
+// 		return
+// 	}
+//
+// 	attrs := []attribute.KeyValue{
+// 		attribute.String("auth_type", authType),
+// 		attribute.Bool("success", success),
+// 	}
+//
+// 	metrics.AuthAttempts.Add(ctx, 1, metric.WithAttributes(attrs...))
+// }
 
 // RecordRegistrationMetrics records user registration metrics
 // func RecordRegistrationMetrics(
