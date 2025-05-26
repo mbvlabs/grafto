@@ -180,6 +180,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.Alloc))
 				return nil
 			},
@@ -199,6 +200,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.HeapAlloc))
 				return nil
 			},
@@ -216,6 +218,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.HeapSys))
 				return nil
 			},
@@ -233,6 +236,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.HeapIdle))
 				return nil
 			},
@@ -250,6 +254,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.HeapInuse))
 				return nil
 			},
@@ -267,6 +272,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.HeapReleased))
 				return nil
 			},
@@ -284,6 +290,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.Sys))
 				return nil
 			},
@@ -300,6 +307,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.Mallocs))
 				return nil
 			},
@@ -316,6 +324,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.Frees))
 				return nil
 			},
@@ -332,6 +341,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.HeapObjects))
 				return nil
 			},
@@ -351,6 +361,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.NextGC))
 				return nil
 			},
@@ -391,6 +402,7 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 			func(ctx context.Context, o metric.Int64Observer) error {
 				var m runtime.MemStats
 				runtime.ReadMemStats(&m)
+				//nolint:gosec // TODO
 				o.Observe(int64(m.GCSys))
 				return nil
 			},

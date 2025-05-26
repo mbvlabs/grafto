@@ -187,7 +187,7 @@ func (h *lokiHandler) sendToLoki(
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("Loki returned error status: %d", resp.StatusCode)
+		return fmt.Errorf("loki returned error status: %d", resp.StatusCode)
 	}
 
 	return nil
@@ -232,7 +232,9 @@ type BetterStackLogExporter struct {
 	exporter    *betterStackLogHandler
 }
 
-func NewBetterStackLogExporter(endpoint, sourceToken string) *BetterStackLogExporter {
+func NewBetterStackLogExporter(
+	endpoint, sourceToken string,
+) *BetterStackLogExporter {
 	return &BetterStackLogExporter{
 		Endpoint:    endpoint,
 		SourceToken: sourceToken,
@@ -244,7 +246,9 @@ func (b *BetterStackLogExporter) Name() string {
 	return "betterstack"
 }
 
-func (b *BetterStackLogExporter) GetSlogHandler(ctx context.Context) (slog.Handler, error) {
+func (b *BetterStackLogExporter) GetSlogHandler(
+	ctx context.Context,
+) (slog.Handler, error) {
 	if b.exporter == nil {
 		b.exporter = &betterStackLogHandler{
 			endpoint:   b.Endpoint,
@@ -291,11 +295,11 @@ type BetterStackScopeLog struct {
 }
 
 type BetterStackLogRecord struct {
-	TimeUnixNano   string                       `json:"timeUnixNano"`
-	SeverityNumber int                          `json:"severityNumber"`
-	SeverityText   string                       `json:"severityText"`
-	Body           BetterStackLogBody           `json:"body"`
-	Attributes     []BetterStackLogAttribute    `json:"attributes,omitempty"`
+	TimeUnixNano   string                    `json:"timeUnixNano"`
+	SeverityNumber int                       `json:"severityNumber"`
+	SeverityText   string                    `json:"severityText"`
+	Body           BetterStackLogBody        `json:"body"`
+	Attributes     []BetterStackLogAttribute `json:"attributes,omitempty"`
 }
 
 type BetterStackLogBody struct {
@@ -311,11 +315,17 @@ type BetterStackAttributeValue struct {
 	StringValue string `json:"stringValue"`
 }
 
-func (h *betterStackLogHandler) Enabled(ctx context.Context, level slog.Level) bool {
+func (h *betterStackLogHandler) Enabled(
+	ctx context.Context,
+	level slog.Level,
+) bool {
 	return level >= h.logLevel
 }
 
-func (h *betterStackLogHandler) Handle(ctx context.Context, record slog.Record) error {
+func (h *betterStackLogHandler) Handle(
+	ctx context.Context,
+	record slog.Record,
+) error {
 	if !h.Enabled(ctx, record.Level) {
 		return nil
 	}
@@ -378,25 +388,33 @@ func (h *betterStackLogHandler) Handle(ctx context.Context, record slog.Record) 
 func (h *betterStackLogHandler) mapSlogLevelToOTLP(level slog.Level) int {
 	switch level {
 	case slog.LevelDebug:
-		return 5  // TRACE
+		return 5 // TRACE
 	case slog.LevelInfo:
-		return 9  // INFO
+		return 9 // INFO
 	case slog.LevelWarn:
 		return 13 // WARN
 	case slog.LevelError:
 		return 17 // ERROR
 	default:
-		return 9  // INFO
+		return 9 // INFO
 	}
 }
 
-func (h *betterStackLogHandler) sendToBetterStack(ctx context.Context, log BetterStackOTLPLog) error {
+func (h *betterStackLogHandler) sendToBetterStack(
+	ctx context.Context,
+	log BetterStackOTLPLog,
+) error {
 	jsonData, err := json.Marshal(log)
 	if err != nil {
 		return fmt.Errorf("failed to marshal log data: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", h.endpoint, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		h.endpoint,
+		bytes.NewBuffer(jsonData),
+	)
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}
@@ -411,7 +429,10 @@ func (h *betterStackLogHandler) sendToBetterStack(ctx context.Context, log Bette
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("BetterStack returned error status: %d", resp.StatusCode)
+		return fmt.Errorf(
+			"BetterStack returned error status: %d",
+			resp.StatusCode,
+		)
 	}
 
 	return nil

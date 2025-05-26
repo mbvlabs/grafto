@@ -69,6 +69,7 @@ func New(
 	)
 
 	router.Use(
+		//nolint:contextcheck // not needed here
 		mw.Logging(),
 		echomw.Recover(),
 	)
