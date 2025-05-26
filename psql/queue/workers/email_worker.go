@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mbvlabs/grafto/clients"
+	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/psql/queue/jobs"
 	"github.com/riverqueue/river"
 	"go.opentelemetry.io/otel"
@@ -22,7 +23,7 @@ func (w *EmailJobWorker) Work(
 	ctx context.Context,
 	job *river.Job[jobs.EmailJobArgs],
 ) error {
-	tracer := otel.Tracer("grafto/email-worker")
+	tracer := otel.Tracer(config.Cfg.ServiceName)
 	start := time.Now()
 
 	ctx, span := tracer.Start(ctx, "email_job",
@@ -50,7 +51,9 @@ func (w *EmailJobWorker) Work(
 				TextBody: job.Args.TextVersion,
 			},
 		)
-	} else {
+	}
+
+	if job.Args.Type != "transaction" {
 		span.SetAttributes(attribute.String("email.category", "marketing"))
 		err = w.emailClient.SendMarketing(
 			ctx,
@@ -77,14 +80,15 @@ func (w *EmailJobWorker) Work(
 			"duration", duration,
 			"attempt", job.Attempt,
 		)
-	} else {
-		span.SetAttributes(attribute.Bool("job.success", true))
-		slog.InfoContext(ctx, "Email job completed successfully",
-			"job_id", job.ID,
-			"duration", duration,
-			"email_type", job.Args.Type,
-		)
+		return err
 	}
 
-	return err
+	span.SetAttributes(attribute.Bool("job.success", true))
+	slog.InfoContext(ctx, "Email job completed successfully",
+		"job_id", job.ID,
+		"duration", duration,
+		"email_type", job.Args.Type,
+	)
+
+	return nil
 }
