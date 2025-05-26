@@ -2,8 +2,6 @@ package config
 
 import (
 	"os"
-
-	"github.com/caarlos0/env/v10"
 )
 
 // Cfg instantiate a new cfg but can panic
@@ -16,12 +14,6 @@ type Config struct {
 	Telemetry
 	AwsAccessKeyID     string
 	AwsSecretAccessKey string
-}
-
-type Telemetry struct {
-	ServiceName  string `env:"TELEMETRY_SERVICE_NAME"`
-	OtlpEndpoint string `env:"TELEMETRY_OTLP_ENDPOINT"`
-	// LokiEndpoint string `env:"TELEMETRY_LOKI_ENDPOINT"`
 }
 
 func NewConfig() Config {
@@ -72,28 +64,10 @@ func newTestConfig() Config {
 			DefaultSenderSignature: "test@testing.com",
 		},
 		Telemetry: Telemetry{
-			// EnableTracing:       true,
-			// EnableMetrics:       true,
 			ServiceName:  "grafto-test",
 			OtlpEndpoint: "",
-			// LokiEndpoint: "",
-			// OtlpInsecure:        true,
-			// TraceSampleRatio:    1.0,
-			// MetricsPushInterval: 30,
 		},
 		AwsAccessKeyID:     "",
 		AwsSecretAccessKey: "",
 	}
-}
-
-func newTelemetry() Telemetry {
-	telemetryCfg := Telemetry{}
-
-	if err := env.ParseWithOptions(&telemetryCfg, env.Options{
-		RequiredIfNoDef: true,
-	}); err != nil {
-		panic(err)
-	}
-
-	return telemetryCfg
 }

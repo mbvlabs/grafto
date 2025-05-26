@@ -90,9 +90,7 @@ func (e *noopSpanExporter) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-type NoopTraceExporter struct {
-	exporter sdktrace.SpanExporter
-}
+type NoopTraceExporter struct{}
 
 func (n *NoopTraceExporter) Name() string {
 	return "noop"
@@ -111,59 +109,3 @@ func (n *NoopTraceExporter) Shutdown(ctx context.Context) error {
 }
 
 var _ TraceExporter = new(NoopTraceExporter)
-
-// BetterStackTraceExporter implements TraceExporter for BetterStack
-type BetterStackTraceExporter struct {
-	Endpoint    string
-	SourceToken string
-	exporter    sdktrace.SpanExporter
-}
-
-func NewBetterStackTraceExporter(
-	endpoint, sourceToken string,
-) *BetterStackTraceExporter {
-	return &BetterStackTraceExporter{
-		Endpoint:    endpoint,
-		SourceToken: sourceToken,
-	}
-}
-
-func (b *BetterStackTraceExporter) Name() string {
-	return "betterstack"
-}
-
-func (b *BetterStackTraceExporter) GetSpanExporter(
-	ctx context.Context,
-	res *resource.Resource,
-) (sdktrace.SpanExporter, error) {
-	endpoint := strings.TrimPrefix(b.Endpoint, "http://")
-	endpoint = strings.TrimPrefix(endpoint, "https://")
-
-	opts := []otlptracehttp.Option{
-		otlptracehttp.WithEndpoint(endpoint),
-		otlptracehttp.WithHeaders(map[string]string{
-			"Authorization": "Bearer " + b.SourceToken,
-		}),
-	}
-
-	exporter, err := otlptracehttp.New(ctx, opts...)
-	if err != nil {
-		return nil, fmt.Errorf(
-			"failed to create BetterStack trace exporter: %w",
-			err,
-		)
-	}
-
-	b.exporter = exporter
-	return exporter, nil
-}
-
-func (b *BetterStackTraceExporter) Shutdown(ctx context.Context) error {
-	if b.exporter != nil {
-		slog.InfoContext(ctx, "BetterStack Trace Exporter shutting down...")
-		return b.exporter.Shutdown(ctx)
-	}
-	return nil
-}
-
-var _ TraceExporter = new(BetterStackTraceExporter)

@@ -157,134 +157,7 @@ func ProcessOpenFDsMetric() (metric.Int64ObservableGauge, error) {
 	)
 }
 
-// func StartRuntimeMetrics() error {
-// 	meter := GetMeter()
-//
-// 	goGoroutines, err := GoGoroutinesMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	goThreads, err := GoThreadsMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	goMemstatsAllocBytes, err := GoMemstatsAllocBytesMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	goMemstatsHeapObjects, err := GoMemstatsHeapObjectsMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	goMemstatsSysBytes, err := GoMemstatsSysBytesMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	processResidentMemoryBytes, err := ProcessResidentMemoryBytesMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	processVirtualMemoryBytes, err := ProcessVirtualMemoryBytesMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	processOpenFDs, err := ProcessOpenFDsMetric()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	_, err = meter.RegisterCallback(
-// 		func(ctx context.Context, o metric.Observer) error {
-// 			var m runtime.MemStats
-// 			runtime.ReadMemStats(&m)
-//
-// 			o.ObserveInt64(goGoroutines, int64(runtime.NumGoroutine()))
-// 			o.ObserveInt64(goThreads, int64(runtime.GOMAXPROCS(0)))
-// 			o.ObserveInt64(goMemstatsAllocBytes, int64(m.Alloc))
-// 			o.ObserveInt64(goMemstatsHeapObjects, int64(m.HeapObjects))
-// 			o.ObserveInt64(goMemstatsSysBytes, int64(m.Sys))
-//
-// 			o.ObserveInt64(
-// 				processResidentMemoryBytes,
-// 				int64(m.Alloc),
-// 			)
-// 			o.ObserveInt64(
-// 				processVirtualMemoryBytes,
-// 				int64(m.Sys),
-// 			)
-// 			o.ObserveInt64(
-// 				processOpenFDs,
-// 				10,
-// 			)
-//
-// 			return nil
-// 		},
-// 		goGoroutines,
-// 		goThreads,
-// 		goMemstatsAllocBytes,
-// 		goMemstatsHeapObjects,
-// 		goMemstatsSysBytes,
-// 		processResidentMemoryBytes,
-// 		processVirtualMemoryBytes,
-// 		processOpenFDs,
-// 	)
-//
-// 	return err
-// }
-//
-// // UpdateDBConnectionMetrics updates the database connection metrics
-// // Call this function periodically or when you want to update DB metrics
-// func UpdateDBConnectionMetrics(pool *pgxpool.Pool) {
-// 	dbConnectionsActive, err := DBConnectionsActiveMetric()
-// 	if err != nil {
-// 		return
-// 	}
-//
-// 	// Register callback to observe DB connections
-// 	meter := GetMeter()
-// 	_, err = meter.RegisterCallback(
-// 		func(ctx context.Context, o metric.Observer) error {
-// 			if pool != nil {
-// 				stats := pool.Stat()
-// 				o.ObserveInt64(
-// 					dbConnectionsActive,
-// 					int64(stats.AcquiredConns()),
-// 				)
-// 			} else {
-// 				// Fallback to placeholder value
-// 				o.ObserveInt64(dbConnectionsActive, 5)
-// 			}
-// 			return nil
-// 		},
-// 		dbConnectionsActive,
-// 	)
-// }
-
-// func HttpRequestLatencyMetric() (metric.Float64Histogram, error) {
-// 	return GetMeter().Float64Histogram(
-// 		"http_request_latency",
-// 		metric.WithUnit("s"),
-// 		metric.WithDescription("HTTP request latency"),
-// 	)
-// }
-//
-// func HttpRequestCountMetric() (metric.Int64Counter, error) {
-// 	return GetMeter().Int64Counter(
-// 		"http_requests_total",
-// 		metric.WithDescription("Total number of HTTP requests"),
-// 		metric.WithUnit("1"),
-// 	)
-// }
-
 func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
-	// Go runtime metrics using callbacks
 	_, err := meter.Int64ObservableGauge(
 		"go_goroutines",
 		metric.WithDescription("Number of goroutines that currently exist"),
@@ -593,7 +466,6 @@ func SetupRuntimeMetricsInCallback(meter metric.Meter) error {
 		return err
 	}
 
-	// Custom application metrics using callbacks
 	startTime := time.Now()
 	_, err = meter.Float64ObservableGauge(
 		"process_start_time_seconds",
