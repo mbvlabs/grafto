@@ -22,7 +22,7 @@ type TraceExporter interface {
 	Shutdown(ctx context.Context) error
 }
 
-func newTraceProvider(
+func NewTraceProvider(
 	ctx context.Context,
 	resource *resource.Resource,
 	traceExporter TraceExporter,

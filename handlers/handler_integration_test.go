@@ -5,6 +5,7 @@ package handlers_test
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"testing"
 
@@ -65,18 +66,29 @@ func setupTestHandlers(
 	pageCacher, err := cacheBuilder.WithVariableTTL().Build()
 	require.NoError(t, err)
 
-	testLogger := telemetry.NewLogger(true)
-	return handlers.NewHandlers(postgres, pageCacher, emailSvc, testLogger)
+	return handlers.NewHandlers(postgres, pageCacher, emailSvc)
 }
 
 func setupTestMiddleware(
 	t *testing.T,
 ) middleware.MW {
-	return middleware.New()
+	tp, err := telemetry.NewTraceProvider(
+		context.Background(),
+		nil,
+		&telemetry.NoopTraceExporter{},
+		0.0,
+	)
+	require.NoError(t, err, "new trace exporter returned error ")
+
+	mw, err := middleware.New(tp)
+	require.NoError(t, err, "new middleware returned error ")
+
+	return mw
 }
 
 func setupTestRouter(
 	ctx context.Context,
+	t *testing.T,
 	handlers handlers.Handlers,
 	mw middleware.MW,
 ) (*echo.Echo, context.Context) {
@@ -85,7 +97,17 @@ func setupTestRouter(
 	}))
 	slog.SetDefault(logger)
 
-	router := router.New(ctx, handlers, mw, nil)
+	tp, err := telemetry.NewTraceProvider(
+		context.Background(),
+		nil,
+		&telemetry.NoopTraceExporter{},
+		0.0,
+	)
+
+	require.NoError(t, err, "new trace exporter returned error ")
+
+	router := router.New(ctx, handlers, mw, nil, tp)
+
 	return router.SetupRoutes(ctx)
 }
 

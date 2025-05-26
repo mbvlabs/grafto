@@ -37,7 +37,7 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
+	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -148,7 +148,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
+	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -273,7 +273,7 @@ func TestStoreResetPassword(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
+	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -424,7 +424,7 @@ func TestDestroyAuthenticatedSession(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
+	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	testUser, err := seeder.PlantUser(

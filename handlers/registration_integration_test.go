@@ -33,7 +33,7 @@ func TestStoreUser(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
+	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	tests := []struct {
 		name          string
@@ -135,7 +135,7 @@ func TestVerifyEmail(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, testHandlers, testMiddleware)
+	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	user, err := seeder.PlantUser(ctx)
