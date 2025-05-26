@@ -49,7 +49,7 @@ func New(
 
 	shutdownFuncs = append(shutdownFuncs, loghandlerShutdown)
 
-	tp, err := newTraceProvider(ctx, res, appTraceExporter, 1.0)
+	tp, err := NewTraceProvider(ctx, res, appTraceExporter, 1.0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to setup trace provider: %w", err)
 	}
