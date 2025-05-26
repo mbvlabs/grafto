@@ -12,12 +12,23 @@ import (
 )
 
 type OtlpHttpTraceExporter struct {
-	OtlpEndpoint string
+	otlpEndpoint string
+	insecure     bool
+	headers      map[string]string
 	exporter     sdktrace.SpanExporter
 }
 
-func NewOtlpHttpTraceExporter() *OtlpHttpTraceExporter {
-	return &OtlpHttpTraceExporter{}
+func NewOtlpHttpTraceExporter(
+	endpoint string,
+	insecure bool,
+	headers map[string]string,
+) *OtlpHttpTraceExporter {
+	return &OtlpHttpTraceExporter{
+		endpoint,
+		insecure,
+		headers,
+		nil,
+	}
 }
 
 func (o *OtlpHttpTraceExporter) Name() string {
@@ -28,13 +39,20 @@ func (o *OtlpHttpTraceExporter) GetSpanExporter(
 	ctx context.Context,
 	res *resource.Resource,
 ) (sdktrace.SpanExporter, error) {
-	endpoint := strings.TrimPrefix(o.OtlpEndpoint, "http://")
+	endpoint := strings.TrimPrefix(o.otlpEndpoint, "http://")
 	endpoint = strings.TrimPrefix(endpoint, "https://")
 
 	opts := []otlptracehttp.Option{
 		otlptracehttp.WithEndpoint(endpoint),
-		otlptracehttp.WithURLPath("/v1/traces"),
-		otlptracehttp.WithInsecure(),
+		otlptracehttp.WithURLPath(
+			"/v1/traces",
+		),
+	}
+	if len(o.headers) > 0 {
+		opts = append(opts, otlptracehttp.WithHeaders(o.headers))
+	}
+	if o.insecure {
+		opts = append(opts, otlptracehttp.WithInsecure())
 	}
 
 	exporter, err := otlptracehttp.New(ctx, opts...)

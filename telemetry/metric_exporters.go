@@ -13,12 +13,23 @@ import (
 )
 
 type OtlpHttpMetricExporter struct {
-	OtlpEndpoint string
+	otlpEndpoint string
+	insecure     bool
+	headers      map[string]string
 	exporter     sdkmetric.Exporter
 }
 
-func NewOtlpHttpMetricExporter() *OtlpHttpMetricExporter {
-	return &OtlpHttpMetricExporter{}
+func NewOtlpHttpMetricExporter(
+	endpoint string,
+	insecure bool,
+	headers map[string]string,
+) *OtlpHttpMetricExporter {
+	return &OtlpHttpMetricExporter{
+		endpoint,
+		insecure,
+		headers,
+		nil,
+	}
 }
 
 func (o *OtlpHttpMetricExporter) Name() string {
@@ -29,7 +40,7 @@ func (o *OtlpHttpMetricExporter) GetSdkMetricExporter(
 	ctx context.Context,
 	res *resource.Resource,
 ) (sdkmetric.Exporter, error) {
-	endpoint := strings.TrimPrefix(o.OtlpEndpoint, "http://")
+	endpoint := strings.TrimPrefix(o.otlpEndpoint, "http://")
 	endpoint = strings.TrimPrefix(endpoint, "https://")
 
 	opts := []otlpmetrichttp.Option{
@@ -37,7 +48,12 @@ func (o *OtlpHttpMetricExporter) GetSdkMetricExporter(
 		otlpmetrichttp.WithURLPath(
 			"/v1/metrics",
 		),
-		otlpmetrichttp.WithInsecure(),
+	}
+	if len(o.headers) > 0 {
+		opts = append(opts, otlpmetrichttp.WithHeaders(o.headers))
+	}
+	if o.insecure {
+		opts = append(opts, otlpmetrichttp.WithInsecure())
 	}
 
 	exporter, err := otlpmetrichttp.New(ctx, opts...)

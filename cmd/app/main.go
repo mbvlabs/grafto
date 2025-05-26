@@ -30,6 +30,17 @@ func run(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
+	traceExporter := telemetry.NewOtlpHttpTraceExporter(
+		cfg.OtlpEndpoint,
+		false,
+		map[string]string{},
+	)
+	metricExporter := telemetry.NewOtlpHttpMetricExporter(
+		cfg.OtlpEndpoint,
+		false,
+		map[string]string{},
+	)
+
 	tel, err := telemetry.New(
 		ctx,
 		appVersion,
@@ -40,14 +51,16 @@ func run(ctx context.Context) error {
 		&telemetry.LokiExporter{
 			LogLevel:   slog.LevelDebug,
 			WithTraces: true,
-			URL:        "http://localhost:3100/loki/api/v1/push", // Loki push endpoint
+			URL:        "", // Loki push endpoint
 			Labels: map[string]string{
 				"service": "grafto",
-				"env":     "development",
+				"env":     "production",
 			},
 		},
-		&telemetry.OtlpHttpTraceExporter{OtlpEndpoint: cfg.OtlpEndpoint},
-		&telemetry.OtlpHttpMetricExporter{OtlpEndpoint: cfg.OtlpEndpoint},
+		traceExporter,
+		metricExporter,
+		// &telemetry.NoopTraceExporter{},
+		// &telemetry.NoopMetricExporter{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to initialize telemetry: %w", err)
