@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
@@ -68,26 +69,24 @@ func New(
 		}),
 	)
 
-	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
-		router.Debug = false
-		router.Use(
-			echomw.GzipWithConfig(echomw.GzipConfig{
-				Level: 5,
-				Skipper: func(c echo.Context) bool {
-					return strings.Contains(c.Path(), "metrics")
-				},
-			}),
-		)
-		// 	echoprometheus.NewMiddleware(
-		// 		strings.Join(
-		// 			strings.Fields(strings.ToLower(config.Cfg.ProjectName)),
-		// 			"_",
-		// 		),
-		// 	),
+	router.Debug = false
+	router.Use(
+		echomw.GzipWithConfig(echomw.GzipConfig{
+			Level: 5,
+			Skipper: func(c echo.Context) bool {
+				return strings.Contains(c.Path(), "metrics")
+			},
+		}),
 		// )
-		//
-		// router.GET("/metrics", echoprometheus.NewHandler())
-	}
+		echoprometheus.NewMiddleware(
+			strings.Join(
+				strings.Fields(strings.ToLower(config.Cfg.ProjectName)),
+				"_",
+			),
+		),
+	)
+
+	router.GET("/metrics", echoprometheus.NewHandler())
 
 	// Use telemetry middleware
 	router.Use(

@@ -28,10 +28,11 @@ const (
 )
 
 type MW struct {
-	rateLimiter    otter.Cache[string, int32]
-	tp             trace.TracerProvider
-	latencyMetric  metric.Float64Histogram
-	reqCountMetric metric.Int64Counter
+	rateLimiter       otter.Cache[string, int32]
+	tp                trace.TracerProvider
+	httpRequestsTotal metric.Int64Counter
+	httpDuration      metric.Float64Histogram
+	httpInFlight      metric.Int64UpDownCounter
 }
 
 func New(tp trace.TracerProvider) (MW, error) {
@@ -45,12 +46,18 @@ func New(tp trace.TracerProvider) (MW, error) {
 		return MW{}, err
 	}
 
-	reqLatencyMetric, err := telemetry.HttpRequestLatencyMetric()
+	// New comprehensive HTTP metrics
+	httpRequestsTotal, err := telemetry.HTTPRequestsTotal()
 	if err != nil {
 		return MW{}, err
 	}
 
-	reqCounterMetric, err := telemetry.HttpRequestCountMetric()
+	httpDuration, err := telemetry.HTTPRequestDuration()
+	if err != nil {
+		return MW{}, err
+	}
+
+	httpInFlight, err := telemetry.HTTPRequestsInFlight()
 	if err != nil {
 		return MW{}, err
 	}
@@ -58,7 +65,8 @@ func New(tp trace.TracerProvider) (MW, error) {
 	return MW{
 		rateLimit,
 		tp,
-		reqLatencyMetric,
-		reqCounterMetric,
+		httpRequestsTotal,
+		httpDuration,
+		httpInFlight,
 	}, nil
 }
