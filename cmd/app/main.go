@@ -6,10 +6,8 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/a-h/templ"
-	"github.com/lmittmann/tint"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
@@ -20,35 +18,11 @@ import (
 	"github.com/mbvlabs/grafto/psql/queue/workers"
 	"github.com/mbvlabs/grafto/router"
 	"github.com/mbvlabs/grafto/server"
+	"github.com/mbvlabs/grafto/telemetry"
 	"riverqueue.com/riverui"
 )
 
-func developmentLogger() *slog.Logger {
-	return slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      slog.LevelDebug,
-			TimeFormat: time.Kitchen,
-		}),
-	)
-}
-
-func queueLogger() *slog.Logger {
-	return slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      slog.LevelError,
-			TimeFormat: time.Kitchen,
-		}),
-	)
-}
-
-func productionLogger() *slog.Logger {
-	return slog.New(
-		tint.NewHandler(os.Stderr, &tint.Options{
-			Level:      slog.LevelError,
-			TimeFormat: time.Kitchen,
-		}),
-	)
-}
+var appVersion string
 
 func run(ctx context.Context) error {
 	cfg := config.NewConfig()
@@ -56,11 +30,27 @@ func run(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
-	if cfg.Environment == config.DEV_ENVIRONMENT {
-		slog.SetDefault(developmentLogger())
+	tel, err := telemetry.New(
+		ctx,
+		appVersion,
+		&telemetry.StdoutExporter{
+			LogLevel:   slog.LevelDebug,
+			WithTraces: true,
+		},
+		&telemetry.NoopTraceExporter{},
+		&telemetry.NoopMetricExporter{},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to initialize telemetry: %w", err)
 	}
-	if cfg.Environment == config.PROD_ENVIRONMENT {
-		slog.SetDefault(productionLogger())
+	defer func() {
+		if err := tel.Shutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown telemetry", "error", err)
+		}
+	}()
+
+	if err := telemetry.SetupRuntimeMetricsInCallback(telemetry.GetMeter()); err != nil {
+		return fmt.Errorf("failed to setup callback metrics: %w", err)
 	}
 
 	conn, err := psql.CreatePooledConnection(
@@ -74,9 +64,23 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	queueLogger, queueLoggerShutdown := telemetry.NewLogger(
+		ctx,
+		&telemetry.StdoutExporter{
+			LogLevel:   slog.LevelError,
+			WithTraces: true,
+		},
+	)
+	defer func() {
+		if err := queueLoggerShutdown(ctx); err != nil {
+			slog.Error("Failed to shutdown telemetry", "error", err)
+		}
+	}()
+
 	psql := psql.NewPostgres(conn, nil)
 	psql.NewQueue(
-		queue.WithLogger(queueLogger()),
+		queue.WithLogger(queueLogger),
 		queue.WithWorkers(queueWorkers),
 	)
 
@@ -93,7 +97,6 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	// Start the server to initialize background processes for caching and periodic queries:
 	if err := riverUI.Start(ctx); err != nil {
 		return err
 	}
@@ -116,11 +119,17 @@ func run(ctx context.Context) error {
 		emailClient,
 	)
 
+	mw, err := middleware.New(tel.AppTracerProvider)
+	if err != nil {
+		return err
+	}
+
 	routes := router.New(
 		ctx,
 		handlers,
-		middleware.New(),
+		mw,
 		riverUI,
+		tel.AppTracerProvider,
 	)
 
 	router, c := routes.SetupRoutes(ctx)

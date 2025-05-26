@@ -1,0 +1,245 @@
+services:
+  alloy:
+    image: grafana/alloy:latest
+    container_name: grafto-alloy
+    command: ["run", "/run/secrets/alloy_config", "--server.http.listen-addr=0.0.0.0:12345"]
+    configs:
+      - source: alloy_config
+        target: /run/secrets/alloy_config
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "12345:12345"
+      - "9464:9464"
+    depends_on:
+      - tempo
+      - prometheus
+      - loki
+    networks:
+      - telemetry
+
+  tempo:
+    image: grafana/tempo:2.3.1
+    container_name: grafto-tempo
+    ports:
+      - "3200:3200"
+      - "9095:9095"
+      - "9096:9096"
+      - "9097:9097"
+    volumes:
+      - tempo_data:/var/tempo
+    configs:
+      - source: tempo_config
+        target: /run/secrets/tempo_config
+    command: [ "-config.file=/run/secrets/tempo_config" ]
+    networks:
+      - telemetry
+
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    container_name: grafto-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - prometheus_data:/prometheus
+    configs:
+      - source: prometheus_config
+        target: /run/secrets/prometheus_config
+    command:
+      - '--config.file=/run/secrets/prometheus_config'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+    networks:
+      - telemetry
+
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: grafto-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+    configs:
+      - source: loki_config
+        target: /run/secrets/loki_config
+    command: -config.file=/run/secrets/loki_config
+    networks:
+      - telemetry
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafto-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+      - tempo
+      - loki
+    networks:
+      - telemetry
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  tempo_data:
+
+networks:
+  telemetry:
+    driver: bridge
+
+configs:
+  alloy_config:
+    content: |
+      otelcol.receiver.otlp "default" {
+        grpc {
+          endpoint = "0.0.0.0:4317"
+        }
+        http {
+          endpoint = "0.0.0.0:4318"
+        }
+
+        output {
+          metrics = [otelcol.processor.batch.default.input]
+          traces  = [otelcol.processor.batch.default.input]
+        }
+      }
+
+      otelcol.processor.batch "default" {
+        output {
+          metrics = [otelcol.exporter.prometheus.default.input]
+          traces  = [otelcol.exporter.otlp.tempo.input]
+        }
+      }
+
+      otelcol.exporter.prometheus "default" {
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.remote_write "default" {
+        endpoint {
+          url = "http://prometheus:9090/api/v1/write"
+        }
+      }
+
+      otelcol.exporter.otlp "tempo" {
+        client {
+          endpoint = "http://tempo:4317"
+          tls {
+            insecure = true
+          }
+        }
+      }
+
+      loki.write "default" {
+        endpoint {
+          url = "http://loki:3100/loki/api/v1/push"
+        }
+      }
+  loki_config:
+    content: |
+      auth_enabled: false
+
+      server:
+        http_listen_port: 3100
+
+      common:
+        path_prefix: /loki
+        storage:
+          filesystem:
+            chunks_directory: /loki/chunks
+            rules_directory: /loki/rules
+        replication_factor: 1
+        ring:
+          instance_addr: 127.0.0.1
+          kvstore:
+            store: inmemory
+
+      query_range:
+        results_cache:
+          cache:
+            embedded_cache:
+              enabled: true
+              max_size_mb: 100
+
+      schema_config:
+        configs:
+          - from: 2020-10-24
+            store: boltdb-shipper
+            object_store: filesystem
+            schema: v11
+            index:
+              prefix: index_
+              period: 24h
+
+      ruler:
+        alertmanager_url: http://localhost:9093
+
+      limits_config:
+        reject_old_samples: true
+        reject_old_samples_max_age: 168h
+
+      chunk_store_config:
+        max_look_back_period: 0s
+
+      table_manager:
+        retention_deletes_enabled: false
+        retention_period: 0s
+
+      compactor:
+        working_directory: /loki/boltdb-shipper-compactor
+        shared_store: filesystem
+  prometheus_config:
+    content: |
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+
+      scrape_configs:
+        - job_name: 'alloy'
+          static_configs:
+            - targets: ['alloy:9464']
+          scrape_interval: 15s
+          
+  tempo_config:
+    content: |
+      server:
+        http_listen_port: 3200
+
+      distributor:
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+              http:
+                endpoint: 0.0.0.0:4318
+
+      ingester:
+        max_block_duration: 5m
+
+      compactor:
+        compaction:
+          block_retention: 1h
+
+      storage:
+        trace:
+          backend: local
+          local:
+            path: /var/tempo/traces
+          wal:
+            path: /var/tempo/wal
+          pool:
+            max_workers: 100
+            queue_depth: 10000

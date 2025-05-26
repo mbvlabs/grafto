@@ -7,6 +7,9 @@ import (
 
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/config"
+	"github.com/mbvlabs/grafto/telemetry"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var AuthenticatedSessionName = fmt.Sprintf(
@@ -25,21 +28,45 @@ const (
 )
 
 type MW struct {
-	rateLimiter otter.Cache[string, int32]
+	rateLimiter       otter.Cache[string, int32]
+	tp                trace.TracerProvider
+	httpRequestsTotal metric.Int64Counter
+	httpDuration      metric.Float64Histogram
+	httpInFlight      metric.Int64UpDownCounter
 }
 
-func New() MW {
+func New(tp trace.TracerProvider) (MW, error) {
 	rateLimitCacheBuilder, err := otter.NewBuilder[string, int32](10_000)
 	if err != nil {
-		panic(err)
+		return MW{}, err
 	}
 
 	rateLimit, err := rateLimitCacheBuilder.WithTTL(10 * time.Minute).Build()
 	if err != nil {
-		panic(err)
+		return MW{}, err
+	}
+
+	// New comprehensive HTTP metrics
+	httpRequestsTotal, err := telemetry.HTTPRequestsTotal()
+	if err != nil {
+		return MW{}, err
+	}
+
+	httpDuration, err := telemetry.HTTPRequestDuration()
+	if err != nil {
+		return MW{}, err
+	}
+
+	httpInFlight, err := telemetry.HTTPRequestsInFlight()
+	if err != nil {
+		return MW{}, err
 	}
 
 	return MW{
 		rateLimit,
-	}
+		tp,
+		httpRequestsTotal,
+		httpDuration,
+		httpInFlight,
+	}, nil
 }

@@ -1,6 +1,8 @@
 package config
 
-import "os"
+import (
+	"os"
+)
 
 // Cfg instantiate a new cfg but can panic
 var Cfg Config = NewConfig()
@@ -9,6 +11,7 @@ type Config struct {
 	Database
 	Authentication
 	App
+	Telemetry
 	AwsAccessKeyID     string
 	AwsSecretAccessKey string
 }
@@ -31,6 +34,7 @@ func NewConfig() Config {
 			newDatabase(),
 			newAuthentication(),
 			newApp(),
+			newTelemetry(),
 			awsAccessKeyID,
 			awsSecretAccessKey,
 		}
@@ -58,6 +62,10 @@ func newTestConfig() Config {
 			ProjectName:            "test",
 			Environment:            TEST_ENVIRONMENT,
 			DefaultSenderSignature: "test@testing.com",
+		},
+		Telemetry: Telemetry{
+			ServiceName:  "grafto-test",
+			OtlpEndpoint: "",
 		},
 		AwsAccessKeyID:     "",
 		AwsSecretAccessKey: "",

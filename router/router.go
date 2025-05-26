@@ -3,20 +3,19 @@ package router
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"reflect"
 	"slices"
 	"strings"
 
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/handlers"
 	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
+	"go.opentelemetry.io/otel/trace"
 	"riverqueue.com/riverui"
 
 	echomw "github.com/labstack/echo/v4/middleware"
@@ -33,6 +32,7 @@ func New(
 	handlers handlers.Handlers,
 	mw middleware.MW,
 	riverUI *riverui.Server,
+	traceProvider trace.TracerProvider,
 ) *Routes {
 	router := echo.New()
 	router.Debug = true
@@ -68,29 +68,9 @@ func New(
 		}),
 	)
 
-	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
-		router.Debug = false
-		router.Use(
-			echomw.GzipWithConfig(echomw.GzipConfig{
-				Level: 5,
-				Skipper: func(c echo.Context) bool {
-					return strings.Contains(c.Path(), "metrics")
-				},
-			}),
-
-			echoprometheus.NewMiddleware(
-				strings.Join(
-					strings.Fields(strings.ToLower(config.Cfg.ProjectName)),
-					"_",
-				),
-			),
-		)
-
-		router.GET("/metrics", echoprometheus.NewHandler())
-	}
-
 	router.Use(
-		setupLogger(ctx),
+		//nolint:contextcheck // not needed here
+		mw.Logging(),
 		echomw.Recover(),
 	)
 
@@ -101,57 +81,6 @@ func New(
 		mw,
 		handlers,
 	}
-}
-
-func setupLogger(ctx context.Context) echo.MiddlewareFunc {
-	return echomw.RequestLoggerWithConfig(echomw.RequestLoggerConfig{
-		LogStatus:   true,
-		LogHost:     true,
-		LogMethod:   true,
-		LogURI:      true,
-		LogError:    true,
-		LogRemoteIP: true,
-		HandleError: true,
-		Skipper: func(c echo.Context) bool {
-			return strings.HasPrefix(c.Request().URL.Path, "/assets")
-		},
-		LogValuesFunc: func(c echo.Context, v echomw.RequestLoggerValues) error {
-			level := slog.LevelInfo
-			attrs := []slog.Attr{
-				slog.String(
-					"timestamp",
-					v.StartTime.Format("2006-01-02 15:04:05 MST -0700"),
-				),
-				slog.Int("status", v.Status),
-				slog.String("uri", v.URI),
-				slog.String("method", v.Method),
-				slog.String("host", v.Host),
-				slog.String("ip", v.RemoteIP),
-				slog.String("latency", v.Latency.String()),
-			}
-
-			if v.QueryParams != nil {
-				attrs = append(
-					attrs,
-					slog.String(
-						"query_params",
-						fmt.Sprintf("%v", v.QueryParams),
-					),
-				)
-			}
-
-			if v.Error != nil {
-				attrs = append(attrs, slog.String("error", v.Error.Error()))
-				level = slog.LevelError
-			}
-
-			slog.Default().LogAttrs(ctx, level, "req",
-				attrs...,
-			)
-
-			return nil
-		},
-	})
 }
 
 func (r *Routes) SetupRoutes(

@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/exaring/otelpgx"
 	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
 	"github.com/go-faker/faker/v4"
 	"github.com/google/uuid"
@@ -93,7 +94,16 @@ func CreatePooledConnection(
 	ctx context.Context,
 	uri string,
 ) (*pgxpool.Pool, error) {
-	dbpool, err := pgxpool.New(ctx, uri)
+	cfg, err := pgxpool.ParseConfig(uri)
+	if err != nil {
+		slog.Error("could not parse database connection string", "error", err)
+		return nil, err
+	}
+
+	// Add OpenTelemetry instrumentation
+	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
+
+	dbpool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		slog.Error("could not establish connection to database", "error", err)
 		return nil, err

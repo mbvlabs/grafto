@@ -39,12 +39,11 @@ func (a App) Redirect(c echo.Context) error {
 		}
 	}
 
-	slog.Info(
+	slog.InfoContext(c.Request().Context(),
 		"security warning: someone tried to missue open redirect",
-		"to",
-		to,
-		"ip",
-		c.RealIP(),
+		"to", to,
+		"ip", c.RealIP(),
 	)
+
 	return redirect(c.Response(), c.Request(), "/")
 }
