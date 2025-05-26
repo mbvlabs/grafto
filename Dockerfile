@@ -6,7 +6,7 @@ ENV APP_RELEASE=$appRelease
 
 WORKDIR /
 
-COPY ../ .
+COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.version=$APP_RELEASE" -mod=readonly -v -o app cmd/app/main.go
 
