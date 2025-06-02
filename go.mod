@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.2.2
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
-	github.com/lmittmann/tint v1.0.1
+	github.com/lmittmann/tint v1.1.1
 	github.com/riverqueue/river v0.22.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.22.0
 	github.com/stretchr/testify v1.10.0
