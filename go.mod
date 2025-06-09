@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
-	github.com/a-h/templ v0.3.887
+	github.com/a-h/templ v0.3.898
 	github.com/dromara/carbon/v2 v2.5.4
 	github.com/exaring/otelpgx v0.9.3
 	github.com/fergusstrange/embedded-postgres v1.30.0
@@ -14,8 +14,8 @@ require (
 	github.com/gorilla/sessions v1.4.0
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
 	github.com/lmittmann/tint v1.1.1
-	github.com/riverqueue/river v0.22.0
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.22.0
+	github.com/riverqueue/river v0.23.1
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.20.2
 	go.opentelemetry.io/otel v1.36.0
@@ -30,7 +30,7 @@ require (
 	golang.org/x/sync v0.15.0
 	golang.org/x/text v0.25.0
 	gopkg.in/yaml.v2 v2.4.0
-	riverqueue.com/riverui v0.10.0
+	riverqueue.com/riverui v0.11.0
 )
 
 require (
@@ -63,9 +63,9 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/riverqueue/apiframe v0.0.0-20250408034821-b206bbbd0fb4 // indirect
-	github.com/riverqueue/river/riverdriver v0.22.0 // indirect
-	github.com/riverqueue/river/rivershared v0.22.0 // indirect
-	github.com/riverqueue/river/rivertype v0.22.0 // indirect
+	github.com/riverqueue/river/riverdriver v0.23.1 // indirect
+	github.com/riverqueue/river/rivershared v0.23.1 // indirect
+	github.com/riverqueue/river/rivertype v0.23.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
