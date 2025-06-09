@@ -17,7 +17,7 @@ require (
 	github.com/riverqueue/river v0.23.1
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
 	github.com/stretchr/testify v1.10.0
-	github.com/vanng822/go-premailer v1.20.2
+	github.com/vanng822/go-premailer v1.24.0
 	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.36.0
@@ -45,7 +45,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/gorilla/context v1.1.2 // indirect
-	github.com/gorilla/css v1.0.0 // indirect
+	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect
