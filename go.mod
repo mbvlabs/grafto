@@ -11,13 +11,13 @@ require (
 	github.com/exaring/otelpgx v0.9.3
 	github.com/fergusstrange/embedded-postgres v1.30.0
 	github.com/google/uuid v1.6.0
-	github.com/gorilla/sessions v1.2.2
+	github.com/gorilla/sessions v1.4.0
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
-	github.com/lmittmann/tint v1.0.1
-	github.com/riverqueue/river v0.22.0
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.22.0
+	github.com/lmittmann/tint v1.1.1
+	github.com/riverqueue/river v0.23.1
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
 	github.com/stretchr/testify v1.10.0
-	github.com/vanng822/go-premailer v1.20.2
+	github.com/vanng822/go-premailer v1.24.0
 	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.36.0
@@ -25,12 +25,12 @@ require (
 	go.opentelemetry.io/otel/sdk v1.36.0
 	go.opentelemetry.io/otel/sdk/metric v1.36.0
 	go.opentelemetry.io/otel/trace v1.36.0
-	golang.org/x/crypto v0.38.0
+	golang.org/x/crypto v0.39.0
 	golang.org/x/net v0.40.0
-	golang.org/x/sync v0.14.0
-	golang.org/x/text v0.25.0
+	golang.org/x/sync v0.15.0
+	golang.org/x/text v0.26.0
 	gopkg.in/yaml.v2 v2.4.0
-	riverqueue.com/riverui v0.10.0
+	riverqueue.com/riverui v0.11.0
 )
 
 require (
@@ -45,7 +45,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/gorilla/context v1.1.2 // indirect
-	github.com/gorilla/css v1.0.0 // indirect
+	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.26.3 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect
@@ -63,9 +63,9 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/riverqueue/apiframe v0.0.0-20250408034821-b206bbbd0fb4 // indirect
-	github.com/riverqueue/river/riverdriver v0.22.0 // indirect
-	github.com/riverqueue/river/rivershared v0.22.0 // indirect
-	github.com/riverqueue/river/rivertype v0.22.0 // indirect
+	github.com/riverqueue/river/riverdriver v0.23.1 // indirect
+	github.com/riverqueue/river/rivershared v0.23.1 // indirect
+	github.com/riverqueue/river/rivertype v0.23.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
@@ -92,14 +92,14 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.55.6
+	github.com/aws/aws-sdk-go v1.55.7
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-faker/faker/v4 v4.5.0
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gorilla/csrf v1.7.3
-	github.com/jackc/pgx/v5 v5.7.4
+	github.com/jackc/pgx/v5 v5.7.5
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
-	github.com/labstack/echo-contrib v0.17.1
+	github.com/labstack/echo-contrib v0.17.4
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/maypok86/otter v1.2.4
 	github.com/pressly/goose/v3 v3.24.3
