@@ -20,7 +20,6 @@
   "graphTooltip": 0,
   "id": null,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
@@ -38,7 +37,11 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "${loki}"
+        "uid": "${loki_datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 12,
@@ -49,6 +52,7 @@
       "id": 11,
       "options": {
         "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
         "enableLogDetails": true,
         "prettifyLogMessage": true,
         "showCommonLabels": false,
@@ -57,11 +61,12 @@
         "sortOrder": "Descending",
         "wrapLogMessage": true
       },
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "loki",
-            "uid": "${loki}"
+            "uid": "${loki_datasource}"
           },
           "editorMode": "code",
           "expr": "{service=\"$service\"} !~ `status=4..` !~ `status=5...` !~ `path=/api/v1/health`",
@@ -76,7 +81,11 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "${loki}"
+        "uid": "${loki_datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 12,
@@ -87,6 +96,7 @@
       "id": 12,
       "options": {
         "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
         "enableLogDetails": true,
         "prettifyLogMessage": true,
         "showCommonLabels": false,
@@ -95,11 +105,12 @@
         "sortOrder": "Descending",
         "wrapLogMessage": true
       },
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "loki",
-            "uid": "${loki}"
+            "uid": "${loki_datasource}"
           },
           "editorMode": "builder",
           "expr": "{service=\"$service\"} |~ `status=4..` | logfmt |~ `path=/api/v1/health`",
@@ -109,7 +120,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "${loki}"
+            "uid": "${loki_datasource}"
           },
           "editorMode": "builder",
           "expr": "{service=\"$service\"} |~ `status=5..` | logfmt |~ `path=/api/v1/health`",
@@ -137,7 +148,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -151,6 +162,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -183,7 +195,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -210,20 +222,22 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum by(status_code, route) (rate(http_requests_total{job=\"$job\"}[5m]))",
+          "expr": "sum by(status_code, route) (rate(http_requests_total{job=\"$job\", route!=\"/api/v1/health\"}[5m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -239,7 +253,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -252,7 +266,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -275,6 +289,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -282,14 +297,16 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
           "expr": "http_requests_in_flight{job=\"$job\"}",
@@ -305,7 +322,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -318,7 +335,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -341,6 +358,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -348,17 +366,19 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(http_requests_total{job=\"$job\"}[1h]))",
+          "expr": "sum(increase(http_requests_total{job=\"$job\", route!=\"/api/v1/health\"}[1h]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -371,7 +391,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -384,7 +404,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -412,6 +432,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -419,18 +440,21 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "count(rate(http_requests_total{job=\"$job\", status_code=\"404\"}[5m])) / count(rate(http_requests_total{job=\"$job\", status_code!=\"404\"}[5m]))",
+          "exemplar": false,
+          "expr": "count(rate(http_requests_total{job=\"$job\", status_code=\"404\", route!=\"/api/v1/health\"}[5m])) / count(rate(http_requests_total{job=\"$job\", status_code!=\"404\", route!=\"/api/v1/health\"}[5m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -446,7 +470,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -487,18 +511,20 @@
           "values": false
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
-          "expr": "sum by (status_code) (increase(http_requests_total{job=\"$job\"}[1h]))",
+          "expr": "sum by(status_code) (increase(http_requests_total{job=\"$job\", route!=\"/api/v1/health\"}[1h]))",
           "instant": false,
           "legendFormat": "{{status_code}}",
           "range": true,
@@ -511,7 +537,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -525,6 +551,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -557,7 +584,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -584,20 +611,22 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum by(job) (histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"$job\"}[5m])))",
+          "expr": "sum by(job) (histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"$job\", route!=\"/api/v1/health\"}[5m])))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -609,12 +638,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum by(job) (histogram_quantile(0.5, rate(http_request_duration_seconds_bucket{job=\"$job\"}[5m])))",
+          "expr": "sum by(job) (histogram_quantile(0.5, rate(http_request_duration_seconds_bucket{job=\"$job\", route!=\"/api/v1/health\"}[5m])))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -626,10 +655,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_request_duration_seconds_sum{job=\"$job\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"$job\"}[5m]))",
+          "expr": "sum(rate(http_request_duration_seconds_sum{job=\"$job\", route!=\"/api/v1/health\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"$job\", route!=\"/api/v1/health\"}[5m]))",
           "instant": false,
           "legendFormat": "Average",
           "range": true,
@@ -655,7 +684,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -669,6 +698,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -701,7 +731,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -728,15 +758,17 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
           "expr": "go_goroutines{job=\"$job\"}",
@@ -748,7 +780,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
           "expr": "go_threads{job=\"$job\"}",
@@ -764,7 +796,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -777,7 +809,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -800,6 +832,7 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -807,14 +840,16 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.2.0",
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
           "expr": "go_memstats_heap_objects{job=\"$job\"}",
@@ -830,7 +865,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${prometheus}"
+        "uid": "${prometheus_datasource}"
       },
       "fieldConfig": {
         "defaults": {
@@ -844,6 +879,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -876,7 +912,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -903,15 +939,17 @@
           "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.1.0-89403",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
           "expr": "go_memstats_alloc_bytes{job=\"$job\"}",
@@ -923,7 +961,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
           "expr": "go_memstats_sys_bytes{job=\"$job\"}",
@@ -935,7 +973,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${prometheus}"
+            "uid": "${prometheus_datasource}"
           },
           "editorMode": "code",
           "expr": "process_resident_memory_bytes{job=\"$job\"}",
@@ -949,84 +987,58 @@
       "type": "timeseries"
     }
   ],
+  "preload": false,
   "refresh": "5s",
-  "schemaVersion": 38,
+  "schemaVersion": 41,
   "tags": [
-    "blog-prod",
     "application",
     "metrics"
   ],
   "templating": {
     "list": [
       {
-        "hide": 0,
-        "includeAll": false,
+        "current": {},
+        "includeAll": true,
         "label": "Prometheus",
-        "multi": false,
-        "name": "prometheus",
+        "name": "prometheus_datasource",
         "options": [],
         "query": "prometheus",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "type": "datasource"
       },
       {
-        "hide": 0,
-        "includeAll": false,
+        "current": {},
+        "includeAll": true,
         "label": "Loki",
-        "multi": false,
-        "name": "loki",
+        "name": "loki_datasource",
         "options": [],
         "query": "loki",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "type": "datasource"
       },
       {
-        "current": {
-          "text": "blog-prod",
-          "value": "blog-prod"
-        },
-        "datasource": null,
-        "definition": "blog-prod",
+        "current": {},
         "description": "Specify the job label for Prometheus queries.",
-        "error": null,
-        "hide": 0,
-        "includeAll": false,
         "label": "Job",
-        "multi": false,
         "name": "job",
         "options": [],
-        "query": "blog-prod",
-        "refresh": 0,
+        "query": "label_values(${prometheus_datasource}, job)",
+        "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "textbox"
+        "type": "query"
       },
       {
-        "current": {
-          "text": "blog-prod",
-          "value": "blog-prod"
-        },
-        "datasource": null,
-        "definition": "blog-prod",
+        "current": {},
         "description": "Specify the service label for Loki queries.",
-        "error": null,
-        "hide": 0,
-        "includeAll": false,
         "label": "Service",
-        "multi": false,
         "name": "service",
         "options": [],
-        "query": "blog-prod",
-        "refresh": 0,
+        "query": "label_values(${loki_datasource}, service)",
+        "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "textbox"
+        "type": "query"
       }
     ]
   },
@@ -1036,8 +1048,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Application Metrics",
+  "title": "Application Metrics Dashboard",
   "uid": null,
-  "version": 0,
-  "weekStart": ""
+  "version": 6
 }

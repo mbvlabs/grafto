@@ -13,6 +13,7 @@ alias ms := migration-status
 alias um := up-migrations
 alias dm := down-migrations
 alias dmt := down-migrations-to
+alias fm := fix-migrations
 alias rdb := reset-db
 
 alias s := seed
