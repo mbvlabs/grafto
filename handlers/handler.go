@@ -150,7 +150,7 @@ func destroyAuthSession(
 func createAuthSession(
 	c echo.Context,
 	extend bool,
-	user models.UserEntity,
+	user models.User,
 ) error {
 	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
 	if err != nil {
