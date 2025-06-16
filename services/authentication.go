@@ -27,22 +27,22 @@ func AuthenticateUser(
 	db psql.Postgres,
 	email string,
 	providedPassword string,
-) (models.UserEntity, error) {
+) (models.User, error) {
 	user, err := models.GetUserByEmail(
 		ctx,
 		db.Pool,
 		email,
 	)
 	if err != nil {
-		return models.UserEntity{}, ErrInvalidAuthDetail
+		return models.User{}, ErrInvalidAuthDetail
 	}
 
 	if !user.IsVerified() {
-		return models.UserEntity{}, ErrUserEmailNotVerified
+		return models.User{}, ErrUserEmailNotVerified
 	}
 
 	if err := user.ValidatePassword(providedPassword); err != nil {
-		return models.UserEntity{}, ErrInvalidAuthDetail
+		return models.User{}, ErrInvalidAuthDetail
 	}
 
 	return user, nil

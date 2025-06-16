@@ -61,7 +61,7 @@ func WithUserIsAdmin(isAdmin bool) userSeedOption {
 func (s Seeder) PlantUser(
 	ctx context.Context,
 	opts ...userSeedOption,
-) (models.UserEntity, error) {
+) (models.User, error) {
 	data := &userSeedData{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -81,7 +81,7 @@ func (s Seeder) PlantUser(
 		},
 	})
 	if err != nil {
-		return models.UserEntity{}, err
+		return models.User{}, err
 	}
 
 	if !data.EmailVerifiedAt.IsZero() {
@@ -96,7 +96,7 @@ func (s Seeder) PlantUser(
 				Valid: true,
 			},
 		}); err != nil {
-			return models.UserEntity{}, err
+			return models.User{}, err
 		}
 	}
 
@@ -109,7 +109,7 @@ func (s Seeder) PlantUser(
 				Valid: true,
 			},
 		}); err != nil {
-			return models.UserEntity{}, err
+			return models.User{}, err
 		}
 	}
 
@@ -119,8 +119,8 @@ func (s Seeder) PlantUser(
 func (s Seeder) PlantUsers(
 	ctx context.Context,
 	amount int,
-) ([]models.UserEntity, error) {
-	users := make([]models.UserEntity, amount)
+) ([]models.User, error) {
+	users := make([]models.User, amount)
 
 	for i := range amount {
 		usr, err := s.PlantUser(ctx)

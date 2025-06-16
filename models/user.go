@@ -13,7 +13,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-type UserEntity struct {
+type User struct {
 	ID              uuid.UUID
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -23,12 +23,12 @@ type UserEntity struct {
 	HashedPassword  string
 }
 
-func (ue UserEntity) IsVerified() bool {
-	return !ue.EmailVerifiedAt.IsZero()
+func (u User) IsVerified() bool {
+	return !u.EmailVerifiedAt.IsZero()
 }
 
-func (ue UserEntity) ValidatePassword(providedPassword string) error {
-	if t := subtle.ConstantTimeCompare(HashPassword(providedPassword), []byte(ue.HashedPassword)); t == 1 {
+func (u User) ValidatePassword(providedPassword string) error {
+	if t := subtle.ConstantTimeCompare(HashPassword(providedPassword), []byte(u.HashedPassword)); t == 1 {
 		return nil
 	}
 
@@ -55,13 +55,13 @@ func GetUserByEmail(
 	ctx context.Context,
 	dbtx db.DBTX,
 	email string,
-) (UserEntity, error) {
+) (User, error) {
 	user, err := db.Stmts.QueryUserByEmail(ctx, dbtx, email)
 	if err != nil {
-		return UserEntity{}, err
+		return User{}, err
 	}
 
-	return UserEntity{
+	return User{
 		ID:              user.ID,
 		CreatedAt:       user.CreatedAt.Time,
 		UpdatedAt:       user.UpdatedAt.Time,
@@ -76,13 +76,13 @@ func GetUser(
 	ctx context.Context,
 	dbtx db.DBTX,
 	id uuid.UUID,
-) (UserEntity, error) {
+) (User, error) {
 	row, err := db.Stmts.QueryUserByID(ctx, dbtx, id)
 	if err != nil {
-		return UserEntity{}, err
+		return User{}, err
 	}
 
-	return UserEntity{
+	return User{
 		ID:              id,
 		CreatedAt:       row.CreatedAt.Time,
 		UpdatedAt:       row.UpdatedAt.Time,
@@ -102,12 +102,12 @@ func NewUser(
 	ctx context.Context,
 	dbtx db.DBTX,
 	data NewUserPayload,
-) (UserEntity, error) {
+) (User, error) {
 	if err := validate.Struct(data); err != nil {
-		return UserEntity{}, errors.Join(ErrDomainValidation, err)
+		return User{}, errors.Join(ErrDomainValidation, err)
 	}
 
-	usr := UserEntity{
+	usr := User{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -124,7 +124,7 @@ func NewUser(
 		Password:  hp,
 	})
 	if err != nil {
-		return UserEntity{}, err
+		return User{}, err
 	}
 
 	return usr, nil
@@ -140,9 +140,9 @@ func UpdateUser(
 	ctx context.Context,
 	dbtx db.DBTX,
 	data UpdateUserPayload,
-) (UserEntity, error) {
+) (User, error) {
 	if err := validate.Struct(data); err != nil {
-		return UserEntity{}, errors.Join(ErrDomainValidation, err)
+		return User{}, errors.Join(ErrDomainValidation, err)
 	}
 
 	row, err := db.Stmts.UpdateUser(ctx, dbtx, db.UpdateUserParams{
@@ -154,10 +154,10 @@ func UpdateUser(
 		Email: data.Email,
 	})
 	if err != nil {
-		return UserEntity{}, err
+		return User{}, err
 	}
 
-	return UserEntity{
+	return User{
 		ID:              row.ID,
 		CreatedAt:       row.CreatedAt.Time,
 		UpdatedAt:       row.UpdatedAt.Time,
@@ -229,17 +229,17 @@ func MakeUserAdmin(
 	ctx context.Context,
 	dbtx db.DBTX,
 	data MakeUserAdminPayload,
-) (UserEntity, error) {
+) (User, error) {
 	if err := validate.Struct(data); err != nil {
-		return UserEntity{}, errors.Join(ErrDomainValidation, err)
+		return User{}, errors.Join(ErrDomainValidation, err)
 	}
 
 	actor, err := GetUser(ctx, dbtx, data.ActorID)
 	if err != nil {
-		return UserEntity{}, err
+		return User{}, err
 	}
 	if !actor.IsAdmin {
-		return UserEntity{}, ErrMustBeAdmin
+		return User{}, ErrMustBeAdmin
 	}
 
 	row, err := db.Stmts.UpdateUserIsAdmin(
@@ -252,10 +252,10 @@ func MakeUserAdmin(
 		},
 	)
 	if err != nil {
-		return UserEntity{}, err
+		return User{}, err
 	}
 
-	return UserEntity{
+	return User{
 		ID:              row.ID,
 		CreatedAt:       row.CreatedAt.Time,
 		UpdatedAt:       row.UpdatedAt.Time,
