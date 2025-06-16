@@ -1,4 +1,4 @@
-package authentication
+package sessions
 
 import (
 	"github.com/mbvlabs/grafto/views"
@@ -56,7 +56,10 @@ templ LoginForm(csrfToken string, success bool, errors views.Errors) {
 				"Logout",
 				routes.DestroyAuthSession.Name,
 				routes.DestroyAuthSession.Path,
-				templ.Attributes{"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", routes.LoginPage.Name)},
+				templ.Attributes{
+					"hx-delete": routes.DestroyAuthSession.Path,
+					"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", routes.LoginPage.Name),
+				},
 			)
 			<div class="mb-4">
 				@components.SuccessFlag(

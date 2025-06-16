@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/views/authentication"
+	"github.com/mbvlabs/grafto/views/sessions"
 )
 
 func (m MW) LoginRateLimiter() echo.MiddlewareFunc {
@@ -30,7 +30,7 @@ func (m MW) LoginRateLimiter() echo.MiddlewareFunc {
 					Header().
 					Set("HX-Reswap", "outerHTML")
 
-				return authentication.LoginError("Too many failed attemps!").
+				return sessions.LoginError("Too many failed attemps!").
 					Render(c.Request().Context(), c.Response())
 			}
 
