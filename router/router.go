@@ -27,7 +27,6 @@ type Routes struct {
 }
 
 func New(
-	// ctx context.Context,
 	handlers handlers.Handlers,
 	mw middleware.MW,
 	riverUI *riverui.Server,
