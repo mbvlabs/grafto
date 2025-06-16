@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -28,7 +27,6 @@ type Routes struct {
 }
 
 func New(
-	ctx context.Context,
 	handlers handlers.Handlers,
 	mw middleware.MW,
 	riverUI *riverui.Server,
@@ -83,9 +81,7 @@ func New(
 	}
 }
 
-func (r *Routes) SetupRoutes(
-	ctx context.Context,
-) (*echo.Echo, context.Context) {
+func (r *Routes) SetupRoutes() *echo.Echo {
 	setupRoutes(r.router, routes.Assets, r.handlers.Assets, r.mw)
 	setupRoutes(
 		r.router,
@@ -103,7 +99,7 @@ func (r *Routes) SetupRoutes(
 	)
 	setupRoutes(r.router, routes.ApiV1, r.handlers.Api, r.mw)
 
-	return r.router, ctx
+	return r.router
 }
 
 func getHandlerFunc(handlers any, methodName string) echo.HandlerFunc {
