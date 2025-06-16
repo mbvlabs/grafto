@@ -82,9 +82,7 @@ func New(
 	}
 }
 
-func (r *Routes) SetupRoutes(
-// ctx context.Context,
-) *echo.Echo {
+func (r *Routes) SetupRoutes() *echo.Echo {
 	setupRoutes(r.router, routes.Assets, r.handlers.Assets, r.mw)
 	setupRoutes(
 		r.router,
