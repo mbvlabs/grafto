@@ -160,7 +160,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 
 	tests := []struct {
 		name              string
-		user              models.UserEntity
+		user              models.User
 		payload           url.Values
 		expectedToSucceed bool
 	}{
@@ -174,7 +174,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 		},
 		{
 			name: "should not send password reset",
-			user: models.UserEntity{},
+			user: models.User{},
 			payload: url.Values{
 				"email": {"doesnotexist@gmail.com"},
 			},
