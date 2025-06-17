@@ -35,8 +35,43 @@ func (b *buttonBuilder) WithType(t string) *buttonBuilder {
 	return b
 }
 
-func (b *buttonBuilder) WithVariant(variant string) *buttonBuilder {
-	b.props.Variant = variant
+func (b *buttonBuilder) WithPrimary() *buttonBuilder {
+	b.props.Variant = "primary"
+	return b
+}
+
+func (b *buttonBuilder) WithSecondary() *buttonBuilder {
+	b.props.Variant = "secondary"
+	return b
+}
+
+func (b *buttonBuilder) WithSuccess() *buttonBuilder {
+	b.props.Variant = "success"
+	return b
+}
+
+func (b *buttonBuilder) WithInfo() *buttonBuilder {
+	b.props.Variant = "info"
+	return b
+}
+
+func (b *buttonBuilder) WithWarning() *buttonBuilder {
+	b.props.Variant = "warning"
+	return b
+}
+
+func (b *buttonBuilder) WithDanger() *buttonBuilder {
+	b.props.Variant = "danger"
+	return b
+}
+
+func (b *buttonBuilder) WithError() *buttonBuilder {
+	b.props.Variant = "error"
+	return b
+}
+
+func (b *buttonBuilder) WithGhost() *buttonBuilder {
+	b.props.Variant = "ghost"
 	return b
 }
 

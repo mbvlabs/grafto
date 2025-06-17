@@ -123,7 +123,7 @@ func RegisterForm(data RegisterFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.Button("Register").WithVariant("success").WithSize("large").WithType("submit").Build().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Button("Register").WithSuccess().WithSize("large").WithType("submit").Build().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

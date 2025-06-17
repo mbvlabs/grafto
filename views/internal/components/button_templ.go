@@ -43,8 +43,43 @@ func (b *buttonBuilder) WithType(t string) *buttonBuilder {
 	return b
 }
 
-func (b *buttonBuilder) WithVariant(variant string) *buttonBuilder {
-	b.props.Variant = variant
+func (b *buttonBuilder) WithPrimary() *buttonBuilder {
+	b.props.Variant = "primary"
+	return b
+}
+
+func (b *buttonBuilder) WithSecondary() *buttonBuilder {
+	b.props.Variant = "secondary"
+	return b
+}
+
+func (b *buttonBuilder) WithSuccess() *buttonBuilder {
+	b.props.Variant = "success"
+	return b
+}
+
+func (b *buttonBuilder) WithInfo() *buttonBuilder {
+	b.props.Variant = "info"
+	return b
+}
+
+func (b *buttonBuilder) WithWarning() *buttonBuilder {
+	b.props.Variant = "warning"
+	return b
+}
+
+func (b *buttonBuilder) WithDanger() *buttonBuilder {
+	b.props.Variant = "danger"
+	return b
+}
+
+func (b *buttonBuilder) WithError() *buttonBuilder {
+	b.props.Variant = "error"
+	return b
+}
+
+func (b *buttonBuilder) WithGhost() *buttonBuilder {
+	b.props.Variant = "ghost"
 	return b
 }
 
@@ -129,7 +164,7 @@ func buttonComponent(text string, props buttonProps) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/button.templ`, Line: 82, Col: 8}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/button.templ`, Line: 117, Col: 8}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {

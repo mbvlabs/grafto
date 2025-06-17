@@ -99,7 +99,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.Button("Reset password").WithVariant("warning").WithType("submit").Build().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Button("Reset password").WithWarning().WithType("submit").Build().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
