@@ -132,7 +132,6 @@ func run(ctx context.Context) error {
 	)
 
 	router := routes.SetupRoutes()
-	routes.Setup404Handler()
 	server := server.NewHttp(ctx, router)
 
 	if err := psql.Queue().Start(ctx); err != nil {
