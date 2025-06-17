@@ -1,25 +1,23 @@
 package components
 
 type buttonProps struct {
-	Size     string
-	Variant  string
-	Outline  bool
-	Loading  bool
-	Disabled bool
-	Circle   bool
-	Square   bool
+	Size    string
+	Variant string
+	Outline bool
+	Circle  bool
+	Square  bool
 }
 
 type buttonBuilder struct {
-	text       string
-	attributes templ.Attributes
-	props      buttonProps
+	text    string
+	btnType string
+	props   buttonProps
 }
 
 func Button(text string) *buttonBuilder {
 	return &buttonBuilder{
-		text:       text,
-		attributes: templ.Attributes{},
+		text:    text,
+		btnType: "button",
 		props: buttonProps{
 			Size:    "medium",
 			Variant: "default",
@@ -29,6 +27,11 @@ func Button(text string) *buttonBuilder {
 
 func (b *buttonBuilder) WithSize(size string) *buttonBuilder {
 	b.props.Size = size
+	return b
+}
+
+func (b *buttonBuilder) WithType(t string) *buttonBuilder {
+	b.btnType = t
 	return b
 }
 
@@ -42,16 +45,6 @@ func (b *buttonBuilder) WithOutline() *buttonBuilder {
 	return b
 }
 
-func (b *buttonBuilder) WithLoading() *buttonBuilder {
-	b.props.Loading = true
-	return b
-}
-
-func (b *buttonBuilder) WithDisabled() *buttonBuilder {
-	b.props.Disabled = true
-	return b
-}
-
 func (b *buttonBuilder) WithCircle() *buttonBuilder {
 	b.props.Circle = true
 	return b
@@ -62,21 +55,13 @@ func (b *buttonBuilder) WithSquare() *buttonBuilder {
 	return b
 }
 
-func (b *buttonBuilder) WithAttributes(attrs templ.Attributes) *buttonBuilder {
-	for k, v := range attrs {
-		b.attributes[k] = v
-	}
-	return b
-}
-
 func (b *buttonBuilder) Build() templ.Component {
-	return buttonComponent(b.text, b.attributes, b.props)
+	return buttonComponent(b.text, b.props)
 }
 
-templ buttonComponent(text string, attributes templ.Attributes, props buttonProps) {
+templ buttonComponent(text string, props buttonProps) {
 	<button
-		{ attributes... }
-		class={ 
+		class={
 			"btn",
 			templ.KV("btn-sm", props.Size == "small"),
 			templ.KV("btn-md", props.Size == "medium" || props.Size == ""),
@@ -90,48 +75,41 @@ templ buttonComponent(text string, attributes templ.Attributes, props buttonProp
 			templ.KV("btn-error", props.Variant == "danger" || props.Variant == "error"),
 			templ.KV("btn-ghost", props.Variant == "ghost"),
 			templ.KV("btn-outline", props.Outline),
-			templ.KV("btn-loading", props.Loading),
 			templ.KV("btn-circle", props.Circle),
 			templ.KV("btn-square", props.Square),
 		}
-		disabled?={ props.Disabled || props.Loading }
 	>
 		{ text }
 	</button>
 }
 
 templ PrimaryButton(text string) {
-	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "primary"})
+	@buttonComponent(text, buttonProps{Variant: "primary"})
 }
 
 templ SecondaryButton(text string) {
-	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "secondary"})
+	@buttonComponent(text, buttonProps{Variant: "secondary"})
 }
 
 templ SuccessButton(text string) {
-	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "success"})
+	@buttonComponent(text, buttonProps{Variant: "success"})
 }
 
 templ DangerButton(text string) {
-	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "danger"})
+	@buttonComponent(text, buttonProps{Variant: "danger"})
 }
 
 templ GhostButton(text string) {
-	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "ghost"})
+	@buttonComponent(text, buttonProps{Variant: "ghost"})
 }
 
 templ OutlineButton(text string) {
-	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "default", Outline: true})
+	@buttonComponent(text, buttonProps{Variant: "default", Outline: true})
 }
 
-templ LoadingButton(text string) {
-	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "default", Loading: true})
-}
-
-templ IconButton(attributes templ.Attributes) {
+templ IconButton() {
 	<button
-		{ attributes... }
-		class={ 
+		class={
 			"btn",
 			"btn-ghost",
 			"btn-circle",
@@ -141,10 +119,9 @@ templ IconButton(attributes templ.Attributes) {
 	</button>
 }
 
-templ IconButtonSquare(attributes templ.Attributes) {
+templ IconButtonSquare() {
 	<button
-		{ attributes... }
-		class={ 
+		class={
 			"btn",
 			"btn-ghost",
 			"btn-square",

@@ -121,7 +121,7 @@ func Dashboard() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = components.IconButton(templ.Attributes{"aria-label": "Search"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.IconButton().Render(templ.WithChildren(ctx, templ_7745c5c3_Var7), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -143,7 +143,7 @@ func Dashboard() templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = components.IconButton(templ.Attributes{"aria-label": "Notifications"}).Render(templ.WithChildren(ctx, templ_7745c5c3_Var8), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.IconButton().Render(templ.WithChildren(ctx, templ_7745c5c3_Var8), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

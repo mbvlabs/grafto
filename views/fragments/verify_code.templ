@@ -69,10 +69,7 @@ templ VerifyCodeForm(props VerifyCodeProps) {
 									components.InputFieldProps{},
 								)
 							</div>
-							@components.Button("Verify Email").WithVariant("primary").WithSize("small").WithAttributes(templ.Attributes{
-								"type": "submit",
-								"class": "w-full",
-							}).Build()
+							@components.Button("Verify Email").WithVariant("primary").WithSize("small").WithType("submit").Build()
 						</div>
 					</form>
 				</div>

@@ -113,10 +113,7 @@ templ LoginForm(success bool, errors views.Errors) {
 								Forgotten password?
 							</a>
 						</div>
-						@components.Button("Login").WithVariant("primary").WithAttributes(templ.Attributes{
-							"type": "submit",
-							"class": "w-full",
-						}).Build()
+						@components.Button("Login").WithVariant("primary").WithType("submit").Build()
 					</div>
 				</form>
 			</div>

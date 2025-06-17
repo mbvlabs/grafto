@@ -126,10 +126,7 @@ func VerifyCodeForm(props VerifyCodeProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Button("Verify Email").WithVariant("primary").WithSize("small").WithAttributes(templ.Attributes{
-				"type":  "submit",
-				"class": "w-full",
-			}).Build().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Button("Verify Email").WithVariant("primary").WithSize("small").WithType("submit").Build().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

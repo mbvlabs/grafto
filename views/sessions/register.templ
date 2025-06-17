@@ -52,10 +52,7 @@ templ RegisterForm(data RegisterFormProps) {
 						<div>
 							@components.InputField("Confirm Password", "password", "confirm_password", "Repeat your password", templ.Attributes{"required": true, "minLength": "8"}, data.Fields[PasswordField])
 						</div>
-						@components.Button("Register").WithVariant("success").WithSize("large").WithAttributes(templ.Attributes{
-							"type": "submit",
-							"class": "w-full",
-						}).Build()
+						@components.Button("Register").WithVariant("success").WithSize("large").WithType("submit").Build()
 					</div>
 				</form>
 			</div>
