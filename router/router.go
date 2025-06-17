@@ -157,7 +157,6 @@ func getMiddlewareFunc(handlers any, methodName string) echo.MiddlewareFunc {
 
 	switch numIn {
 	case 1:
-		// Signature: func() echo.MiddlewareFunc
 		if !returnType.AssignableTo(middlewareFuncType) {
 			panic(
 				fmt.Sprintf(
@@ -174,7 +173,6 @@ func getMiddlewareFunc(handlers any, methodName string) echo.MiddlewareFunc {
 		return middleware
 
 	case 2:
-		// Signature: func(echo.HandlerFunc) echo.HandlerFunc
 		if !returnType.AssignableTo(handlerFuncType) {
 			panic(
 				fmt.Sprintf(
@@ -209,7 +207,7 @@ func setupRoutes(
 ) {
 	registeredRoutes := []string{}
 	handlersValue := reflect.ValueOf(handlers)
-	
+
 	for _, route := range r {
 		if registered := slices.Contains(registeredRoutes, route.Name); registered {
 			panic(
@@ -224,22 +222,14 @@ func setupRoutes(
 			panic("Route must specify Handler and HandleMethod fields")
 		}
 
-		// Get handler by field name using reflection
 		handlerField := handlersValue.FieldByName(route.Handler)
 		if !handlerField.IsValid() {
-			// Special cases for mapped names
-			switch route.Handler {
-			case "Sessions":
-				handlerField = handlersValue.FieldByName("Authentication")
-			case "Registrations":
-				handlerField = handlersValue.FieldByName("Registration")
-			default:
-				panic(fmt.Sprintf("Handler field %s not found in handlers struct", route.Handler))
-			}
-		}
-
-		if !handlerField.IsValid() {
-			panic(fmt.Sprintf("Handler field %s not found in handlers struct", route.Handler))
+			panic(
+				fmt.Sprintf(
+					"Handler field %s not found in handlers struct",
+					route.Handler,
+				),
+			)
 		}
 
 		handler := handlerField.Interface()
