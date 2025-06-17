@@ -131,7 +131,8 @@ func run(ctx context.Context) error {
 		tel.AppTracerProvider,
 	)
 
-	server := server.NewHttp(ctx, routes.SetupRoutes())
+	router := routes.SetupRoutes()
+	server := server.NewHttp(ctx, router)
 
 	if err := psql.Queue().Start(ctx); err != nil {
 		return err

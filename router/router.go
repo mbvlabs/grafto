@@ -83,7 +83,12 @@ func New(
 
 func (r *Routes) SetupRoutes() *echo.Echo {
 	setupRoutes(r.router, routes.AllRoutes, r.handlers, r.mw)
+	r.setup404Handler()
 	return r.router
+}
+
+func (r *Routes) setup404Handler() {
+	r.router.RouteNotFound("/*", getHandlerFunc(r.handlers.App, "NotFoundPage"))
 }
 
 func getHandlerFunc(handlers any, methodName string) echo.HandlerFunc {
