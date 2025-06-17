@@ -9,7 +9,7 @@ templ Base(headOpts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="grafto">
 		@components.SetupHead(ctx, headOpts...)
-		<body>
+		<body class="container mx-auto min-h-screen flex flex-col">
 			@components.Nav()
 			{ children... }
 		</body>

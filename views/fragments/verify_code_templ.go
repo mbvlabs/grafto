@@ -40,7 +40,7 @@ func VerifyCodeForm(props VerifyCodeProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"verify-code-container\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"w-full max-w-[400px] mx-auto\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -65,12 +65,12 @@ func VerifyCodeForm(props VerifyCodeProps) templ.Component {
 			}
 		}
 		if !props.Success {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"verify-code-form\"><div class=\"verify-code-header\"><h1>Verify Your Email</h1><p>Please enter the 6-character code sent to your email.</p></div><div class=\"verify-code-body\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div hx-target=\"this\" hx-swap=\"outerHTML\" class=\"bg-base-200 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content\"><div class=\"text-center mb-6\"><h1 class=\"text-[1.75rem] font-bold text-base-content mb-2\">Verify Your Email</h1><p class=\"text-sm text-base-content\">Please enter the 6-character code sent to your email.</p></div><div class=\"w-full\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if props.CodeInvalid {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"error-message\"><svg class=\"icon-error\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z\"></path></svg><h2>Invalid verification code. Please try again.</h2></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex items-center p-3 mb-4 rounded bg-error/15 text-error\"><svg class=\"h-5 w-5 fill-current mr-3\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z\"></path></svg><h2 class=\"text-error text-sm\">Invalid verification code. Please try again.</h2></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -101,7 +101,7 @@ func VerifyCodeForm(props VerifyCodeProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"><div class=\"form-fields\"><div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"><div class=\"grid gap-4\"><div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -115,14 +115,14 @@ func VerifyCodeForm(props VerifyCodeProps) templ.Component {
 					"minlength": "6",
 					"maxlength": "6",
 					"pattern":   "[A-Za-z0-9]{6}",
-					"style":     "letter-spacing: 0.5em; text-transform: uppercase; font-size: 1.2em; text-align: center;",
+					"style":     "letter-spacing: 0.5em; text-transform: uppercase; font-size: 1.2em; text-align: center; font-family: 'Courier New', monospace;",
 				},
 				components.InputFieldProps{},
 			).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><button type=\"submit\" class=\"btn btn-primary\">Verify Email</button></div></form></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><button type=\"submit\" class=\"px-6 py-3 border-none rounded cursor-pointer font-bold text-center transition-all duration-200 bg-primary text-primary-content hover:bg-primary/90 hover:-translate-y-px\">Verify Email</button></div></form></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

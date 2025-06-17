@@ -8,7 +8,7 @@ import (
 
 templ NavItem(name, pathName, path string, attrs templ.Attributes) {
 	<a
-		class="navItem"
+		class="text-base-content no-underline transition-colors duration-300 hover:text-accent text-base font-medium py-2 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full"
 		{ attrs... }
 		data-navItemPath={ pathName }
 		href={ templ.SafeURL(path) }
@@ -16,23 +16,23 @@ templ NavItem(name, pathName, path string, attrs templ.Attributes) {
 }
 
 templ Nav() {
-	<nav id="navigation" class="container nav">
-		<div class="nav-content">
-			<div class="nav-logo">
-				<a class="logo" href={ templ.SafeURL(routes.LandingPage.Path) }>{ config.Cfg.ProjectName }</a>
+	<nav id="navigation" class="w-full px-4 mx-auto max-w-[540px] sm:max-w-[720px] md:max-w-[960px] lg:max-w-[1140px] xl:max-w-[1320px] h-16 shadow-sm z-[100]">
+		<div class="h-full items-center flex justify-between list-none relative">
+			<div class="text-xl font-bold">
+				<a class="logo text-base-content no-underline transition-colors duration-300 hover:text-accent" href={ templ.SafeURL(routes.LandingPage.Path) }>{ config.Cfg.ProjectName }</a>
 			</div>
-			<button class="nav-toggle" aria-label="toggle navigation">
-				<span class="hamburger"></span>
+			<button class="md:hidden bg-transparent border-none cursor-pointer p-0 w-8 h-8 relative" aria-label="toggle navigation">
+				<span class="block relative w-8 h-[3px] bg-base-content transition-transform duration-300 before:content-[''] before:absolute before:left-0 before:w-8 before:h-[3px] before:bg-base-content before:transition-transform before:duration-300 before:-top-2 after:content-[''] after:absolute after:left-0 after:w-8 after:h-[3px] after:bg-base-content after:transition-transform after:duration-300 after:-bottom-2"></span>
 			</button>
-			<div class="nav-menu">
-				<ul class="menu">
-					<li>
+			<div class="hidden md:block nav-menu">
+				<ul class="flex gap-8 list-none m-0 p-0">
+					<li class="relative">
 						@NavItem("Home", routes.LandingPage.Name, routes.LandingPage.Path, nil)
 					</li>
-					<li>
+					<li class="relative">
 						@NavItem("About", routes.AboutPage.Name, routes.AboutPage.Path, nil)
 					</li>
-					<li>
+					<li class="relative">
 						if contexts.ExtractApp(ctx).IsAuthenticated {
 							@NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, templ.Attributes{"hx-delete": routes.DestroyAuthSession.Path})
 						} else {
