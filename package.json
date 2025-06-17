@@ -5,18 +5,16 @@
 	"author": "",
 	"license": "ISC",
 	"scripts": {
-		"dev": "vite build --mode dev",
-		"prod": "vite build --mode prod"
+		"build-css": "vite build"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/MBvisti/grafto.git"
 	},
 	"devDependencies": {
-		"@rails/actiontext": "^7.2.102",
-		"@vimeo/player": "^2.24.0",
-		"html-to-text": "^9.0.5",
-		"trix": "^2.1.15"
+		"@tailwindcss/vite": "^4.1.8",
+		"tailwindcss": "^4.1.8",
+		"@tailwindcss/typography": "^0.5.16"
 	}
 }
 
