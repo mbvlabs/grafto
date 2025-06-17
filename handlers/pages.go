@@ -47,3 +47,8 @@ func (a App) Redirect(c echo.Context) error {
 
 	return redirect(c.Response(), c.Request(), "/")
 }
+
+func (a App) NotFoundPage(c echo.Context) error {
+	c.Response().Status = 404
+	return views.NotFoundPage().Render(renderArgs(c))
+}

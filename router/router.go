@@ -86,6 +86,10 @@ func (r *Routes) SetupRoutes() *echo.Echo {
 	return r.router
 }
 
+func (r *Routes) Setup404Handler() {
+	r.router.RouteNotFound("/*", getHandlerFunc(r.handlers.App, "NotFoundPage"))
+}
+
 func getHandlerFunc(handlers any, methodName string) echo.HandlerFunc {
 	appType := reflect.TypeOf(handlers)
 	method, found := appType.MethodByName(methodName)
