@@ -1,6 +1,6 @@
 package components
 
-type ButtonProps struct {
+type buttonProps struct {
 	Size     string
 	Variant  string
 	Outline  bool
@@ -10,70 +10,70 @@ type ButtonProps struct {
 	Square   bool
 }
 
-type ButtonBuilder struct {
+type buttonBuilder struct {
 	text       string
 	attributes templ.Attributes
-	props      ButtonProps
+	props      buttonProps
 }
 
-func Button(text string) *ButtonBuilder {
-	return &ButtonBuilder{
+func Button(text string) *buttonBuilder {
+	return &buttonBuilder{
 		text:       text,
 		attributes: templ.Attributes{},
-		props: ButtonProps{
+		props: buttonProps{
 			Size:    "medium",
 			Variant: "default",
 		},
 	}
 }
 
-func (b *ButtonBuilder) WithSize(size string) *ButtonBuilder {
+func (b *buttonBuilder) WithSize(size string) *buttonBuilder {
 	b.props.Size = size
 	return b
 }
 
-func (b *ButtonBuilder) WithVariant(variant string) *ButtonBuilder {
+func (b *buttonBuilder) WithVariant(variant string) *buttonBuilder {
 	b.props.Variant = variant
 	return b
 }
 
-func (b *ButtonBuilder) WithOutline() *ButtonBuilder {
+func (b *buttonBuilder) WithOutline() *buttonBuilder {
 	b.props.Outline = true
 	return b
 }
 
-func (b *ButtonBuilder) WithLoading() *ButtonBuilder {
+func (b *buttonBuilder) WithLoading() *buttonBuilder {
 	b.props.Loading = true
 	return b
 }
 
-func (b *ButtonBuilder) WithDisabled() *ButtonBuilder {
+func (b *buttonBuilder) WithDisabled() *buttonBuilder {
 	b.props.Disabled = true
 	return b
 }
 
-func (b *ButtonBuilder) WithCircle() *ButtonBuilder {
+func (b *buttonBuilder) WithCircle() *buttonBuilder {
 	b.props.Circle = true
 	return b
 }
 
-func (b *ButtonBuilder) WithSquare() *ButtonBuilder {
+func (b *buttonBuilder) WithSquare() *buttonBuilder {
 	b.props.Square = true
 	return b
 }
 
-func (b *ButtonBuilder) WithAttributes(attrs templ.Attributes) *ButtonBuilder {
+func (b *buttonBuilder) WithAttributes(attrs templ.Attributes) *buttonBuilder {
 	for k, v := range attrs {
 		b.attributes[k] = v
 	}
 	return b
 }
 
-func (b *ButtonBuilder) Build() templ.Component {
-	return ButtonComponent(b.text, b.attributes, b.props)
+func (b *buttonBuilder) Build() templ.Component {
+	return buttonComponent(b.text, b.attributes, b.props)
 }
 
-templ ButtonComponent(text string, attributes templ.Attributes, props ButtonProps) {
+templ buttonComponent(text string, attributes templ.Attributes, props buttonProps) {
 	<button
 		{ attributes... }
 		class={ 
@@ -100,32 +100,32 @@ templ ButtonComponent(text string, attributes templ.Attributes, props ButtonProp
 	</button>
 }
 
-templ PrimaryButton(text string, attributes templ.Attributes) {
-	@ButtonComponent(text, attributes, ButtonProps{Variant: "primary"})
+templ PrimaryButton(text string) {
+	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "primary"})
 }
 
-templ SecondaryButton(text string, attributes templ.Attributes) {
-	@ButtonComponent(text, attributes, ButtonProps{Variant: "secondary"})
+templ SecondaryButton(text string) {
+	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "secondary"})
 }
 
-templ SuccessButton(text string, attributes templ.Attributes) {
-	@ButtonComponent(text, attributes, ButtonProps{Variant: "success"})
+templ SuccessButton(text string) {
+	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "success"})
 }
 
-templ DangerButton(text string, attributes templ.Attributes) {
-	@ButtonComponent(text, attributes, ButtonProps{Variant: "danger"})
+templ DangerButton(text string) {
+	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "danger"})
 }
 
-templ GhostButton(text string, attributes templ.Attributes) {
-	@ButtonComponent(text, attributes, ButtonProps{Variant: "ghost"})
+templ GhostButton(text string) {
+	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "ghost"})
 }
 
-templ OutlineButton(text string, attributes templ.Attributes) {
-	@ButtonComponent(text, attributes, ButtonProps{Variant: "default", Outline: true})
+templ OutlineButton(text string) {
+	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "default", Outline: true})
 }
 
-templ LoadingButton(text string, attributes templ.Attributes) {
-	@ButtonComponent(text, attributes, ButtonProps{Variant: "default", Loading: true})
+templ LoadingButton(text string) {
+	@buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "default", Loading: true})
 }
 
 templ IconButton(attributes templ.Attributes) {

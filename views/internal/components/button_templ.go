@@ -8,7 +8,7 @@ package components
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-type ButtonProps struct {
+type buttonProps struct {
 	Size     string
 	Variant  string
 	Outline  bool
@@ -18,70 +18,70 @@ type ButtonProps struct {
 	Square   bool
 }
 
-type ButtonBuilder struct {
+type buttonBuilder struct {
 	text       string
 	attributes templ.Attributes
-	props      ButtonProps
+	props      buttonProps
 }
 
-func Button(text string) *ButtonBuilder {
-	return &ButtonBuilder{
+func Button(text string) *buttonBuilder {
+	return &buttonBuilder{
 		text:       text,
 		attributes: templ.Attributes{},
-		props: ButtonProps{
+		props: buttonProps{
 			Size:    "medium",
 			Variant: "default",
 		},
 	}
 }
 
-func (b *ButtonBuilder) WithSize(size string) *ButtonBuilder {
+func (b *buttonBuilder) WithSize(size string) *buttonBuilder {
 	b.props.Size = size
 	return b
 }
 
-func (b *ButtonBuilder) WithVariant(variant string) *ButtonBuilder {
+func (b *buttonBuilder) WithVariant(variant string) *buttonBuilder {
 	b.props.Variant = variant
 	return b
 }
 
-func (b *ButtonBuilder) WithOutline() *ButtonBuilder {
+func (b *buttonBuilder) WithOutline() *buttonBuilder {
 	b.props.Outline = true
 	return b
 }
 
-func (b *ButtonBuilder) WithLoading() *ButtonBuilder {
+func (b *buttonBuilder) WithLoading() *buttonBuilder {
 	b.props.Loading = true
 	return b
 }
 
-func (b *ButtonBuilder) WithDisabled() *ButtonBuilder {
+func (b *buttonBuilder) WithDisabled() *buttonBuilder {
 	b.props.Disabled = true
 	return b
 }
 
-func (b *ButtonBuilder) WithCircle() *ButtonBuilder {
+func (b *buttonBuilder) WithCircle() *buttonBuilder {
 	b.props.Circle = true
 	return b
 }
 
-func (b *ButtonBuilder) WithSquare() *ButtonBuilder {
+func (b *buttonBuilder) WithSquare() *buttonBuilder {
 	b.props.Square = true
 	return b
 }
 
-func (b *ButtonBuilder) WithAttributes(attrs templ.Attributes) *ButtonBuilder {
+func (b *buttonBuilder) WithAttributes(attrs templ.Attributes) *buttonBuilder {
 	for k, v := range attrs {
 		b.attributes[k] = v
 	}
 	return b
 }
 
-func (b *ButtonBuilder) Build() templ.Component {
-	return ButtonComponent(b.text, b.attributes, b.props)
+func (b *buttonBuilder) Build() templ.Component {
+	return buttonComponent(b.text, b.attributes, b.props)
 }
 
-func ButtonComponent(text string, attributes templ.Attributes, props ButtonProps) templ.Component {
+func buttonComponent(text string, attributes templ.Attributes, props buttonProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -176,7 +176,7 @@ func ButtonComponent(text string, attributes templ.Attributes, props ButtonProps
 	})
 }
 
-func PrimaryButton(text string, attributes templ.Attributes) templ.Component {
+func PrimaryButton(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -197,7 +197,7 @@ func PrimaryButton(text string, attributes templ.Attributes) templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = ButtonComponent(text, attributes, ButtonProps{Variant: "primary"}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "primary"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -205,7 +205,7 @@ func PrimaryButton(text string, attributes templ.Attributes) templ.Component {
 	})
 }
 
-func SecondaryButton(text string, attributes templ.Attributes) templ.Component {
+func SecondaryButton(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -226,7 +226,7 @@ func SecondaryButton(text string, attributes templ.Attributes) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = ButtonComponent(text, attributes, ButtonProps{Variant: "secondary"}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "secondary"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -234,7 +234,7 @@ func SecondaryButton(text string, attributes templ.Attributes) templ.Component {
 	})
 }
 
-func SuccessButton(text string, attributes templ.Attributes) templ.Component {
+func SuccessButton(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -255,7 +255,7 @@ func SuccessButton(text string, attributes templ.Attributes) templ.Component {
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = ButtonComponent(text, attributes, ButtonProps{Variant: "success"}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "success"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -263,7 +263,7 @@ func SuccessButton(text string, attributes templ.Attributes) templ.Component {
 	})
 }
 
-func DangerButton(text string, attributes templ.Attributes) templ.Component {
+func DangerButton(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -284,7 +284,7 @@ func DangerButton(text string, attributes templ.Attributes) templ.Component {
 			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = ButtonComponent(text, attributes, ButtonProps{Variant: "danger"}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "danger"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -292,7 +292,7 @@ func DangerButton(text string, attributes templ.Attributes) templ.Component {
 	})
 }
 
-func GhostButton(text string, attributes templ.Attributes) templ.Component {
+func GhostButton(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -313,7 +313,7 @@ func GhostButton(text string, attributes templ.Attributes) templ.Component {
 			templ_7745c5c3_Var9 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = ButtonComponent(text, attributes, ButtonProps{Variant: "ghost"}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "ghost"}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -321,7 +321,7 @@ func GhostButton(text string, attributes templ.Attributes) templ.Component {
 	})
 }
 
-func OutlineButton(text string, attributes templ.Attributes) templ.Component {
+func OutlineButton(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -342,7 +342,7 @@ func OutlineButton(text string, attributes templ.Attributes) templ.Component {
 			templ_7745c5c3_Var10 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = ButtonComponent(text, attributes, ButtonProps{Variant: "default", Outline: true}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "default", Outline: true}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -350,7 +350,7 @@ func OutlineButton(text string, attributes templ.Attributes) templ.Component {
 	})
 }
 
-func LoadingButton(text string, attributes templ.Attributes) templ.Component {
+func LoadingButton(text string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -371,7 +371,7 @@ func LoadingButton(text string, attributes templ.Attributes) templ.Component {
 			templ_7745c5c3_Var11 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = ButtonComponent(text, attributes, ButtonProps{Variant: "default", Loading: true}).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = buttonComponent(text, templ.Attributes{}, buttonProps{Variant: "default", Loading: true}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
