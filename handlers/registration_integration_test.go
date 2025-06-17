@@ -109,7 +109,7 @@ func TestStoreUser(t *testing.T) {
 			).Return(nil)
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Registration.StoreUser(c)
+			err := testHandlers.Registrations.StoreUser(c)
 			if tt.expectedError == nil {
 				assert.NoError(t, err)
 			}
@@ -209,7 +209,7 @@ func TestVerifyEmail(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Registration.VerifyUserEmail(c)
+			err := testHandlers.Registrations.VerifyUserEmail(c)
 			assert.NoError(t, err)
 
 			usr, err := models.GetUser(
