@@ -14,10 +14,11 @@ var Dashboard = []Route{
 }
 
 var DashboardHome = Route{
-	Name:        dashboardNamePrefix + ".home",
-	Path:        dashboardRoutePrefix,
-	Method:      http.MethodGet,
-	HandlerName: "Index",
+	Name:         dashboardNamePrefix + ".home",
+	Path:         dashboardRoutePrefix,
+	Method:       http.MethodGet,
+	Handler:      "Dashboard",
+	HandleMethod: "Index",
 	Middleware: []string{
 		"AuthOnly",
 	},
