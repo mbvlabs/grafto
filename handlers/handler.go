@@ -28,7 +28,7 @@ type Handlers struct {
 	Api            Api
 	App            App
 	Authentication Sessions
-	Dashboard      Dashboards
+	Dashboard      Dashboard
 	Registration   Registrations
 	Assets         Assets
 	Fragments      Fragments
@@ -88,7 +88,7 @@ func NewHandlers(
 	api := newApi()
 	app := newApp(db, cache)
 	auth := newSessions(db, emailSvc)
-	dashboard := newDashboards()
+	dashboard := newDashboard()
 	registration := newRegistrations(db, emailSvc)
 	assets := newAssets()
 

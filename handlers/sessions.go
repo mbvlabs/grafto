@@ -25,7 +25,6 @@ func newSessions(
 	return Sessions{db, emailClient}
 }
 
-// New renders the login page (GET /sessions/new)
 func (a Sessions) New(ctx echo.Context) error {
 	return sessions.LoginPage(sessions.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
@@ -38,7 +37,6 @@ type StoreAuthenticatedSessionPayload struct {
 	RememberMe string `form:"remember_me"`
 }
 
-// Create handles session creation (POST /sessions)
 func (a Sessions) Create(ctx echo.Context) error {
 	var payload StoreAuthenticatedSessionPayload
 	if err := ctx.Bind(&payload); err != nil {
@@ -91,7 +89,6 @@ func (a Sessions) Create(ctx echo.Context) error {
 		Render(renderArgs(ctx))
 }
 
-// Destroy handles session destruction (DELETE /sessions)
 func (a Sessions) Destroy(ctx echo.Context) error {
 	if err := destroyAuthSession(ctx); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
@@ -104,7 +101,6 @@ func (a Sessions) Destroy(ctx echo.Context) error {
 	)
 }
 
-// NewPasswordReset renders the password reset request page (GET /password-resets/new)
 func (a Sessions) NewPasswordReset(ctx echo.Context) error {
 	return sessions.ForgottenPasswordPage(csrf.Token(ctx.Request())).
 		Render(renderArgs(ctx))
@@ -114,7 +110,6 @@ type StorePasswordResetPayload struct {
 	Email string `form:"email"`
 }
 
-// CreatePasswordReset handles password reset request creation (POST /password-resets)
 func (a Sessions) CreatePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
@@ -137,7 +132,6 @@ type PasswordResetTokenPayload struct {
 	Token string `query:"token"`
 }
 
-// EditPasswordReset renders the password reset form (GET /password-resets/edit)
 func (a Sessions) EditPasswordReset(ctx echo.Context) error {
 	var passwordResetToken PasswordResetTokenPayload
 	if err := ctx.Bind(&passwordResetToken); err != nil {
@@ -155,7 +149,6 @@ type ResetPasswordPayload struct {
 	Token           string `form:"token"`
 }
 
-// UpdatePasswordReset handles password reset form submission (PUT /password-resets)
 func (a Sessions) UpdatePasswordReset(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
