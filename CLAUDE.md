@@ -12,6 +12,13 @@ Grafto is a starter template for full-stack Go web applications using server-sid
 
 The target audience is solo developers building side-projects or bootstrapping new businesses.
 
+## Guidelines
+
+- Do not build the application for testing purposes
+- Do not add comments
+- Always use the code quality commands for testing your work
+- always use database commands for interacting with the database (migrations, queries)
+
 ## Development Commands
 
 ### Application

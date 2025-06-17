@@ -25,13 +25,13 @@ const (
 )
 
 type Handlers struct {
-	Api            Api
-	App            App
-	Authentication Sessions
-	Dashboard      Dashboard
-	Registration   Registrations
-	Assets         Assets
-	Fragments      Fragments
+	Api           Api
+	App           App
+	Sessions      Sessions
+	Dashboard     Dashboard
+	Registrations Registrations
+	Assets        Assets
+	Fragments     Fragments
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
