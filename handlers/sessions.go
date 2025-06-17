@@ -10,7 +10,7 @@ import (
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
-	sessions "github.com/mbvlabs/grafto/views/sessions"
+	sessionViews "github.com/mbvlabs/grafto/views/sessions"
 )
 
 type Sessions struct {
@@ -26,7 +26,7 @@ func newSessions(
 }
 
 func (a Sessions) New(ctx echo.Context) error {
-	return sessions.LoginPage(sessions.LoginPageProps{
+	return sessionViews.LoginPage(sessionViews.LoginPageProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}).Render(renderArgs(ctx))
 }
@@ -60,16 +60,16 @@ func (a Sessions) Create(ctx echo.Context) error {
 		var userErr views.Errors
 		if errors.Is(err, services.ErrUserEmailNotVerified) {
 			userErr = views.Errors{
-				sessions.ErrEmailNotValidated: "Your email has not yet been verified.",
+				sessionViews.ErrEmailNotValidated: "Your email has not yet been verified.",
 			}
 		}
 		if errors.Is(err, services.ErrInvalidAuthDetail) {
 			userErr = views.Errors{
-				sessions.ErrEmailNotValidated: "The email or password you entered is incorrect.",
+				sessionViews.ErrEmailNotValidated: "The email or password you entered is incorrect.",
 			}
 		}
 
-		return sessions.LoginForm(
+		return sessionViews.LoginForm(
 			csrf.Token(
 				ctx.Request(),
 			),
@@ -84,7 +84,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return sessions.LoginForm(
+	return sessionViews.LoginForm(
 		csrf.Token(ctx.Request()), true, nil).
 		Render(renderArgs(ctx))
 }
@@ -102,7 +102,7 @@ func (a Sessions) Destroy(ctx echo.Context) error {
 }
 
 func (a Sessions) NewPasswordReset(ctx echo.Context) error {
-	return sessions.ForgottenPasswordPage(csrf.Token(ctx.Request())).
+	return sessionViews.ForgottenPasswordPage(csrf.Token(ctx.Request())).
 		Render(renderArgs(ctx))
 }
 
@@ -121,7 +121,7 @@ func (a Sessions) CreatePasswordReset(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return sessions.ForgottenPasswordForm(sessions.ForgottenPasswordFormProps{
+	return sessionViews.ForgottenPasswordForm(sessionViews.ForgottenPasswordFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 		Success:   true,
 	}).
@@ -138,7 +138,7 @@ func (a Sessions) EditPasswordReset(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return sessions.ResetPasswordPage(
+	return sessionViews.ResetPasswordPage(
 		false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
 		Render(renderArgs(ctx))
 }
@@ -160,6 +160,6 @@ func (a Sessions) UpdatePasswordReset(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return sessions.ResetPasswordForm(sessions.ResetPasswordFormProps{}).
+	return sessionViews.ResetPasswordForm(sessionViews.ResetPasswordFormProps{}).
 		Render(renderArgs(ctx))
 }
