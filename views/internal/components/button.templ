@@ -1,102 +1,167 @@
 package components
 
-type ButtonProps struct {
-	Size     string
-	Variant  string
-	Disabled bool
+type buttonProps struct {
+	Size    string
+	Variant string
+	Outline bool
+	Circle  bool
+	Square  bool
 }
 
-templ Button(text string, attributes templ.Attributes, props ButtonProps) {
+type buttonBuilder struct {
+	text    string
+	btnType string
+	props   buttonProps
+}
+
+func Button(text string) *buttonBuilder {
+	return &buttonBuilder{
+		text:    text,
+		btnType: "button",
+		props: buttonProps{
+			Size:    "medium",
+			Variant: "default",
+		},
+	}
+}
+
+func (b *buttonBuilder) WithSize(size string) *buttonBuilder {
+	b.props.Size = size
+	return b
+}
+
+func (b *buttonBuilder) WithType(t string) *buttonBuilder {
+	b.btnType = t
+	return b
+}
+
+func (b *buttonBuilder) WithPrimary() *buttonBuilder {
+	b.props.Variant = "primary"
+	return b
+}
+
+func (b *buttonBuilder) WithSecondary() *buttonBuilder {
+	b.props.Variant = "secondary"
+	return b
+}
+
+func (b *buttonBuilder) WithSuccess() *buttonBuilder {
+	b.props.Variant = "success"
+	return b
+}
+
+func (b *buttonBuilder) WithInfo() *buttonBuilder {
+	b.props.Variant = "info"
+	return b
+}
+
+func (b *buttonBuilder) WithWarning() *buttonBuilder {
+	b.props.Variant = "warning"
+	return b
+}
+
+func (b *buttonBuilder) WithDanger() *buttonBuilder {
+	b.props.Variant = "danger"
+	return b
+}
+
+func (b *buttonBuilder) WithError() *buttonBuilder {
+	b.props.Variant = "error"
+	return b
+}
+
+func (b *buttonBuilder) WithGhost() *buttonBuilder {
+	b.props.Variant = "ghost"
+	return b
+}
+
+func (b *buttonBuilder) WithOutline() *buttonBuilder {
+	b.props.Outline = true
+	return b
+}
+
+func (b *buttonBuilder) WithCircle() *buttonBuilder {
+	b.props.Circle = true
+	return b
+}
+
+func (b *buttonBuilder) WithSquare() *buttonBuilder {
+	b.props.Square = true
+	return b
+}
+
+func (b *buttonBuilder) Build() templ.Component {
+	return buttonComponent(b.text, b.props)
+}
+
+templ buttonComponent(text string, props buttonProps) {
 	<button
-		{ attributes... }
-		class={ 
+		class={
 			"btn",
 			templ.KV("btn-sm", props.Size == "small"),
 			templ.KV("btn-md", props.Size == "medium" || props.Size == ""),
 			templ.KV("btn-lg", props.Size == "large"),
+			templ.KV("btn-default", props.Variant == "default" || props.Variant == ""),
+			templ.KV("btn-primary", props.Variant == "primary"),
+			templ.KV("btn-secondary", props.Variant == "secondary"),
 			templ.KV("btn-success", props.Variant == "success"),
 			templ.KV("btn-info", props.Variant == "info"),
 			templ.KV("btn-warning", props.Variant == "warning"),
-			templ.KV("btn-error", props.Variant == "danger"),
+			templ.KV("btn-error", props.Variant == "danger" || props.Variant == "error"),
+			templ.KV("btn-ghost", props.Variant == "ghost"),
+			templ.KV("btn-outline", props.Outline),
+			templ.KV("btn-circle", props.Circle),
+			templ.KV("btn-square", props.Square),
 		}
-		disabled?={ props.Disabled }
 	>
 		{ text }
 	</button>
 }
 
-templ ButtonSmall(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "small"})
+templ PrimaryButton(text string) {
+	@buttonComponent(text, buttonProps{Variant: "primary"})
 }
 
-templ ButtonMedium(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "medium"})
+templ SecondaryButton(text string) {
+	@buttonComponent(text, buttonProps{Variant: "secondary"})
 }
 
-templ ButtonLarge(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "large"})
+templ SuccessButton(text string) {
+	@buttonComponent(text, buttonProps{Variant: "success"})
 }
 
-templ ButtonSuccess(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Variant: "success"})
+templ DangerButton(text string) {
+	@buttonComponent(text, buttonProps{Variant: "danger"})
 }
 
-templ ButtonInfo(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Variant: "info"})
+templ GhostButton(text string) {
+	@buttonComponent(text, buttonProps{Variant: "ghost"})
 }
 
-templ ButtonWarning(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Variant: "warning"})
+templ OutlineButton(text string) {
+	@buttonComponent(text, buttonProps{Variant: "default", Outline: true})
 }
 
-templ ButtonDanger(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Variant: "danger"})
+templ IconButton() {
+	<button
+		class={
+			"btn",
+			"btn-ghost",
+			"btn-circle",
+		}
+	>
+		{ children... }
+	</button>
 }
 
-templ ButtonSuccessSmall(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "small", Variant: "success"})
-}
-
-templ ButtonSuccessMedium(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "medium", Variant: "success"})
-}
-
-templ ButtonSuccessLarge(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "large", Variant: "success"})
-}
-
-templ ButtonInfoSmall(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "small", Variant: "info"})
-}
-
-templ ButtonInfoMedium(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "medium", Variant: "info"})
-}
-
-templ ButtonInfoLarge(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "large", Variant: "info"})
-}
-
-templ ButtonWarningSmall(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "small", Variant: "warning"})
-}
-
-templ ButtonWarningMedium(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "medium", Variant: "warning"})
-}
-
-templ ButtonWarningLarge(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "large", Variant: "warning"})
-}
-
-templ ButtonDangerSmall(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "small", Variant: "danger"})
-}
-
-templ ButtonDangerMedium(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "medium", Variant: "danger"})
-}
-
-templ ButtonDangerLarge(text string, attributes templ.Attributes) {
-	@Button(text, attributes, ButtonProps{Size: "large", Variant: "danger"})
+templ IconButtonSquare() {
+	<button
+		class={
+			"btn",
+			"btn-ghost",
+			"btn-square",
+		}
+	>
+		{ children... }
+	</button>
 }

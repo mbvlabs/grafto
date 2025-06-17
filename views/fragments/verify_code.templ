@@ -69,12 +69,7 @@ templ VerifyCodeForm(props VerifyCodeProps) {
 									components.InputFieldProps{},
 								)
 							</div>
-							<button
-								type="submit"
-								class="px-6 py-3 border-none rounded cursor-pointer font-bold text-center transition-all duration-200 bg-primary text-primary-content hover:bg-primary/90 hover:-translate-y-px"
-							>
-								Verify Email
-							</button>
+							@components.Button("Verify Email").WithPrimary().WithSize("small").WithType("submit").Build()
 						</div>
 					</form>
 				</div>
