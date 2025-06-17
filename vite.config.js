@@ -10,7 +10,7 @@ export default defineConfig(() => {
 				output: {
 					assetFileNames: "tw.css",
 				},
-				input: "./base.css",
+				input: "./css/base.css",
 			}
 		},
 		server: false,

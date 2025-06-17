@@ -1,8 +1,3 @@
-@import "tailwindcss";
-@plugin "@tailwindcss/typography";
-
-@source "./views";
-
 @theme {
 	--color-base-100: oklch(20.51% 0.003 300.00);
 	--color-base-200: oklch(15.51% 0.003 300.00);
@@ -32,18 +27,4 @@
 
 	--color-error: oklch(58.76% 0.108 23.41);
 	--color-error-content: oklch(10.51% 0.003 300.00);
-}
-
-body {
-	font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-	background-color: var(--color-base-100);
-	color: var(--color-base-content);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	font-style: normal;
-	font-weight: 400;
-	letter-spacing: -0.0125em;
-	line-height: 1.5;
-	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-	text-rendering: optimizeLegibility;
 }
