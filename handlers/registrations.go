@@ -8,24 +8,24 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
-	"github.com/mbvlabs/grafto/views/authentication"
 	"github.com/mbvlabs/grafto/views/fragments"
+	"github.com/mbvlabs/grafto/views/sessions"
 )
 
-type Registration struct {
+type Registrations struct {
 	db          psql.Postgres
 	emailClient services.EmailSender
 }
 
-func newRegistration(
+func newRegistrations(
 	db psql.Postgres,
 	emailClient services.EmailSender,
-) Registration {
-	return Registration{db, emailClient}
+) Registrations {
+	return Registrations{db, emailClient}
 }
 
-func (r Registration) CreateUser(ctx echo.Context) error {
-	return authentication.RegisterPage(authentication.RegisterFormProps{
+func (r Registrations) New(ctx echo.Context) error {
+	return sessions.RegisterPage(sessions.RegisterFormProps{
 		CsrfToken: csrf.Token(ctx.Request()),
 	}).Render(renderArgs(ctx))
 }
@@ -36,7 +36,7 @@ type StoreUserPayload struct {
 	ConfirmPassword string `form:"confirm_password"`
 }
 
-func (r Registration) StoreUser(ctx echo.Context) error {
+func (r Registrations) Create(ctx echo.Context) error {
 	var payload StoreUserPayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
@@ -66,7 +66,7 @@ type verificationCodePayload struct {
 	Code string `form:"code"`
 }
 
-func (r Registration) VerifyUserEmail(ctx echo.Context) error {
+func (r Registrations) Update(ctx echo.Context) error {
 	var payload verificationCodePayload
 	if err := ctx.Bind(&payload); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))

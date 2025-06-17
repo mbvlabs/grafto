@@ -1,4 +1,4 @@
-package authentication
+package sessions
 
 import (
 	"github.com/mbvlabs/grafto/views"
@@ -41,7 +41,7 @@ templ RegisterForm(data RegisterFormProps) {
 				</p>
 			</div>
 			<div class="login-body">
-				<form hx-post={ routes.CreateUserPage.Path } method="post">
+				<form hx-post={ routes.StoreUser.Path } method="post">
 					<input type="hidden" name="gorilla.csrf.Token" value={ data.CsrfToken }/>
 					<div class="form-fields">
 						<div>

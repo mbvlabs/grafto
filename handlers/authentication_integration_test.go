@@ -105,7 +105,7 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 			store := sessions.NewCookieStore([]byte("secret"))
 
 			mw := testCookieStore(store)
-			h := mw(testHandlers.Authentication.StoreAuthenticatedSession)
+			h := mw(testHandlers.Authentication.Create)
 
 			if tt.expectedToSucceed {
 				assert.NoError(t, h(c))
@@ -233,7 +233,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 			}
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Authentication.StorePasswordReset(c)
+			err := testHandlers.Authentication.CreatePasswordReset(c)
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -377,7 +377,7 @@ func TestStoreResetPassword(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Authentication.StoreResetPassword(c)
+			err := testHandlers.Authentication.UpdatePasswordReset(c)
 
 			assert.NoError(t, err)
 
@@ -472,7 +472,7 @@ func TestDestroyAuthenticatedSession(t *testing.T) {
 	rec = httptest.NewRecorder()
 
 	mw := testCookieStore(store)
-	h := mw(testHandlers.Authentication.DestroyAuthenticatedSession)
+	h := mw(testHandlers.Authentication.Destroy)
 
 	c := router.NewContext(req, rec)
 	err = h(c)

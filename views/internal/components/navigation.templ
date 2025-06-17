@@ -34,7 +34,7 @@ templ Nav() {
 					</li>
 					<li>
 						if contexts.ExtractApp(ctx).IsAuthenticated {
-							@NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, nil)
+							@NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, templ.Attributes{"hx-delete": routes.DestroyAuthSession.Path})
 						} else {
 							@NavItem("Login", routes.LoginPage.Name, routes.LoginPage.Path, nil)
 						}

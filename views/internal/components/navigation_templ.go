@@ -158,7 +158,7 @@ func Nav() templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if contexts.ExtractApp(ctx).IsAuthenticated {
-			templ_7745c5c3_Err = NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, nil).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, templ.Attributes{"hx-delete": routes.DestroyAuthSession.Path}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
