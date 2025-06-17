@@ -5,6 +5,8 @@ import "github.com/mbvlabs/grafto/router/routes"
 
 templ AboutPage() {
 	@layouts.Base(WithSlug(routes.AboutPage.Path)) {
-		<main class="container mx-auto my-auto">About</main>
+		<main class="flex-1 w-full px-4 flex flex-col justify-center items-center">
+			<h1>About</h1>
+		</main>
 	}
 }

@@ -26,9 +26,8 @@ func newSessions(
 }
 
 func (a Sessions) New(ctx echo.Context) error {
-	return sessionViews.LoginPage(sessionViews.LoginPageProps{
-		CsrfToken: csrf.Token(ctx.Request()),
-	}).Render(renderArgs(ctx))
+	return sessionViews.LoginPage(sessionViews.LoginPageProps{}).
+		Render(renderArgs(ctx))
 }
 
 type StoreAuthenticatedSessionPayload struct {
@@ -70,9 +69,6 @@ func (a Sessions) Create(ctx echo.Context) error {
 		}
 
 		return sessionViews.LoginForm(
-			csrf.Token(
-				ctx.Request(),
-			),
 			false,
 			userErr,
 		).
@@ -85,7 +81,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 	}
 
 	return sessionViews.LoginForm(
-		csrf.Token(ctx.Request()), true, nil).
+		true, nil).
 		Render(renderArgs(ctx))
 }
 

@@ -1,4 +1,4 @@
-:root {
+@theme {
 	--color-base-100: oklch(20.51% 0.003 300.00);
 	--color-base-200: oklch(15.51% 0.003 300.00);
 	--color-base-300: oklch(10.51% 0.003 300.00);
