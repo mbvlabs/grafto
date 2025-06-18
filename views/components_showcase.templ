@@ -1,0 +1,301 @@
+package views
+
+import "github.com/mbvlabs/grafto/views/internal/components"
+import "github.com/mbvlabs/grafto/router/contexts"
+import "time"
+
+templ ComponentsShowcase() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Components Showcase</title>
+			<link href="/assets/css/styles.css" rel="stylesheet" type="text/css"/>
+		</head>
+		<body class="bg-base-100/90 text-base-content">
+			<div class="container mx-auto px-6 py-8 max-w-4xl">
+				<header class="text-center mb-16">
+					<h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Components Showcase</h1>
+					<p class="text-lg text-base-content/70">Visual reference for all available UI components</p>
+				</header>
+				<!-- Buttons Section -->
+				<section class="mb-20">
+					<div class="flex items-center gap-4 mb-8">
+						<h2 class="text-3xl font-bold">Buttons</h2>
+						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
+					</div>
+					<div class="space-y-8">
+						<div>
+							<h3 class="text-xl font-medium mb-4">Button Variants</h3>
+							<div class="flex flex-wrap gap-3">
+								@components.Button("Default").Build()
+								@components.Button("Primary").WithPrimary().Build()
+								@components.Button("Secondary").WithSecondary().Build()
+								@components.Button("Success").WithSuccess().Build()
+								@components.Button("Info").WithInfo().Build()
+								@components.Button("Warning").WithWarning().Build()
+								@components.Button("Danger").WithDanger().Build()
+								@components.Button("Ghost").WithGhost().Build()
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Button Sizes</h3>
+							<div class="flex flex-wrap gap-3 items-center">
+								@components.Button("Small").WithPrimary().WithSize("small").Build()
+								@components.Button("Medium").WithPrimary().WithSize("medium").Build()
+								@components.Button("Large").WithPrimary().WithSize("large").Build()
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Outline Buttons</h3>
+							<div class="flex flex-wrap gap-3">
+								@components.Button("Outline Default").WithOutline().Build()
+								@components.Button("Outline Primary").WithPrimary().WithOutline().Build()
+								@components.Button("Outline Secondary").WithSecondary().WithOutline().Build()
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Shape Buttons</h3>
+							<div class="flex flex-wrap gap-3 items-center">
+								@components.Button("Circle").WithPrimary().WithCircle().Build()
+								@components.Button("Square").WithPrimary().WithSquare().Build()
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Direct Button Components</h3>
+							<div class="flex flex-wrap gap-3">
+								@components.PrimaryButton("Primary")
+								@components.SecondaryButton("Secondary")
+								@components.SuccessButton("Success")
+								@components.DangerButton("Danger")
+								@components.GhostButton("Ghost")
+								@components.OutlineButton("Outline")
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Icon Buttons</h3>
+							<div class="flex flex-wrap gap-3">
+								@components.IconButton() {
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+									</svg>
+								}
+								@components.IconButtonSquare() {
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+									</svg>
+								}
+							</div>
+						</div>
+					</div>
+				</section>
+				<hr class="border-white my-12"/>
+				<!-- Links Section -->
+				<section class="mb-20">
+					<div class="flex items-center gap-4 mb-8">
+						<h2 class="text-3xl font-bold">Links</h2>
+						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
+					</div>
+					<div class="space-y-8">
+						<div>
+							<h3 class="text-xl font-medium mb-4">Link Variants</h3>
+							<div class="flex flex-wrap gap-4">
+								@components.Link("Default Link", "#").Build()
+								@components.Link("Primary Link", "#").WithPrimary().Build()
+								@components.Link("Secondary Link", "#").WithSecondary().Build()
+								@components.Link("Success Link", "#").WithSuccess().Build()
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Link Sizes</h3>
+							<div class="flex flex-wrap gap-4 items-center">
+								@components.Link("Small Link", "#").WithSize("small").Build()
+								@components.Link("Medium Link", "#").WithSize("medium").Build()
+								@components.Link("Large Link", "#").WithSize("large").Build()
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">External Links</h3>
+							<div class="flex flex-wrap gap-4">
+								@components.Link("External Link", "https://example.com").WithTarget("_blank").Build()
+							</div>
+						</div>
+					</div>
+				</section>
+				<hr class="border-white my-12"/>
+				<!-- Form Elements Section -->
+				<section class="mb-20">
+					<div class="flex items-center gap-4 mb-8">
+						<h2 class="text-3xl font-bold">Form Elements</h2>
+						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
+					</div>
+					<div class="space-y-8">
+						<div>
+							<h3 class="text-xl font-medium mb-4">Input Fields</h3>
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
+								<div class="space-y-4">
+									@components.Input{
+										Type:        "text",
+										Name:        "text_input",
+										ID:          "text_input",
+										Label:       "Text Input",
+										Placeholder: "Enter text here",
+									}.Build()
+									@components.Input{
+										Type:        "email",
+										Name:        "email_input",
+										ID:          "email_input",
+										Label:       "Email Input",
+										Placeholder: "user@example.com",
+										Required:    true,
+									}.Build()
+									@components.Input{
+										Type:        "password",
+										Name:        "password_input",
+										ID:          "password_input",
+										Label:       "Password Input",
+										Placeholder: "Enter password",
+									}.Build()
+								</div>
+								<div class="space-y-4">
+									@components.Input{
+										Type:     "text",
+										Name:     "disabled_input",
+										ID:       "disabled_input",
+										Label:    "Disabled Input",
+										Value:    "This is disabled",
+										Disabled: true,
+									}.Build()
+									@components.Input{
+										Type:  "text",
+										Name:  "error_input",
+										ID:    "error_input",
+										Label: "Input with Error",
+										Error: "This field has an error",
+										Value: "Invalid value",
+									}.Build()
+								</div>
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Input Sizes</h3>
+							<div class="space-y-4 max-w-md">
+								@components.Input{
+									Type:        "text",
+									Name:        "small_input",
+									ID:          "small_input",
+									Label:       "Small Input",
+									Placeholder: "Small size",
+									Size:        "sm",
+								}.Build()
+								@components.Input{
+									Type:        "text",
+									Name:        "medium_input",
+									ID:          "medium_input",
+									Label:       "Medium Input",
+									Placeholder: "Medium size",
+									Size:        "md",
+								}.Build()
+								@components.Input{
+									Type:        "text",
+									Name:        "large_input",
+									ID:          "large_input",
+									Label:       "Large Input",
+									Placeholder: "Large size",
+									Size:        "lg",
+								}.Build()
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Form Container</h3>
+							<div class="max-w-md">
+								@components.Form(components.FormProps{}) {
+									@components.Input{
+										Type:        "text",
+										Name:        "first_name",
+										ID:          "first_name",
+										Label:       "First Name",
+										Placeholder: "John",
+									}.Build()
+									@components.Input{
+										Type:        "text",
+										Name:        "last_name",
+										ID:          "last_name",
+										Label:       "Last Name",
+										Placeholder: "Doe",
+									}.Build()
+									@components.Button("Submit").WithPrimary().WithType("submit").Build()
+								}
+							</div>
+						</div>
+					</div>
+				</section>
+				<hr class="border-white my-12"/>
+				<!-- Flags Section -->
+				<section class="mb-20">
+					<div class="flex items-center gap-4 mb-8">
+						<h2 class="text-3xl font-bold">Flags (Alerts)</h2>
+						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
+					</div>
+					<div>
+						<h3 class="text-xl font-medium mb-4">Alert Types</h3>
+						<div class="space-y-4 max-w-2xl">
+							@components.InfoFlag("This is an info flag message")
+							@components.SuccessFlag("This is a success flag message", templ.Attributes{})
+							@components.WarningFlag("This is a warning flag message")
+							@components.ErrorFlag("This is an error flag message")
+						</div>
+					</div>
+				</section>
+				<hr class="border-white my-12"/>
+				<!-- Toast Messages Section -->
+				<section class="mb-20">
+					<div class="flex items-center gap-4 mb-8">
+						<h2 class="text-3xl font-bold">Toast Messages</h2>
+						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
+					</div>
+					<div>
+						<h3 class="text-xl font-medium mb-4">Message Types</h3>
+						<p class="text-base-content/70 mb-6">Toast messages with different types and auto-dismiss functionality:</p>
+						<div class="space-y-4 max-w-md">
+							@components.ToastMessage(contexts.FlashMessage{
+								Type:      contexts.FlashSuccess,
+								Message:   "Operation completed successfully!",
+								CreatedAt: time.Now(),
+							})
+							@components.ToastMessage(contexts.FlashMessage{
+								Type:      contexts.FlashError,
+								Message:   "An error occurred while processing your request.",
+								CreatedAt: time.Now(),
+							})
+							@components.ToastMessage(contexts.FlashMessage{
+								Type:      contexts.FlashWarning,
+								Message:   "Please check your input and try again.",
+								CreatedAt: time.Now(),
+							})
+							@components.ToastMessage(contexts.FlashMessage{
+								Type:      contexts.FlashInfo,
+								Message:   "Here's some helpful information for you.",
+								CreatedAt: time.Now(),
+							})
+						</div>
+					</div>
+				</section>
+				<!-- Footer -->
+				<footer class="text-center py-12 border-t border-base-300 mt-20">
+					<div class="max-w-md mx-auto">
+						<h3 class="text-lg font-semibold mb-2">Components Showcase</h3>
+						<p class="text-base-content/60">Visual reference for all available UI components</p>
+						<div class="mt-4 flex justify-center gap-2">
+							<div class="w-2 h-2 bg-primary rounded-full"></div>
+							<div class="w-2 h-2 bg-secondary rounded-full"></div>
+							<div class="w-2 h-2 bg-success rounded-full"></div>
+						</div>
+					</div>
+				</footer>
+			</div>
+		</body>
+	</html>
+}
+
