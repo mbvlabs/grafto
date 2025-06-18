@@ -553,7 +553,170 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></div></section><hr class=\"border-white my-12\"><!-- Toast Messages Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Toast Messages</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div x-data=\"{ \n\t\t\t\t\t\tshowSuccess: false, \n\t\t\t\t\t\tshowError: false, \n\t\t\t\t\t\tshowWarning: false, \n\t\t\t\t\t\tshowInfo: false,\n\t\t\t\t\t\tshowLongContent: false,\n\t\t\t\t\t\ttriggerToast(type) {\n\t\t\t\t\t\t\tthis[type] = false;\n\t\t\t\t\t\t\tsetTimeout(() => this[type] = true, 50);\n\t\t\t\t\t\t}\n\t\t\t\t\t}\"><h3 class=\"text-xl font-medium mb-4\">Message Types</h3><p class=\"text-base-content/70 mb-6\">Toast messages with different types and auto-dismiss functionality. Click the buttons below to trigger them:</p><div class=\"flex flex-wrap gap-3 mb-6\"><button @click=\"triggerToast('showSuccess')\" class=\"btn btn-success\">Show Success Toast</button> <button @click=\"triggerToast('showError')\" class=\"btn btn-error\">Show Error Toast</button> <button @click=\"triggerToast('showWarning')\" class=\"btn btn-warning\">Show Warning Toast</button> <button @click=\"triggerToast('showInfo')\" class=\"btn btn-info\">Show Info Toast</button> <button @click=\"triggerToast('showLongContent')\" class=\"btn btn-neutral\">Show Long Content Toast</button></div><div class=\"space-y-4 max-w-md\"><div x-show=\"showSuccess\" x-transition>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></div></section><hr class=\"border-white my-12\"><!-- Pagination Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Pagination</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div class=\"space-y-12\"><div><h3 class=\"text-xl font-medium mb-4\">Full Pagination</h3><p class=\"text-base-content/70 mb-6\">Complete pagination with all features including page info, page size selector, and navigation:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.NewPagination(3, 10, 247, 25, "/products").Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div><div><h3 class=\"text-xl font-medium mb-4\">Compact Pagination</h3><p class=\"text-base-content/70 mb-6\">Space-efficient pagination perfect for mobile or constrained layouts:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.Pagination{
+			CurrentPage:     5,
+			TotalPages:      15,
+			TotalItems:      367,
+			ItemsPerPage:    25,
+			BaseURL:         "/articles",
+			ShowFirstLast:   false,
+			ShowPrevNext:    true,
+			ShowPageNumbers: true,
+			ShowPageInfo:    false,
+			ShowPageSize:    false,
+			MaxPageNumbers:  3,
+			Compact:         true,
+			Size:            "small",
+		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</div><div><h3 class=\"text-xl font-medium mb-4\">Simple Pagination</h3><p class=\"text-base-content/70 mb-6\">Minimal pagination with just previous/next navigation:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.NewSimplePagination(2, 8, "/blog").Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div><div><h3 class=\"text-xl font-medium mb-4\">Pagination Components</h3><p class=\"text-base-content/70 mb-6\">Individual pagination components that can be used separately:</p><div class=\"space-y-4\"><div><h4 class=\"text-lg font-medium mb-2\">Pagination Info</h4>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.NewPaginationInfo(2, 25, 127).Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div><div><h4 class=\"text-lg font-medium mb-2\">Page Size Selector</h4>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.NewPageSizeSelector(25, []int{10, 25, 50, 100}, "/data").Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</div></div></div><div><h3 class=\"text-xl font-medium mb-4\">Table with Pagination</h3><p class=\"text-base-content/70 mb-6\">Complete example showing pagination integrated with a table:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.Table{
+			Caption: "Orders with Pagination",
+			Columns: []components.TableColumn{
+				{Key: "id", Label: "Order ID", Width: "100px"},
+				{Key: "customer", Label: "Customer", Sortable: true},
+				{Key: "date", Label: "Date", Sortable: true},
+				{Key: "amount", Label: "Amount", Align: "right", Sortable: true},
+				{Key: "status", Label: "Status", Align: "center"},
+			},
+			Rows: []components.TableRow{
+				{
+					ID: "order-1001",
+					Cells: []components.TableCell{
+						{Content: "#1001"},
+						{Content: "Alice Johnson", Bold: true},
+						{Content: "2024-01-15"},
+						{Content: "$299.99", Align: "right", Color: "success"},
+						{Content: "Completed", Align: "center", Color: "success"},
+					},
+					Actions: []components.TableAction{
+						{Label: "View", URL: "#", Color: "primary"},
+						{Label: "Invoice", URL: "#", Color: "secondary"},
+					},
+				},
+				{
+					ID: "order-1002",
+					Cells: []components.TableCell{
+						{Content: "#1002"},
+						{Content: "Bob Smith", Bold: true},
+						{Content: "2024-01-14"},
+						{Content: "$149.50", Align: "right", Color: "success"},
+						{Content: "Processing", Align: "center", Color: "warning"},
+					},
+					Actions: []components.TableAction{
+						{Label: "View", URL: "#", Color: "primary"},
+						{Label: "Cancel", URL: "#", Color: "error"},
+					},
+				},
+				{
+					ID: "order-1003",
+					Cells: []components.TableCell{
+						{Content: "#1003"},
+						{Content: "Carol Davis", Bold: true},
+						{Content: "2024-01-14"},
+						{Content: "$89.99", Align: "right", Color: "success"},
+						{Content: "Shipped", Align: "center", Color: "info"},
+					},
+					Actions: []components.TableAction{
+						{Label: "View", URL: "#", Color: "primary"},
+						{Label: "Track", URL: "#", Color: "info"},
+					},
+				},
+				{
+					ID: "order-1004",
+					Cells: []components.TableCell{
+						{Content: "#1004"},
+						{Content: "David Wilson", Bold: true},
+						{Content: "2024-01-13"},
+						{Content: "$459.00", Align: "right", Color: "success"},
+						{Content: "Pending", Align: "center", Color: "warning"},
+					},
+					Actions: []components.TableAction{
+						{Label: "View", URL: "#", Color: "primary"},
+						{Label: "Process", URL: "#", Color: "success"},
+					},
+				},
+				{
+					ID: "order-1005",
+					Cells: []components.TableCell{
+						{Content: "#1005"},
+						{Content: "Eva Martinez", Bold: true},
+						{Content: "2024-01-13"},
+						{Content: "$199.99", Align: "right", Color: "success"},
+						{Content: "Completed", Align: "center", Color: "success"},
+					},
+					Actions: []components.TableAction{
+						{Label: "View", URL: "#", Color: "primary"},
+						{Label: "Refund", URL: "#", Color: "error"},
+					},
+				},
+			},
+			Striped:        true,
+			Hoverable:      true,
+			Bordered:       true,
+			ShowRowNumbers: true,
+			EmptyMessage:   "No orders found",
+			Pagination: &components.Pagination{
+				CurrentPage:     1,
+				TotalPages:      12,
+				TotalItems:      287,
+				ItemsPerPage:    25,
+				BaseURL:         "/orders",
+				ShowFirstLast:   true,
+				ShowPrevNext:    true,
+				ShowPageNumbers: true,
+				ShowPageInfo:    true,
+				ShowPageSize:    true,
+				MaxPageNumbers:  5,
+				PageSizeOptions: []int{10, 25, 50, 100},
+				Size:            "medium",
+			},
+		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</div></div></section><hr class=\"border-white my-12\"><!-- Toast Messages Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Toast Messages</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div x-data=\"{ \n\t\t\t\t\t\tshowSuccess: false, \n\t\t\t\t\t\tshowError: false, \n\t\t\t\t\t\tshowWarning: false, \n\t\t\t\t\t\tshowInfo: false,\n\t\t\t\t\t\tshowLongContent: false,\n\t\t\t\t\t\ttriggerToast(type) {\n\t\t\t\t\t\t\tthis[type] = false;\n\t\t\t\t\t\t\tsetTimeout(() => this[type] = true, 50);\n\t\t\t\t\t\t}\n\t\t\t\t\t}\"><h3 class=\"text-xl font-medium mb-4\">Message Types</h3><p class=\"text-base-content/70 mb-6\">Toast messages with different types and auto-dismiss functionality. Click the buttons below to trigger them:</p><div class=\"flex flex-wrap gap-3 mb-6\"><button @click=\"triggerToast('showSuccess')\" class=\"btn btn-success\">Show Success Toast</button> <button @click=\"triggerToast('showError')\" class=\"btn btn-error\">Show Error Toast</button> <button @click=\"triggerToast('showWarning')\" class=\"btn btn-warning\">Show Warning Toast</button> <button @click=\"triggerToast('showInfo')\" class=\"btn btn-info\">Show Info Toast</button> <button @click=\"triggerToast('showLongContent')\" class=\"btn btn-neutral\">Show Long Content Toast</button></div><div class=\"space-y-4 max-w-md\"><div x-show=\"showSuccess\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -565,7 +728,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div><div x-show=\"showError\" x-transition>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "</div><div x-show=\"showError\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -577,7 +740,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</div><div x-show=\"showWarning\" x-transition>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</div><div x-show=\"showWarning\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -589,7 +752,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div><div x-show=\"showInfo\" x-transition>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "</div><div x-show=\"showInfo\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -601,7 +764,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div><div x-show=\"showLongContent\" x-transition>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</div><div x-show=\"showLongContent\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -613,7 +776,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "</div></div></div></section><!-- Footer --><footer class=\"text-center py-12 border-t border-base-300 mt-20\"><div class=\"max-w-md mx-auto\"><h3 class=\"text-lg font-semibold mb-2\">Components Showcase</h3><p class=\"text-base-content/60\">Visual reference for all available UI components</p><div class=\"mt-4 flex justify-center gap-2\"><div class=\"w-2 h-2 bg-primary rounded-full\"></div><div class=\"w-2 h-2 bg-secondary rounded-full\"></div><div class=\"w-2 h-2 bg-success rounded-full\"></div></div></div></footer></div></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></div></div></section><!-- Footer --><footer class=\"text-center py-12 border-t border-base-300 mt-20\"><div class=\"max-w-md mx-auto\"><h3 class=\"text-lg font-semibold mb-2\">Components Showcase</h3><p class=\"text-base-content/60\">Visual reference for all available UI components</p><div class=\"mt-4 flex justify-center gap-2\"><div class=\"w-2 h-2 bg-primary rounded-full\"></div><div class=\"w-2 h-2 bg-secondary rounded-full\"></div><div class=\"w-2 h-2 bg-success rounded-full\"></div></div></div></footer></div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
