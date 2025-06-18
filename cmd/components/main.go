@@ -13,7 +13,7 @@ func main() {
 
 	// Serve static assets
 	e.Static("/assets", "assets")
-	
+
 	// Add CORS middleware for better development experience
 	e.Use(middleware.CORS())
 
