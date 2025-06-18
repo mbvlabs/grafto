@@ -85,7 +85,7 @@ func dashboardSidebar() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<aside class=\"w-64 bg-base-200 flex flex-col\"><!-- Logo/Header --><div class=\"p-4 flex items-center gap-2\"><div class=\"w-2 h-2 bg-base-content rounded-full\"></div><span class=\"text-sm font-medium\">Grafto</span> <svg class=\"w-4 h-4 ml-auto text-base-content/60\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div><!-- Navigation --><nav class=\"flex-1 px-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<aside class=\"w-64 bg-base-200 flex flex-col h-screen\"><!-- Logo/Header --><div class=\"p-6 flex items-center gap-2\"><div class=\"w-2 h-2 bg-base-content rounded-full\"></div><span class=\"text-sm font-medium\">Grafto</span> <svg class=\"w-4 h-4 ml-auto text-base-content/60\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div><!-- Navigation --><nav class=\"flex-1 px-3 space-y-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -97,7 +97,7 @@ func dashboardSidebar() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</nav><!-- Bottom section --><div class=\"p-4 border-t border-base-300\"><!-- User section --><div class=\"flex items-center gap-3 px-3 py-2\"><div class=\"w-8 h-8 bg-base-300 rounded-full flex items-center justify-center text-sm font-medium\">U</div><div class=\"flex-1\"><p class=\"text-sm font-medium\">User</p><p class=\"text-xs text-base-content/60\">user@example.com</p></div><svg class=\"w-4 h-4 text-base-content/60\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div></aside>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</nav><!-- Bottom section --><div class=\"p-6 border-t border-base-300\"><!-- User section --><div class=\"flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-base-300 transition-colors cursor-pointer\"><div class=\"w-8 h-8 bg-base-300 rounded-full flex items-center justify-center text-sm font-medium\">U</div><div class=\"flex-1\"><p class=\"text-sm font-medium\">User</p><p class=\"text-xs text-base-content/60\">user@example.com</p></div><svg class=\"w-4 h-4 text-base-content/60\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div></aside>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -139,7 +139,7 @@ func dashboardNavItem(name, path, iconPath string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-base-content/70 hover:bg-base-300 hover:text-base-content transition-colors\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"flex items-center gap-4 px-3 py-3 rounded-lg text-sm text-base-content/70 hover:bg-base-300 hover:text-base-content transition-colors\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
