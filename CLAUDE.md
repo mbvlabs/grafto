@@ -2,22 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
-
-Grafto is a starter template for full-stack Go web applications using server-side rendering. It follows an opinionated approach:
-- No ORM, using SQL directly with sqlc
-- Server-side HTML rendering with templ
-- Session-based authentication
-- Email verification and password reset flows
-
-The target audience is solo developers building side-projects or bootstrapping new businesses.
-
 ## Guidelines
 
-- Do not build the application for testing purposes
-- Do not add comments
+### DOs:
 - Always use the code quality commands for testing your work
 - always use database commands for interacting with the database (migrations, queries)
+
+### DON'Ts:
+- Do not build the application for testing purposes (go build)
+- Do not add comments
 
 ## Development Commands
 
@@ -66,7 +59,6 @@ The target audience is solo developers building side-projects or bootstrapping n
 
 3. **Handlers**
    - Located in `handlers/`
-   - Organized by feature domains (authentication, dashboard, etc.)
    - Handle HTTP requests and map to service operations
    - Use templ for HTML rendering
 
@@ -110,13 +102,6 @@ The target audience is solo developers building side-projects or bootstrapping n
 5. Database operations
 6. HTML rendering with templ
 7. HTTP response
-
-### Authentication Flow
-
-1. Registration with email/password
-2. Email verification using tokens/code
-3. Login creates authenticated session
-4. Protected routes check session via middleware
 
 ## Key Dependencies
 
