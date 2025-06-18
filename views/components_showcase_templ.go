@@ -33,7 +33,7 @@ func ComponentsShowcase() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Components Showcase</title><link href=\"/assets/css/styles.css\" rel=\"stylesheet\" type=\"text/css\"></head><body class=\"bg-base-100/90 text-base-content\"><div class=\"container mx-auto px-6 py-8 max-w-4xl\"><header class=\"text-center mb-16\"><h1 class=\"text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent\">Components Showcase</h1><p class=\"text-lg text-base-content/70\">Visual reference for all available UI components</p></header><!-- Buttons Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Buttons</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div class=\"space-y-8\"><div><h3 class=\"text-xl font-medium mb-4\">Button Variants</h3><div class=\"flex flex-wrap gap-3\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Components Showcase</title><link href=\"/assets/css/styles.css\" rel=\"stylesheet\" type=\"text/css\"><script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js\"></script></head><body class=\"bg-base-100/90 text-base-content\"><div class=\"container mx-auto px-6 py-8 max-w-4xl\"><header class=\"text-center mb-16\"><h1 class=\"text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent\">Components Showcase</h1><p class=\"text-lg text-base-content/70\">Visual reference for all available UI components</p></header><!-- Buttons Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Buttons</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div class=\"space-y-8\"><div><h3 class=\"text-xl font-medium mb-4\">Button Variants</h3><div class=\"flex flex-wrap gap-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -405,7 +405,155 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</div></div></section><hr class=\"border-white my-12\"><!-- Toast Messages Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Toast Messages</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div><h3 class=\"text-xl font-medium mb-4\">Message Types</h3><p class=\"text-base-content/70 mb-6\">Toast messages with different types and auto-dismiss functionality:</p><div class=\"space-y-4 max-w-md\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</div></div></section><hr class=\"border-white my-12\"><!-- Tables Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Tables</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div class=\"space-y-12\"><div><h3 class=\"text-xl font-medium mb-4\">Simple Table</h3><p class=\"text-base-content/70 mb-6\">Basic table with headers and data rows:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.SimpleTable{
+			Headers: []string{"Name", "Email", "Role", "Status"},
+			Rows: [][]string{
+				{"John Doe", "john@example.com", "Admin", "Active"},
+				{"Jane Smith", "jane@example.com", "User", "Active"},
+				{"Bob Johnson", "bob@example.com", "Moderator", "Inactive"},
+			},
+			Caption:   "User Management Table",
+			Striped:   true,
+			Bordered:  true,
+			Hoverable: true,
+		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</div><div><h3 class=\"text-xl font-medium mb-4\">Advanced Table with Actions</h3><p class=\"text-base-content/70 mb-6\">Full-featured table with row selection, actions, and custom styling:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.Table{
+			Caption: "Product Management",
+			Columns: []components.TableColumn{
+				{Key: "name", Label: "Product Name", Sortable: true},
+				{Key: "price", Label: "Price", Align: "right", Sortable: true},
+				{Key: "category", Label: "Category", Sortable: true},
+				{Key: "stock", Label: "Stock", Align: "center"},
+				{Key: "status", Label: "Status", Align: "center"},
+			},
+			Rows: []components.TableRow{
+				{
+					ID: "product-1",
+					Cells: []components.TableCell{
+						{Content: "Wireless Headphones", Bold: true},
+						{Content: "$99.99", Align: "right", Color: "success"},
+						{Content: "Electronics"},
+						{Content: "25", Align: "center"},
+						{Content: "Active", Align: "center", Color: "success"},
+					},
+					Actions: []components.TableAction{
+						{Label: "Edit", URL: "#", Color: "primary"},
+						{Label: "Delete", URL: "#", Color: "error"},
+					},
+				},
+				{
+					ID: "product-2",
+					Cells: []components.TableCell{
+						{Content: "Gaming Mouse", Bold: true},
+						{Content: "$49.99", Align: "right", Color: "success"},
+						{Content: "Electronics"},
+						{Content: "0", Align: "center", Color: "error"},
+						{Content: "Out of Stock", Align: "center", Color: "warning"},
+					},
+					Actions: []components.TableAction{
+						{Label: "Edit", URL: "#", Color: "primary"},
+						{Label: "Restock", URL: "#", Color: "info"},
+					},
+				},
+				{
+					ID: "product-3",
+					Cells: []components.TableCell{
+						{Content: "Mechanical Keyboard", Bold: true},
+						{Content: "$129.99", Align: "right", Color: "success"},
+						{Content: "Electronics"},
+						{Content: "12", Align: "center"},
+						{Content: "Active", Align: "center", Color: "success"},
+					},
+					Actions: []components.TableAction{
+						{Label: "Edit", URL: "#", Color: "primary"},
+						{Label: "Delete", URL: "#", Color: "error"},
+					},
+				},
+			},
+			Striped:        true,
+			Hoverable:      true,
+			Bordered:       true,
+			ShowRowNumbers: true,
+			SelectableRows: true,
+			EmptyMessage:   "No products found",
+		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</div><div><h3 class=\"text-xl font-medium mb-4\">Compact Table</h3><p class=\"text-base-content/70 mb-6\">Space-efficient table with compact styling:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.Table{
+			Caption: "System Logs",
+			Columns: []components.TableColumn{
+				{Key: "timestamp", Label: "Timestamp", Width: "200px"},
+				{Key: "level", Label: "Level", Align: "center", Width: "80px"},
+				{Key: "message", Label: "Message"},
+			},
+			Rows: []components.TableRow{
+				{
+					ID: "log-1",
+					Cells: []components.TableCell{
+						{Content: "2024-01-15 10:30:25"},
+						{Content: "INFO", Align: "center", Color: "info"},
+						{Content: "Application started successfully"},
+					},
+				},
+				{
+					ID: "log-2",
+					Cells: []components.TableCell{
+						{Content: "2024-01-15 10:35:12"},
+						{Content: "WARN", Align: "center", Color: "warning"},
+						{Content: "High memory usage detected"},
+					},
+				},
+				{
+					ID: "log-3",
+					Cells: []components.TableCell{
+						{Content: "2024-01-15 10:45:33"},
+						{Content: "ERROR", Align: "center", Color: "error"},
+						{Content: "Database connection failed"},
+					},
+				},
+			},
+			Compact:   true,
+			Bordered:  true,
+			Hoverable: true,
+		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div><div><h3 class=\"text-xl font-medium mb-4\">Empty Table</h3><p class=\"text-base-content/70 mb-6\">Table with no data showing empty state:</p>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.Table{
+			Caption: "Empty Dataset",
+			Columns: []components.TableColumn{
+				{Key: "name", Label: "Name"},
+				{Key: "value", Label: "Value"},
+				{Key: "status", Label: "Status"},
+			},
+			Rows:         []components.TableRow{},
+			EmptyMessage: "No data available at the moment",
+			Bordered:     true,
+		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div></div></section><hr class=\"border-white my-12\"><!-- Toast Messages Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Toast Messages</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div x-data=\"{ \n\t\t\t\t\t\tshowSuccess: false, \n\t\t\t\t\t\tshowError: false, \n\t\t\t\t\t\tshowWarning: false, \n\t\t\t\t\t\tshowInfo: false,\n\t\t\t\t\t\ttriggerToast(type) {\n\t\t\t\t\t\t\tthis[type] = false;\n\t\t\t\t\t\t\tsetTimeout(() => this[type] = true, 50);\n\t\t\t\t\t\t}\n\t\t\t\t\t}\"><h3 class=\"text-xl font-medium mb-4\">Message Types</h3><p class=\"text-base-content/70 mb-6\">Toast messages with different types and auto-dismiss functionality. Click the buttons below to trigger them:</p><div class=\"flex flex-wrap gap-3 mb-6\"><button @click=\"triggerToast('showSuccess')\" class=\"btn btn-success\">Show Success Toast</button> <button @click=\"triggerToast('showError')\" class=\"btn btn-error\">Show Error Toast</button> <button @click=\"triggerToast('showWarning')\" class=\"btn btn-warning\">Show Warning Toast</button> <button @click=\"triggerToast('showInfo')\" class=\"btn btn-info\">Show Info Toast</button></div><div class=\"space-y-4 max-w-md\"><div x-show=\"showSuccess\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -417,11 +565,19 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</div><div x-show=\"showError\" x-transition>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
 			Type:      contexts.FlashError,
 			Message:   "An error occurred while processing your request.",
 			CreatedAt: time.Now(),
 		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</div><div x-show=\"showWarning\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -433,6 +589,10 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div><div x-show=\"showInfo\" x-transition>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
 			Type:      contexts.FlashInfo,
 			Message:   "Here's some helpful information for you.",
@@ -441,7 +601,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</div></div></section><!-- Footer --><footer class=\"text-center py-12 border-t border-base-300 mt-20\"><div class=\"max-w-md mx-auto\"><h3 class=\"text-lg font-semibold mb-2\">Components Showcase</h3><p class=\"text-base-content/60\">Visual reference for all available UI components</p><div class=\"mt-4 flex justify-center gap-2\"><div class=\"w-2 h-2 bg-primary rounded-full\"></div><div class=\"w-2 h-2 bg-secondary rounded-full\"></div><div class=\"w-2 h-2 bg-success rounded-full\"></div></div></div></footer></div></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div></div></div></section><!-- Footer --><footer class=\"text-center py-12 border-t border-base-300 mt-20\"><div class=\"max-w-md mx-auto\"><h3 class=\"text-lg font-semibold mb-2\">Components Showcase</h3><p class=\"text-base-content/60\">Visual reference for all available UI components</p><div class=\"mt-4 flex justify-center gap-2\"><div class=\"w-2 h-2 bg-primary rounded-full\"></div><div class=\"w-2 h-2 bg-secondary rounded-full\"></div><div class=\"w-2 h-2 bg-success rounded-full\"></div></div></div></footer></div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

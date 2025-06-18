@@ -1,0 +1,357 @@
+package components
+
+import "fmt"
+
+type TableColumn struct {
+	Key      string
+	Label    string
+	Align    string // left, center, right
+	Width    string // fixed width if needed
+	Sortable bool
+}
+
+type TableCell struct {
+	Content   string
+	Align     string // left, center, right
+	Color     string // primary, secondary, success, warning, error, info
+	Bold      bool
+	ClassName string
+}
+
+type TableRow struct {
+	ID        string
+	Cells     []TableCell
+	Clickable bool
+	ClickURL  string
+	Selected  bool
+	Disabled  bool
+	Actions   []TableAction
+}
+
+type TableAction struct {
+	Label    string
+	URL      string
+	Icon     string
+	Color    string // primary, secondary, success, warning, error, info
+	Disabled bool
+}
+
+type Table struct {
+	ID             string
+	Caption        string
+	Columns        []TableColumn
+	Rows           []TableRow
+	EmptyMessage   string
+	Striped        bool
+	Hoverable      bool
+	Bordered       bool
+	Compact        bool
+	FixedLayout    bool
+	StickyHeader   bool
+	Loading        bool
+	LoadingMessage string
+	ShowRowNumbers bool
+	SelectableRows bool
+	SelectedRowIDs []string
+	Class          string
+	HeaderClass    string
+	BodyClass      string
+	FooterContent  templ.Component
+	Attributes     templ.Attributes
+}
+
+templ (t Table) Build() {
+	<div class={ "overflow-x-auto", t.Class }
+		if t.SelectableRows {
+			x-data="{ selectAll: false, selectedRows: [] }"
+		}
+	>
+		<table
+			if t.ID != "" {
+				id={ t.ID }
+			}
+			class={ "w-full border-collapse",
+				templ.KV("table-fixed", t.FixedLayout),
+				templ.KV("border border-base-300", t.Bordered) }
+			{ t.Attributes... }
+		>
+			if t.Caption != "" {
+				<caption class="text-base-content/70 text-sm mb-2">{ t.Caption }</caption>
+			}
+			@t.buildHeader()
+			@t.buildBody()
+			if t.FooterContent != nil {
+				<tfoot class="bg-base-200 border-t border-base-300">
+					<tr>
+						<td colspan={ fmt.Sprintf("%d", t.getColumnCount()) } class="px-4 py-3">
+							@t.FooterContent
+						</td>
+					</tr>
+				</tfoot>
+			}
+		</table>
+		if t.Loading {
+			@t.buildLoadingOverlay()
+		}
+	</div>
+}
+
+templ (t Table) buildHeader() {
+	<thead
+		class={ "bg-base-200 border-b border-base-300",
+		templ.KV("sticky top-0 z-10", t.StickyHeader),
+		t.HeaderClass }
+	>
+		<tr>
+			if t.ShowRowNumbers {
+				<th class="px-4 py-3 text-left text-sm font-medium text-base-content/80 w-12">#</th>
+			}
+			if t.SelectableRows {
+				<th class="px-4 py-3 text-center w-12">
+					<input 
+						type="checkbox" 
+						class="w-4 h-4 text-primary bg-base-100 border-base-300 rounded focus:ring-primary focus:ring-2"
+						x-model="selectAll"
+						@change="
+							const checkboxes = $el.closest('table').querySelectorAll('tbody input[type=checkbox]:not([disabled])');
+							checkboxes.forEach(cb => cb.checked = selectAll);
+						"
+					/>
+				</th>
+			}
+			for _, col := range t.Columns {
+				<th
+					class={ "px-4 text-sm font-medium text-base-content/80",
+						templ.KV("py-2", t.Compact),
+						templ.KV("py-3", !t.Compact),
+						templ.KV("text-left", col.Align == "" || col.Align == "left"),
+						templ.KV("text-center", col.Align == "center"),
+						templ.KV("text-right", col.Align == "right"),
+						templ.KV("cursor-pointer hover:text-base-content transition-colors", col.Sortable) }
+					if col.Width != "" {
+						style={ fmt.Sprintf("width: %s", col.Width) }
+					}
+				>
+					{ col.Label }
+					if col.Sortable {
+						<span class="ml-1 text-base-content/50">↕</span>
+					}
+				</th>
+			}
+			if t.hasActions() {
+				<th class="px-4 py-3 text-right text-sm font-medium text-base-content/80">Actions</th>
+			}
+		</tr>
+	</thead>
+}
+
+templ (t Table) buildBody() {
+	<tbody class={ t.BodyClass }>
+		if len(t.Rows) == 0 {
+			<tr>
+				<td colspan={ fmt.Sprintf("%d", t.getColumnCount()) } class="px-4 py-8 text-center text-base-content/60">
+					if t.EmptyMessage != "" {
+						{ t.EmptyMessage }
+					} else {
+						No data available
+					}
+				</td>
+			</tr>
+		} else {
+			for idx, row := range t.Rows {
+				@t.buildRow(row, idx)
+			}
+		}
+	</tbody>
+}
+
+templ (t Table) buildRow(row TableRow, index int) {
+	<tr
+		if row.ID != "" {
+			id={ row.ID }
+		}
+		class={ templ.KV("border-b border-base-300", t.Bordered),
+			templ.KV("bg-base-100", !t.Striped || index%2 == 0),
+			templ.KV("bg-base-200/30", t.Striped && index%2 == 1),
+			templ.KV("hover:bg-base-300/20 transition-colors", t.Hoverable && !row.Disabled),
+			templ.KV("cursor-pointer", row.Clickable && !row.Disabled),
+			templ.KV("bg-primary/10", row.Selected),
+			templ.KV("opacity-50", row.Disabled) }
+		if row.Clickable && row.ClickURL != "" && !row.Disabled {
+			onclick="window.location.href=this.getAttribute('data-url')"
+			data-url={ row.ClickURL }
+		}
+	>
+		if t.ShowRowNumbers {
+			<td class="px-4 py-3 text-sm text-base-content/60">{ fmt.Sprintf("%d", index+1) }</td>
+		}
+		if t.SelectableRows {
+			<td class="px-4 py-3 text-center">
+				<input
+					type="checkbox"
+					value={ row.ID }
+					checked?={ t.isRowSelected(row.ID) }
+					disabled?={ row.Disabled }
+					class="w-4 h-4 text-primary bg-base-100 border-base-300 rounded focus:ring-primary focus:ring-2 disabled:opacity-50"
+					@change="
+						const allCheckboxes = $el.closest('table').querySelectorAll('tbody input[type=checkbox]:not([disabled])');
+						const checkedCheckboxes = $el.closest('table').querySelectorAll('tbody input[type=checkbox]:checked:not([disabled])');
+						selectAll = allCheckboxes.length === checkedCheckboxes.length;
+					"
+				/>
+			</td>
+		}
+		for i, cell := range row.Cells {
+			@t.buildCell(cell, i)
+		}
+		if len(row.Actions) > 0 {
+			<td class="px-4 py-3 text-right">
+				<div class="flex items-center justify-end gap-2">
+					for _, action := range row.Actions {
+						@t.buildAction(action)
+					}
+				</div>
+			</td>
+		} else if t.hasActions() {
+			<td class="px-4 py-3"></td>
+		}
+	</tr>
+}
+
+templ (t Table) buildCell(cell TableCell, colIndex int) {
+	<td
+		class={ "px-4 text-sm text-base-content",
+			templ.KV("py-2", t.Compact),
+			templ.KV("py-3", !t.Compact),
+			templ.KV("text-left", cell.Align == "" || cell.Align == "left"),
+			templ.KV("text-center", cell.Align == "center"),
+			templ.KV("text-right", cell.Align == "right"),
+			templ.KV("font-medium", cell.Bold),
+			templ.KV("text-primary", cell.Color == "primary"),
+			templ.KV("text-secondary", cell.Color == "secondary"),
+			templ.KV("text-success", cell.Color == "success"),
+			templ.KV("text-warning", cell.Color == "warning"),
+			templ.KV("text-error", cell.Color == "error"),
+			templ.KV("text-info", cell.Color == "info"),
+			cell.ClassName }
+	>
+		{ cell.Content }
+	</td>
+}
+
+templ (t Table) buildAction(action TableAction) {
+	<a
+		href={ templ.SafeURL(action.URL) }
+		class={ "inline-flex items-center px-2 py-1 text-xs font-medium rounded-md transition-colors",
+			templ.KV("bg-primary text-primary-content hover:bg-primary/80", action.Color == "primary" || action.Color == ""),
+			templ.KV("bg-secondary text-secondary-content hover:bg-secondary/80", action.Color == "secondary"),
+			templ.KV("bg-success text-success-content hover:bg-success/80", action.Color == "success"),
+			templ.KV("bg-warning text-warning-content hover:bg-warning/80", action.Color == "warning"),
+			templ.KV("bg-error text-error-content hover:bg-error/80", action.Color == "error"),
+			templ.KV("bg-info text-info-content hover:bg-info/80", action.Color == "info"),
+			templ.KV("opacity-50 pointer-events-none", action.Disabled) }
+		if action.Disabled {
+			aria-disabled="true"
+		}
+	>
+		if action.Icon != "" {
+			<span class="mr-1">{ action.Icon }</span>
+		}
+		{ action.Label }
+	</a>
+}
+
+templ (t Table) buildLoadingOverlay() {
+	<div class="absolute inset-0 bg-base-100/50 flex items-center justify-center">
+		<div class="text-center">
+			<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+			<p class="text-sm text-base-content/70">
+				if t.LoadingMessage != "" {
+					{ t.LoadingMessage }
+				} else {
+					Loading...
+				}
+			</p>
+		</div>
+	</div>
+}
+
+func (t Table) getColumnCount() int {
+	count := len(t.Columns)
+	if t.ShowRowNumbers {
+		count++
+	}
+	if t.SelectableRows {
+		count++
+	}
+	if t.hasActions() {
+		count++
+	}
+	return count
+}
+
+func (t Table) hasActions() bool {
+	for _, row := range t.Rows {
+		if len(row.Actions) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (t Table) isRowSelected(rowID string) bool {
+	for _, id := range t.SelectedRowIDs {
+		if id == rowID {
+			return true
+		}
+	}
+	return false
+}
+
+type SimpleTable struct {
+	Headers   []string
+	Rows      [][]string
+	Caption   string
+	Striped   bool
+	Bordered  bool
+	Hoverable bool
+	Class     string
+}
+
+templ (st SimpleTable) Build() {
+	@Table{
+		Caption:   st.Caption,
+		Columns:   st.buildColumns(),
+		Rows:      st.buildRows(),
+		Striped:   st.Striped,
+		Bordered:  st.Bordered,
+		Hoverable: st.Hoverable,
+		Class:     st.Class,
+	}.Build()
+}
+
+func (st SimpleTable) buildColumns() []TableColumn {
+	columns := make([]TableColumn, len(st.Headers))
+	for i, header := range st.Headers {
+		columns[i] = TableColumn{
+			Key:   fmt.Sprintf("col_%d", i),
+			Label: header,
+		}
+	}
+	return columns
+}
+
+func (st SimpleTable) buildRows() []TableRow {
+	rows := make([]TableRow, len(st.Rows))
+	for i, row := range st.Rows {
+		cells := make([]TableCell, len(row))
+		for j, cell := range row {
+			cells[j] = TableCell{Content: cell}
+		}
+		rows[i] = TableRow{
+			ID:    fmt.Sprintf("row_%d", i),
+			Cells: cells,
+		}
+	}
+	return rows
+}
