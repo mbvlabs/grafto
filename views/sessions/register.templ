@@ -90,12 +90,7 @@ templ RegisterForm(data RegisterFormProps) {
 				<h1 class="text-[1.75rem] font-bold text-base-content mb-2">Register User</h1>
 				<p class="text-sm text-base-content">
 					Already have an account?
-					<a
-						class="text-secondary no-underline transition-colors duration-200 hover:text-secondary hover:underline"
-						href={ templ.SafeURL(routes.LoginPage.Path) }
-					>
-						Sign in
-					</a>
+					@components.Link("Sign in", routes.LoginPage.Path).WithSecondary().Build()
 				</p>
 			</div>
 			@components.Input{
