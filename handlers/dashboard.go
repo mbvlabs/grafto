@@ -11,7 +11,7 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/contexts"
 	"github.com/mbvlabs/grafto/services"
-	dashboardViews "github.com/mbvlabs/grafto/views/dashboards"
+	"github.com/mbvlabs/grafto/views/dashboard"
 )
 
 type Dashboard struct {
@@ -23,7 +23,7 @@ func newDashboard(db psql.Postgres) Dashboard {
 }
 
 func (d Dashboard) Index(ctx echo.Context) error {
-	return dashboardViews.Home().Render(renderArgs(ctx))
+	return dashboard.Home().Render(renderArgs(ctx))
 }
 
 func (d Dashboard) UsersList(ctx echo.Context) error {
@@ -46,7 +46,7 @@ func (d Dashboard) UsersList(ctx echo.Context) error {
 		return ctx.String(http.StatusInternalServerError, "Failed to load users")
 	}
 
-	return dashboardViews.UsersList(userListResponse, page, perPage).Render(renderArgs(ctx))
+	return dashboard.UsersList(userListResponse, page, perPage).Render(renderArgs(ctx))
 }
 
 func (d Dashboard) EditUser(ctx echo.Context) error {
@@ -61,7 +61,7 @@ func (d Dashboard) EditUser(ctx echo.Context) error {
 		return ctx.String(http.StatusNotFound, "User not found")
 	}
 
-	return dashboardViews.EditUser(user).Render(renderArgs(ctx))
+	return dashboard.EditUser(user).Render(renderArgs(ctx))
 }
 
 func (d Dashboard) UpdateUser(ctx echo.Context) error {
