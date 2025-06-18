@@ -1,0 +1,92 @@
+@layer components {
+  .link {
+    @apply inline-flex items-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 text-decoration-line-none;
+  }
+
+  /* Link sizes */
+  .link-sm {
+    @apply text-sm;
+  }
+
+  .link-md {
+    @apply text-base;
+  }
+
+  .link-lg {
+    @apply text-lg;
+  }
+
+  /* Link variants */
+  .link-default {
+    @apply text-black hover:text-black/80 focus:ring-black;
+  }
+
+  .link-primary {
+    @apply text-primary hover:text-primary/80 focus:ring-primary;
+  }
+
+  .link-secondary {
+    @apply text-secondary hover:text-secondary/80 focus:ring-secondary;
+  }
+
+  .link-success {
+    @apply text-success hover:text-success/80 focus:ring-success;
+  }
+
+  .link-info {
+    @apply text-info hover:text-info/80 focus:ring-info;
+  }
+
+  .link-warning {
+    @apply text-warning hover:text-warning/80 focus:ring-warning;
+  }
+
+  .link-error {
+    @apply text-error hover:text-error/80 focus:ring-error;
+  }
+
+  .link-ghost {
+    @apply text-base-content hover:text-base-content/80 focus:ring-base-300;
+  }
+
+  .link-outline {
+    @apply border-2 px-2 py-1 rounded-md;
+  }
+
+  .link-outline.link-primary {
+    @apply text-primary border-primary hover:bg-primary hover:text-primary-content;
+  }
+
+  .link-outline.link-secondary {
+    @apply text-secondary border-secondary hover:bg-secondary hover:text-secondary-content;
+  }
+
+  .link-outline.link-success {
+    @apply text-success border-success hover:bg-success hover:text-success-content;
+  }
+
+  .link-outline.link-info {
+    @apply text-info border-info hover:bg-info hover:text-info-content;
+  }
+
+  .link-outline.link-warning {
+    @apply text-warning border-warning hover:bg-warning hover:text-warning-content;
+  }
+
+  .link-outline.link-error {
+    @apply text-error border-error hover:bg-error hover:text-error-content;
+  }
+
+  .link-outline.link-default {
+    @apply text-black border-black hover:bg-black hover:text-white;
+  }
+
+  /* Link states */
+  .link:hover {
+    @apply underline;
+  }
+
+  .link-outline:hover {
+    @apply no-underline;
+  }
+}
