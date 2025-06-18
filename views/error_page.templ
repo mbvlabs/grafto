@@ -46,7 +46,7 @@ templ errorPage(data errorPageData) {
 				<p class="text-lg text-base-content">{ data.msg }</p>
 				<div class="flex mt-4 text-lg text-base-content">
 					<p class="mr-2">Please try again, or go back to</p>
-					@components.Link(data.linkTitle + ".", data.link).Build()
+					@components.Link(data.linkTitle+".", data.link).Build()
 				</div>
 			</div>
 		</div>

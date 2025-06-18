@@ -12,6 +12,7 @@ templ ComponentsShowcase() {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Components Showcase</title>
 			<link href="/assets/css/styles.css" rel="stylesheet" type="text/css"/>
+			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 		</head>
 		<body class="bg-base-100/90 text-base-content">
 			<div class="container mx-auto px-6 py-8 max-w-4xl">
@@ -249,36 +250,227 @@ templ ComponentsShowcase() {
 					</div>
 				</section>
 				<hr class="border-white my-12"/>
+				<!-- Tables Section -->
+				<section class="mb-20">
+					<div class="flex items-center gap-4 mb-8">
+						<h2 class="text-3xl font-bold">Tables</h2>
+						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
+					</div>
+					<div class="space-y-12">
+						<div>
+							<h3 class="text-xl font-medium mb-4">Simple Table</h3>
+							<p class="text-base-content/70 mb-6">Basic table with headers and data rows:</p>
+							@components.SimpleTable{
+								Headers: []string{"Name", "Email", "Role", "Status"},
+								Rows: [][]string{
+									{"John Doe", "john@example.com", "Admin", "Active"},
+									{"Jane Smith", "jane@example.com", "User", "Active"},
+									{"Bob Johnson", "bob@example.com", "Moderator", "Inactive"},
+								},
+								Caption:   "User Management Table",
+								Striped:   true,
+								Bordered:  true,
+								Hoverable: true,
+							}.Build()
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Advanced Table with Actions</h3>
+							<p class="text-base-content/70 mb-6">Full-featured table with row selection, actions, and custom styling:</p>
+							@components.Table{
+								Caption:        "Product Management",
+								Columns: []components.TableColumn{
+									{Key: "name", Label: "Product Name", Sortable: true},
+									{Key: "price", Label: "Price", Align: "right", Sortable: true},
+									{Key: "category", Label: "Category", Sortable: true},
+									{Key: "stock", Label: "Stock", Align: "center"},
+									{Key: "status", Label: "Status", Align: "center"},
+								},
+								Rows: []components.TableRow{
+									{
+										ID: "product-1",
+										Cells: []components.TableCell{
+											{Content: "Wireless Headphones", Bold: true},
+											{Content: "$99.99", Align: "right", Color: "success"},
+											{Content: "Electronics"},
+											{Content: "25", Align: "center"},
+											{Content: "Active", Align: "center", Color: "success"},
+										},
+										Actions: []components.TableAction{
+											{Label: "Edit", URL: "#", Color: "primary"},
+											{Label: "Delete", URL: "#", Color: "error"},
+										},
+									},
+									{
+										ID: "product-2",
+										Cells: []components.TableCell{
+											{Content: "Gaming Mouse", Bold: true},
+											{Content: "$49.99", Align: "right", Color: "success"},
+											{Content: "Electronics"},
+											{Content: "0", Align: "center", Color: "error"},
+											{Content: "Out of Stock", Align: "center", Color: "warning"},
+										},
+										Actions: []components.TableAction{
+											{Label: "Edit", URL: "#", Color: "primary"},
+											{Label: "Restock", URL: "#", Color: "info"},
+										},
+									},
+									{
+										ID: "product-3",
+										Cells: []components.TableCell{
+											{Content: "Mechanical Keyboard", Bold: true},
+											{Content: "$129.99", Align: "right", Color: "success"},
+											{Content: "Electronics"},
+											{Content: "12", Align: "center"},
+											{Content: "Active", Align: "center", Color: "success"},
+										},
+										Actions: []components.TableAction{
+											{Label: "Edit", URL: "#", Color: "primary"},
+											{Label: "Delete", URL: "#", Color: "error"},
+										},
+									},
+								},
+								Striped:        true,
+								Hoverable:      true,
+								Bordered:       true,
+								ShowRowNumbers: true,
+								SelectableRows: true,
+								EmptyMessage:   "No products found",
+							}.Build()
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Compact Table</h3>
+							<p class="text-base-content/70 mb-6">Space-efficient table with compact styling:</p>
+							@components.Table{
+								Caption: "System Logs",
+								Columns: []components.TableColumn{
+									{Key: "timestamp", Label: "Timestamp", Width: "200px"},
+									{Key: "level", Label: "Level", Align: "center", Width: "80px"},
+									{Key: "message", Label: "Message"},
+								},
+								Rows: []components.TableRow{
+									{
+										ID: "log-1",
+										Cells: []components.TableCell{
+											{Content: "2024-01-15 10:30:25"},
+											{Content: "INFO", Align: "center", Color: "info"},
+											{Content: "Application started successfully"},
+										},
+									},
+									{
+										ID: "log-2",
+										Cells: []components.TableCell{
+											{Content: "2024-01-15 10:35:12"},
+											{Content: "WARN", Align: "center", Color: "warning"},
+											{Content: "High memory usage detected"},
+										},
+									},
+									{
+										ID: "log-3",
+										Cells: []components.TableCell{
+											{Content: "2024-01-15 10:45:33"},
+											{Content: "ERROR", Align: "center", Color: "error"},
+											{Content: "Database connection failed"},
+										},
+									},
+								},
+								Compact:   true,
+								Bordered:  true,
+								Hoverable: true,
+							}.Build()
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Empty Table</h3>
+							<p class="text-base-content/70 mb-6">Table with no data showing empty state:</p>
+							@components.Table{
+								Caption: "Empty Dataset",
+								Columns: []components.TableColumn{
+									{Key: "name", Label: "Name"},
+									{Key: "value", Label: "Value"},
+									{Key: "status", Label: "Status"},
+								},
+								Rows:         []components.TableRow{},
+								EmptyMessage: "No data available at the moment",
+								Bordered:     true,
+							}.Build()
+						</div>
+					</div>
+				</section>
+				<hr class="border-white my-12"/>
 				<!-- Toast Messages Section -->
 				<section class="mb-20">
 					<div class="flex items-center gap-4 mb-8">
 						<h2 class="text-3xl font-bold">Toast Messages</h2>
 						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
 					</div>
-					<div>
+					<div x-data="{ 
+						showSuccess: false, 
+						showError: false, 
+						showWarning: false, 
+						showInfo: false,
+						triggerToast(type) {
+							this[type] = false;
+							setTimeout(() => this[type] = true, 50);
+						}
+					}">
 						<h3 class="text-xl font-medium mb-4">Message Types</h3>
-						<p class="text-base-content/70 mb-6">Toast messages with different types and auto-dismiss functionality:</p>
+						<p class="text-base-content/70 mb-6">Toast messages with different types and auto-dismiss functionality. Click the buttons below to trigger them:</p>
+						
+						<div class="flex flex-wrap gap-3 mb-6">
+							<button 
+								@click="triggerToast('showSuccess')" 
+								class="btn btn-success"
+							>
+								Show Success Toast
+							</button>
+							<button 
+								@click="triggerToast('showError')" 
+								class="btn btn-error"
+							>
+								Show Error Toast
+							</button>
+							<button 
+								@click="triggerToast('showWarning')" 
+								class="btn btn-warning"
+							>
+								Show Warning Toast
+							</button>
+							<button 
+								@click="triggerToast('showInfo')" 
+								class="btn btn-info"
+							>
+								Show Info Toast
+							</button>
+						</div>
+
 						<div class="space-y-4 max-w-md">
-							@components.ToastMessage(contexts.FlashMessage{
-								Type:      contexts.FlashSuccess,
-								Message:   "Operation completed successfully!",
-								CreatedAt: time.Now(),
-							})
-							@components.ToastMessage(contexts.FlashMessage{
-								Type:      contexts.FlashError,
-								Message:   "An error occurred while processing your request.",
-								CreatedAt: time.Now(),
-							})
-							@components.ToastMessage(contexts.FlashMessage{
-								Type:      contexts.FlashWarning,
-								Message:   "Please check your input and try again.",
-								CreatedAt: time.Now(),
-							})
-							@components.ToastMessage(contexts.FlashMessage{
-								Type:      contexts.FlashInfo,
-								Message:   "Here's some helpful information for you.",
-								CreatedAt: time.Now(),
-							})
+							<div x-show="showSuccess" x-transition>
+								@components.ToastMessage(contexts.FlashMessage{
+									Type:      contexts.FlashSuccess,
+									Message:   "Operation completed successfully!",
+									CreatedAt: time.Now(),
+								})
+							</div>
+							<div x-show="showError" x-transition>
+								@components.ToastMessage(contexts.FlashMessage{
+									Type:      contexts.FlashError,
+									Message:   "An error occurred while processing your request.",
+									CreatedAt: time.Now(),
+								})
+							</div>
+							<div x-show="showWarning" x-transition>
+								@components.ToastMessage(contexts.FlashMessage{
+									Type:      contexts.FlashWarning,
+									Message:   "Please check your input and try again.",
+									CreatedAt: time.Now(),
+								})
+							</div>
+							<div x-show="showInfo" x-transition>
+								@components.ToastMessage(contexts.FlashMessage{
+									Type:      contexts.FlashInfo,
+									Message:   "Here's some helpful information for you.",
+									CreatedAt: time.Now(),
+								})
+							</div>
 						</div>
 					</div>
 				</section>
