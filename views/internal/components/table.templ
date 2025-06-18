@@ -61,7 +61,11 @@ type Table struct {
 }
 
 templ (t Table) Build() {
-	<div class={ "overflow-x-auto", t.Class }>
+	<div class={ "overflow-x-auto", t.Class }
+		if t.SelectableRows {
+			x-data="{ selectAll: false, selectedRows: [] }"
+		}
+	>
 		<table
 			if t.ID != "" {
 				id={ t.ID }
@@ -104,7 +108,15 @@ templ (t Table) buildHeader() {
 			}
 			if t.SelectableRows {
 				<th class="px-4 py-3 text-center w-12">
-					<input type="checkbox" class="w-4 h-4 text-primary bg-base-100 border-base-300 rounded focus:ring-primary focus:ring-2"/>
+					<input 
+						type="checkbox" 
+						class="w-4 h-4 text-primary bg-base-100 border-base-300 rounded focus:ring-primary focus:ring-2"
+						x-model="selectAll"
+						@change="
+							const checkboxes = $el.closest('table').querySelectorAll('tbody input[type=checkbox]:not([disabled])');
+							checkboxes.forEach(cb => cb.checked = selectAll);
+						"
+					/>
 				</th>
 			}
 			for _, col := range t.Columns {
@@ -181,6 +193,11 @@ templ (t Table) buildRow(row TableRow, index int) {
 					checked?={ t.isRowSelected(row.ID) }
 					disabled?={ row.Disabled }
 					class="w-4 h-4 text-primary bg-base-100 border-base-300 rounded focus:ring-primary focus:ring-2 disabled:opacity-50"
+					@change="
+						const allCheckboxes = $el.closest('table').querySelectorAll('tbody input[type=checkbox]:not([disabled])');
+						const checkedCheckboxes = $el.closest('table').querySelectorAll('tbody input[type=checkbox]:checked:not([disabled])');
+						selectAll = allCheckboxes.length === checkedCheckboxes.length;
+					"
 				/>
 			</td>
 		}
