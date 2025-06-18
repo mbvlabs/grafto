@@ -8,8 +8,8 @@ type linkProps struct {
 }
 
 type linkBuilder struct {
-	text string
-	href string
+	text  string
+	href  string
 	props linkProps
 }
 
@@ -134,5 +134,6 @@ templ OutlineLink(text, href string) {
 }
 
 templ ExternalLink(text, href string) {
-	@linkComponent(text, href, linkProps{Target: "_blank"})
+	@linkComponent(text, href, linkProps{Variant: "primary", Target: "_blank"})
 }
+

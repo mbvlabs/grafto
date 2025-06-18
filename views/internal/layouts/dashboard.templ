@@ -11,7 +11,7 @@ templ Dashboard(opts ...components.HeadDataOption) {
 			<header class="bsc-fluid">
 				<div class="flex justify-between navbar bg-base-100">
 					<div class="navbar-left">
-						<a href={ templ.SafeURL(routes.DashboardHome.Path) }>Grafto Dashboard</a>
+						@components.Link("Grafto Dashboard", routes.DashboardHome.Path).Build()
 					</div>
 					<div class="navbar-end">
 						@components.IconButton() {

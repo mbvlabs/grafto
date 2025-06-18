@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
@@ -45,7 +46,15 @@ func NotFoundPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"flex-1 w-full px-4 flex flex-col justify-center items-center\"><h1 class=\"text-2xl font-bold\">404 - Page Not Found</h1><p class=\"max-w-[768px] mx-auto text-center\">The page you are looking for does not exist. It might have been moved, deleted, or you entered the wrong URL.</p><div class=\"flex justify-center\"><a href=\"/\" class=\"mt-2 text-primary flex items-center\">Go back to home</a></div></main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<main class=\"flex-1 w-full px-4 flex flex-col justify-center items-center\"><h1 class=\"text-2xl font-bold\">404 - Page Not Found</h1><p class=\"max-w-[768px] mx-auto text-center\">The page you are looking for does not exist. It might have been moved, deleted, or you entered the wrong URL.</p><div class=\"flex justify-center mt-2\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = components.Link("Go back to home", "/").WithPrimary().Build().Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

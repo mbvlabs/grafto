@@ -1,6 +1,7 @@
 package views
 
 import (
+	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
@@ -11,13 +12,8 @@ templ NotFoundPage() {
 			<p class="max-w-[768px] mx-auto text-center">
 				The page you are looking for does not exist. It might have been moved, deleted, or you entered the wrong URL.
 			</p>
-			<div class="flex justify-center">
-				<a
-					href="/"
-					class="mt-2 text-primary flex items-center"
-				>
-					Go back to home
-				</a>
+			<div class="flex justify-center mt-2">
+				@components.Link("Go back to home", "/").WithPrimary().Build()
 			</div>
 		</main>
 	}

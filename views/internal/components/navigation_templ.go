@@ -111,33 +111,15 @@ func Nav() templ.Component {
 			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<nav id=\"navigation\" class=\"w-full px-4 mx-auto max-w-[540px] sm:max-w-[720px] md:max-w-[960px] lg:max-w-[1140px] xl:max-w-[1320px] h-16 shadow-sm z-[100]\"><div class=\"h-full items-center flex justify-between list-none relative\"><div class=\"text-xl font-bold\"><a class=\"logo text-base-content no-underline transition-colors duration-300 hover:text-accent\" href=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<nav id=\"navigation\" class=\"w-full px-4 mx-auto max-w-[540px] sm:max-w-[720px] md:max-w-[960px] lg:max-w-[1140px] xl:max-w-[1320px] h-16 shadow-sm z-[100]\"><div class=\"h-full items-center flex justify-between list-none relative\"><div class=\"text-xl font-bold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var6 templ.SafeURL
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(routes.LandingPage.Path))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 22, Col: 145}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+		templ_7745c5c3_Err = Link(config.Cfg.ProjectName, routes.LandingPage.Path).WithSize("large").Build().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(config.Cfg.ProjectName)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 22, Col: 172}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</a></div><button class=\"md:hidden bg-transparent border-none cursor-pointer p-0 w-8 h-8 relative\" aria-label=\"toggle navigation\"><span class=\"block relative w-8 h-[3px] bg-base-content transition-transform duration-300 before:content-[''] before:absolute before:left-0 before:w-8 before:h-[3px] before:bg-base-content before:transition-transform before:duration-300 before:-top-2 after:content-[''] after:absolute after:left-0 after:w-8 after:h-[3px] after:bg-base-content after:transition-transform after:duration-300 after:-bottom-2\"></span></button><div class=\"hidden md:block nav-menu\"><ul class=\"flex gap-8 list-none m-0 p-0\"><li class=\"relative\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div><button class=\"md:hidden bg-transparent border-none cursor-pointer p-0 w-8 h-8 relative\" aria-label=\"toggle navigation\"><span class=\"block relative w-8 h-[3px] bg-base-content transition-transform duration-300 before:content-[''] before:absolute before:left-0 before:w-8 before:h-[3px] before:bg-base-content before:transition-transform before:duration-300 before:-top-2 after:content-[''] after:absolute after:left-0 after:w-8 after:h-[3px] after:bg-base-content after:transition-transform after:duration-300 after:-bottom-2\"></span></button><div class=\"hidden md:block nav-menu\"><ul class=\"flex gap-8 list-none m-0 p-0\"><li class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -145,7 +127,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</li><li class=\"relative\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</li><li class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -153,7 +135,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</li><li class=\"relative\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</li><li class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -168,7 +150,7 @@ func Nav() templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</li></ul></div></div></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</li></ul></div></div></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

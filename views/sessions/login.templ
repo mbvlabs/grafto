@@ -68,12 +68,7 @@ templ LoginForm(errors views.Errors) {
 			<h1 class="text-3xl font-bold text-base-content mb-2">Login</h1>
 			<p class="text-sm text-base-content">
 				Don't have an account?
-				<a
-					class="text-success no-underline transition-colors duration-200 hover:text-success hover:underline"
-					href={ templ.SafeURL(routes.CreateUserPage.Path) }
-				>
-					Register
-				</a>
+				@components.Link("Register", routes.CreateUserPage.Path).WithSuccess().Build()
 			</p>
 		</div>
 		@components.Input{
@@ -98,12 +93,7 @@ templ LoginForm(errors views.Errors) {
 				Name: "remember_me",
 				Text: "Remember me",
 			}.Build()
-			<a
-				class="text-accent no-underline transition-colors duration-200 hover:text-accent hover:underline text-sm"
-				href={ templ.SafeURL(routes.ForgotPasswordPage.Path) }
-			>
-				Forgotten password?
-			</a>
+			@components.Link("Forgotten password?", routes.ForgotPasswordPage.Path).WithSize("small").Build()
 		</div>
 		@components.Button("Login").WithSuccess().WithType("submit").Build()
 	}
