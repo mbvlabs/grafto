@@ -407,6 +407,7 @@ templ ComponentsShowcase() {
 						showError: false, 
 						showWarning: false, 
 						showInfo: false,
+						showLongContent: false,
 						triggerToast(type) {
 							this[type] = false;
 							setTimeout(() => this[type] = true, 50);
@@ -440,6 +441,12 @@ templ ComponentsShowcase() {
 							>
 								Show Info Toast
 							</button>
+							<button 
+								@click="triggerToast('showLongContent')" 
+								class="btn btn-neutral"
+							>
+								Show Long Content Toast
+							</button>
 						</div>
 
 						<div class="space-y-4 max-w-md">
@@ -468,6 +475,13 @@ templ ComponentsShowcase() {
 								@components.ToastMessage(contexts.FlashMessage{
 									Type:      contexts.FlashInfo,
 									Message:   "Here's some helpful information for you.",
+									CreatedAt: time.Now(),
+								})
+							</div>
+							<div x-show="showLongContent" x-transition>
+								@components.ToastMessage(contexts.FlashMessage{
+									Type:      contexts.FlashInfo,
+									Message:   "This is a very long toast message that demonstrates the improved scrolling behavior. The toast will now expand to a reasonable size before showing scroll bars, and it will only show scroll bars when the content actually exceeds the available space. This makes the user experience much cleaner and more polished. You can see how the toast handles both vertical overflow (when there's a lot of text like this example) and horizontal overflow (when there are very long words or URLs like https://example.com/very/long/url/path/that/might/cause/horizontal/scrolling). The scroll bars now appear only when needed, not always visible like before.",
 									CreatedAt: time.Now(),
 								})
 							</div>
