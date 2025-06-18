@@ -113,19 +113,25 @@ func linkComponent(text, href string, props linkProps) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		var templ_7745c5c3_Var2 = []any{
-			"link",
-			templ.KV("link-sm", props.Size == "small"),
-			templ.KV("link-md", props.Size == "medium" || props.Size == ""),
-			templ.KV("link-lg", props.Size == "large"),
-			templ.KV("link-default", props.Variant == "default" || props.Variant == ""),
-			templ.KV("link-primary", props.Variant == "primary"),
-			templ.KV("link-secondary", props.Variant == "secondary"),
-			templ.KV("link-success", props.Variant == "success"),
-			templ.KV("link-info", props.Variant == "info"),
-			templ.KV("link-warning", props.Variant == "warning"),
-			templ.KV("link-error", props.Variant == "danger" || props.Variant == "error"),
-			templ.KV("link-ghost", props.Variant == "ghost"),
-			templ.KV("link-outline", props.Outline),
+			"inline-flex items-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2",
+			templ.KV("text-sm", props.Size == "small"),
+			templ.KV("text-base", props.Size == "medium" || props.Size == ""),
+			templ.KV("text-lg", props.Size == "large"),
+			templ.KV("text-black hover:text-black/80 focus:ring-black hover:underline", (props.Variant == "default" || props.Variant == "") && !props.Outline),
+			templ.KV("text-primary hover:text-primary/80 focus:ring-primary hover:underline", props.Variant == "primary" && !props.Outline),
+			templ.KV("text-secondary hover:text-secondary/80 focus:ring-secondary hover:underline", props.Variant == "secondary" && !props.Outline),
+			templ.KV("text-success hover:text-success/80 focus:ring-success hover:underline", props.Variant == "success" && !props.Outline),
+			templ.KV("text-info hover:text-info/80 focus:ring-info hover:underline", props.Variant == "info" && !props.Outline),
+			templ.KV("text-warning hover:text-warning/80 focus:ring-warning hover:underline", props.Variant == "warning" && !props.Outline),
+			templ.KV("text-error hover:text-error/80 focus:ring-error hover:underline", (props.Variant == "danger" || props.Variant == "error") && !props.Outline),
+			templ.KV("text-base-content hover:text-base-content/80 focus:ring-base-300 hover:underline", props.Variant == "ghost" && !props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-black border-black hover:bg-black hover:text-white hover:no-underline", (props.Variant == "default" || props.Variant == "") && props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-primary border-primary hover:bg-primary hover:text-primary-content hover:no-underline", props.Variant == "primary" && props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-secondary border-secondary hover:bg-secondary hover:text-secondary-content hover:no-underline", props.Variant == "secondary" && props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-success border-success hover:bg-success hover:text-success-content hover:no-underline", props.Variant == "success" && props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-info border-info hover:bg-info hover:text-info-content hover:no-underline", props.Variant == "info" && props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-warning border-warning hover:bg-warning hover:text-warning-content hover:no-underline", props.Variant == "warning" && props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-error border-error hover:bg-error hover:text-error-content hover:no-underline", (props.Variant == "danger" || props.Variant == "error") && props.Outline),
 		}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
@@ -187,7 +193,7 @@ func linkComponent(text, href string, props linkProps) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 108, Col: 8}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 114, Col: 8}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
