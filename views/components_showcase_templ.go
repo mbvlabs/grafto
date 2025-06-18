@@ -10,6 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/mbvlabs/grafto/views/internal/components"
 import "github.com/mbvlabs/grafto/router/contexts"
+import "github.com/mbvlabs/grafto/router/routes"
+import "github.com/google/uuid"
 import "time"
 
 func ComponentsShowcase() templ.Component {
@@ -409,18 +411,42 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.SimpleTable{
-			Headers: []string{"Name", "Email", "Role", "Status"},
-			Rows: [][]string{
-				{"John Doe", "john@example.com", "Admin", "Active"},
-				{"Jane Smith", "jane@example.com", "User", "Active"},
-				{"Bob Johnson", "bob@example.com", "Moderator", "Inactive"},
+		templ_7745c5c3_Err = components.Table(
+			"User Management",
+			[]string{"Name", "Email", "Role", "Status"},
+			components.TableRowElements{
+				{
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440001"),
+					Elements: []components.TableRowElement{
+						{Title: "John Doe"},
+						{Title: "john@example.com"},
+						{Title: "Admin"},
+						{Title: "Active", Highlight: "status-published"},
+					},
+				},
+				{
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440002"),
+					Elements: []components.TableRowElement{
+						{Title: "Jane Smith"},
+						{Title: "jane@example.com"},
+						{Title: "User"},
+						{Title: "Active", Highlight: "status-published"},
+					},
+				},
+				{
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440003"),
+					Elements: []components.TableRowElement{
+						{Title: "Bob Johnson"},
+						{Title: "bob@example.com"},
+						{Title: "Moderator"},
+						{Title: "Inactive", Highlight: "status-draft"},
+					},
+				},
 			},
-			Caption:   "User Management Table",
-			Striped:   true,
-			Bordered:  true,
-			Hoverable: true,
-		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+			components.TablePagination{},
+			components.ActionBtn{},
+			components.TableConfig{EditURLPattern: "/dashboard/users/%s/edit"},
+		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -428,66 +454,38 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.Table{
-			Caption: "Product Management",
-			Columns: []components.TableColumn{
-				{Key: "name", Label: "Product Name", Sortable: true},
-				{Key: "price", Label: "Price", Align: "right", Sortable: true},
-				{Key: "category", Label: "Category", Sortable: true},
-				{Key: "stock", Label: "Stock", Align: "center"},
-				{Key: "status", Label: "Status", Align: "center"},
-			},
-			Rows: []components.TableRow{
+		templ_7745c5c3_Err = components.Table(
+			"Product Management",
+			[]string{"Product Name", "Price", "Category", "Stock", "Status"},
+			components.TableRowElements{
 				{
-					ID: "product-1",
-					Cells: []components.TableCell{
-						{Content: "Wireless Headphones", Bold: true},
-						{Content: "$99.99", Align: "right", Color: "success"},
-						{Content: "Electronics"},
-						{Content: "25", Align: "center"},
-						{Content: "Active", Align: "center", Color: "success"},
-					},
-					Actions: []components.TableAction{
-						{Label: "Edit", URL: "#", Color: "primary"},
-						{Label: "Delete", URL: "#", Color: "error"},
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440004"),
+					Elements: []components.TableRowElement{
+						{Title: "Wireless Headphones"},
+						{Title: "$99.99"},
+						{Title: "Electronics"},
+						{Title: "25"},
+						{Title: "Active", Highlight: "status-published"},
 					},
 				},
 				{
-					ID: "product-2",
-					Cells: []components.TableCell{
-						{Content: "Gaming Mouse", Bold: true},
-						{Content: "$49.99", Align: "right", Color: "success"},
-						{Content: "Electronics"},
-						{Content: "0", Align: "center", Color: "error"},
-						{Content: "Out of Stock", Align: "center", Color: "warning"},
-					},
-					Actions: []components.TableAction{
-						{Label: "Edit", URL: "#", Color: "primary"},
-						{Label: "Restock", URL: "#", Color: "info"},
-					},
-				},
-				{
-					ID: "product-3",
-					Cells: []components.TableCell{
-						{Content: "Mechanical Keyboard", Bold: true},
-						{Content: "$129.99", Align: "right", Color: "success"},
-						{Content: "Electronics"},
-						{Content: "12", Align: "center"},
-						{Content: "Active", Align: "center", Color: "success"},
-					},
-					Actions: []components.TableAction{
-						{Label: "Edit", URL: "#", Color: "primary"},
-						{Label: "Delete", URL: "#", Color: "error"},
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440005"),
+					Elements: []components.TableRowElement{
+						{Title: "Gaming Mouse"},
+						{Title: "$49.99"},
+						{Title: "Electronics"},
+						{Title: "0"},
+						{Title: "Out of Stock", Highlight: "status-draft"},
 					},
 				},
 			},
-			Striped:        true,
-			Hoverable:      true,
-			Bordered:       true,
-			ShowRowNumbers: true,
-			SelectableRows: true,
-			EmptyMessage:   "No products found",
-		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+			components.TablePagination{},
+			components.ActionBtn{
+				Title: "Add Product",
+				Route: routes.Route{Path: "/dashboard/products/add"},
+			},
+			components.TableConfig{EditURLPattern: "/dashboard/products/%s/edit"},
+		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -495,43 +493,31 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.Table{
-			Caption: "System Logs",
-			Columns: []components.TableColumn{
-				{Key: "timestamp", Label: "Timestamp", Width: "200px"},
-				{Key: "level", Label: "Level", Align: "center", Width: "80px"},
-				{Key: "message", Label: "Message"},
-			},
-			Rows: []components.TableRow{
+		templ_7745c5c3_Err = components.Table(
+			"System Logs",
+			[]string{"Timestamp", "Level", "Message"},
+			components.TableRowElements{
 				{
-					ID: "log-1",
-					Cells: []components.TableCell{
-						{Content: "2024-01-15 10:30:25"},
-						{Content: "INFO", Align: "center", Color: "info"},
-						{Content: "Application started successfully"},
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440006"),
+					Elements: []components.TableRowElement{
+						{Title: "2024-01-15 10:30:25"},
+						{Title: "INFO"},
+						{Title: "Application started successfully"},
 					},
 				},
 				{
-					ID: "log-2",
-					Cells: []components.TableCell{
-						{Content: "2024-01-15 10:35:12"},
-						{Content: "WARN", Align: "center", Color: "warning"},
-						{Content: "High memory usage detected"},
-					},
-				},
-				{
-					ID: "log-3",
-					Cells: []components.TableCell{
-						{Content: "2024-01-15 10:45:33"},
-						{Content: "ERROR", Align: "center", Color: "error"},
-						{Content: "Database connection failed"},
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440007"),
+					Elements: []components.TableRowElement{
+						{Title: "2024-01-15 10:35:12"},
+						{Title: "WARN", Highlight: "status-draft"},
+						{Title: "High memory usage detected"},
 					},
 				},
 			},
-			Compact:   true,
-			Bordered:  true,
-			Hoverable: true,
-		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+			components.TablePagination{},
+			components.ActionBtn{},
+			components.TableConfig{},
+		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -539,17 +525,14 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.Table{
-			Caption: "Empty Dataset",
-			Columns: []components.TableColumn{
-				{Key: "name", Label: "Name"},
-				{Key: "value", Label: "Value"},
-				{Key: "status", Label: "Status"},
-			},
-			Rows:         []components.TableRow{},
-			EmptyMessage: "No data available at the moment",
-			Bordered:     true,
-		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Table(
+			"Empty Dataset",
+			[]string{"Name", "Value", "Status"},
+			components.TableRowElements{},
+			components.TablePagination{},
+			components.ActionBtn{},
+			components.TableConfig{},
+		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -611,108 +594,45 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.Table{
-			Caption: "Orders with Pagination",
-			Columns: []components.TableColumn{
-				{Key: "id", Label: "Order ID", Width: "100px"},
-				{Key: "customer", Label: "Customer", Sortable: true},
-				{Key: "date", Label: "Date", Sortable: true},
-				{Key: "amount", Label: "Amount", Align: "right", Sortable: true},
-				{Key: "status", Label: "Status", Align: "center"},
-			},
-			Rows: []components.TableRow{
+		templ_7745c5c3_Err = components.Table(
+			"Orders with Pagination",
+			[]string{"Order ID", "Customer", "Date", "Amount", "Status"},
+			components.TableRowElements{
 				{
-					ID: "order-1001",
-					Cells: []components.TableCell{
-						{Content: "#1001"},
-						{Content: "Alice Johnson", Bold: true},
-						{Content: "2024-01-15"},
-						{Content: "$299.99", Align: "right", Color: "success"},
-						{Content: "Completed", Align: "center", Color: "success"},
-					},
-					Actions: []components.TableAction{
-						{Label: "View", URL: "#", Color: "primary"},
-						{Label: "Invoice", URL: "#", Color: "secondary"},
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440008"),
+					Elements: []components.TableRowElement{
+						{Title: "#1001"},
+						{Title: "Alice Johnson"},
+						{Title: "2024-01-15"},
+						{Title: "$299.99"},
+						{Title: "Completed", Highlight: "status-published"},
 					},
 				},
 				{
-					ID: "order-1002",
-					Cells: []components.TableCell{
-						{Content: "#1002"},
-						{Content: "Bob Smith", Bold: true},
-						{Content: "2024-01-14"},
-						{Content: "$149.50", Align: "right", Color: "success"},
-						{Content: "Processing", Align: "center", Color: "warning"},
-					},
-					Actions: []components.TableAction{
-						{Label: "View", URL: "#", Color: "primary"},
-						{Label: "Cancel", URL: "#", Color: "error"},
-					},
-				},
-				{
-					ID: "order-1003",
-					Cells: []components.TableCell{
-						{Content: "#1003"},
-						{Content: "Carol Davis", Bold: true},
-						{Content: "2024-01-14"},
-						{Content: "$89.99", Align: "right", Color: "success"},
-						{Content: "Shipped", Align: "center", Color: "info"},
-					},
-					Actions: []components.TableAction{
-						{Label: "View", URL: "#", Color: "primary"},
-						{Label: "Track", URL: "#", Color: "info"},
-					},
-				},
-				{
-					ID: "order-1004",
-					Cells: []components.TableCell{
-						{Content: "#1004"},
-						{Content: "David Wilson", Bold: true},
-						{Content: "2024-01-13"},
-						{Content: "$459.00", Align: "right", Color: "success"},
-						{Content: "Pending", Align: "center", Color: "warning"},
-					},
-					Actions: []components.TableAction{
-						{Label: "View", URL: "#", Color: "primary"},
-						{Label: "Process", URL: "#", Color: "success"},
-					},
-				},
-				{
-					ID: "order-1005",
-					Cells: []components.TableCell{
-						{Content: "#1005"},
-						{Content: "Eva Martinez", Bold: true},
-						{Content: "2024-01-13"},
-						{Content: "$199.99", Align: "right", Color: "success"},
-						{Content: "Completed", Align: "center", Color: "success"},
-					},
-					Actions: []components.TableAction{
-						{Label: "View", URL: "#", Color: "primary"},
-						{Label: "Refund", URL: "#", Color: "error"},
+					ID: uuid.MustParse("550e8400-e29b-41d4-a716-446655440009"),
+					Elements: []components.TableRowElement{
+						{Title: "#1002"},
+						{Title: "Bob Smith"},
+						{Title: "2024-01-14"},
+						{Title: "$149.50"},
+						{Title: "Processing", Highlight: "status-draft"},
 					},
 				},
 			},
-			Striped:        true,
-			Hoverable:      true,
-			Bordered:       true,
-			ShowRowNumbers: true,
-			EmptyMessage:   "No orders found",
-			Pagination: &components.Pagination{
-				CurrentPage:     1,
-				TotalPages:      12,
-				TotalItems:      287,
-				ItemsPerPage:    25,
-				BaseURL:         "/orders",
-				ShowFirstLast:   true,
-				ShowPrevNext:    true,
-				ShowPageNumbers: true,
-				ShowPageInfo:    true,
-				ShowPageSize:    true,
-				MaxPageNumbers:  5,
-				PageSizeOptions: []int{10, 25, 50, 100},
-				Size:            "medium",
+			components.TablePagination{
+				TotalCount:  287,
+				Page:        1,
+				PageSize:    25,
+				TotalPages:  12,
+				HasNext:     true,
+				HasPrevious: false,
 			},
-		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+			components.ActionBtn{
+				Title: "New Order",
+				Route: routes.Route{Path: "/dashboard/orders/new"},
+			},
+			components.TableConfig{EditURLPattern: "/dashboard/orders/%s/edit"},
+		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

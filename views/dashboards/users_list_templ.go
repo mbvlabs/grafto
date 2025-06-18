@@ -124,22 +124,14 @@ func buildUsersTable(users []services.UserListItem) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = components.Table{
-			Caption: "Users in the system",
-			Columns: []components.TableColumn{
-				{Key: "email", Label: "Email", Align: "left", Sortable: false},
-				{Key: "status", Label: "Status", Align: "center", Width: "120px"},
-				{Key: "role", Label: "Role", Align: "center", Width: "100px"},
-				{Key: "created_at", Label: "Created", Align: "center", Width: "120px"},
-				{Key: "updated_at", Label: "Updated", Align: "center", Width: "120px"},
-			},
-			Rows:           buildUserTableRows(users),
-			Striped:        true,
-			Hoverable:      true,
-			Bordered:       true,
-			EmptyMessage:   "No users found",
-			ShowRowNumbers: false,
-		}.Build().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.Table(
+			"Users in the system",
+			[]string{"Email", "Status", "Role", "Created", "Updated"},
+			buildUserTableRows(users),
+			components.TablePagination{},
+			components.ActionBtn{},
+			components.TableConfig{EditURLPattern: "/dashboard/users/%s/edit"},
+		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -147,70 +139,19 @@ func buildUsersTable(users []services.UserListItem) templ.Component {
 	})
 }
 
-func buildUserTableRows(users []services.UserListItem) []components.TableRow {
-	rows := make([]components.TableRow, len(users))
+func buildUserTableRows(users []services.UserListItem) components.TableRowElements {
+	rows := make(components.TableRowElements, len(users))
 
 	for i, user := range users {
-		// Build table cells
-		cells := []components.TableCell{
-			{
-				Content: user.Email,
-				Align:   "left",
-				Bold:    true,
-			},
-			{
-				Content: formatUserStatus(user.IsVerified),
-				Align:   "center",
-				Color:   getStatusColor(user.IsVerified),
-			},
-			{
-				Content: formatUserRole(user.IsAdmin),
-				Align:   "center",
-				Color:   getRoleColor(user.IsAdmin),
-				Bold:    user.IsAdmin,
-			},
-			{
-				Content: formatDate(user.CreatedAt),
-				Align:   "center",
-			},
-			{
-				Content: formatDate(user.UpdatedAt),
-				Align:   "center",
-			},
-		}
-
-		// Build action buttons
-		actions := []components.TableAction{
-			{
-				Label: "Edit",
-				URL:   fmt.Sprintf("/dashboard/users/%s/edit", user.ID.String()),
-				Color: "primary",
-				Icon:  "✏️",
-			},
-		}
-
-		// Only show toggle admin if not the current user (this would need context)
-		actions = append(actions, components.TableAction{
-			Label: getToggleAdminLabel(user.IsAdmin),
-			URL:   fmt.Sprintf("/dashboard/users/%s/toggle-admin", user.ID.String()),
-			Color: getToggleAdminColor(user.IsAdmin),
-			Icon:  getToggleAdminIcon(user.IsAdmin),
-		})
-
-		// Delete action
-		actions = append(actions, components.TableAction{
-			Label: "Delete",
-			URL:   fmt.Sprintf("/dashboard/users/%s/delete", user.ID.String()),
-			Color: "error",
-			Icon:  "🗑️",
-		})
-
 		rows[i] = components.TableRow{
-			ID:        fmt.Sprintf("user-%s", user.ID.String()),
-			Cells:     cells,
-			Clickable: true,
-			ClickURL:  fmt.Sprintf("/dashboard/users/%s/edit", user.ID.String()),
-			Actions:   actions,
+			ID: user.ID,
+			Elements: []components.TableRowElement{
+				{Title: user.Email},
+				{Title: formatUserStatus(user.IsVerified), Highlight: getStatusHighlight(user.IsVerified)},
+				{Title: formatUserRole(user.IsAdmin)},
+				{Title: formatDate(user.CreatedAt)},
+				{Title: formatDate(user.UpdatedAt)},
+			},
 		}
 	}
 
@@ -282,6 +223,13 @@ func getStatusColor(isVerified bool) string {
 	return "warning"
 }
 
+func getStatusHighlight(isVerified bool) string {
+	if isVerified {
+		return "status-published"
+	}
+	return "status-draft"
+}
+
 func formatUserRole(isAdmin bool) string {
 	if isAdmin {
 		return "Admin"
@@ -294,27 +242,6 @@ func getRoleColor(isAdmin bool) string {
 		return "primary"
 	}
 	return "secondary"
-}
-
-func getToggleAdminLabel(isAdmin bool) string {
-	if isAdmin {
-		return "Remove Admin"
-	}
-	return "Make Admin"
-}
-
-func getToggleAdminColor(isAdmin bool) string {
-	if isAdmin {
-		return "warning"
-	}
-	return "success"
-}
-
-func getToggleAdminIcon(isAdmin bool) string {
-	if isAdmin {
-		return "👤"
-	}
-	return "👑"
 }
 
 func formatDate(t time.Time) string {
