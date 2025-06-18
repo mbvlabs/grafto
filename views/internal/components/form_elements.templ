@@ -11,102 +11,72 @@ type FormProps struct {
 
 templ Form(props FormProps) {
 	<form
-		class={ "w-full", props.Class }
+		class={ "grid gap-1 border border-white", props.Class }
 		{ props.Attributes... }
 	>
 		{ children... }
 	</form>
 }
 
-type FormFieldProps struct {
-	Class string
+type Input struct {
+	Type        string
+	Name        string
+	ID          string
+	Label       string
+	Value       string
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	ReadOnly    bool
+	Error       string
+	Help        string
+	Size        string // sm, md, lg
+	Class       string
+	InputClass  string
+	LabelClass  string
+	Attributes  templ.Attributes
 }
 
-templ FormField(props FormFieldProps) {
-	<div
-		class={ "mb-4", props.Class }
-	>
-		{ children... }
-	</div>
-}
-
-type FormActionsProps struct {
-	Class string
-	Align string // left, right, center, between
-}
-
-templ FormActions(props FormActionsProps) {
-	<div
-		class={ "flex gap-2 mt-6",
-			templ.KV("justify-start", props.Align == "left" || props.Align == ""),
-			templ.KV("justify-end", props.Align == "right"),
-			templ.KV("justify-center", props.Align == "center"),
-			templ.KV("justify-between", props.Align == "between"),
-			props.Class }
-	>
-		{ children... }
-	</div>
-}
-
-type InputProps struct {
-	Type         string
-	Name         string
-	ID           string
-	Label        string
-	Value        string
-	Placeholder  string
-	Required     bool
-	Disabled     bool
-	ReadOnly     bool
-	Error        string
-	Help         string
-	Size         string // sm, md, lg
-	Class        string
-	InputClass   string
-	LabelClass   string
-	Attributes   templ.Attributes
-}
-
-templ Input(props InputProps) {
+templ (i Input) Build() {
 	<div class="w-full">
-		if props.Label != "" {
-			<label class={ "block text-sm font-medium mb-1", props.LabelClass }>
-				{ props.Label }
-				if props.Required {
+		if i.Label != "" {
+			<label for="" class={ "block text-sm font-medium mb-1", i.LabelClass }>
+				{ i.Label }
+				if i.Required {
 					<span class="text-error ml-1">*</span>
 				}
 			</label>
 		}
 		<input
-			if props.Type != "" {
-				type={ props.Type }
+			if i.Type != "" {
+				type={ i.Type }
 			}
-			name={ props.Name }
-			if props.ID != "" {
-				id={ props.ID }
+			name={ i.Name }
+			if i.ID != "" {
+				id={ i.ID }
 			}
-			if props.Value != "" {
-				value={ props.Value }
+			if i.Value != "" {
+				value={ i.Value }
 			}
-			if props.Placeholder != "" {
-				placeholder={ props.Placeholder }
+			if i.Placeholder != "" {
+				placeholder={ i.Placeholder }
 			}
-			required?={ props.Required }
-			disabled?={ props.Disabled }
-			readonly?={ props.ReadOnly }
+			required?={ i.Required }
+			disabled?={ i.Disabled }
+			readonly?={ i.ReadOnly }
 			class={ "input w-full",
-				templ.KV("input-sm", props.Size == "sm"),
-				templ.KV("input-md", props.Size == "md" || props.Size == ""),
-				templ.KV("input-lg", props.Size == "lg"),
-				templ.KV("input-error", props.Error != ""),
-				props.InputClass }
-			{ props.Attributes... }
+				templ.KV("input-sm", i.Size == "sm"),
+				templ.KV("input-md", i.Size == "md" || i.Size == ""),
+				templ.KV("input-lg", i.Size == "lg"),
+				templ.KV("input-error", i.Error != ""),
+				i.InputClass }
+			{ i.Attributes... }
 		/>
-		if props.Error != "" {
-			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		if i.Error != "" {
+			<p class="text-error text-sm mt-1">{ i.Error }</p>
 		}
-		if props.Help != "" && props.Error == "" {
-			<p class="text-base-content/60 text-sm mt-1">{ props.Help }</p>
+		if i.Help != "" && i.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ i.Help }</p>
 		}
 	</div>
 }
@@ -372,9 +342,11 @@ templ RadioGroup(props RadioGroupProps) {
 				}
 			</legend>
 		}
-		<div class={ "space-y-2",
+		<div
+			class={ "space-y-2",
 			templ.KV("flex flex-wrap gap-4 space-y-0", props.Layout == "horizontal"),
-			props.Class }>
+			props.Class }
+		>
 			for i, option := range props.Options {
 				@Radio(RadioProps{
 					Name:       props.Name,
@@ -456,20 +428,20 @@ templ Switch(props SwitchProps) {
 }
 
 type FileInputProps struct {
-	Name        string
-	ID          string
-	Label       string
-	Accept      string
-	Multiple    bool
-	Required    bool
-	Disabled    bool
-	Error       string
-	Help        string
-	Size        string // sm, md, lg
-	Class       string
-	InputClass  string
-	LabelClass  string
-	Attributes  templ.Attributes
+	Name       string
+	ID         string
+	Label      string
+	Accept     string
+	Multiple   bool
+	Required   bool
+	Disabled   bool
+	Error      string
+	Help       string
+	Size       string // sm, md, lg
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
 }
 
 templ FileInput(props FileInputProps) {
@@ -589,3 +561,4 @@ templ Range(props RangeProps) {
 		}
 	</div>
 }
+

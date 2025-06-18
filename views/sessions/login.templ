@@ -128,7 +128,16 @@ type LoginPageProps struct {
 templ LoginPage(data LoginPageProps) {
 	@layouts.Base(views.WithTitle("Login")) {
 		<main class="flex-1 w-full px-4 flex flex-col justify-center items-center">
-			@LoginForm(false, data.Errors)
+			@components.Form(components.FormProps{}) {
+				@components.Input{
+					Type:     "text",
+					Required: true,
+				}.Build()
+				@components.Input{
+					Type:     "text",
+					Required: true,
+				}.Build()
+			}
 		</main>
 	}
 }
