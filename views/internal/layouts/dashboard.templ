@@ -7,9 +7,9 @@ templ Dashboard(opts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en">
 		@components.SetupHead(ctx, opts...)
-		<body class="flex flex-col min-w-screen h-screen">
+		<body class="flex flex-col min-w-screen h-screen bg-base-300">
 			<header class="bsc-fluid">
-				<div class="flex justify-between navbar bg-base-100">
+				<div class="flex justify-between navbar bg-base-100 shadow-lg border-b border-base-300">
 					<div class="navbar-left">
 						@components.Link("Grafto Dashboard", routes.DashboardHome.Path).Build()
 					</div>
@@ -26,7 +26,37 @@ templ Dashboard(opts ...components.HeadDataOption) {
 					</div>
 				</div>
 			</header>
-			{ children... }
+			<div class="flex flex-1 overflow-hidden gap-4 p-4">
+				@dashboardSidebar()
+				<main class="flex-1 overflow-y-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
+					<div class="p-6">
+						{ children... }
+					</div>
+				</main>
+			</div>
 		</body>
 	</html>
+}
+
+templ dashboardSidebar() {
+	<aside class="w-64 bg-base-100 shadow-lg rounded-lg border border-base-300">
+		<nav class="p-4">
+			<div class="space-y-2">
+				@dashboardNavItem("Dashboard", routes.DashboardHome.Path, "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z")
+				@dashboardNavItem("Users", routes.DashboardUsers.Path, "M12 4.354a4 4 0 110 5.292M15 21H3v-1a4 4 0 014-4h5.5a4 4 0 014 4v1z")
+			</div>
+		</nav>
+	</aside>
+}
+
+templ dashboardNavItem(name, path, iconPath string) {
+	<a
+		href={ templ.SafeURL(path) }
+		class="flex items-center px-4 py-3 text-sm font-medium text-base-content rounded-lg hover:bg-primary hover:text-primary-content active:bg-primary active:text-primary-content transition-all duration-200 border border-transparent hover:border-primary"
+	>
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ iconPath }></path>
+		</svg>
+		{ name }
+	</a>
 }

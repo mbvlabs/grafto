@@ -1,0 +1,201 @@
+package dashboards
+
+import (
+	"fmt"
+	"time"
+	"net/url"
+
+	"github.com/mbvlabs/grafto/services"
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
+)
+
+templ UsersList(userListResponse services.UserListResponse, currentPage int, perPage int) {
+	@layouts.Dashboard() {
+		<div class="space-y-6">
+			<div class="flex justify-between items-center bg-base-200 p-4 rounded-lg border border-base-300">
+				<h1 class="text-2xl font-bold text-base-content">Users Management</h1>
+				<div class="text-sm font-medium text-base-content bg-base-100 px-3 py-1 rounded-full border border-base-300">
+					{ fmt.Sprintf("Showing %d users", userListResponse.TotalCount) }
+				</div>
+			</div>
+			
+			if len(userListResponse.Users) == 0 {
+				<div class="text-center py-12">
+					<div class="text-base-content/60 text-lg">No users found</div>
+				</div>
+			} else {
+				@buildUsersTable(userListResponse.Users)
+				
+				if userListResponse.TotalPages > 1 {
+					@buildUsersPagination(currentPage, userListResponse.TotalPages, userListResponse.TotalCount, perPage)
+				}
+			}
+		</div>
+	}
+}
+
+templ buildUsersTable(users []services.UserListItem) {
+	@components.Table{
+		Caption: "Users in the system",
+		Columns: []components.TableColumn{
+			{Key: "email", Label: "Email", Align: "left", Sortable: false},
+			{Key: "status", Label: "Status", Align: "center", Width: "120px"},
+			{Key: "role", Label: "Role", Align: "center", Width: "100px"},
+			{Key: "created_at", Label: "Created", Align: "center", Width: "120px"},
+			{Key: "updated_at", Label: "Updated", Align: "center", Width: "120px"},
+		},
+		Rows: buildUserTableRows(users),
+		Striped: true,
+		Hoverable: true,
+		Bordered: true,
+		EmptyMessage: "No users found",
+		ShowRowNumbers: false,
+	}.Build()
+}
+
+func buildUserTableRows(users []services.UserListItem) []components.TableRow {
+	rows := make([]components.TableRow, len(users))
+	
+	for i, user := range users {
+		// Build table cells
+		cells := []components.TableCell{
+			{
+				Content: user.Email,
+				Align: "left",
+				Bold: true,
+			},
+			{
+				Content: formatUserStatus(user.IsVerified),
+				Align: "center",
+				Color: getStatusColor(user.IsVerified),
+			},
+			{
+				Content: formatUserRole(user.IsAdmin),
+				Align: "center",
+				Color: getRoleColor(user.IsAdmin),
+				Bold: user.IsAdmin,
+			},
+			{
+				Content: formatDate(user.CreatedAt),
+				Align: "center",
+			},
+			{
+				Content: formatDate(user.UpdatedAt),
+				Align: "center",
+			},
+		}
+		
+		// Build action buttons
+		actions := []components.TableAction{
+			{
+				Label: "Edit",
+				URL: fmt.Sprintf("/dashboard/users/%s/edit", user.ID.String()),
+				Color: "primary",
+				Icon: "✏️",
+			},
+		}
+		
+		// Only show toggle admin if not the current user (this would need context)
+		actions = append(actions, components.TableAction{
+			Label: getToggleAdminLabel(user.IsAdmin),
+			URL: fmt.Sprintf("/dashboard/users/%s/toggle-admin", user.ID.String()),
+			Color: getToggleAdminColor(user.IsAdmin),
+			Icon: getToggleAdminIcon(user.IsAdmin),
+		})
+		
+		// Delete action
+		actions = append(actions, components.TableAction{
+			Label: "Delete",
+			URL: fmt.Sprintf("/dashboard/users/%s/delete", user.ID.String()),
+			Color: "error",
+			Icon: "🗑️",
+		})
+		
+		rows[i] = components.TableRow{
+			ID: fmt.Sprintf("user-%s", user.ID.String()),
+			Cells: cells,
+			Clickable: true,
+			ClickURL: fmt.Sprintf("/dashboard/users/%s/edit", user.ID.String()),
+			Actions: actions,
+		}
+	}
+	
+	return rows
+}
+
+templ buildUsersPagination(currentPage, totalPages, totalCount, perPage int) {
+	<div class="mt-6">
+		@components.Pagination{
+			CurrentPage: currentPage,
+			TotalPages: totalPages,
+			TotalItems: totalCount,
+			ItemsPerPage: perPage,
+			BaseURL: "/dashboard/users",
+			QueryParams: url.Values{},
+			ShowFirstLast: true,
+			ShowPrevNext: true,
+			ShowPageNumbers: true,
+			ShowPageInfo: true,
+			ShowPageSize: true,
+			MaxPageNumbers: 5,
+			PageSizeOptions: []int{10, 25, 50, 100},
+		}.Build()
+	</div>
+}
+
+func formatUserStatus(isVerified bool) string {
+	if isVerified {
+		return "Verified"
+	}
+	return "Unverified"
+}
+
+func getStatusColor(isVerified bool) string {
+	if isVerified {
+		return "success"
+	}
+	return "warning"
+}
+
+func formatUserRole(isAdmin bool) string {
+	if isAdmin {
+		return "Admin"
+	}
+	return "User"
+}
+
+func getRoleColor(isAdmin bool) string {
+	if isAdmin {
+		return "primary"
+	}
+	return "secondary"
+}
+
+func getToggleAdminLabel(isAdmin bool) string {
+	if isAdmin {
+		return "Remove Admin"
+	}
+	return "Make Admin"
+}
+
+func getToggleAdminColor(isAdmin bool) string {
+	if isAdmin {
+		return "warning"
+	}
+	return "success"
+}
+
+func getToggleAdminIcon(isAdmin bool) string {
+	if isAdmin {
+		return "👤"
+	}
+	return "👑"
+}
+
+func formatDate(t time.Time) string {
+	if t.IsZero() {
+		return "-"
+	}
+	return t.Format("Jan 2, 2006")
+}
