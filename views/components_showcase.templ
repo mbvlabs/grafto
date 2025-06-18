@@ -396,6 +396,165 @@ templ ComponentsShowcase() {
 					</div>
 				</section>
 				<hr class="border-white my-12"/>
+				<!-- Pagination Section -->
+				<section class="mb-20">
+					<div class="flex items-center gap-4 mb-8">
+						<h2 class="text-3xl font-bold">Pagination</h2>
+						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
+					</div>
+					<div class="space-y-12">
+						<div>
+							<h3 class="text-xl font-medium mb-4">Full Pagination</h3>
+							<p class="text-base-content/70 mb-6">Complete pagination with all features including page info, page size selector, and navigation:</p>
+							@components.NewPagination(3, 10, 247, 25, "/products").Build()
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Compact Pagination</h3>
+							<p class="text-base-content/70 mb-6">Space-efficient pagination perfect for mobile or constrained layouts:</p>
+							@components.Pagination{
+								CurrentPage:     5,
+								TotalPages:      15,
+								TotalItems:      367,
+								ItemsPerPage:    25,
+								BaseURL:         "/articles",
+								ShowFirstLast:   false,
+								ShowPrevNext:    true,
+								ShowPageNumbers: true,
+								ShowPageInfo:    false,
+								ShowPageSize:    false,
+								MaxPageNumbers:  3,
+								Compact:         true,
+								Size:            "small",
+							}.Build()
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Simple Pagination</h3>
+							<p class="text-base-content/70 mb-6">Minimal pagination with just previous/next navigation:</p>
+							@components.NewSimplePagination(2, 8, "/blog").Build()
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Pagination Components</h3>
+							<p class="text-base-content/70 mb-6">Individual pagination components that can be used separately:</p>
+							<div class="space-y-4">
+								<div>
+									<h4 class="text-lg font-medium mb-2">Pagination Info</h4>
+									@components.NewPaginationInfo(2, 25, 127).Build()
+								</div>
+								<div>
+									<h4 class="text-lg font-medium mb-2">Page Size Selector</h4>
+									@components.NewPageSizeSelector(25, []int{10, 25, 50, 100}, "/data").Build()
+								</div>
+							</div>
+						</div>
+						<div>
+							<h3 class="text-xl font-medium mb-4">Table with Pagination</h3>
+							<p class="text-base-content/70 mb-6">Complete example showing pagination integrated with a table:</p>
+							@components.Table{
+								Caption: "Orders with Pagination",
+								Columns: []components.TableColumn{
+									{Key: "id", Label: "Order ID", Width: "100px"},
+									{Key: "customer", Label: "Customer", Sortable: true},
+									{Key: "date", Label: "Date", Sortable: true},
+									{Key: "amount", Label: "Amount", Align: "right", Sortable: true},
+									{Key: "status", Label: "Status", Align: "center"},
+								},
+								Rows: []components.TableRow{
+									{
+										ID: "order-1001",
+										Cells: []components.TableCell{
+											{Content: "#1001"},
+											{Content: "Alice Johnson", Bold: true},
+											{Content: "2024-01-15"},
+											{Content: "$299.99", Align: "right", Color: "success"},
+											{Content: "Completed", Align: "center", Color: "success"},
+										},
+										Actions: []components.TableAction{
+											{Label: "View", URL: "#", Color: "primary"},
+											{Label: "Invoice", URL: "#", Color: "secondary"},
+										},
+									},
+									{
+										ID: "order-1002",
+										Cells: []components.TableCell{
+											{Content: "#1002"},
+											{Content: "Bob Smith", Bold: true},
+											{Content: "2024-01-14"},
+											{Content: "$149.50", Align: "right", Color: "success"},
+											{Content: "Processing", Align: "center", Color: "warning"},
+										},
+										Actions: []components.TableAction{
+											{Label: "View", URL: "#", Color: "primary"},
+											{Label: "Cancel", URL: "#", Color: "error"},
+										},
+									},
+									{
+										ID: "order-1003",
+										Cells: []components.TableCell{
+											{Content: "#1003"},
+											{Content: "Carol Davis", Bold: true},
+											{Content: "2024-01-14"},
+											{Content: "$89.99", Align: "right", Color: "success"},
+											{Content: "Shipped", Align: "center", Color: "info"},
+										},
+										Actions: []components.TableAction{
+											{Label: "View", URL: "#", Color: "primary"},
+											{Label: "Track", URL: "#", Color: "info"},
+										},
+									},
+									{
+										ID: "order-1004",
+										Cells: []components.TableCell{
+											{Content: "#1004"},
+											{Content: "David Wilson", Bold: true},
+											{Content: "2024-01-13"},
+											{Content: "$459.00", Align: "right", Color: "success"},
+											{Content: "Pending", Align: "center", Color: "warning"},
+										},
+										Actions: []components.TableAction{
+											{Label: "View", URL: "#", Color: "primary"},
+											{Label: "Process", URL: "#", Color: "success"},
+										},
+									},
+									{
+										ID: "order-1005",
+										Cells: []components.TableCell{
+											{Content: "#1005"},
+											{Content: "Eva Martinez", Bold: true},
+											{Content: "2024-01-13"},
+											{Content: "$199.99", Align: "right", Color: "success"},
+											{Content: "Completed", Align: "center", Color: "success"},
+										},
+										Actions: []components.TableAction{
+											{Label: "View", URL: "#", Color: "primary"},
+											{Label: "Refund", URL: "#", Color: "error"},
+										},
+									},
+								},
+								Striped:        true,
+								Hoverable:      true,
+								Bordered:       true,
+								ShowRowNumbers: true,
+								EmptyMessage:   "No orders found",
+								Pagination: &components.Pagination{
+									CurrentPage:     1,
+									TotalPages:      12,
+									TotalItems:      287,
+									ItemsPerPage:    25,
+									BaseURL:         "/orders",
+									ShowFirstLast:   true,
+									ShowPrevNext:    true,
+									ShowPageNumbers: true,
+									ShowPageInfo:    true,
+									ShowPageSize:    true,
+									MaxPageNumbers:  5,
+									PageSizeOptions: []int{10, 25, 50, 100},
+									Size:            "medium",
+								},
+							}.Build()
+						</div>
+					</div>
+				</section>
+				<hr class="border-white my-12"/>
 				<!-- Toast Messages Section -->
 				<section class="mb-20">
 					<div class="flex items-center gap-4 mb-8">

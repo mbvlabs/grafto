@@ -57,41 +57,47 @@ type Table struct {
 	HeaderClass    string
 	BodyClass      string
 	FooterContent  templ.Component
+	Pagination     *Pagination
 	Attributes     templ.Attributes
 }
 
 templ (t Table) Build() {
-	<div class={ "overflow-x-auto", t.Class }
-		if t.SelectableRows {
-			x-data="{ selectAll: false, selectedRows: [] }"
-		}
-	>
-		<table
-			if t.ID != "" {
-				id={ t.ID }
+	<div class="space-y-4">
+		<div class={ "overflow-x-auto", t.Class }
+			if t.SelectableRows {
+				x-data="{ selectAll: false, selectedRows: [] }"
 			}
-			class={ "w-full border-collapse",
-				templ.KV("table-fixed", t.FixedLayout),
-				templ.KV("border border-base-300", t.Bordered) }
-			{ t.Attributes... }
 		>
-			if t.Caption != "" {
-				<caption class="text-base-content/70 text-sm mb-2">{ t.Caption }</caption>
+			<table
+				if t.ID != "" {
+					id={ t.ID }
+				}
+				class={ "w-full border-collapse",
+					templ.KV("table-fixed", t.FixedLayout),
+					templ.KV("border border-base-300", t.Bordered) }
+				{ t.Attributes... }
+			>
+				if t.Caption != "" {
+					<caption class="text-base-content/70 text-sm mb-2">{ t.Caption }</caption>
+				}
+				@t.buildHeader()
+				@t.buildBody()
+				if t.FooterContent != nil {
+					<tfoot class="bg-base-200 border-t border-base-300">
+						<tr>
+							<td colspan={ fmt.Sprintf("%d", t.getColumnCount()) } class="px-4 py-3">
+								@t.FooterContent
+							</td>
+						</tr>
+					</tfoot>
+				}
+			</table>
+			if t.Loading {
+				@t.buildLoadingOverlay()
 			}
-			@t.buildHeader()
-			@t.buildBody()
-			if t.FooterContent != nil {
-				<tfoot class="bg-base-200 border-t border-base-300">
-					<tr>
-						<td colspan={ fmt.Sprintf("%d", t.getColumnCount()) } class="px-4 py-3">
-							@t.FooterContent
-						</td>
-					</tr>
-				</tfoot>
-			}
-		</table>
-		if t.Loading {
-			@t.buildLoadingOverlay()
+		</div>
+		if t.Pagination != nil {
+			@t.Pagination.Build()
 		}
 	</div>
 }
