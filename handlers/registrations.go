@@ -51,7 +51,6 @@ func (r Registrations) Create(ctx echo.Context) error {
 			err,
 		)
 
-		// TODO handle err
 		return err
 	}
 

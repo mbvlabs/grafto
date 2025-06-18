@@ -5,7 +5,6 @@ import (
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
 	"github.com/mbvlabs/grafto/router/routes"
-	"fmt"
 )
 
 var (
@@ -49,129 +48,98 @@ templ LoginError(msg string) {
 	</div>
 }
 
-templ LoginForm(success bool, errors views.Errors) {
-	<div class="w-full max-w-[400px] mx-auto">
-		if success {
-			@components.NavItem(
-				"Logout",
-				routes.DestroyAuthSession.Name,
-				routes.DestroyAuthSession.Path,
-				templ.Attributes{
-					"hx-delete":   routes.DestroyAuthSession.Path,
-					"hx-swap-oob": fmt.Sprintf("outerHTML:a[data-navItemPath='%s']", routes.LoginPage.Name),
-				},
-			)
-			<div class="mb-4">
-				@components.SuccessFlag(
-					"You've been authenticated and will be redirect to the dashboard.",
-					templ.Attributes{
-						"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
-						"hx-trigger": "load delay:4s",
-					},
-				)
-			</div>
-		}
-		<div hx-target="this" hx-swap="outerHTML" class="bg-base-200 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content">
-			<div class="text-center mb-6">
-				<h1 class="text-[1.75rem] font-bold text-base-content mb-2">Login</h1>
-				<p class="text-sm text-base-content">
-					Don't have an account?
-					<a
-						class="text-success no-underline transition-colors duration-200 hover:text-success hover:underline"
-						href={ templ.SafeURL(routes.CreateUserPage.Path) }
-					>
-						Register
-					</a>
-				</p>
-			</div>
-			<div class="w-full">
-				if errors[ErrAuthDetailsWrong] != "" {
-					@LoginWarning(errors[ErrAuthDetailsWrong])
-				}
-				if errors[ErrEmailNotValidated] != "" {
-					@LoginWarning(errors[ErrEmailNotValidated])
-				}
-				<form hx-post={ routes.StoreAuthSession.Path } method="post">
-					<div class="grid gap-4">
-						<div>
-							@components.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"required": true}, components.InputFieldProps{})
-						</div>
-						<div>
-							@components.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"required": true}, components.InputFieldProps{})
-						</div>
-						<div class="flex justify-between items-center my-4 text-sm">
-							<div class="flex items-center">
-								<label class="flex items-center">
-									<span class="mr-2 text-base-content">Remember me</span>
-									<input type="checkbox" name="remember_me" class="accent-primary ml-1"/>
-								</label>
-							</div>
-							<a
-								class="text-accent no-underline transition-colors duration-200 hover:text-accent hover:underline"
-								href={ templ.SafeURL(routes.ForgotPasswordPage.Path) }
-							>
-								Forgotten password?
-							</a>
-						</div>
-						@components.Button("Login").WithPrimary().WithType("submit").Build()
-					</div>
-				</form>
-			</div>
+templ LoginForm(errors views.Errors) {
+	if errors[ErrAuthDetailsWrong] != "" {
+		@LoginWarning(errors[ErrAuthDetailsWrong])
+	}
+	if errors[ErrEmailNotValidated] != "" {
+		@LoginWarning(errors[ErrEmailNotValidated])
+	}
+	@components.Form(components.FormProps{
+		Class: "bg-base-200 w-full mx-auto max-w-[400px] p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+		Attributes: templ.Attributes{
+			"hx-post":   routes.StoreAuthSession.Path,
+			"method":    "post",
+			"hx-target": "this",
+			"hx-swap":   "outerHTML",
+		},
+	}) {
+		<div class="text-center mb-6">
+			<h1 class="text-3xl font-bold text-base-content mb-2">Login</h1>
+			<p class="text-sm text-base-content">
+				Don't have an account?
+				<a
+					class="text-success no-underline transition-colors duration-200 hover:text-success hover:underline"
+					href={ templ.SafeURL(routes.CreateUserPage.Path) }
+				>
+					Register
+				</a>
+			</p>
 		</div>
-	</div>
+		@components.Input{
+			ID:          "email",
+			Label:       "Email",
+			Name:        "email",
+			Type:        "email",
+			Placeholder: "Enter your email",
+			Required:    true,
+		}.Build()
+		@components.Input{
+			ID:          "password",
+			Name:        "password",
+			Label:       "Password",
+			Type:        "password",
+			Placeholder: "Enter your password",
+			Required:    true,
+		}.Build()
+		<div class="flex justify-between items-center my-4">
+			@components.Checkbox{
+				ID:   "remember_me",
+				Name: "remember_me",
+				Text: "Remember me",
+			}.Build()
+			<a
+				class="text-accent no-underline transition-colors duration-200 hover:text-accent hover:underline text-sm"
+				href={ templ.SafeURL(routes.ForgotPasswordPage.Path) }
+			>
+				Forgotten password?
+			</a>
+		</div>
+		@components.Button("Login").WithSuccess().WithType("submit").Build()
+	}
 }
 
 type LoginPageProps struct {
-	Errors views.Errors
+	Errors  views.Errors
+	Success bool
 }
 
 templ LoginPage(data LoginPageProps) {
 	@layouts.Base(views.WithTitle("Login")) {
 		<main class="flex-1 w-full px-4 flex flex-col justify-center items-center">
-			@components.Form(components.FormProps{
-				Class: "bg-base-200 w-full mx-auto max-w-[400px]",
-				Attributes: templ.Attributes{
-					"hx-post": routes.StoreAuthSession.Path,
-					"method":  "post",
-				},
-			}) {
-				<div class="text-center my-5">
-					<h1 class="text-3xl font-bold text-base-content mb-2">Login</h1>
-					<p class="text-sm text-base-content">
-						Don't have an account?
-						<a
-							class="text-success no-underline transition-colors duration-200 hover:text-success hover:underline"
-							href={ templ.SafeURL(routes.CreateUserPage.Path) }
-						>
-							Register
-						</a>
-					</p>
-				</div>
-				@components.Input{
-					ID:          "email",
-					Label:       "Email",
-					Name:        "email",
-					Type:        "email",
-					Placeholder: "Your email",
-					Required:    true,
-				}.Build()
-				@components.Input{
-					ID:          "password",
-					Name:        "password",
-					Label:       "Password",
-					Type:        "password",
-					Placeholder: "Your password",
-					Required:    true,
-				}.Build()
-				@components.Checkbox{
-					ID:   "remember_me",
-					Name: "remember_me",
-					Text: "Remember me",
-				}.Build()
-				@components.SuccessButton("Login")
-			}
+			<div class="w-full max-w-[400px] mx-auto">
+				if data.Success {
+					@components.NavItem(
+						"Logout",
+						routes.DestroyAuthSession.Name,
+						routes.DestroyAuthSession.Path,
+						templ.Attributes{
+							"hx-delete":   routes.DestroyAuthSession.Path,
+							"hx-swap-oob": "outerHTML:a[data-navItemPath='login']",
+						},
+					)
+					<div class="mb-4">
+						@components.SuccessFlag(
+							"You've been authenticated and will be redirected to the dashboard.",
+							templ.Attributes{
+								"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
+								"hx-trigger": "load delay:4s",
+							},
+						)
+					</div>
+				}
+				@LoginForm(data.Errors)
+			</div>
 		</main>
 	}
 }
-
-//@LoginForm(false, data.Errors)

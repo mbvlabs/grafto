@@ -263,8 +263,8 @@ type Checkbox struct {
 }
 
 templ (c Checkbox) Build() {
-	<div class={ "form-control", c.Class }>
-		<label for={ c.ID } class="label cursor-pointer flex justify-start gap-2 p-0">
+	<div class={ "grid", c.Class }>
+		<label for={ c.ID } class="items-center label cursor-pointer flex justify-start gap-2 p-0">
 			if c.Text != "" {
 				<p>{ c.Text }</p>
 			}
@@ -322,7 +322,7 @@ type Radio struct {
 
 templ (r Radio) Build() {
 	@formGroup() {
-		<div class={ "form-control", r.Class }>
+		<div class={ "grid", r.Class }>
 			<label class="label cursor-pointer justify-start gap-2 p-0">
 				<input
 					type="radio"
@@ -451,7 +451,7 @@ type Switch struct {
 
 templ (sw Switch) Build() {
 	@formGroup() {
-		<div class={ "form-control", sw.Class }>
+		<div class={ "grid", sw.Class }>
 			<label class="label cursor-pointer justify-start gap-2 p-0">
 				<input
 					type="checkbox"
