@@ -5,6 +5,7 @@ alias r := run
 alias ra := run-app
 alias rw := run-worker
 alias re := run-email
+alias rc := run-components
 
 alias ci := golangci
 
@@ -73,6 +74,10 @@ run-worker:
 # emails
 run-email:
     wgo -dir ./emails  -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/main.go
+
+# components
+run-components:
+    wgo -dir ./cmd/components  -dir ./views -file=.go -file=.templ -xfile=_templ.go templ generate :: wgo -file=.templ -file=base.css -xfile=_templ.go npm run build-css :: go run cmd/components/main.go
 
 # assets
 compile-templates:
