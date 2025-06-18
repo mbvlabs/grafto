@@ -11,7 +11,7 @@ type FormProps struct {
 
 templ Form(props FormProps) {
 	<form
-		class={ "grid gap-1 border border-white", props.Class }
+		class={ "grid gap-4 p-2 md:p-4 rounded", props.Class }
 		{ props.Attributes... }
 	>
 		{ children... }
@@ -37,10 +37,16 @@ type Input struct {
 	Attributes  templ.Attributes
 }
 
+templ formGroup() {
+	<div class="grid">
+		{ children... }
+	</div>
+}
+
 templ (i Input) Build() {
-	<div class="w-full">
+	@formGroup() {
 		if i.Label != "" {
-			<label for="" class={ "block text-sm font-medium mb-1", i.LabelClass }>
+			<label for={ i.ID } class={ "block text-sm font-medium mb-1", i.LabelClass }>
 				{ i.Label }
 				if i.Required {
 					<span class="text-error ml-1">*</span>
@@ -64,7 +70,7 @@ templ (i Input) Build() {
 			required?={ i.Required }
 			disabled?={ i.Disabled }
 			readonly?={ i.ReadOnly }
-			class={ "input w-full",
+			class={ "w-full text-base-content rounded border w-full px-2 md:py-1",
 				templ.KV("input-sm", i.Size == "sm"),
 				templ.KV("input-md", i.Size == "md" || i.Size == ""),
 				templ.KV("input-lg", i.Size == "lg"),
@@ -78,7 +84,7 @@ templ (i Input) Build() {
 		if i.Help != "" && i.Error == "" {
 			<p class="text-base-content/60 text-sm mt-1">{ i.Help }</p>
 		}
-	</div>
+	}
 }
 
 type TextareaProps struct {
@@ -210,7 +216,7 @@ templ Select(props SelectProps) {
 	</div>
 }
 
-type CheckboxProps struct {
+type Checkbox struct {
 	Name       string
 	ID         string
 	Label      string
@@ -219,6 +225,7 @@ type CheckboxProps struct {
 	Required   bool
 	Disabled   bool
 	Error      string
+	Text       string
 	Size       string // sm, md, lg
 	Class      string
 	InputClass string
@@ -226,40 +233,35 @@ type CheckboxProps struct {
 	Attributes templ.Attributes
 }
 
-templ Checkbox(props CheckboxProps) {
-	<div class={ "form-control", props.Class }>
-		<label class="label cursor-pointer justify-start gap-2 p-0">
+templ (c Checkbox) Build() {
+	<div class={ "form-control", c.Class }>
+		<label for={ c.ID } class="label cursor-pointer flex justify-start gap-2 p-0">
+			if c.Text != "" {
+				<p>{ c.Text }</p>
+			}
 			<input
 				type="checkbox"
-				name={ props.Name }
-				if props.ID != "" {
-					id={ props.ID }
+				name={ c.Name }
+				if c.ID != "" {
+					id={ c.ID }
 				}
-				if props.Value != "" {
-					value={ props.Value }
+				if c.Value != "" {
+					value={ c.Value }
 				}
-				checked?={ props.Checked }
-				required?={ props.Required }
-				disabled?={ props.Disabled }
+				checked?={ c.Checked }
+				required?={ c.Required }
+				disabled?={ c.Disabled }
 				class={ "checkbox",
-					templ.KV("checkbox-sm", props.Size == "sm"),
-					templ.KV("checkbox-md", props.Size == "md" || props.Size == ""),
-					templ.KV("checkbox-lg", props.Size == "lg"),
-					templ.KV("checkbox-error", props.Error != ""),
-					props.InputClass }
-				{ props.Attributes... }
+					templ.KV("checkbox-sm", c.Size == "sm"),
+					templ.KV("checkbox-md", c.Size == "md" || c.Size == ""),
+					templ.KV("checkbox-lg", c.Size == "lg"),
+					templ.KV("checkbox-error", c.Error != ""),
+					c.InputClass }
+				{ c.Attributes... }
 			/>
-			if props.Label != "" {
-				<span class={ "label-text", props.LabelClass }>
-					{ props.Label }
-					if props.Required {
-						<span class="text-error ml-1">*</span>
-					}
-				</span>
-			}
 		</label>
-		if props.Error != "" {
-			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		if c.Error != "" {
+			<p class="text-error text-sm mt-1">{ c.Error }</p>
 		}
 	</div>
 }
@@ -561,4 +563,3 @@ templ Range(props RangeProps) {
 		}
 	</div>
 }
-

@@ -128,16 +128,50 @@ type LoginPageProps struct {
 templ LoginPage(data LoginPageProps) {
 	@layouts.Base(views.WithTitle("Login")) {
 		<main class="flex-1 w-full px-4 flex flex-col justify-center items-center">
-			@components.Form(components.FormProps{}) {
+			@components.Form(components.FormProps{
+				Class: "bg-base-200 w-full mx-auto max-w-[400px]",
+				Attributes: templ.Attributes{
+					"hx-post": routes.StoreAuthSession.Path,
+					"method":  "post",
+				},
+			}) {
+				<div class="text-center my-5">
+					<h1 class="text-3xl font-bold text-base-content mb-2">Login</h1>
+					<p class="text-sm text-base-content">
+						Don't have an account?
+						<a
+							class="text-success no-underline transition-colors duration-200 hover:text-success hover:underline"
+							href={ templ.SafeURL(routes.CreateUserPage.Path) }
+						>
+							Register
+						</a>
+					</p>
+				</div>
 				@components.Input{
-					Type:     "text",
-					Required: true,
+					ID:          "email",
+					Label:       "Email",
+					Name:        "email",
+					Type:        "email",
+					Placeholder: "Your email",
+					Required:    true,
 				}.Build()
 				@components.Input{
-					Type:     "text",
-					Required: true,
+					ID:          "password",
+					Name:        "password",
+					Label:       "Password",
+					Type:        "password",
+					Placeholder: "Your password",
+					Required:    true,
 				}.Build()
+				@components.Checkbox{
+					ID:   "remember_me",
+					Name: "remember_me",
+					Text: "Remember me",
+				}.Build()
+				@components.SuccessButton("Login")
 			}
 		</main>
 	}
 }
+
+//@LoginForm(false, data.Errors)
