@@ -91,11 +91,12 @@ func (b *buttonBuilder) WithSquare() *buttonBuilder {
 }
 
 func (b *buttonBuilder) Build() templ.Component {
-	return buttonComponent(b.text, b.props)
+	return buttonComponent(b.text, b.btnType, b.props)
 }
 
-templ buttonComponent(text string, props buttonProps) {
+templ buttonComponent(text, btnType string, props buttonProps) {
 	<button
+		type={ btnType }
 		class={
 			"btn",
 			templ.KV("btn-sm", props.Size == "small"),
@@ -119,27 +120,27 @@ templ buttonComponent(text string, props buttonProps) {
 }
 
 templ PrimaryButton(text string) {
-	@buttonComponent(text, buttonProps{Variant: "primary"})
+	@buttonComponent(text, "button", buttonProps{Variant: "primary"})
 }
 
 templ SecondaryButton(text string) {
-	@buttonComponent(text, buttonProps{Variant: "secondary"})
+	@buttonComponent(text, "button", buttonProps{Variant: "secondary"})
 }
 
 templ SuccessButton(text string) {
-	@buttonComponent(text, buttonProps{Variant: "success"})
+	@buttonComponent(text, "button", buttonProps{Variant: "success"})
 }
 
 templ DangerButton(text string) {
-	@buttonComponent(text, buttonProps{Variant: "danger"})
+	@buttonComponent(text, "button", buttonProps{Variant: "danger"})
 }
 
 templ GhostButton(text string) {
-	@buttonComponent(text, buttonProps{Variant: "ghost"})
+	@buttonComponent(text, "button", buttonProps{Variant: "ghost"})
 }
 
 templ OutlineButton(text string) {
-	@buttonComponent(text, buttonProps{Variant: "default", Outline: true})
+	@buttonComponent(text, "button", buttonProps{Variant: "default", Outline: true})
 }
 
 templ IconButton() {

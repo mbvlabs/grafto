@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"errors"
 	"log/slog"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
@@ -24,10 +27,54 @@ func newRegistrations(
 	return Registrations{db, emailClient}
 }
 
+func parseRegistrationErrors(err error) views.Errors {
+	errs := views.Errors{}
+
+	if errors.Is(err, services.ErrUserAlreadyExists) {
+		errs[sessions.ErrEmailExists] = "This email is already registered"
+		return errs
+	}
+
+	if errors.Is(err, models.ErrDomainValidation) {
+		var validationErrs validator.ValidationErrors
+		if errors.As(err, &validationErrs) {
+			for _, validationErr := range validationErrs {
+				switch validationErr.Field() {
+				case "Email":
+					if validationErr.Tag() == "email" {
+						errs[sessions.EmailField] = "Please enter a valid email address"
+					} else if validationErr.Tag() == "required" {
+						errs[sessions.EmailField] = "Email is required"
+					}
+				case "Password":
+					if validationErr.Tag() == "gte" {
+						errs[sessions.PasswordField] = "Password must be at least 6 characters"
+					} else if validationErr.Tag() == "required" {
+						errs[sessions.PasswordField] = "Password is required"
+					} else if validationErr.Tag() == "must match confirm password" {
+						errs[sessions.ErrPasswordMismatch] = "Passwords do not match"
+					}
+				case "ConfirmPassword":
+					if validationErr.Tag() == "gte" {
+						errs[sessions.ConfirmPasswordField] = "Confirm password must be at least 6 characters"
+					} else if validationErr.Tag() == "required" {
+						errs[sessions.ConfirmPasswordField] = "Confirm password is required"
+					} else if validationErr.Tag() == "must match password" {
+						errs[sessions.ErrPasswordMismatch] = "Passwords do not match"
+					}
+				}
+			}
+		}
+		return errs
+	}
+
+	errs[sessions.ErrInternalServer] = "An unexpected error occurred. Please try again."
+	return errs
+}
+
 func (r Registrations) New(ctx echo.Context) error {
-	return sessions.RegisterPage(sessions.RegisterFormProps{
-		CsrfToken: csrf.Token(ctx.Request()),
-	}).Render(renderArgs(ctx))
+	return sessions.RegisterPage(sessions.RegisterFormProps{}).
+		Render(renderArgs(ctx))
 }
 
 type StoreUserPayload struct {
@@ -51,8 +98,11 @@ func (r Registrations) Create(ctx echo.Context) error {
 			err,
 		)
 
-		// TODO handle err
-		return err
+		userErrs := parseRegistrationErrors(err)
+		return sessions.RegisterForm(sessions.RegisterFormProps{
+			Errors:     userErrs,
+			EmailValue: payload.Email,
+		}).Render(renderArgs(ctx))
 	}
 
 	return fragments.VerifyCodeForm(fragments.VerifyCodeProps{

@@ -31,7 +31,7 @@ func (a Sessions) New(ctx echo.Context) error {
 }
 
 type StoreAuthenticatedSessionPayload struct {
-	Mail       string `form:"email"`
+	Email      string `form:"email"`
 	Password   string `form:"password"`
 	RememberMe string `form:"remember_me"`
 }
@@ -52,7 +52,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 	authenticatedUser, err := services.AuthenticateUser(
 		ctx.Request().Context(),
 		a.db,
-		payload.Mail,
+		payload.Email,
 		payload.Password,
 	)
 	if err != nil {
@@ -68,11 +68,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 			}
 		}
 
-		return sessionViews.LoginForm(
-			false,
-			userErr,
-		).
-			Render(renderArgs(ctx))
+		return sessionViews.LoginForm(userErr).Render(renderArgs(ctx))
 	}
 
 	if err := createAuthSession(
@@ -80,9 +76,9 @@ func (a Sessions) Create(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return sessionViews.LoginForm(
-		true, nil).
-		Render(renderArgs(ctx))
+	return sessionViews.LoginPage(sessionViews.LoginPageProps{
+		Success: true,
+	}).Render(renderArgs(ctx))
 }
 
 func (a Sessions) Destroy(ctx echo.Context) error {

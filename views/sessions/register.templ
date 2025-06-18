@@ -12,21 +12,80 @@ var (
 	EmailField           string = "EmailField"
 	PasswordField        string = "PasswordField"
 	ConfirmPasswordField string = "ConfirmPasswordField"
+	ErrEmailExists       string = "ErrEmailExists"
+	ErrPasswordWeak      string = "ErrPasswordWeak"
+	ErrPasswordMismatch  string = "ErrPasswordMismatch"
+	ErrInternalServer    string = "ErrInternalServer"
 )
 
+templ RegisterWarning(msg string) {
+	<div id="register-flag" class="flex items-center p-3 mb-4 rounded bg-warning/15 text-warning">
+		<svg
+			class="h-5 w-5 fill-current mr-3"
+			width="16"
+			height="16"
+			fill="currentColor"
+			viewBox="0 0 16 16"
+			aria-hidden="true"
+		>
+			<path
+				d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+			></path>
+		</svg>
+		<h2 class="text-warning text-sm">{ msg }</h2>
+	</div>
+}
+
+templ RegisterError(msg string) {
+	<div id="register-flag" class="flex items-center p-3 mb-4 rounded bg-error/15 text-error">
+		<svg
+			class="h-5 w-5 fill-current mr-3"
+			width="16"
+			height="16"
+			fill="currentColor"
+			viewBox="0 0 16 16"
+			aria-hidden="true"
+		>
+			<path
+				d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
+			></path>
+		</svg>
+		<h2 class="text-error text-sm">{ msg }</h2>
+	</div>
+}
+
 type RegisterFormProps struct {
-	InternalError   bool
+	Errors          views.Errors
 	SuccessRegister bool
-	Fields          map[string]components.InputFieldProps
-	CsrfToken       string
+	EmailValue      string
 }
 
 templ RegisterForm(data RegisterFormProps) {
+	if data.Errors[ErrEmailExists] != "" {
+		@RegisterWarning(data.Errors[ErrEmailExists])
+	}
+	if data.Errors[ErrPasswordWeak] != "" {
+		@RegisterWarning(data.Errors[ErrPasswordWeak])
+	}
+	if data.Errors[ErrPasswordMismatch] != "" {
+		@RegisterWarning(data.Errors[ErrPasswordMismatch])
+	}
+	if data.Errors[ErrInternalServer] != "" {
+		@RegisterError(data.Errors[ErrInternalServer])
+	}
 	if data.SuccessRegister {
 		@components.SuccessFlag("Your account has been created!", nil)
 	}
 	<div class="w-full max-w-[400px] mx-auto">
-		<div hx-target="this" hx-swap="outerHTML" class="bg-base-200 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content">
+		@components.Form(components.FormProps{
+			Class: "bg-base-200 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
+			Attributes: templ.Attributes{
+				"hx-post":   routes.StoreUser.Path,
+				"method":    "post",
+				"hx-target": "this",
+				"hx-swap":   "outerHTML",
+			},
+		}) {
 			<div class="text-center mb-6">
 				<h1 class="text-[1.75rem] font-bold text-base-content mb-2">Register User</h1>
 				<p class="text-sm text-base-content">
@@ -39,24 +98,38 @@ templ RegisterForm(data RegisterFormProps) {
 					</a>
 				</p>
 			</div>
-			<div class="w-full">
-				<form hx-post={ routes.StoreUser.Path } method="post">
-					<input type="hidden" name="gorilla.csrf.Token" value={ data.CsrfToken }/>
-					<div class="grid gap-4">
-						<div>
-							@components.InputField("Email", "email", "email", "Enter your email", templ.Attributes{"required": true}, data.Fields[EmailField])
-						</div>
-						<div>
-							@components.InputField("Password", "password", "password", "Enter your password", templ.Attributes{"required": true, "minLength": "8"}, data.Fields[PasswordField])
-						</div>
-						<div>
-							@components.InputField("Confirm Password", "password", "confirm_password", "Repeat your password", templ.Attributes{"required": true, "minLength": "8"}, data.Fields[PasswordField])
-						</div>
-						@components.Button("Register").WithSuccess().WithSize("large").WithType("submit").Build()
-					</div>
-				</form>
-			</div>
-		</div>
+			@components.Input{
+				ID:          "email",
+				Label:       "Email",
+				Name:        "email",
+				Type:        "email",
+				Placeholder: "Enter your email",
+				Required:    true,
+				Value:       data.EmailValue,
+				Error:       data.Errors[EmailField],
+			}.Build()
+			@components.Input{
+				ID:          "password",
+				Label:       "Password",
+				Name:        "password",
+				Type:        "password",
+				Placeholder: "Enter your password",
+				Required:    true,
+				Error:       data.Errors[PasswordField],
+				Attributes:  templ.Attributes{"minlength": "8"},
+			}.Build()
+			@components.Input{
+				ID:          "confirm_password",
+				Label:       "Confirm Password",
+				Name:        "confirm_password",
+				Type:        "password",
+				Placeholder: "Repeat your password",
+				Required:    true,
+				Error:       data.Errors[ConfirmPasswordField],
+				Attributes:  templ.Attributes{"minlength": "8"},
+			}.Build()
+			@components.Button("Register").WithSuccess().WithSize("large").WithType("submit").Build()
+		}
 	</div>
 }
 
@@ -68,4 +141,3 @@ templ RegisterPage(data RegisterFormProps) {
 		</main>
 	}
 }
-

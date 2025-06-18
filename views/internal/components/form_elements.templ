@@ -1,0 +1,638 @@
+package components
+
+import (
+	"fmt"
+)
+
+type FormProps struct {
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ Form(props FormProps) {
+	<form
+		class={ "grid gap-4 p-2 md:p-4 rounded", props.Class }
+		{ props.Attributes... }
+	>
+		{ children... }
+	</form>
+}
+
+type Input struct {
+	Type        string
+	Name        string
+	ID          string
+	Label       string
+	Value       string
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	ReadOnly    bool
+	Error       string
+	Help        string
+	Size        string // sm, md, lg
+	Color       string // primary, secondary, accent, success, warning, error, info
+	Class       string
+	InputClass  string
+	LabelClass  string
+	Attributes  templ.Attributes
+}
+
+templ formGroup() {
+	<div class="grid">
+		{ children... }
+	</div>
+}
+
+templ (i Input) Build() {
+	@formGroup() {
+		if i.Label != "" {
+			<label for={ i.ID } class={ "block text-sm font-medium mb-1", i.LabelClass }>
+				{ i.Label }
+				if i.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<input
+			if i.Type != "" {
+				type={ i.Type }
+			}
+			name={ i.Name }
+			if i.ID != "" {
+				id={ i.ID }
+			}
+			if i.Value != "" {
+				value={ i.Value }
+			}
+			if i.Placeholder != "" {
+				placeholder={ i.Placeholder }
+			}
+			required?={ i.Required }
+			disabled?={ i.Disabled }
+			readonly?={ i.ReadOnly }
+			class={ "w-full px-3 py-2 border border-base-300 rounded-md bg-base-100 text-base-content focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-base-200 disabled:text-base-content/50",
+				templ.KV("text-sm py-1", i.Size == "sm"),
+				templ.KV("text-base py-2", i.Size == "md" || i.Size == ""),
+				templ.KV("text-lg py-3", i.Size == "lg"),
+				templ.KV("border-error focus:ring-error focus:border-error", i.Error != ""),
+				templ.KV("focus:ring-primary focus:border-primary", i.Color == "primary"),
+				templ.KV("focus:ring-secondary focus:border-secondary", i.Color == "secondary"),
+				templ.KV("focus:ring-accent focus:border-accent", i.Color == "accent"),
+				templ.KV("focus:ring-success focus:border-success", i.Color == "success"),
+				templ.KV("focus:ring-warning focus:border-warning", i.Color == "warning"),
+				templ.KV("focus:ring-error focus:border-error", i.Color == "error"),
+				templ.KV("focus:ring-info focus:border-info", i.Color == "info"),
+				i.InputClass }
+			{ i.Attributes... }
+		/>
+		if i.Error != "" {
+			<p class="text-error text-sm mt-1">{ i.Error }</p>
+		}
+		if i.Help != "" && i.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ i.Help }</p>
+		}
+	}
+}
+
+type Textarea struct {
+	Name        string
+	ID          string
+	Label       string
+	Value       string
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	ReadOnly    bool
+	Rows        int
+	Error       string
+	Help        string
+	Size        string // sm, md, lg
+	Color       string // primary, secondary, accent, success, warning, error, info
+	Class       string
+	InputClass  string
+	LabelClass  string
+	Attributes  templ.Attributes
+}
+
+templ (t Textarea) Build() {
+	@formGroup() {
+		if t.Label != "" {
+			<label for={ t.ID } class={ "block text-sm font-medium mb-1", t.LabelClass }>
+				{ t.Label }
+				if t.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<textarea
+			name={ t.Name }
+			if t.ID != "" {
+				id={ t.ID }
+			}
+			if t.Placeholder != "" {
+				placeholder={ t.Placeholder }
+			}
+			required?={ t.Required }
+			disabled?={ t.Disabled }
+			readonly?={ t.ReadOnly }
+			if t.Rows > 0 {
+				rows={ fmt.Sprintf("%d", t.Rows) }
+			}
+			class={ "w-full px-3 py-2 border border-base-300 rounded-md bg-base-100 text-base-content focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-base-200 disabled:text-base-content/50 resize-vertical",
+				templ.KV("text-sm py-1", t.Size == "sm"),
+				templ.KV("text-base py-2", t.Size == "md" || t.Size == ""),
+				templ.KV("text-lg py-3", t.Size == "lg"),
+				templ.KV("border-error focus:ring-error focus:border-error", t.Error != ""),
+				templ.KV("focus:ring-primary focus:border-primary", t.Color == "primary"),
+				templ.KV("focus:ring-secondary focus:border-secondary", t.Color == "secondary"),
+				templ.KV("focus:ring-accent focus:border-accent", t.Color == "accent"),
+				templ.KV("focus:ring-success focus:border-success", t.Color == "success"),
+				templ.KV("focus:ring-warning focus:border-warning", t.Color == "warning"),
+				templ.KV("focus:ring-error focus:border-error", t.Color == "error"),
+				templ.KV("focus:ring-info focus:border-info", t.Color == "info"),
+				t.InputClass }
+			{ t.Attributes... }
+		>{ t.Value }</textarea>
+		if t.Error != "" {
+			<p class="text-error text-sm mt-1">{ t.Error }</p>
+		}
+		if t.Help != "" && t.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ t.Help }</p>
+		}
+	}
+}
+
+type SelectOption struct {
+	Value    string
+	Label    string
+	Disabled bool
+	Selected bool
+}
+
+type Select struct {
+	Name        string
+	ID          string
+	Label       string
+	Options     []SelectOption
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	Multiple    bool
+	Error       string
+	Help        string
+	Size        string // sm, md, lg
+	Color       string // primary, secondary, accent, success, warning, error, info
+	Class       string
+	InputClass  string
+	LabelClass  string
+	Attributes  templ.Attributes
+}
+
+templ (s Select) Build() {
+	@formGroup() {
+		if s.Label != "" {
+			<label for={ s.ID } class={ "block text-sm font-medium mb-1", s.LabelClass }>
+				{ s.Label }
+				if s.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<select
+			name={ s.Name }
+			if s.ID != "" {
+				id={ s.ID }
+			}
+			required?={ s.Required }
+			disabled?={ s.Disabled }
+			multiple?={ s.Multiple }
+			class={ "w-full px-3 py-2 border border-base-300 rounded-md bg-base-100 text-base-content focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:bg-base-200 disabled:text-base-content/50",
+				templ.KV("text-sm py-1", s.Size == "sm"),
+				templ.KV("text-base py-2", s.Size == "md" || s.Size == ""),
+				templ.KV("text-lg py-3", s.Size == "lg"),
+				templ.KV("border-error focus:ring-error focus:border-error", s.Error != ""),
+				templ.KV("focus:ring-primary focus:border-primary", s.Color == "primary"),
+				templ.KV("focus:ring-secondary focus:border-secondary", s.Color == "secondary"),
+				templ.KV("focus:ring-accent focus:border-accent", s.Color == "accent"),
+				templ.KV("focus:ring-success focus:border-success", s.Color == "success"),
+				templ.KV("focus:ring-warning focus:border-warning", s.Color == "warning"),
+				templ.KV("focus:ring-error focus:border-error", s.Color == "error"),
+				templ.KV("focus:ring-info focus:border-info", s.Color == "info"),
+				s.InputClass }
+			{ s.Attributes... }
+		>
+			if s.Placeholder != "" && !s.Multiple {
+				<option value="" disabled selected>{ s.Placeholder }</option>
+			}
+			for _, option := range s.Options {
+				<option
+					value={ option.Value }
+					disabled?={ option.Disabled }
+					selected?={ option.Selected }
+				>
+					{ option.Label }
+				</option>
+			}
+		</select>
+		if s.Error != "" {
+			<p class="text-error text-sm mt-1">{ s.Error }</p>
+		}
+		if s.Help != "" && s.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ s.Help }</p>
+		}
+	}
+}
+
+type Checkbox struct {
+	Name       string
+	ID         string
+	Label      string
+	Value      string
+	Checked    bool
+	Required   bool
+	Disabled   bool
+	Error      string
+	Text       string
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ (c Checkbox) Build() {
+	<div class={ "grid", c.Class }>
+		<label for={ c.ID } class="items-center label cursor-pointer flex justify-start gap-2 p-0">
+			if c.Text != "" {
+				<p>{ c.Text }</p>
+			}
+			<input
+				type="checkbox"
+				name={ c.Name }
+				if c.ID != "" {
+					id={ c.ID }
+				}
+				if c.Value != "" {
+					value={ c.Value }
+				}
+				checked?={ c.Checked }
+				required?={ c.Required }
+				disabled?={ c.Disabled }
+				class={ "w-4 h-4 text-primary bg-base-100 border-base-300 rounded focus:ring-primary focus:ring-2",
+					templ.KV("w-3 h-3", c.Size == "sm"),
+					templ.KV("w-4 h-4", c.Size == "md" || c.Size == ""),
+					templ.KV("w-5 h-5", c.Size == "lg"),
+					templ.KV("border-error focus:ring-error", c.Error != ""),
+					templ.KV("text-primary focus:ring-primary", c.Color == "primary"),
+					templ.KV("text-secondary focus:ring-secondary", c.Color == "secondary"),
+					templ.KV("text-accent focus:ring-accent", c.Color == "accent"),
+					templ.KV("text-success focus:ring-success", c.Color == "success"),
+					templ.KV("text-warning focus:ring-warning", c.Color == "warning"),
+					templ.KV("text-error focus:ring-error", c.Color == "error"),
+					templ.KV("text-info focus:ring-info", c.Color == "info"),
+					c.InputClass }
+				{ c.Attributes... }
+			/>
+		</label>
+		if c.Error != "" {
+			<p class="text-error text-sm mt-1">{ c.Error }</p>
+		}
+	</div>
+}
+
+type Radio struct {
+	Name       string
+	ID         string
+	Label      string
+	Value      string
+	Checked    bool
+	Required   bool
+	Disabled   bool
+	Error      string
+	Help       string
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ (r Radio) Build() {
+	@formGroup() {
+		<div class={ "grid", r.Class }>
+			<label class="label cursor-pointer justify-start gap-2 p-0">
+				<input
+					type="radio"
+					name={ r.Name }
+					if r.ID != "" {
+						id={ r.ID }
+					}
+					value={ r.Value }
+					checked?={ r.Checked }
+					required?={ r.Required }
+					disabled?={ r.Disabled }
+					class={ "w-4 h-4 text-primary bg-base-100 border-base-300 focus:ring-primary focus:ring-2",
+						templ.KV("w-3 h-3", r.Size == "sm"),
+						templ.KV("w-4 h-4", r.Size == "md" || r.Size == ""),
+						templ.KV("w-5 h-5", r.Size == "lg"),
+						templ.KV("text-primary focus:ring-primary", r.Color == "primary"),
+						templ.KV("text-secondary focus:ring-secondary", r.Color == "secondary"),
+						templ.KV("text-accent focus:ring-accent", r.Color == "accent"),
+						templ.KV("text-success focus:ring-success", r.Color == "success"),
+						templ.KV("text-warning focus:ring-warning", r.Color == "warning"),
+						templ.KV("text-error focus:ring-error", r.Color == "error" || r.Error != ""),
+						templ.KV("text-info focus:ring-info", r.Color == "info"),
+						r.InputClass }
+					{ r.Attributes... }
+				/>
+				if r.Label != "" {
+					<span class={ "label-text", r.LabelClass }>
+						{ r.Label }
+						if r.Required {
+							<span class="text-error ml-1">*</span>
+						}
+					</span>
+				}
+			</label>
+			if r.Error != "" {
+				<p class="text-error text-sm mt-1">{ r.Error }</p>
+			}
+			if r.Help != "" && r.Error == "" {
+				<p class="text-base-content/60 text-sm mt-1">{ r.Help }</p>
+			}
+		</div>
+	}
+}
+
+type RadioOption struct {
+	Value    string
+	Label    string
+	Disabled bool
+	Checked  bool
+}
+
+type RadioGroup struct {
+	Name       string
+	Label      string
+	Options    []RadioOption
+	Required   bool
+	Error      string
+	Help       string
+	Layout     string // vertical, horizontal
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ (rg RadioGroup) Build() {
+	@formGroup() {
+		<fieldset class="w-full">
+			if rg.Label != "" {
+				<legend class={ "block text-sm font-medium mb-2", rg.LabelClass }>
+					{ rg.Label }
+					if rg.Required {
+						<span class="text-error ml-1">*</span>
+					}
+				</legend>
+			}
+			<div
+				class={ "space-y-2",
+				templ.KV("flex flex-wrap gap-4 space-y-0", rg.Layout == "horizontal"),
+				rg.Class }
+				{ rg.Attributes... }
+			>
+				for i, option := range rg.Options {
+					@Radio{
+						Name:       rg.Name,
+						ID:         fmt.Sprintf("%s_%d", rg.Name, i),
+						Label:      option.Label,
+						Value:      option.Value,
+						Checked:    option.Checked,
+						Disabled:   option.Disabled,
+						Required:   rg.Required && i == 0,
+						Size:       rg.Size,
+						Color:      rg.Color,
+						InputClass: rg.InputClass,
+					}.Build()
+				}
+			</div>
+			if rg.Error != "" {
+				<p class="text-error text-sm mt-1">{ rg.Error }</p>
+			}
+			if rg.Help != "" && rg.Error == "" {
+				<p class="text-base-content/60 text-sm mt-1">{ rg.Help }</p>
+			}
+		</fieldset>
+	}
+}
+
+type Switch struct {
+	Name       string
+	ID         string
+	Label      string
+	Checked    bool
+	Required   bool
+	Disabled   bool
+	Error      string
+	Help       string
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ (sw Switch) Build() {
+	@formGroup() {
+		<div class={ "grid", sw.Class }>
+			<label class="label cursor-pointer justify-start gap-2 p-0">
+				<input
+					type="checkbox"
+					name={ sw.Name }
+					if sw.ID != "" {
+						id={ sw.ID }
+					}
+					checked?={ sw.Checked }
+					required?={ sw.Required }
+					disabled?={ sw.Disabled }
+					class={ "relative inline-flex h-6 w-11 items-center rounded-full bg-base-300 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+						templ.KV("h-4 w-7", sw.Size == "sm"),
+						templ.KV("h-6 w-11", sw.Size == "md" || sw.Size == ""),
+						templ.KV("h-7 w-14", sw.Size == "lg"),
+						templ.KV("focus:ring-primary checked:bg-primary", sw.Color == "primary"),
+						templ.KV("focus:ring-secondary checked:bg-secondary", sw.Color == "secondary"),
+						templ.KV("focus:ring-accent checked:bg-accent", sw.Color == "accent"),
+						templ.KV("focus:ring-success checked:bg-success", sw.Color == "success"),
+						templ.KV("focus:ring-warning checked:bg-warning", sw.Color == "warning"),
+						templ.KV("focus:ring-error checked:bg-error", sw.Color == "error" || sw.Error != ""),
+						templ.KV("focus:ring-info checked:bg-info", sw.Color == "info"),
+						sw.InputClass }
+					{ sw.Attributes... }
+				/>
+				if sw.Label != "" {
+					<span class={ "label-text", sw.LabelClass }>
+						{ sw.Label }
+						if sw.Required {
+							<span class="text-error ml-1">*</span>
+						}
+					</span>
+				}
+			</label>
+			if sw.Error != "" {
+				<p class="text-error text-sm mt-1">{ sw.Error }</p>
+			}
+			if sw.Help != "" && sw.Error == "" {
+				<p class="text-base-content/60 text-sm mt-1">{ sw.Help }</p>
+			}
+		</div>
+	}
+}
+
+type FileInput struct {
+	Name       string
+	ID         string
+	Label      string
+	Accept     string
+	Multiple   bool
+	Required   bool
+	Disabled   bool
+	Error      string
+	Help       string
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ (f FileInput) Build() {
+	@formGroup() {
+		if f.Label != "" {
+			<label for={ f.ID } class={ "block text-sm font-medium mb-1", f.LabelClass }>
+				{ f.Label }
+				if f.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<input
+			type="file"
+			name={ f.Name }
+			if f.ID != "" {
+				id={ f.ID }
+			}
+			if f.Accept != "" {
+				accept={ f.Accept }
+			}
+			multiple?={ f.Multiple }
+			required?={ f.Required }
+			disabled?={ f.Disabled }
+			class={ "block w-full text-base-content file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-content hover:file:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50",
+				templ.KV("text-sm file:py-1 file:px-2", f.Size == "sm"),
+				templ.KV("text-base file:py-2 file:px-4", f.Size == "md" || f.Size == ""),
+				templ.KV("text-lg file:py-3 file:px-6", f.Size == "lg"),
+				templ.KV("file:bg-primary file:text-primary-content hover:file:bg-primary/80 focus:ring-primary", f.Color == "primary"),
+				templ.KV("file:bg-secondary file:text-secondary-content hover:file:bg-secondary/80 focus:ring-secondary", f.Color == "secondary"),
+				templ.KV("file:bg-accent file:text-accent-content hover:file:bg-accent/80 focus:ring-accent", f.Color == "accent"),
+				templ.KV("file:bg-success file:text-success-content hover:file:bg-success/80 focus:ring-success", f.Color == "success"),
+				templ.KV("file:bg-warning file:text-warning-content hover:file:bg-warning/80 focus:ring-warning", f.Color == "warning"),
+				templ.KV("file:bg-error file:text-error-content hover:file:bg-error/80 focus:ring-error", f.Color == "error" || f.Error != ""),
+				templ.KV("file:bg-info file:text-info-content hover:file:bg-info/80 focus:ring-info", f.Color == "info"),
+				f.InputClass }
+			{ f.Attributes... }
+		/>
+		if f.Error != "" {
+			<p class="text-error text-sm mt-1">{ f.Error }</p>
+		}
+		if f.Help != "" && f.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ f.Help }</p>
+		}
+	}
+}
+
+type Range struct {
+	Name       string
+	ID         string
+	Label      string
+	Value      string
+	Min        string
+	Max        string
+	Step       string
+	Required   bool
+	Disabled   bool
+	Error      string
+	Help       string
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	ShowValue  bool
+	Attributes templ.Attributes
+}
+
+templ (r Range) Build() {
+	@formGroup() {
+		if r.Label != "" {
+			<label for={ r.ID } class={ "block text-sm font-medium mb-1", r.LabelClass }>
+				{ r.Label }
+				if r.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<div class="flex items-center gap-2">
+			<input
+				type="range"
+				name={ r.Name }
+				if r.ID != "" {
+					id={ r.ID }
+				}
+				if r.Value != "" {
+					value={ r.Value }
+				}
+				if r.Min != "" {
+					min={ r.Min }
+				}
+				if r.Max != "" {
+					max={ r.Max }
+				}
+				if r.Step != "" {
+					step={ r.Step }
+				}
+				required?={ r.Required }
+				disabled?={ r.Disabled }
+				class={ "w-full h-2 bg-base-300 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50",
+					templ.KV("h-1", r.Size == "sm"),
+					templ.KV("h-2", r.Size == "md" || r.Size == ""),
+					templ.KV("h-3", r.Size == "lg"),
+					templ.KV("focus:ring-primary", r.Color == "primary"),
+					templ.KV("focus:ring-secondary", r.Color == "secondary"),
+					templ.KV("focus:ring-accent", r.Color == "accent"),
+					templ.KV("focus:ring-success", r.Color == "success"),
+					templ.KV("focus:ring-warning", r.Color == "warning"),
+					templ.KV("focus:ring-error", r.Color == "error" || r.Error != ""),
+					templ.KV("focus:ring-info", r.Color == "info"),
+					r.InputClass }
+				{ r.Attributes... }
+			/>
+			if r.ShowValue {
+				<span class="text-sm font-medium min-w-[3ch] text-right">{ r.Value }</span>
+			}
+		</div>
+		if r.Error != "" {
+			<p class="text-error text-sm mt-1">{ r.Error }</p>
+		}
+		if r.Help != "" && r.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ r.Help }</p>
+		}
+	}
+}

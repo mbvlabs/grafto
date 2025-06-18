@@ -11,6 +11,10 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 )
 
+var (
+	ErrUserAlreadyExists = errors.New("user already exists")
+)
+
 type EmailSender interface {
 	SendTransaction(
 		ctx context.Context,
@@ -34,7 +38,7 @@ func RegisterUser(
 	defer tx.Rollback(ctx)
 
 	if _, err := models.GetUserByEmail(ctx, tx, email); err == nil {
-		return errors.New("user already registred")
+		return ErrUserAlreadyExists
 	}
 
 	user, err := models.NewUser(ctx, tx, models.NewUserPayload{
