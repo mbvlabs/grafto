@@ -311,11 +311,6 @@ func head(data HeadData) templ.Component {
 var startTime = time.Now()
 
 func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
-	//slug := config.Cfg.GetFullDomain()
-	//appCtx := contexts.ExtractApp(ctx)
-	//if appCtx.CurrentPath != "" {
-	//	slug = slug + appCtx.CurrentPath
-	//}
 
 	data := &HeadData{
 		Title:          config.Cfg.ProjectName,

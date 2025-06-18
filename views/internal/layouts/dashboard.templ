@@ -2,21 +2,11 @@ package layouts
 
 import "github.com/mbvlabs/grafto/router/routes"
 import "github.com/mbvlabs/grafto/views/internal/components"
-import "time"
-import "fmt"
 
-templ Dashboard() {
+templ Dashboard(opts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en">
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>Grafto</title>
-			<link href={ routes.CssEntrypoint.Path } rel="stylesheet"/>
-			<link rel="icon" type="image/png" sizes="16x16" href={ routes.Favicon16.Path }/>
-			<link rel="icon" type="image/png" sizes="32x32" href={ routes.Favicon32.Path }/>
-			<script src={ fmt.Sprintf("%v?%v", routes.JsEntrypoint.Path, time.Now().Unix()) } type="module"></script>
-		</head>
+		@components.SetupHead(ctx, opts...)
 		<body class="flex flex-col min-w-screen h-screen">
 			<header class="bsc-fluid">
 				<div class="flex justify-between navbar bg-base-100">
