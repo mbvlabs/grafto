@@ -3,7 +3,6 @@ package dashboards
 import (
 	"fmt"
 	"time"
-	"net/url"
 
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views/internal/components"
@@ -12,113 +11,64 @@ import (
 
 templ UsersList(userListResponse services.UserListResponse, currentPage int, perPage int) {
 	@layouts.Dashboard() {
-		<div class="space-y-6">
-			<div class="flex justify-between items-center bg-base-200 p-4 rounded-lg border border-base-300">
-				<h1 class="text-2xl font-bold text-base-content">Users Management</h1>
-				<div class="text-sm font-medium text-base-content bg-base-100 px-3 py-1 rounded-full border border-base-300">
-					{ fmt.Sprintf("Showing %d users", userListResponse.TotalCount) }
-				</div>
+		<!-- Header -->
+		<div class="flex items-center justify-between mb-8">
+			<h1 class="text-2xl font-semibold">Users Management</h1>
+			<div class="flex items-center gap-2 px-3 py-1.5 bg-base-200 rounded-lg text-sm">
+				<span class="text-base-content/70">{ fmt.Sprintf("Showing %d users", userListResponse.TotalCount) }</span>
 			</div>
-			
-			if len(userListResponse.Users) == 0 {
-				<div class="text-center py-12">
-					<div class="text-base-content/60 text-lg">No users found</div>
-				</div>
-			} else {
-				@buildUsersTable(userListResponse.Users)
-				
-				if userListResponse.TotalPages > 1 {
-					@buildUsersPagination(currentPage, userListResponse.TotalPages, userListResponse.TotalCount, perPage)
-				}
-			}
 		</div>
+		
+		<!-- Users table section -->
+		@components.Table(
+			"All users",
+			[]string{"Email", "Status", "Role", "Created", "Updated"},
+			transformUsersToTableRows(userListResponse.Users),
+			components.TablePagination{
+				TotalCount:  int64(userListResponse.TotalCount),
+				Page:        currentPage,
+				PageSize:    perPage,
+				TotalPages:  userListResponse.TotalPages,
+				HasNext:     currentPage < userListResponse.TotalPages,
+				HasPrevious: currentPage > 1,
+			},
+			components.ActionBtn{},
+			components.TableConfig{
+				EditURLPattern: "/dashboard/users/%s/edit",
+			},
+		)
 	}
 }
 
-templ buildUsersTable(users []services.UserListItem) {
-	@components.Table(
-		"Users in the system",
-		[]string{"Email", "Status", "Role", "Created", "Updated"},
-		buildUserTableRows(users),
-		components.TablePagination{},
-		components.ActionBtn{},
-		components.TableConfig{EditURLPattern: "/dashboard/users/%s/edit"},
-	)
-}
-
-func buildUserTableRows(users []services.UserListItem) components.TableRowElements {
+func transformUsersToTableRows(users []services.UserListItem) components.TableRowElements {
 	rows := make(components.TableRowElements, len(users))
-	
 	for i, user := range users {
+		statusText := "Unverified"
+		statusHighlight := ""
+		if user.IsVerified {
+			statusText = "Verified"
+			statusHighlight = "status-published"
+		}
+
+		roleText := "User"
+		if user.IsAdmin {
+			roleText = "Admin"
+		}
+
 		rows[i] = components.TableRow{
 			ID: user.ID,
 			Elements: []components.TableRowElement{
 				{Title: user.Email},
-				{Title: formatUserStatus(user.IsVerified), Highlight: getStatusHighlight(user.IsVerified)},
-				{Title: formatUserRole(user.IsAdmin)},
+				{Title: statusText, Highlight: statusHighlight},
+				{Title: roleText},
 				{Title: formatDate(user.CreatedAt)},
 				{Title: formatDate(user.UpdatedAt)},
 			},
 		}
 	}
-	
 	return rows
 }
 
-templ buildUsersPagination(currentPage, totalPages, totalCount, perPage int) {
-	<div class="mt-6">
-		@components.Pagination{
-			CurrentPage: currentPage,
-			TotalPages: totalPages,
-			TotalItems: totalCount,
-			ItemsPerPage: perPage,
-			BaseURL: "/dashboard/users",
-			QueryParams: url.Values{},
-			ShowFirstLast: true,
-			ShowPrevNext: true,
-			ShowPageNumbers: true,
-			ShowPageInfo: true,
-			ShowPageSize: true,
-			MaxPageNumbers: 5,
-			PageSizeOptions: []int{10, 25, 50, 100},
-		}.Build()
-	</div>
-}
-
-func formatUserStatus(isVerified bool) string {
-	if isVerified {
-		return "Verified"
-	}
-	return "Unverified"
-}
-
-func getStatusColor(isVerified bool) string {
-	if isVerified {
-		return "success"
-	}
-	return "warning"
-}
-
-func getStatusHighlight(isVerified bool) string {
-	if isVerified {
-		return "status-published"
-	}
-	return "status-draft"
-}
-
-func formatUserRole(isAdmin bool) string {
-	if isAdmin {
-		return "Admin"
-	}
-	return "User"
-}
-
-func getRoleColor(isAdmin bool) string {
-	if isAdmin {
-		return "primary"
-	}
-	return "secondary"
-}
 
 
 func formatDate(t time.Time) string {

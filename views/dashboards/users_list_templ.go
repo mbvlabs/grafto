@@ -10,7 +10,6 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"net/url"
 	"time"
 
 	"github.com/mbvlabs/grafto/services"
@@ -51,45 +50,40 @@ func UsersList(userListResponse services.UserListResponse, currentPage int, perP
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"space-y-6\"><div class=\"flex justify-between items-center bg-base-200 p-4 rounded-lg border border-base-300\"><h1 class=\"text-2xl font-bold text-base-content\">Users Management</h1><div class=\"text-sm font-medium text-base-content bg-base-100 px-3 py-1 rounded-full border border-base-300\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!-- Header --> <div class=\"flex items-center justify-between mb-8\"><h1 class=\"text-2xl font-semibold\">Users Management</h1><div class=\"flex items-center gap-2 px-3 py-1.5 bg-base-200 rounded-lg text-sm\"><span class=\"text-base-content/70\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("Showing %d users", userListResponse.TotalCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/dashboards/users_list.templ`, Line: 19, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/dashboards/users_list.templ`, Line: 18, Col: 101}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></div></div><!-- Users table section --> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if len(userListResponse.Users) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"text-center py-12\"><div class=\"text-base-content/60 text-lg\">No users found</div></div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			} else {
-				templ_7745c5c3_Err = buildUsersTable(userListResponse.Users).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				if userListResponse.TotalPages > 1 {
-					templ_7745c5c3_Err = buildUsersPagination(currentPage, userListResponse.TotalPages, userListResponse.TotalCount, perPage).Render(ctx, templ_7745c5c3_Buffer)
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
+			templ_7745c5c3_Err = components.Table(
+				"All users",
+				[]string{"Email", "Status", "Role", "Created", "Updated"},
+				transformUsersToTableRows(userListResponse.Users),
+				components.TablePagination{
+					TotalCount:  int64(userListResponse.TotalCount),
+					Page:        currentPage,
+					PageSize:    perPage,
+					TotalPages:  userListResponse.TotalPages,
+					HasNext:     currentPage < userListResponse.TotalPages,
+					HasPrevious: currentPage > 1,
+				},
+				components.ActionBtn{},
+				components.TableConfig{
+					EditURLPattern: "/dashboard/users/%s/edit",
+				},
+			).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -103,145 +97,33 @@ func UsersList(userListResponse services.UserListResponse, currentPage int, perP
 	})
 }
 
-func buildUsersTable(users []services.UserListItem) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = components.Table(
-			"Users in the system",
-			[]string{"Email", "Status", "Role", "Created", "Updated"},
-			buildUserTableRows(users),
-			components.TablePagination{},
-			components.ActionBtn{},
-			components.TableConfig{EditURLPattern: "/dashboard/users/%s/edit"},
-		).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-func buildUserTableRows(users []services.UserListItem) components.TableRowElements {
+func transformUsersToTableRows(users []services.UserListItem) components.TableRowElements {
 	rows := make(components.TableRowElements, len(users))
-
 	for i, user := range users {
+		statusText := "Unverified"
+		statusHighlight := ""
+		if user.IsVerified {
+			statusText = "Verified"
+			statusHighlight = "status-published"
+		}
+
+		roleText := "User"
+		if user.IsAdmin {
+			roleText = "Admin"
+		}
+
 		rows[i] = components.TableRow{
 			ID: user.ID,
 			Elements: []components.TableRowElement{
 				{Title: user.Email},
-				{Title: formatUserStatus(user.IsVerified), Highlight: getStatusHighlight(user.IsVerified)},
-				{Title: formatUserRole(user.IsAdmin)},
+				{Title: statusText, Highlight: statusHighlight},
+				{Title: roleText},
 				{Title: formatDate(user.CreatedAt)},
 				{Title: formatDate(user.UpdatedAt)},
 			},
 		}
 	}
-
 	return rows
-}
-
-func buildUsersPagination(currentPage, totalPages, totalCount, perPage int) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div class=\"mt-6\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = components.Pagination{
-			CurrentPage:     currentPage,
-			TotalPages:      totalPages,
-			TotalItems:      totalCount,
-			ItemsPerPage:    perPage,
-			BaseURL:         "/dashboard/users",
-			QueryParams:     url.Values{},
-			ShowFirstLast:   true,
-			ShowPrevNext:    true,
-			ShowPageNumbers: true,
-			ShowPageInfo:    true,
-			ShowPageSize:    true,
-			MaxPageNumbers:  5,
-			PageSizeOptions: []int{10, 25, 50, 100},
-		}.Build().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-func formatUserStatus(isVerified bool) string {
-	if isVerified {
-		return "Verified"
-	}
-	return "Unverified"
-}
-
-func getStatusColor(isVerified bool) string {
-	if isVerified {
-		return "success"
-	}
-	return "warning"
-}
-
-func getStatusHighlight(isVerified bool) string {
-	if isVerified {
-		return "status-published"
-	}
-	return "status-draft"
-}
-
-func formatUserRole(isAdmin bool) string {
-	if isAdmin {
-		return "Admin"
-	}
-	return "User"
-}
-
-func getRoleColor(isAdmin bool) string {
-	if isAdmin {
-		return "primary"
-	}
-	return "secondary"
 }
 
 func formatDate(t time.Time) string {

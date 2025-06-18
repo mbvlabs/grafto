@@ -7,29 +7,11 @@ templ Dashboard(opts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en">
 		@components.SetupHead(ctx, opts...)
-		<body class="flex flex-col min-w-screen h-screen bg-base-300">
-			<header class="bsc-fluid">
-				<div class="flex justify-between navbar bg-base-100 shadow-lg border-b border-base-300">
-					<div class="navbar-left">
-						@components.Link("Grafto Dashboard", routes.DashboardHome.Path).Build()
-					</div>
-					<div class="navbar-end">
-						@components.IconButton() {
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path> </svg>
-						}
-						@components.IconButton() {
-							<div class="indicator">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path> </svg>
-								<span class="badge badge-xs badge-primary indicator-item"></span>
-							</div>
-						}
-					</div>
-				</div>
-			</header>
-			<div class="flex flex-1 overflow-hidden gap-4 p-4">
+		<body class="bg-base-300 text-base-content font-sans">
+			<div class="flex h-screen">
 				@dashboardSidebar()
-				<main class="flex-1 overflow-y-auto bg-base-100 rounded-lg shadow-lg border border-base-300">
-					<div class="p-6">
+				<main class="mx-auto container flex-1 overflow-y-auto">
+					<div class="p-8">
 						{ children... }
 					</div>
 				</main>
@@ -39,24 +21,47 @@ templ Dashboard(opts ...components.HeadDataOption) {
 }
 
 templ dashboardSidebar() {
-	<aside class="w-64 bg-base-100 shadow-lg rounded-lg border border-base-300">
-		<nav class="p-4">
-			<div class="space-y-2">
-				@dashboardNavItem("Dashboard", routes.DashboardHome.Path, "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z")
-				@dashboardNavItem("Users", routes.DashboardUsers.Path, "M12 4.354a4 4 0 110 5.292M15 21H3v-1a4 4 0 014-4h5.5a4 4 0 014 4v1z")
-			</div>
+	<aside class="w-64 bg-base-200 flex flex-col">
+		<!-- Logo/Header -->
+		<div class="p-4 flex items-center gap-2">
+			<div class="w-2 h-2 bg-base-content rounded-full"></div>
+			<span class="text-sm font-medium">Grafto</span>
+			<svg class="w-4 h-4 ml-auto text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+			</svg>
+		</div>
+		<!-- Navigation -->
+		<nav class="flex-1 px-2">
+			@dashboardNavItem("Dashboard", routes.DashboardHome.Path, "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6")
+			@dashboardNavItem("Users", routes.DashboardUsers.Path, "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 016-6h4.5a6 6 0 016 6v1z")
 		</nav>
+		<!-- Bottom section -->
+		<div class="p-4 border-t border-base-300">
+			<!-- User section -->
+			<div class="flex items-center gap-3 px-3 py-2">
+				<div class="w-8 h-8 bg-base-300 rounded-full flex items-center justify-center text-sm font-medium">
+					U
+				</div>
+				<div class="flex-1">
+					<p class="text-sm font-medium">User</p>
+					<p class="text-xs text-base-content/60">user@example.com</p>
+				</div>
+				<svg class="w-4 h-4 text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+				</svg>
+			</div>
+		</div>
 	</aside>
 }
 
 templ dashboardNavItem(name, path, iconPath string) {
 	<a
 		href={ templ.SafeURL(path) }
-		class="flex items-center px-4 py-3 text-sm font-medium text-base-content rounded-lg hover:bg-primary hover:text-primary-content active:bg-primary active:text-primary-content transition-all duration-200 border border-transparent hover:border-primary"
+		class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-base-content/70 hover:bg-base-300 hover:text-base-content transition-colors"
 	>
-		<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+		<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ iconPath }></path>
 		</svg>
-		{ name }
+		<span>{ name }</span>
 	</a>
 }
