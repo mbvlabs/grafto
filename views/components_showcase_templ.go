@@ -716,7 +716,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</div></div></section><hr class=\"border-white my-12\"><!-- Toast Messages Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Toast Messages</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div x-data=\"{ \n\t\t\t\t\t\tshowSuccess: false, \n\t\t\t\t\t\tshowError: false, \n\t\t\t\t\t\tshowWarning: false, \n\t\t\t\t\t\tshowInfo: false,\n\t\t\t\t\t\ttriggerToast(type) {\n\t\t\t\t\t\t\tthis[type] = false;\n\t\t\t\t\t\t\tsetTimeout(() => this[type] = true, 50);\n\t\t\t\t\t\t}\n\t\t\t\t\t}\"><h3 class=\"text-xl font-medium mb-4\">Message Types</h3><p class=\"text-base-content/70 mb-6\">Toast messages with different types and auto-dismiss functionality. Click the buttons below to trigger them:</p><div class=\"flex flex-wrap gap-3 mb-6\"><button @click=\"triggerToast('showSuccess')\" class=\"btn btn-success\">Show Success Toast</button> <button @click=\"triggerToast('showError')\" class=\"btn btn-error\">Show Error Toast</button> <button @click=\"triggerToast('showWarning')\" class=\"btn btn-warning\">Show Warning Toast</button> <button @click=\"triggerToast('showInfo')\" class=\"btn btn-info\">Show Info Toast</button></div><div class=\"space-y-4 max-w-md\"><div x-show=\"showSuccess\" x-transition>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "</div></div></section><hr class=\"border-white my-12\"><!-- Toast Messages Section --><section class=\"mb-20\"><div class=\"flex items-center gap-4 mb-8\"><h2 class=\"text-3xl font-bold\">Toast Messages</h2><div class=\"flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent\"></div></div><div x-data=\"{ \n\t\t\t\t\t\tshowSuccess: false, \n\t\t\t\t\t\tshowError: false, \n\t\t\t\t\t\tshowWarning: false, \n\t\t\t\t\t\tshowInfo: false,\n\t\t\t\t\t\tshowLongContent: false,\n\t\t\t\t\t\ttriggerToast(type) {\n\t\t\t\t\t\t\tthis[type] = false;\n\t\t\t\t\t\t\tsetTimeout(() => this[type] = true, 50);\n\t\t\t\t\t\t}\n\t\t\t\t\t}\"><h3 class=\"text-xl font-medium mb-4\">Message Types</h3><p class=\"text-base-content/70 mb-6\">Toast messages with different types and auto-dismiss functionality. Click the buttons below to trigger them:</p><div class=\"flex flex-wrap gap-3 mb-6\"><button @click=\"triggerToast('showSuccess')\" class=\"btn btn-success\">Show Success Toast</button> <button @click=\"triggerToast('showError')\" class=\"btn btn-error\">Show Error Toast</button> <button @click=\"triggerToast('showWarning')\" class=\"btn btn-warning\">Show Warning Toast</button> <button @click=\"triggerToast('showInfo')\" class=\"btn btn-info\">Show Info Toast</button> <button @click=\"triggerToast('showLongContent')\" class=\"btn btn-neutral\">Show Long Content Toast</button></div><div class=\"space-y-4 max-w-md\"><div x-show=\"showSuccess\" x-transition>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -764,7 +764,19 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</div></div></div></section><!-- Footer --><footer class=\"text-center py-12 border-t border-base-300 mt-20\"><div class=\"max-w-md mx-auto\"><h3 class=\"text-lg font-semibold mb-2\">Components Showcase</h3><p class=\"text-base-content/60\">Visual reference for all available UI components</p><div class=\"mt-4 flex justify-center gap-2\"><div class=\"w-2 h-2 bg-primary rounded-full\"></div><div class=\"w-2 h-2 bg-secondary rounded-full\"></div><div class=\"w-2 h-2 bg-success rounded-full\"></div></div></div></footer></div></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</div><div x-show=\"showLongContent\" x-transition>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
+			Type:      contexts.FlashInfo,
+			Message:   "This is a very long toast message that demonstrates the improved scrolling behavior. The toast will now expand to a reasonable size before showing scroll bars, and it will only show scroll bars when the content actually exceeds the available space. This makes the user experience much cleaner and more polished. You can see how the toast handles both vertical overflow (when there's a lot of text like this example) and horizontal overflow (when there are very long words or URLs like https://example.com/very/long/url/path/that/might/cause/horizontal/scrolling). The scroll bars now appear only when needed, not always visible like before.",
+			CreatedAt: time.Now(),
+		}).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></div></div></section><!-- Footer --><footer class=\"text-center py-12 border-t border-base-300 mt-20\"><div class=\"max-w-md mx-auto\"><h3 class=\"text-lg font-semibold mb-2\">Components Showcase</h3><p class=\"text-base-content/60\">Visual reference for all available UI components</p><div class=\"mt-4 flex justify-center gap-2\"><div class=\"w-2 h-2 bg-primary rounded-full\"></div><div class=\"w-2 h-2 bg-secondary rounded-full\"></div><div class=\"w-2 h-2 bg-success rounded-full\"></div></div></div></footer></div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
