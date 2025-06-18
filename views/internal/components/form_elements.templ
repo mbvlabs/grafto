@@ -1,0 +1,591 @@
+package components
+
+import (
+	"fmt"
+)
+
+type FormProps struct {
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ Form(props FormProps) {
+	<form
+		class={ "w-full", props.Class }
+		{ props.Attributes... }
+	>
+		{ children... }
+	</form>
+}
+
+type FormFieldProps struct {
+	Class string
+}
+
+templ FormField(props FormFieldProps) {
+	<div
+		class={ "mb-4", props.Class }
+	>
+		{ children... }
+	</div>
+}
+
+type FormActionsProps struct {
+	Class string
+	Align string // left, right, center, between
+}
+
+templ FormActions(props FormActionsProps) {
+	<div
+		class={ "flex gap-2 mt-6",
+			templ.KV("justify-start", props.Align == "left" || props.Align == ""),
+			templ.KV("justify-end", props.Align == "right"),
+			templ.KV("justify-center", props.Align == "center"),
+			templ.KV("justify-between", props.Align == "between"),
+			props.Class }
+	>
+		{ children... }
+	</div>
+}
+
+type InputProps struct {
+	Type         string
+	Name         string
+	ID           string
+	Label        string
+	Value        string
+	Placeholder  string
+	Required     bool
+	Disabled     bool
+	ReadOnly     bool
+	Error        string
+	Help         string
+	Size         string // sm, md, lg
+	Class        string
+	InputClass   string
+	LabelClass   string
+	Attributes   templ.Attributes
+}
+
+templ Input(props InputProps) {
+	<div class="w-full">
+		if props.Label != "" {
+			<label class={ "block text-sm font-medium mb-1", props.LabelClass }>
+				{ props.Label }
+				if props.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<input
+			if props.Type != "" {
+				type={ props.Type }
+			}
+			name={ props.Name }
+			if props.ID != "" {
+				id={ props.ID }
+			}
+			if props.Value != "" {
+				value={ props.Value }
+			}
+			if props.Placeholder != "" {
+				placeholder={ props.Placeholder }
+			}
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			readonly?={ props.ReadOnly }
+			class={ "input w-full",
+				templ.KV("input-sm", props.Size == "sm"),
+				templ.KV("input-md", props.Size == "md" || props.Size == ""),
+				templ.KV("input-lg", props.Size == "lg"),
+				templ.KV("input-error", props.Error != ""),
+				props.InputClass }
+			{ props.Attributes... }
+		/>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+		if props.Help != "" && props.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ props.Help }</p>
+		}
+	</div>
+}
+
+type TextareaProps struct {
+	Name        string
+	ID          string
+	Label       string
+	Value       string
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	ReadOnly    bool
+	Rows        int
+	Error       string
+	Help        string
+	Class       string
+	InputClass  string
+	LabelClass  string
+	Attributes  templ.Attributes
+}
+
+templ Textarea(props TextareaProps) {
+	<div class="w-full">
+		if props.Label != "" {
+			<label class={ "block text-sm font-medium mb-1", props.LabelClass }>
+				{ props.Label }
+				if props.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<textarea
+			name={ props.Name }
+			if props.ID != "" {
+				id={ props.ID }
+			}
+			if props.Placeholder != "" {
+				placeholder={ props.Placeholder }
+			}
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			readonly?={ props.ReadOnly }
+			if props.Rows > 0 {
+				rows={ fmt.Sprintf("%d", props.Rows) }
+			}
+			class={ "textarea w-full",
+				templ.KV("textarea-error", props.Error != ""),
+				props.InputClass }
+			{ props.Attributes... }
+		>{ props.Value }</textarea>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+		if props.Help != "" && props.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ props.Help }</p>
+		}
+	</div>
+}
+
+type SelectOption struct {
+	Value    string
+	Label    string
+	Disabled bool
+	Selected bool
+}
+
+type SelectProps struct {
+	Name        string
+	ID          string
+	Label       string
+	Options     []SelectOption
+	Placeholder string
+	Required    bool
+	Disabled    bool
+	Multiple    bool
+	Error       string
+	Help        string
+	Size        string // sm, md, lg
+	Class       string
+	InputClass  string
+	LabelClass  string
+	Attributes  templ.Attributes
+}
+
+templ Select(props SelectProps) {
+	<div class="w-full">
+		if props.Label != "" {
+			<label class={ "block text-sm font-medium mb-1", props.LabelClass }>
+				{ props.Label }
+				if props.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<select
+			name={ props.Name }
+			if props.ID != "" {
+				id={ props.ID }
+			}
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			multiple?={ props.Multiple }
+			class={ "select w-full",
+				templ.KV("select-sm", props.Size == "sm"),
+				templ.KV("select-md", props.Size == "md" || props.Size == ""),
+				templ.KV("select-lg", props.Size == "lg"),
+				templ.KV("select-error", props.Error != ""),
+				props.InputClass }
+			{ props.Attributes... }
+		>
+			if props.Placeholder != "" && !props.Multiple {
+				<option value="" disabled selected>{ props.Placeholder }</option>
+			}
+			for _, option := range props.Options {
+				<option
+					value={ option.Value }
+					disabled?={ option.Disabled }
+					selected?={ option.Selected }
+				>
+					{ option.Label }
+				</option>
+			}
+		</select>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+		if props.Help != "" && props.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ props.Help }</p>
+		}
+	</div>
+}
+
+type CheckboxProps struct {
+	Name       string
+	ID         string
+	Label      string
+	Value      string
+	Checked    bool
+	Required   bool
+	Disabled   bool
+	Error      string
+	Size       string // sm, md, lg
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ Checkbox(props CheckboxProps) {
+	<div class={ "form-control", props.Class }>
+		<label class="label cursor-pointer justify-start gap-2 p-0">
+			<input
+				type="checkbox"
+				name={ props.Name }
+				if props.ID != "" {
+					id={ props.ID }
+				}
+				if props.Value != "" {
+					value={ props.Value }
+				}
+				checked?={ props.Checked }
+				required?={ props.Required }
+				disabled?={ props.Disabled }
+				class={ "checkbox",
+					templ.KV("checkbox-sm", props.Size == "sm"),
+					templ.KV("checkbox-md", props.Size == "md" || props.Size == ""),
+					templ.KV("checkbox-lg", props.Size == "lg"),
+					templ.KV("checkbox-error", props.Error != ""),
+					props.InputClass }
+				{ props.Attributes... }
+			/>
+			if props.Label != "" {
+				<span class={ "label-text", props.LabelClass }>
+					{ props.Label }
+					if props.Required {
+						<span class="text-error ml-1">*</span>
+					}
+				</span>
+			}
+		</label>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+	</div>
+}
+
+type RadioProps struct {
+	Name       string
+	ID         string
+	Label      string
+	Value      string
+	Checked    bool
+	Required   bool
+	Disabled   bool
+	Size       string // sm, md, lg
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ Radio(props RadioProps) {
+	<div class={ "form-control", props.Class }>
+		<label class="label cursor-pointer justify-start gap-2 p-0">
+			<input
+				type="radio"
+				name={ props.Name }
+				if props.ID != "" {
+					id={ props.ID }
+				}
+				value={ props.Value }
+				checked?={ props.Checked }
+				required?={ props.Required }
+				disabled?={ props.Disabled }
+				class={ "radio",
+					templ.KV("radio-sm", props.Size == "sm"),
+					templ.KV("radio-md", props.Size == "md" || props.Size == ""),
+					templ.KV("radio-lg", props.Size == "lg"),
+					props.InputClass }
+				{ props.Attributes... }
+			/>
+			if props.Label != "" {
+				<span class={ "label-text", props.LabelClass }>
+					{ props.Label }
+					if props.Required {
+						<span class="text-error ml-1">*</span>
+					}
+				</span>
+			}
+		</label>
+	</div>
+}
+
+type RadioOption struct {
+	Value    string
+	Label    string
+	Disabled bool
+	Checked  bool
+}
+
+type RadioGroupProps struct {
+	Name       string
+	Label      string
+	Options    []RadioOption
+	Required   bool
+	Error      string
+	Help       string
+	Layout     string // vertical, horizontal
+	Size       string // sm, md, lg
+	Class      string
+	InputClass string
+	LabelClass string
+}
+
+templ RadioGroup(props RadioGroupProps) {
+	<fieldset class="w-full">
+		if props.Label != "" {
+			<legend class={ "block text-sm font-medium mb-2", props.LabelClass }>
+				{ props.Label }
+				if props.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</legend>
+		}
+		<div class={ "space-y-2",
+			templ.KV("flex flex-wrap gap-4 space-y-0", props.Layout == "horizontal"),
+			props.Class }>
+			for i, option := range props.Options {
+				@Radio(RadioProps{
+					Name:       props.Name,
+					ID:         fmt.Sprintf("%s_%d", props.Name, i),
+					Label:      option.Label,
+					Value:      option.Value,
+					Checked:    option.Checked,
+					Disabled:   option.Disabled,
+					Required:   props.Required && i == 0,
+					Size:       props.Size,
+					InputClass: props.InputClass,
+				})
+			}
+		</div>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+		if props.Help != "" && props.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ props.Help }</p>
+		}
+	</fieldset>
+}
+
+type SwitchProps struct {
+	Name       string
+	ID         string
+	Label      string
+	Checked    bool
+	Required   bool
+	Disabled   bool
+	Error      string
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	Attributes templ.Attributes
+}
+
+templ Switch(props SwitchProps) {
+	<div class={ "form-control", props.Class }>
+		<label class="label cursor-pointer justify-start gap-2 p-0">
+			<input
+				type="checkbox"
+				name={ props.Name }
+				if props.ID != "" {
+					id={ props.ID }
+				}
+				checked?={ props.Checked }
+				required?={ props.Required }
+				disabled?={ props.Disabled }
+				class={ "toggle",
+					templ.KV("toggle-sm", props.Size == "sm"),
+					templ.KV("toggle-md", props.Size == "md" || props.Size == ""),
+					templ.KV("toggle-lg", props.Size == "lg"),
+					templ.KV("toggle-primary", props.Color == "primary"),
+					templ.KV("toggle-secondary", props.Color == "secondary"),
+					templ.KV("toggle-accent", props.Color == "accent"),
+					templ.KV("toggle-success", props.Color == "success"),
+					templ.KV("toggle-warning", props.Color == "warning"),
+					templ.KV("toggle-error", props.Color == "error" || props.Error != ""),
+					templ.KV("toggle-info", props.Color == "info"),
+					props.InputClass }
+				{ props.Attributes... }
+			/>
+			if props.Label != "" {
+				<span class={ "label-text", props.LabelClass }>
+					{ props.Label }
+					if props.Required {
+						<span class="text-error ml-1">*</span>
+					}
+				</span>
+			}
+		</label>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+	</div>
+}
+
+type FileInputProps struct {
+	Name        string
+	ID          string
+	Label       string
+	Accept      string
+	Multiple    bool
+	Required    bool
+	Disabled    bool
+	Error       string
+	Help        string
+	Size        string // sm, md, lg
+	Class       string
+	InputClass  string
+	LabelClass  string
+	Attributes  templ.Attributes
+}
+
+templ FileInput(props FileInputProps) {
+	<div class="w-full">
+		if props.Label != "" {
+			<label class={ "block text-sm font-medium mb-1", props.LabelClass }>
+				{ props.Label }
+				if props.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<input
+			type="file"
+			name={ props.Name }
+			if props.ID != "" {
+				id={ props.ID }
+			}
+			if props.Accept != "" {
+				accept={ props.Accept }
+			}
+			multiple?={ props.Multiple }
+			required?={ props.Required }
+			disabled?={ props.Disabled }
+			class={ "file-input w-full",
+				templ.KV("file-input-sm", props.Size == "sm"),
+				templ.KV("file-input-md", props.Size == "md" || props.Size == ""),
+				templ.KV("file-input-lg", props.Size == "lg"),
+				templ.KV("file-input-error", props.Error != ""),
+				props.InputClass }
+			{ props.Attributes... }
+		/>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+		if props.Help != "" && props.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ props.Help }</p>
+		}
+	</div>
+}
+
+type RangeProps struct {
+	Name       string
+	ID         string
+	Label      string
+	Value      string
+	Min        string
+	Max        string
+	Step       string
+	Required   bool
+	Disabled   bool
+	Error      string
+	Help       string
+	Size       string // sm, md, lg
+	Color      string // primary, secondary, accent, success, warning, error, info
+	Class      string
+	InputClass string
+	LabelClass string
+	ShowValue  bool
+	Attributes templ.Attributes
+}
+
+templ Range(props RangeProps) {
+	<div class="w-full">
+		if props.Label != "" {
+			<label class={ "block text-sm font-medium mb-1", props.LabelClass }>
+				{ props.Label }
+				if props.Required {
+					<span class="text-error ml-1">*</span>
+				}
+			</label>
+		}
+		<div class="flex items-center gap-2">
+			<input
+				type="range"
+				name={ props.Name }
+				if props.ID != "" {
+					id={ props.ID }
+				}
+				if props.Value != "" {
+					value={ props.Value }
+				}
+				if props.Min != "" {
+					min={ props.Min }
+				}
+				if props.Max != "" {
+					max={ props.Max }
+				}
+				if props.Step != "" {
+					step={ props.Step }
+				}
+				required?={ props.Required }
+				disabled?={ props.Disabled }
+				class={ "range",
+					templ.KV("range-sm", props.Size == "sm"),
+					templ.KV("range-md", props.Size == "md" || props.Size == ""),
+					templ.KV("range-lg", props.Size == "lg"),
+					templ.KV("range-primary", props.Color == "primary"),
+					templ.KV("range-secondary", props.Color == "secondary"),
+					templ.KV("range-accent", props.Color == "accent"),
+					templ.KV("range-success", props.Color == "success"),
+					templ.KV("range-warning", props.Color == "warning"),
+					templ.KV("range-error", props.Color == "error" || props.Error != ""),
+					templ.KV("range-info", props.Color == "info"),
+					props.InputClass }
+				{ props.Attributes... }
+			/>
+			if props.ShowValue {
+				<span class="text-sm font-medium min-w-[3ch] text-right">{ props.Value }</span>
+			}
+		</div>
+		if props.Error != "" {
+			<p class="text-error text-sm mt-1">{ props.Error }</p>
+		}
+		if props.Help != "" && props.Error == "" {
+			<p class="text-base-content/60 text-sm mt-1">{ props.Help }</p>
+		}
+	</div>
+}
