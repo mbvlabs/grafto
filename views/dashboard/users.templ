@@ -9,37 +9,6 @@ import (
 	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
-templ UsersList(userListResponse services.UserListResponse, currentPage int, perPage int) {
-	@layouts.Dashboard() {
-		<!-- Header -->
-		<div class="flex items-center justify-between mb-8">
-			<h1 class="text-2xl font-semibold">Users Management</h1>
-			<div class="flex items-center gap-2 px-3 py-1.5 bg-base-200 rounded-lg text-sm">
-				<span class="text-base-content/70">{ fmt.Sprintf("Showing %d users", userListResponse.TotalCount) }</span>
-			</div>
-		</div>
-		
-		<!-- Users table section -->
-		@components.Table(
-			"All users",
-			[]string{"Email", "Status", "Role", "Created", "Updated"},
-			transformUsersToTableRows(userListResponse.Users),
-			components.TablePagination{
-				TotalCount:  int64(userListResponse.TotalCount),
-				Page:        currentPage,
-				PageSize:    perPage,
-				TotalPages:  userListResponse.TotalPages,
-				HasNext:     currentPage < userListResponse.TotalPages,
-				HasPrevious: currentPage > 1,
-			},
-			components.ActionBtn{},
-			components.TableConfig{
-				EditURLPattern: "/dashboard/users/%s/edit",
-			},
-		)
-	}
-}
-
 func transformUsersToTableRows(users []services.UserListItem) components.TableRowElements {
 	rows := make(components.TableRowElements, len(users))
 	for i, user := range users {
@@ -69,11 +38,39 @@ func transformUsersToTableRows(users []services.UserListItem) components.TableRo
 	return rows
 }
 
-
-
 func formatDate(t time.Time) string {
 	if t.IsZero() {
 		return "-"
 	}
 	return t.Format("Jan 2, 2006")
 }
+
+templ UsersList(userListResponse services.UserListResponse, currentPage int, perPage int) {
+	@layouts.Dashboard() {
+		<!-- Header -->
+		<div class="flex items-center justify-between mb-8">
+			<h1 class="text-2xl font-semibold">Users Management</h1>
+			<div class="flex items-center gap-2 px-3 py-1.5 bg-base-200 rounded-lg text-sm">
+				<span class="text-base-content/70">{ fmt.Sprintf("Showing %d users", userListResponse.TotalCount) }</span>
+			</div>
+		</div>
+		@components.Table(
+			"Ssers",
+			[]string{"Email", "Status", "Role", "Created", "Updated"},
+			transformUsersToTableRows(userListResponse.Users),
+			components.TablePagination{
+				TotalCount:  int64(userListResponse.TotalCount),
+				Page:        currentPage,
+				PageSize:    perPage,
+				TotalPages:  userListResponse.TotalPages,
+				HasNext:     currentPage < userListResponse.TotalPages,
+				HasPrevious: currentPage > 1,
+			},
+			components.ActionBtn{},
+			components.TableConfig{
+				EditURLPattern: "/dashboard/users/%s/edit",
+			},
+		)
+	}
+}
+

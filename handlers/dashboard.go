@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/contexts"
 	"github.com/mbvlabs/grafto/services"
+	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/dashboard"
 )
 
@@ -36,22 +38,32 @@ func (d Dashboard) UsersList(ctx echo.Context) error {
 
 	perPage := 25
 	if pp := ctx.QueryParam("per_page"); pp != "" {
-		if parsed, err := strconv.Atoi(pp); err == nil && parsed > 0 && parsed <= 100 {
+		if parsed, err := strconv.Atoi(pp); err == nil && parsed > 0 &&
+			parsed <= 100 {
 			perPage = parsed
 		}
 	}
 
-	userListResponse, err := services.GetAllUsers(ctx.Request().Context(), d.db, page, perPage)
+	userListResponse, err := services.GetAllUsers(
+		ctx.Request().Context(),
+		d.db,
+		page,
+		perPage,
+	)
 	if err != nil {
-		return ctx.String(http.StatusInternalServerError, "Failed to load users")
+		return ctx.String(
+			http.StatusInternalServerError,
+			"Failed to load users",
+		)
 	}
 
-	return dashboard.UsersList(userListResponse, page, perPage).Render(renderArgs(ctx))
+	return dashboard.UsersList(userListResponse, page, perPage).
+		Render(renderArgs(ctx))
 }
 
 func (d Dashboard) EditUser(ctx echo.Context) error {
-	userIDStr := ctx.Param("id")
-	userID, err := uuid.Parse(userIDStr)
+	userIDParam := ctx.Param("id")
+	userID, err := uuid.Parse(userIDParam)
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Invalid user ID")
 	}
@@ -64,34 +76,60 @@ func (d Dashboard) EditUser(ctx echo.Context) error {
 	return dashboard.EditUser(user).Render(renderArgs(ctx))
 }
 
+type UpdateUserPayload struct {
+	Email         string `form:"email"`
+	IsAdmin       string `form:"is_admin"`
+	EmailVerified string `form:"is_verified"`
+}
+
 func (d Dashboard) UpdateUser(ctx echo.Context) error {
-	userIDStr := ctx.Param("id")
-	userID, err := uuid.Parse(userIDStr)
+	userIDParam := ctx.Param("id")
+	userID, err := uuid.Parse(userIDParam)
 	if err != nil {
 		return ctx.String(http.StatusBadRequest, "Invalid user ID")
 	}
 
-	email := ctx.FormValue("email")
-	isAdminStr := ctx.FormValue("is_admin")
-	isAdmin := isAdminStr == "on" || isAdminStr == "true"
+	var payload UpdateUserPayload
+	if err := ctx.Bind(&payload); err != nil {
+		slog.ErrorContext(
+			ctx.Request().Context(),
+			"could not parse UpdateUserPayload",
+			"error",
+			err,
+		)
 
-	appCtx := contexts.ExtractApp(setAppCtx(ctx))
-	currentUserID := appCtx.UserID
-
-	updatePayload := services.UpdateUserDetailsPayload{
-		UserID:    userID,
-		Email:     email,
-		IsAdmin:   isAdmin,
-		ActorID:   currentUserID,
-		UpdatedAt: time.Now(),
+		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	_, err = services.UpdateUserDetails(ctx.Request().Context(), d.db, updatePayload)
+	appCtx := contexts.ExtractApp(setAppCtx(ctx))
+	_, err = services.UpdateUserDetails(
+		ctx.Request().Context(),
+		d.db,
+		services.UpdateUserDetailsPayload{
+			UserID:    userID,
+			Email:     payload.Email,
+			IsAdmin:   payload.IsAdmin == "on",
+			ActorID:   appCtx.UserID,
+			UpdatedAt: time.Now(),
+		},
+	)
 	if err != nil {
+		slog.Error(
+			"$$$$$$$$$$$$$$$$",
+			"err",
+			err,
+			"actor",
+			appCtx.Email,
+			"id",
+			appCtx.UserID,
+		)
 		if flashErr := addFlash(ctx, contexts.FlashError, fmt.Sprintf("Failed to update user: %v", err)); flashErr != nil {
 			return flashErr
 		}
-		return ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/dashboard/users/%s/edit", userIDStr))
+		return ctx.Redirect(
+			http.StatusSeeOther,
+			fmt.Sprintf("/dashboard/users/%s/edit", userIDParam),
+		)
 	}
 
 	if flashErr := addFlash(ctx, contexts.FlashSuccess, "User updated successfully"); flashErr != nil {
@@ -108,11 +146,10 @@ func (d Dashboard) DeleteUser(ctx echo.Context) error {
 	}
 
 	appCtx := contexts.ExtractApp(setAppCtx(ctx))
-	currentUserID := appCtx.UserID
 
 	deletePayload := services.DeleteUserPayload{
 		UserID:  userID,
-		ActorID: currentUserID,
+		ActorID: appCtx.UserID,
 	}
 
 	err = services.DeleteUser(ctx.Request().Context(), d.db, deletePayload)
@@ -144,7 +181,11 @@ func (d Dashboard) ToggleUserAdmin(ctx echo.Context) error {
 		ActorID: currentUserID,
 	}
 
-	_, err = services.ToggleUserAdmin(ctx.Request().Context(), d.db, togglePayload)
+	_, err = services.ToggleUserAdmin(
+		ctx.Request().Context(),
+		d.db,
+		togglePayload,
+	)
 	if err != nil {
 		if flashErr := addFlash(ctx, contexts.FlashError, fmt.Sprintf("Failed to toggle admin status: %v", err)); flashErr != nil {
 			return flashErr

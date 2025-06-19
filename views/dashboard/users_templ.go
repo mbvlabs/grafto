@@ -17,6 +17,42 @@ import (
 	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
 
+func transformUsersToTableRows(users []services.UserListItem) components.TableRowElements {
+	rows := make(components.TableRowElements, len(users))
+	for i, user := range users {
+		statusText := "Unverified"
+		statusHighlight := ""
+		if user.IsVerified {
+			statusText = "Verified"
+			statusHighlight = "status-published"
+		}
+
+		roleText := "User"
+		if user.IsAdmin {
+			roleText = "Admin"
+		}
+
+		rows[i] = components.TableRow{
+			ID: user.ID,
+			Elements: []components.TableRowElement{
+				{Title: user.Email},
+				{Title: statusText, Highlight: statusHighlight},
+				{Title: roleText},
+				{Title: formatDate(user.CreatedAt)},
+				{Title: formatDate(user.UpdatedAt)},
+			},
+		}
+	}
+	return rows
+}
+
+func formatDate(t time.Time) string {
+	if t.IsZero() {
+		return "-"
+	}
+	return t.Format("Jan 2, 2006")
+}
+
 func UsersList(userListResponse services.UserListResponse, currentPage int, perPage int) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -57,18 +93,18 @@ func UsersList(userListResponse services.UserListResponse, currentPage int, perP
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("Showing %d users", userListResponse.TotalCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/dashboard/users.templ`, Line: 18, Col: 101}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/dashboard/users.templ`, Line: 54, Col: 101}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></div></div><!-- Users table section --> ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</span></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Err = components.Table(
-				"All users",
+				"Ssers",
 				[]string{"Email", "Status", "Role", "Created", "Updated"},
 				transformUsersToTableRows(userListResponse.Users),
 				components.TablePagination{
@@ -95,42 +131,6 @@ func UsersList(userListResponse services.UserListResponse, currentPage int, perP
 		}
 		return nil
 	})
-}
-
-func transformUsersToTableRows(users []services.UserListItem) components.TableRowElements {
-	rows := make(components.TableRowElements, len(users))
-	for i, user := range users {
-		statusText := "Unverified"
-		statusHighlight := ""
-		if user.IsVerified {
-			statusText = "Verified"
-			statusHighlight = "status-published"
-		}
-
-		roleText := "User"
-		if user.IsAdmin {
-			roleText = "Admin"
-		}
-
-		rows[i] = components.TableRow{
-			ID: user.ID,
-			Elements: []components.TableRowElement{
-				{Title: user.Email},
-				{Title: statusText, Highlight: statusHighlight},
-				{Title: roleText},
-				{Title: formatDate(user.CreatedAt)},
-				{Title: formatDate(user.UpdatedAt)},
-			},
-		}
-	}
-	return rows
-}
-
-func formatDate(t time.Time) string {
-	if t.IsZero() {
-		return "-"
-	}
-	return t.Format("Jan 2, 2006")
 }
 
 var _ = templruntime.GeneratedTemplate

@@ -1,6 +1,7 @@
 package components
 
 import "fmt"
+import "strings"
 
 type FormProps struct {
 	Class      string
@@ -36,14 +37,14 @@ type Input struct {
 	Attributes  templ.Attributes
 }
 
-templ formGroup() {
-	<div class="grid">
+templ formGroup(classes ...string) {
+	<div class={ strings.Join(append(classes, "grid"), " ") }>
 		{ children... }
 	</div>
 }
 
 templ (i Input) Build() {
-	@formGroup() {
+	@formGroup(i.Class) {
 		if i.Label != "" {
 			<label for={ i.ID } class={ "block text-sm font-medium mb-1", i.LabelClass }>
 				{ i.Label }

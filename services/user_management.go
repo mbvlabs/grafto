@@ -14,7 +14,9 @@ import (
 var (
 	ErrUserNotFound          = errors.New("user not found")
 	ErrCannotDeleteSelf      = errors.New("cannot delete your own account")
-	ErrCannotRemoveLastAdmin = errors.New("cannot remove admin privileges from last admin")
+	ErrCannotRemoveLastAdmin = errors.New(
+		"cannot remove admin privileges from last admin",
+	)
 )
 
 type UserListItem struct {
@@ -49,7 +51,10 @@ func GetAllUsers(
 	}
 
 	// Query all users using raw SQL until we can access the generated queries properly
-	rows, err := database.Pool.Query(ctx, "SELECT id, created_at, updated_at, email, email_verified_at, is_admin FROM users ORDER BY created_at DESC")
+	rows, err := database.Pool.Query(
+		ctx,
+		"SELECT id, created_at, updated_at, email, email_verified_at, is_admin FROM users ORDER BY created_at DESC",
+	)
 	if err != nil {
 		return UserListResponse{}, fmt.Errorf("failed to query users: %w", err)
 	}
@@ -68,7 +73,10 @@ func GetAllUsers(
 			&user.IsAdmin,
 		)
 		if err != nil {
-			return UserListResponse{}, fmt.Errorf("failed to scan user: %w", err)
+			return UserListResponse{}, fmt.Errorf(
+				"failed to scan user: %w",
+				err,
+			)
 		}
 
 		if emailVerifiedAt != nil {
@@ -141,33 +149,17 @@ func UpdateUserDetails(
 		return models.User{}, errors.New("only admins can update user details")
 	}
 
-	currentUser, err := models.GetUser(ctx, database.Pool, payload.UserID)
+	updatedUser, err := models.UpdateUser(
+		ctx,
+		database.Pool,
+		models.UpdateUserPayload{
+			ID:        payload.UserID,
+			UpdatedAt: time.Now(),
+			Email:     payload.Email,
+		},
+	)
 	if err != nil {
-		return models.User{}, fmt.Errorf("failed to get current user: %w", err)
-	}
-
-	if currentUser.IsAdmin && !payload.IsAdmin {
-		adminCount, err := countAdminUsers(ctx, database)
-		if err != nil {
-			return models.User{}, fmt.Errorf("failed to check admin count: %w", err)
-		}
-		if adminCount <= 1 {
-			return models.User{}, ErrCannotRemoveLastAdmin
-		}
-	}
-
-	// Use raw SQL to update user since we can't import the internal db package
-	_, err = database.Pool.Exec(ctx,
-		"UPDATE users SET updated_at = $2, email = $3, is_admin = $4 WHERE id = $1",
-		payload.UserID, payload.UpdatedAt, payload.Email, payload.IsAdmin)
-	if err != nil {
-		return models.User{}, fmt.Errorf("failed to update user: %w", err)
-	}
-
-	// Get the updated user
-	updatedUser, err := models.GetUser(ctx, database.Pool, payload.UserID)
-	if err != nil {
-		return models.User{}, fmt.Errorf("failed to get updated user: %w", err)
+		return models.User{}, err
 	}
 
 	return updatedUser, nil
@@ -211,7 +203,11 @@ func DeleteUser(
 		}
 	}
 
-	_, err = database.Pool.Exec(ctx, "DELETE FROM users WHERE id = $1", payload.UserID)
+	_, err = database.Pool.Exec(
+		ctx,
+		"DELETE FROM users WHERE id = $1",
+		payload.UserID,
+	)
 	if err != nil {
 		return fmt.Errorf("failed to delete user: %w", err)
 	}
@@ -252,7 +248,10 @@ func ToggleUserAdmin(
 	if currentUser.IsAdmin && !newAdminStatus {
 		adminCount, err := countAdminUsers(ctx, database)
 		if err != nil {
-			return models.User{}, fmt.Errorf("failed to check admin count: %w", err)
+			return models.User{}, fmt.Errorf(
+				"failed to check admin count: %w",
+				err,
+			)
 		}
 		if adminCount <= 1 {
 			return models.User{}, ErrCannotRemoveLastAdmin
@@ -263,7 +262,10 @@ func ToggleUserAdmin(
 		"UPDATE users SET is_admin = $2, updated_at = $3 WHERE id = $1",
 		payload.UserID, newAdminStatus, time.Now())
 	if err != nil {
-		return models.User{}, fmt.Errorf("failed to update user admin status: %w", err)
+		return models.User{}, fmt.Errorf(
+			"failed to update user admin status: %w",
+			err,
+		)
 	}
 
 	// Get the updated user
@@ -277,7 +279,8 @@ func ToggleUserAdmin(
 
 func countAdminUsers(ctx context.Context, database psql.Postgres) (int, error) {
 	var count int
-	err := database.Pool.QueryRow(ctx, "SELECT COUNT(*) FROM users WHERE is_admin = true").Scan(&count)
+	err := database.Pool.QueryRow(ctx, "SELECT COUNT(*) FROM users WHERE is_admin = true").
+		Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count admin users: %w", err)
 	}

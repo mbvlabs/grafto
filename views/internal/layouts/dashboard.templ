@@ -1,43 +1,23 @@
 package layouts
 
-import "github.com/mbvlabs/grafto/router/routes"
-import "github.com/mbvlabs/grafto/views/internal/components"
-
-templ Dashboard(opts ...components.HeadDataOption) {
-	<!DOCTYPE html>
-	<html lang="en">
-		@components.SetupHead(ctx, opts...)
-		<body class="bg-base-300 text-base-content font-sans">
-			<div class="flex h-screen">
-				@dashboardSidebar()
-				<main class="mx-auto container flex-1 overflow-y-auto">
-					<div class="p-8">
-						{ children... }
-					</div>
-				</main>
-			</div>
-		</body>
-	</html>
-}
+import (
+	"github.com/mbvlabs/grafto/router/routes"
+	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/views/internal/components"
+)
 
 templ dashboardSidebar() {
 	<aside class="w-64 bg-base-200 flex flex-col h-screen">
 		<!-- Logo/Header -->
 		<div class="p-6 flex items-center gap-2">
-			<div class="w-2 h-2 bg-base-content rounded-full"></div>
-			<span class="text-sm font-medium">Grafto</span>
-			<svg class="w-4 h-4 ml-auto text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-			</svg>
+			<span class="text-lg font-bold">Grafto</span>
 		</div>
 		<!-- Navigation -->
 		<nav class="flex-1 px-3 space-y-1">
 			@dashboardNavItem("Dashboard", routes.DashboardHome.Path, "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6")
 			@dashboardNavItem("Users", routes.DashboardUsers.Path, "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 016-6h4.5a6 6 0 016 6v1z")
 		</nav>
-		<!-- Bottom section -->
 		<div class="p-6 border-t border-base-300">
-			<!-- User section -->
 			<div class="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-base-300 transition-colors cursor-pointer">
 				<div class="w-8 h-8 bg-base-300 rounded-full flex items-center justify-center text-sm font-medium">
 					U
@@ -64,4 +44,24 @@ templ dashboardNavItem(name, path, iconPath string) {
 		</svg>
 		<span>{ name }</span>
 	</a>
+}
+
+templ Dashboard(opts ...components.HeadDataOption) {
+	<!DOCTYPE html>
+	<html lang="en">
+		@components.SetupHead(ctx, opts...)
+		<body class="bg-base-300 text-base-content font-sans">
+			<div class="flex h-screen">
+				@dashboardSidebar()
+				<main class="mx-auto container flex-1 overflow-y-auto">
+					{ children... }
+				</main>
+			</div>
+		</body>
+		<div class="fixed bottom-4 right-10 z-50 space-y-2">
+			for _, flash := range contexts.ExtractFlashMessages(ctx) {
+				@components.ToastMessage(flash)
+			}
+		</div>
+	</html>
 }
