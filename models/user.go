@@ -89,7 +89,7 @@ func GetUser(
 		Email:           row.Email,
 		EmailVerifiedAt: row.EmailVerifiedAt.Time,
 		HashedPassword:  string(row.Password),
-		IsAdmin:         false,
+		IsAdmin:         row.IsAdmin,
 	}, nil
 }
 

@@ -87,6 +87,11 @@ func (l *linkBuilder) WithOutline() *linkBuilder {
 	return l
 }
 
+func (l *linkBuilder) WithDefault() *linkBuilder {
+	l.props.Variant = "default"
+	return l
+}
+
 func (l *linkBuilder) Build() templ.Component {
 	return linkComponent(l.text, l.href, l.props)
 }
@@ -125,7 +130,7 @@ func linkComponent(text, href string, props linkProps) templ.Component {
 			templ.KV("text-warning hover:text-warning/80 focus:ring-warning hover:underline", props.Variant == "warning" && !props.Outline),
 			templ.KV("text-error hover:text-error/80 focus:ring-error hover:underline", (props.Variant == "danger" || props.Variant == "error") && !props.Outline),
 			templ.KV("text-base-content hover:text-base-content/80 focus:ring-base-300 hover:underline", props.Variant == "ghost" && !props.Outline),
-			templ.KV("border-2 px-2 py-1 rounded-md text-black border-black hover:bg-black hover:text-white hover:no-underline", (props.Variant == "default" || props.Variant == "") && props.Outline),
+			templ.KV("border-2 px-2 py-1 rounded-md text-base-content border-black hover:bg-black hover:text-white hover:no-underline", (props.Variant == "default" || props.Variant == "") && props.Outline),
 			templ.KV("border-2 px-2 py-1 rounded-md text-primary border-primary hover:bg-primary hover:text-primary-content hover:no-underline", props.Variant == "primary" && props.Outline),
 			templ.KV("border-2 px-2 py-1 rounded-md text-secondary border-secondary hover:bg-secondary hover:text-secondary-content hover:no-underline", props.Variant == "secondary" && props.Outline),
 			templ.KV("border-2 px-2 py-1 rounded-md text-success border-success hover:bg-success hover:text-success-content hover:no-underline", props.Variant == "success" && props.Outline),
@@ -144,7 +149,7 @@ func linkComponent(text, href string, props linkProps) templ.Component {
 		var templ_7745c5c3_Var3 templ.SafeURL
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinURLErrs(templ.URL(href))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 88, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 93, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -162,7 +167,7 @@ func linkComponent(text, href string, props linkProps) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(props.Target)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 90, Col: 24}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 95, Col: 24}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -193,7 +198,7 @@ func linkComponent(text, href string, props linkProps) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 114, Col: 8}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/link.templ`, Line: 119, Col: 8}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

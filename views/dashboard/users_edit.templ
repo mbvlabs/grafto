@@ -1,0 +1,100 @@
+package dashboard
+
+import (
+	"time"
+
+	"github.com/mbvlabs/grafto/models"
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
+	"github.com/mbvlabs/grafto/router/routes"
+	"strings"
+)
+
+func formatDetailDate(t time.Time) string {
+	if t.IsZero() {
+		return "Never"
+	}
+	return t.Format("January 2, 2006 at 3:04 PM")
+}
+
+templ EditUser(user models.User) {
+	@layouts.Dashboard() {
+		<div class="space-y-6">
+			<div class="flex items-center gap-4 bg-base-200 p-4 rounded-lg border border-base-300">
+				@components.OutlineLink("Back to users", routes.DashboardUsers.Path)
+				<h1 class="text-2xl font-bold text-base-content">Edit User</h1>
+			</div>
+			<div class="bg-base-200 ">
+				@components.Form(components.FormProps{
+					Attributes: templ.Attributes{
+						"method": "POST",
+						"action": strings.Replace(routes.DashboardUserUpdate.Path, ":id", user.ID.String(), 1),
+					},
+				}) {
+					<div class="grid grid-cols-2 gap-4">
+						<span>
+							@components.Input{
+								ID:       "user_id",
+								Name:     "user_id",
+								Label:    "User Id",
+								Value:    user.ID.String(),
+								Disabled: true,
+								Class:    "mb-4",
+							}.Build()
+							@components.Input{
+								Type:     "email",
+								Name:     "email",
+								ID:       "email",
+								Label:    "Email Address",
+								Value:    user.Email,
+								Required: true,
+								Class:    "mb-4",
+							}.Build()
+							@components.Checkbox{
+								Name:    "is_admin",
+								ID:      "is_admin",
+								Text:    "Grant admin privileges",
+								Value:   "true",
+								Checked: user.IsAdmin,
+								Class:   "mb-4",
+							}.Build()
+						</span>
+						<span>
+							@components.Input{
+								ID:       "created_at",
+								Name:     "created_at",
+								Label:    "Created",
+								Value:    formatDetailDate(user.CreatedAt),
+								Disabled: true,
+								Class:    "mb-4",
+							}.Build()
+							@components.Input{
+								ID:       "updated_at",
+								Name:     "updated_at",
+								Label:    "Updated",
+								Value:    formatDetailDate(user.UpdatedAt),
+								Disabled: true,
+								Class:    "mb-4",
+							}.Build()
+							@components.Checkbox{
+								Name:    "is_verified",
+								ID:      "is_verified",
+								Text:    "Email Verified",
+								Value:   "true",
+								Checked: user.IsVerified(),
+								Class:   "mb-4",
+							}.Build()
+						</span>
+						<div class="col-span-2 flex justify-end">
+							@components.Link("Cancel", routes.DashboardUsers.Path).WithOutline().WithDanger().Build()
+							<span class="ml-6">
+								@components.Button("Save Changes").WithPrimary().WithType("submit").Build()
+							</span>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	}
+}
+
