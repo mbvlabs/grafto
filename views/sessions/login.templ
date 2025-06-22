@@ -13,42 +13,54 @@ var (
 )
 
 templ LoginWarning(msg string) {
-	<div id="login-flag" class="flex items-center p-3 mb-4 rounded bg-warning/15 text-warning">
-		<svg
-			class="h-5 w-5 fill-current mr-3"
-			width="16"
-			height="16"
-			fill="currentColor"
-			viewBox="0 0 16 16"
-			aria-hidden="true"
-		>
-			<path
-				d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
-			></path>
-		</svg>
-		<h2 class="text-warning text-sm">{ msg }</h2>
+	<div class="mb-4">
+		@components.WarningFlag(msg, templ.Attributes{
+			"x-data":                   "{ show: true }",
+			"x-show":                   "show",
+			"x-transition:leave":       "transition ease-in duration-300",
+			"x-transition:leave-start": "opacity-100 scale-100",
+			"x-transition:leave-end":   "opacity-0 scale-90",
+			"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+			"id":                       "login-flag",
+		})
 	</div>
 }
 
 templ LoginError(msg string) {
-	<div id="login-flag" class="flex items-center p-3 mb-4 rounded bg-error/15 text-error">
-		<svg
-			class="h-5 w-5 fill-current mr-3"
-			width="16"
-			height="16"
-			fill="currentColor"
-			viewBox="0 0 16 16"
-			aria-hidden="true"
-		>
-			<path
-				d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
-			></path>
-		</svg>
-		<h2 class="text-error text-sm">{ msg }</h2>
+	<div class="mb-4">
+		@components.ErrorFlag(msg, templ.Attributes{
+			"x-data":                   "{ show: true }",
+			"x-show":                   "show",
+			"x-transition:leave":       "transition ease-in duration-300",
+			"x-transition:leave-start": "opacity-100 scale-100",
+			"x-transition:leave-end":   "opacity-0 scale-90",
+			"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+			"id":                       "login-flag",
+		})
 	</div>
 }
 
-templ LoginForm(errors views.Errors) {
+templ LoginForm(success bool, errors views.Errors) {
+	if success {
+		@components.NavItem(
+			"Logout",
+			routes.DestroyAuthSession.Name,
+			routes.DestroyAuthSession.Path,
+			templ.Attributes{
+				"hx-delete":   routes.DestroyAuthSession.Path,
+				"hx-swap-oob": "outerHTML:a[data-navItemPath='login']",
+			},
+		)
+		<div class="mb-4">
+			@components.SuccessFlag(
+				"You've been authenticated and will be redirected to the dashboard.",
+				templ.Attributes{
+					"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
+					"hx-trigger": "load delay:4s",
+				},
+			)
+		</div>
+	}
 	if errors[ErrAuthDetailsWrong] != "" {
 		@LoginWarning(errors[ErrAuthDetailsWrong])
 	}
@@ -56,7 +68,7 @@ templ LoginForm(errors views.Errors) {
 		@LoginWarning(errors[ErrEmailNotValidated])
 	}
 	@components.Form(components.FormProps{
-		Class: "bg-base-200 w-full mx-auto max-w-[400px] p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
+		Class: "bg-base-300 w-full mx-auto max-w-[400px] p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
 		Attributes: templ.Attributes{
 			"hx-post":   routes.StoreAuthSession.Path,
 			"method":    "post",
@@ -108,27 +120,7 @@ templ LoginPage(data LoginPageProps) {
 	@layouts.Base(views.WithTitle("Login")) {
 		<main class="flex-1 w-full px-4 flex flex-col justify-center items-center">
 			<div class="w-full max-w-[400px] mx-auto">
-				if data.Success {
-					@components.NavItem(
-						"Logout",
-						routes.DestroyAuthSession.Name,
-						routes.DestroyAuthSession.Path,
-						templ.Attributes{
-							"hx-delete":   routes.DestroyAuthSession.Path,
-							"hx-swap-oob": "outerHTML:a[data-navItemPath='login']",
-						},
-					)
-					<div class="mb-4">
-						@components.SuccessFlag(
-							"You've been authenticated and will be redirected to the dashboard.",
-							templ.Attributes{
-								"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
-								"hx-trigger": "load delay:4s",
-							},
-						)
-					</div>
-				}
-				@LoginForm(data.Errors)
+				@LoginForm(false, data.Errors)
 			</div>
 		</main>
 	}

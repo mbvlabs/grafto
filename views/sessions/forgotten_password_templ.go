@@ -48,7 +48,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if props.InternalError {
-			templ_7745c5c3_Err = components.ErrorFlag("An error occured we could not recover from.").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.ErrorFlag("An error occured we could not recover from.", templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -60,7 +60,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 			}
 		}
 		if props.NoAssociatedUser {
-			templ_7745c5c3_Err = components.WarningFlag("No user found with that email.").Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.WarningFlag("No user found with that email.", templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

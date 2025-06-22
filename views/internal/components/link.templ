@@ -99,7 +99,7 @@ templ linkComponent(text, href string, props linkProps) {
 			templ.KV("text-sm", props.Size == "small"),
 			templ.KV("text-base", props.Size == "medium" || props.Size == ""),
 			templ.KV("text-lg", props.Size == "large"),
-			templ.KV("text-black hover:text-black/80 focus:ring-black hover:underline", (props.Variant == "default" || props.Variant == "") && !props.Outline),
+			templ.KV("text-base-content hover:text-base-content/80 focus:ring-black hover:underline", (props.Variant == "default" || props.Variant == "") && !props.Outline),
 			templ.KV("text-primary hover:text-primary/80 focus:ring-primary hover:underline", props.Variant == "primary" && !props.Outline),
 			templ.KV("text-secondary hover:text-secondary/80 focus:ring-secondary hover:underline", props.Variant == "secondary" && !props.Outline),
 			templ.KV("text-success hover:text-success/80 focus:ring-success hover:underline", props.Variant == "success" && !props.Outline),

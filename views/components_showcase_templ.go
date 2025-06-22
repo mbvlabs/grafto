@@ -391,7 +391,7 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.InfoFlag("This is an info flag message").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.InfoFlag("This is an info flag message", templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -399,11 +399,11 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.WarningFlag("This is a warning flag message").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.WarningFlag("This is a warning flag message", templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.ErrorFlag("This is an error flag message").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = components.ErrorFlag("This is an error flag message", templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

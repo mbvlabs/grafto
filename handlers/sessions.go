@@ -68,7 +68,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 			}
 		}
 
-		return sessionViews.LoginForm(userErr).Render(renderArgs(ctx))
+		return sessionViews.LoginForm(false, userErr).Render(renderArgs(ctx))
 	}
 
 	if err := createAuthSession(
@@ -76,9 +76,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	return sessionViews.LoginPage(sessionViews.LoginPageProps{
-		Success: true,
-	}).Render(renderArgs(ctx))
+	return sessionViews.LoginForm(true, views.Errors{}).Render(renderArgs(ctx))
 }
 
 func (a Sessions) Destroy(ctx echo.Context) error {
