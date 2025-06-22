@@ -16,10 +16,8 @@ import (
 )
 
 type ForgottenPasswordFormProps struct {
-	CsrfToken        string
-	InternalError    bool
-	Success          bool
-	NoAssociatedUser bool
+	Success  bool
+	HasError bool
 }
 
 func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
@@ -47,20 +45,30 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if props.InternalError {
-			templ_7745c5c3_Err = components.ErrorFlag("An error occured we could not recover from.", templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
+		if props.HasError {
+			templ_7745c5c3_Err = components.ErrorFlag("An error occured we could not recover from.", templ.Attributes{
+				"x-data":                   "{ show: true }",
+				"x-show":                   "show",
+				"x-transition:leave":       "transition ease-in duration-300",
+				"x-transition:leave-start": "opacity-100 scale-100",
+				"x-transition:leave-end":   "opacity-0 scale-90",
+				"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+				"id":                       "login-flag",
+			}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
 		if props.Success {
-			templ_7745c5c3_Err = components.SuccessFlag("A link has been sent to the provided email to reset your password.", nil).Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		if props.NoAssociatedUser {
-			templ_7745c5c3_Err = components.WarningFlag("No user found with that email.", templ.Attributes{}).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.SuccessFlag("A link has been sent to the provided email to reset your password.", templ.Attributes{
+				"x-data":                   "{ show: true }",
+				"x-show":                   "show",
+				"x-transition:leave":       "transition ease-in duration-300",
+				"x-transition:leave-start": "opacity-100 scale-100",
+				"x-transition:leave-end":   "opacity-0 scale-90",
+				"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+				"id":                       "login-flag",
+			}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -77,20 +85,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<input type=\"hidden\" name=\"gorilla.csrf.Token\" value=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(props.CsrfToken)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/sessions/forgotten_password.templ`, Line: 36, Col: 73}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\"><div class=\"text-center mb-6\"><h1 class=\"text-[1.75rem] font-bold text-base-content mb-2\">Forgotten Password</h1></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"text-center mb-6\"><h1 class=\"text-[1.75rem] font-bold text-base-content mb-2\">Forgotten Password</h1></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -105,7 +100,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -116,7 +111,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 			return nil
 		})
 		templ_7745c5c3_Err = components.Form(components.FormProps{
-			Class: "bg-base-200 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
+			Class: "bg-base-300 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
 			Attributes: templ.Attributes{
 				"hx-post":   routes.StoreForgotPassword.Path,
 				"hx-target": "this",
@@ -126,7 +121,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -134,7 +129,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 	})
 }
 
-func ForgottenPasswordPage(csrfToken string) templ.Component {
+func ForgottenPasswordPage() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -150,12 +145,12 @@ func ForgottenPasswordPage(csrfToken string) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var5 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_Var4 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
 			if !templ_7745c5c3_IsBuffer {
@@ -167,22 +162,22 @@ func ForgottenPasswordPage(csrfToken string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<main class=\"w-full px-4 mx-auto max-w-[540px] sm:max-w-[720px] md:max-w-[960px] lg:max-w-[1140px] xl:max-w-[1320px] flex flex-col relative justify-center items-center min-h-[calc(100vh-4rem)]\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<main class=\"w-full px-4 mx-auto max-w-[540px] sm:max-w-[720px] md:max-w-[960px] lg:max-w-[1140px] xl:max-w-[1320px] flex flex-col relative justify-center items-center min-h-[calc(100vh-4rem)]\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = ForgottenPasswordForm(ForgottenPasswordFormProps{CsrfToken: csrfToken}).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = ForgottenPasswordForm(ForgottenPasswordFormProps{}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</main>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			return nil
 		})
 		templ_7745c5c3_Err = layouts.Base(
-			views.WithTitle("Forgotten Password")).Render(templ.WithChildren(ctx, templ_7745c5c3_Var5), templ_7745c5c3_Buffer)
+			views.WithTitle("Forgotten Password")).Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"database/sql"
 	"errors"
 	"log/slog"
 
 	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/services"
@@ -92,7 +94,7 @@ func (a Sessions) Destroy(ctx echo.Context) error {
 }
 
 func (a Sessions) NewPasswordReset(ctx echo.Context) error {
-	return sessionViews.ForgottenPasswordPage(csrf.Token(ctx.Request())).
+	return sessionViews.ForgottenPasswordPage().
 		Render(renderArgs(ctx))
 }
 
@@ -103,19 +105,26 @@ type StorePasswordResetPayload struct {
 func (a Sessions) CreatePasswordReset(ctx echo.Context) error {
 	var payload StorePasswordResetPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
+		return sessionViews.ForgottenPasswordForm(
+			sessionViews.ForgottenPasswordFormProps{HasError: true},
+		).Render(renderArgs(ctx))
 	}
 
 	if err := services.SendResetPasswordEmail(ctx.Request().Context(), a.db, a.emailClient, payload.Email); err != nil {
-		// TODO: show proper error page with info
-		return views.ErrorPage().Render(renderArgs(ctx))
+		if errors.Is(err, sql.ErrNoRows) {
+			return sessionViews.ForgottenPasswordForm(
+				sessionViews.ForgottenPasswordFormProps{Success: true},
+			).Render(renderArgs(ctx))
+		}
+
+		return sessionViews.ForgottenPasswordForm(
+			sessionViews.ForgottenPasswordFormProps{HasError: true},
+		).Render(renderArgs(ctx))
 	}
 
-	return sessionViews.ForgottenPasswordForm(sessionViews.ForgottenPasswordFormProps{
-		CsrfToken: csrf.Token(ctx.Request()),
-		Success:   true,
-	}).
-		Render(renderArgs(ctx))
+	return sessionViews.ForgottenPasswordForm(
+		sessionViews.ForgottenPasswordFormProps{Success: true},
+	).Render(renderArgs(ctx))
 }
 
 type PasswordResetTokenPayload struct {
@@ -142,14 +151,20 @@ type ResetPasswordPayload struct {
 func (a Sessions) UpdatePasswordReset(ctx echo.Context) error {
 	var payload ResetPasswordPayload
 	if err := ctx.Bind(&payload); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
+		return sessionViews.ResetPasswordForm(sessionViews.ResetPasswordFormProps{Errors: views.Errors{"request": "could not bind"}}).
+			Render(renderArgs(ctx))
 	}
 
 	if err := services.ChangeUserPassword(ctx.Request().Context(), a.db, payload.Token, payload.Password, payload.ConfirmPassword); err != nil {
-		// TODO: show proper error page with info
-		return views.ErrorPage().Render(renderArgs(ctx))
+		if errors.Is(err, models.ErrDomainValidation) {
+			return sessionViews.ResetPasswordForm(sessionViews.ResetPasswordFormProps{Errors: views.Errors{"password": err.Error(), "confirm_password": err.Error()}}).
+				Render(renderArgs(ctx))
+		}
+
+		return sessionViews.ResetPasswordForm(sessionViews.ResetPasswordFormProps{Errors: views.Errors{"request": "internal error"}}).
+			Render(renderArgs(ctx))
 	}
 
-	return sessionViews.ResetPasswordForm(sessionViews.ResetPasswordFormProps{}).
+	return sessionViews.ResetPasswordForm(sessionViews.ResetPasswordFormProps{Success: true}).
 		Render(renderArgs(ctx))
 }
