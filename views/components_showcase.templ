@@ -244,10 +244,10 @@ templ ComponentsShowcase() {
 					<div>
 						<h3 class="text-xl font-medium mb-4">Alert Types</h3>
 						<div class="space-y-4 max-w-2xl">
-							@components.InfoFlag("This is an info flag message")
+							@components.InfoFlag("This is an info flag message", templ.Attributes{})
 							@components.SuccessFlag("This is a success flag message", templ.Attributes{})
-							@components.WarningFlag("This is a warning flag message")
-							@components.ErrorFlag("This is an error flag message")
+							@components.WarningFlag("This is a warning flag message", templ.Attributes{})
+							@components.ErrorFlag("This is an error flag message", templ.Attributes{})
 						</div>
 					</div>
 				</section>
@@ -481,7 +481,8 @@ templ ComponentsShowcase() {
 						<h2 class="text-3xl font-bold">Toast Messages</h2>
 						<div class="flex-1 h-px bg-gradient-to-r from-primary/50 to-transparent"></div>
 					</div>
-					<div x-data="{ 
+					<div
+						x-data="{ 
 						showSuccess: false, 
 						showError: false, 
 						showWarning: false, 
@@ -491,43 +492,42 @@ templ ComponentsShowcase() {
 							this[type] = false;
 							setTimeout(() => this[type] = true, 50);
 						}
-					}">
+					}"
+					>
 						<h3 class="text-xl font-medium mb-4">Message Types</h3>
 						<p class="text-base-content/70 mb-6">Toast messages with different types and auto-dismiss functionality. Click the buttons below to trigger them:</p>
-						
 						<div class="flex flex-wrap gap-3 mb-6">
-							<button 
-								@click="triggerToast('showSuccess')" 
+							<button
+								@click="triggerToast('showSuccess')"
 								class="btn btn-success"
 							>
 								Show Success Toast
 							</button>
-							<button 
-								@click="triggerToast('showError')" 
+							<button
+								@click="triggerToast('showError')"
 								class="btn btn-error"
 							>
 								Show Error Toast
 							</button>
-							<button 
-								@click="triggerToast('showWarning')" 
+							<button
+								@click="triggerToast('showWarning')"
 								class="btn btn-warning"
 							>
 								Show Warning Toast
 							</button>
-							<button 
-								@click="triggerToast('showInfo')" 
+							<button
+								@click="triggerToast('showInfo')"
 								class="btn btn-info"
 							>
 								Show Info Toast
 							</button>
-							<button 
-								@click="triggerToast('showLongContent')" 
+							<button
+								@click="triggerToast('showLongContent')"
 								class="btn btn-neutral"
 							>
 								Show Long Content Toast
 							</button>
 						</div>
-
 						<div class="space-y-4 max-w-md">
 							<div x-show="showSuccess" x-transition>
 								@components.ToastMessage(contexts.FlashMessage{
