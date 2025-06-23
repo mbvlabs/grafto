@@ -6,7 +6,6 @@ import (
 )
 
 type VerifyCodeProps struct {
-	CsrfToken   string
 	CodeInvalid bool
 	Success     bool
 }
@@ -51,7 +50,6 @@ templ VerifyCodeForm(props VerifyCodeProps) {
 					"hx-swap":   "outerHTML",
 				},
 			}) {
-				<input type="hidden" name="gorilla.csrf.Token" value={ props.CsrfToken }/>
 				<div class="text-center mb-6">
 					<h1 class="text-[1.75rem] font-bold text-base-content mb-2">Verify Your Email</h1>
 					<p class="text-sm text-base-content">
