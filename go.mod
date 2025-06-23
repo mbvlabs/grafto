@@ -7,17 +7,17 @@ toolchain go1.24.2
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/a-h/templ v0.3.898
-	github.com/dromara/carbon/v2 v2.5.4
+	github.com/dromara/carbon/v2 v2.6.8
 	github.com/exaring/otelpgx v0.9.3
-	github.com/fergusstrange/embedded-postgres v1.30.0
+	github.com/fergusstrange/embedded-postgres v1.31.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.4.0
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
-	github.com/lmittmann/tint v1.1.1
+	github.com/lmittmann/tint v1.1.2
 	github.com/riverqueue/river v0.23.1
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
 	github.com/stretchr/testify v1.10.0
-	github.com/vanng822/go-premailer v1.24.0
+	github.com/vanng822/go-premailer v1.25.0
 	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.36.0
@@ -26,7 +26,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.36.0
 	go.opentelemetry.io/otel/trace v1.36.0
 	golang.org/x/crypto v0.39.0
-	golang.org/x/net v0.40.0
+	golang.org/x/net v0.41.0
 	golang.org/x/sync v0.15.0
 	gopkg.in/yaml.v2 v2.4.0
 	riverqueue.com/riverui v0.11.0
@@ -94,7 +94,7 @@ require (
 require (
 	github.com/aws/aws-sdk-go v1.55.7
 	github.com/caarlos0/env/v10 v10.0.0
-	github.com/go-faker/faker/v4 v4.5.0
+	github.com/go-faker/faker/v4 v4.6.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gorilla/csrf v1.7.3
 	github.com/jackc/pgx/v5 v5.7.5

@@ -89,7 +89,7 @@ func SendResetPasswordEmail(
 	html, txt, err := emails.PasswordReset{
 		ResetLink: fmt.Sprintf(
 			"%s%s?token=%s",
-			config.Cfg.GetFullDomain(),
+			config.Cfg.App.GetFullDomain(),
 			routes.ResetPasswordPage.Path,
 			tkn.Value,
 		),

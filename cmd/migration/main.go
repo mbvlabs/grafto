@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	pool, err := psql.CreatePooledConnection(ctx, cfg.GetDatabaseURL())
+	pool, err := psql.CreatePooledConnection(ctx, cfg.DB.GetDatabaseURL())
 	if err != nil {
 		panic(err)
 	}

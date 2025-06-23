@@ -54,7 +54,7 @@ func newAssets() Assets {
 }
 
 func (a Assets) enableCaching(c echo.Context, content []byte) echo.Context {
-	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+	if config.Cfg.App.Env == config.PROD_ENVIRONMENT {
 		//nolint:gosec //only needed for browser caching
 		hash := md5.Sum(content)
 		etag := fmt.Sprintf(`W/"%x-%x"`, hash, len(content))
@@ -89,7 +89,7 @@ func (a Assets) Robots(c echo.Context) error {
 		Allow:     "/",
 		Sitemap: fmt.Sprintf(
 			"%s%s",
-			config.Cfg.GetFullDomain(),
+			config.Cfg.App.GetFullDomain(),
 			routes.Sitemap.Path,
 		),
 	})
@@ -137,7 +137,7 @@ type Sitemap struct {
 }
 
 func createSitemap(c echo.Context) (Sitemap, error) {
-	baseUrl := config.Cfg.GetFullDomain()
+	baseUrl := config.Cfg.App.GetFullDomain()
 
 	var urls []URL
 

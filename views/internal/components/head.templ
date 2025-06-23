@@ -72,12 +72,12 @@ var startTime = time.Now()
 func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 
 	data := &HeadData{
-		Title:          config.Cfg.ProjectName,
+		Title:          config.Cfg.App.ProjectName,
 		Description:    "A starter template for building one-man businesses using Golang.",
 		Slug:           "/",
 		MetaType:       "website",
-		StylesheetHref: fmt.Sprintf("%s/%s?%v", config.Cfg.GetFullDomain(), routes.CssEntrypoint.Path, startTime.Unix()),
-		ScriptSrc:      fmt.Sprintf("%s/%s?%v", config.Cfg.GetFullDomain(), routes.JsEntrypoint.Path, startTime.Unix()),
+		StylesheetHref: fmt.Sprintf("%s/%s?%v", config.Cfg.App.GetFullDomain(), routes.CssEntrypoint.Path, startTime.Unix()),
+		ScriptSrc:      fmt.Sprintf("%s/%s?%v", config.Cfg.App.GetFullDomain(), routes.JsEntrypoint.Path, startTime.Unix()),
 	}
 
 	for _, opt := range opts {

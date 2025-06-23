@@ -28,7 +28,7 @@ func WithImage(image string) components.HeadDataOption {
 func WithSlug(slug string) components.HeadDataOption {
 	return func(hd *components.HeadData) {
 		hd.Slug = fmt.Sprintf("%v%s",
-			config.Cfg.GetFullDomain(),
+			config.Cfg.App.GetFullDomain(),
 			slug,
 		)
 	}
