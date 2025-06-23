@@ -150,13 +150,13 @@ func TestStoreForgottenPassword(t *testing.T) {
 	testMiddleware := setupTestMiddleware(t)
 	router := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
-	// seeder := seeds.NewSeeder(postgres.Pool)
-	// validUser, err := seeder.PlantUser(
-	// 	ctx,
-	// 	seeds.WithUserEmailVerifiedAt(time.Now()),
-	// 	seeds.WithUserEmail("jonsnow@gmail.com"),
-	// )
-	// assert.NoError(t, err)
+	seeder := seeds.NewSeeder(postgres.Pool)
+	validUser, err := seeder.PlantUser(
+		ctx,
+		seeds.WithUserEmailVerifiedAt(time.Now()),
+		seeds.WithUserEmail("jonsnow@gmail.com"),
+	)
+	assert.NoError(t, err)
 
 	tests := []struct {
 		name              string
@@ -164,22 +164,22 @@ func TestStoreForgottenPassword(t *testing.T) {
 		payload           url.Values
 		expectedToSucceed bool
 	}{
-		// {
-		// 	name: "should send password reset",
-		// 	user: validUser,
-		// 	payload: url.Values{
-		// 		"email": {validUser.Email},
-		// 	},
-		// 	expectedToSucceed: true,
-		// },
-		// {
-		// 	name: "should not send password reset",
-		// 	user: models.User{},
-		// 	payload: url.Values{
-		// 		"email": {"doesnotexist@gmail.com"},
-		// 	},
-		// 	expectedToSucceed: false,
-		// },
+		{
+			name: "should send password reset",
+			user: validUser,
+			payload: url.Values{
+				"email": {validUser.Email},
+			},
+			expectedToSucceed: true,
+		},
+		{
+			name: "should not send password reset",
+			user: models.User{},
+			payload: url.Values{
+				"email": {"doesnotexist@gmail.com"},
+			},
+			expectedToSucceed: false,
+		},
 	}
 
 	for _, tt := range tests {
