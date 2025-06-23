@@ -137,7 +137,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Link(config.Cfg.ProjectName, routes.LandingPage.Path).WithDefault().WithSize("large").Build().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Link(config.Cfg.App.ProjectName, routes.LandingPage.Path).WithDefault().WithSize("large").Build().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

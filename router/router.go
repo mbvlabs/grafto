@@ -37,7 +37,9 @@ func New(
 
 	router.Use(
 		session.Middleware(
-			sessions.NewCookieStore([]byte(config.Cfg.SessionEncryptionKey)),
+			sessions.NewCookieStore(
+				[]byte(config.Cfg.Auth.SessionEncryptionKey),
+			),
 		),
 		mw.RegisterAppContext,
 		mw.RegisterFlashMessagesContext,
@@ -54,13 +56,13 @@ func New(
 			TokenLookup: "cookie:_csrf",
 			CookiePath:  "/",
 			CookieDomain: func() string {
-				if config.Cfg.Environment == config.PROD_ENVIRONMENT {
-					return config.Cfg.GetFullDomain()
+				if config.Cfg.App.Env == config.PROD_ENVIRONMENT {
+					return config.Cfg.App.Domain
 				}
 
 				return ""
 			}(),
-			CookieSecure:   config.Cfg.Environment == config.PROD_ENVIRONMENT,
+			CookieSecure:   config.Cfg.App.Env == config.PROD_ENVIRONMENT,
 			CookieHTTPOnly: true,
 			CookieSameSite: http.SameSiteStrictMode,
 		}),

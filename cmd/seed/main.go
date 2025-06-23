@@ -13,7 +13,7 @@ import (
 func main() {
 	pool, err := psql.CreatePooledConnection(
 		context.Background(),
-		config.Cfg.GetDatabaseURL(),
+		config.Cfg.DB.GetDatabaseURL(),
 	)
 	if err != nil {
 		panic(err)
