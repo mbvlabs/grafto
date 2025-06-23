@@ -31,7 +31,7 @@ const (
 	awsRegion = "eu-central-1"
 )
 
-var defaultSender = config.Cfg.DefaultSenderSignature
+var defaultSender = config.Cfg.App.DefaultSenderSignature
 
 type Email struct {
 	client *ses.SES

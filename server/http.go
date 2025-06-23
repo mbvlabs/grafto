@@ -24,8 +24,8 @@ func NewHttp(
 	ctx context.Context,
 	router *echo.Echo,
 ) Http {
-	port := config.Cfg.ServerPort
-	host := config.Cfg.ServerHost
+	port := config.Cfg.App.ServerPort
+	host := config.Cfg.App.ServerHost
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf("%v:%v", host, port),

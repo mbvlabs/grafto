@@ -43,7 +43,7 @@ type PasswordPair struct {
 func HashPassword(password string) []byte {
 	return argon2.IDKey(
 		[]byte(password),
-		[]byte(config.Cfg.PasswordSalt),
+		[]byte(config.Cfg.Auth.PasswordSalt),
 		2,
 		19*1024,
 		1,

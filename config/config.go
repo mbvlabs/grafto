@@ -8,10 +8,10 @@ import (
 var Cfg Config = NewConfig()
 
 type Config struct {
-	Database
-	Authentication
-	App
-	Telemetry
+	DB                 Database
+	Auth               Authentication
+	App                Application
+	Telemetry          Telemetry
 	AwsAccessKeyID     string
 	AwsSecretAccessKey string
 }
@@ -47,20 +47,19 @@ func NewConfig() Config {
 
 func newTestConfig() Config {
 	return Config{
-		Authentication: Authentication{
+		Auth: Authentication{
 			PasswordSalt:         "salty",
 			SessionKey:           "session",
 			SessionEncryptionKey: "session_enc_key",
 			TokenSigningKey:      "token_signing_key",
-			// CsrfToken:            "csrf_token",
 		},
-		App: App{
+		App: Application{
 			ServerHost:             "0.0.0.0",
 			ServerPort:             "8080",
-			AppDomain:              "testing",
-			AppProtocol:            "http",
+			Domain:                 "testing",
+			Protocol:               "http",
 			ProjectName:            "test",
-			Environment:            TEST_ENVIRONMENT,
+			Env:                    TEST_ENVIRONMENT,
 			DefaultSenderSignature: "test@testing.com",
 		},
 		Telemetry: Telemetry{
