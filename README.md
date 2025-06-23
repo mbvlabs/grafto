@@ -16,9 +16,14 @@ The target audience for the starter is mostly going to be solo-devs building sid
 new business.
 
 It's important to note that there currently exists a much more feature complete starter template, called [pagado](https://github.com/mikestefanello/pagoda).
+
 This is not an attempt at replacing that, but rather offer another approach and view to full-stack web development
 in Go.
 
 ## Usage
 
-TODO
+This section is rather empty right now but will be expanded upon soon. For now, here's the steps:
+1. run `rename.sh`
+2. `cp .env.example .env` and fill it out
+3. run `just um` to apply migrations
+4. run `just r` to run the app
