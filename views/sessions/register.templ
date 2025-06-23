@@ -19,38 +19,30 @@ var (
 )
 
 templ RegisterWarning(msg string) {
-	<div id="register-flag" class="flex items-center p-3 mb-4 rounded bg-warning/15 text-warning">
-		<svg
-			class="h-5 w-5 fill-current mr-3"
-			width="16"
-			height="16"
-			fill="currentColor"
-			viewBox="0 0 16 16"
-			aria-hidden="true"
-		>
-			<path
-				d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
-			></path>
-		</svg>
-		<h2 class="text-warning text-sm">{ msg }</h2>
+	<div class="mb-4">
+		@components.WarningFlag(msg, templ.Attributes{
+			"x-data":                   "{ show: true }",
+			"x-show":                   "show",
+			"x-transition:leave":       "transition ease-in duration-300",
+			"x-transition:leave-start": "opacity-100 scale-100",
+			"x-transition:leave-end":   "opacity-0 scale-90",
+			"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+			"id":                       "register-flag",
+		})
 	</div>
 }
 
 templ RegisterError(msg string) {
-	<div id="register-flag" class="flex items-center p-3 mb-4 rounded bg-error/15 text-error">
-		<svg
-			class="h-5 w-5 fill-current mr-3"
-			width="16"
-			height="16"
-			fill="currentColor"
-			viewBox="0 0 16 16"
-			aria-hidden="true"
-		>
-			<path
-				d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"
-			></path>
-		</svg>
-		<h2 class="text-error text-sm">{ msg }</h2>
+	<div class="mb-4">
+		@components.ErrorFlag(msg, templ.Attributes{
+			"x-data":                   "{ show: true }",
+			"x-show":                   "show",
+			"x-transition:leave":       "transition ease-in duration-300",
+			"x-transition:leave-start": "opacity-100 scale-100",
+			"x-transition:leave-end":   "opacity-0 scale-90",
+			"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+			"id":                       "login-flag",
+		})
 	</div>
 }
 
@@ -78,7 +70,7 @@ templ RegisterForm(data RegisterFormProps) {
 	}
 	<div class="w-full max-w-[400px] mx-auto">
 		@components.Form(components.FormProps{
-			Class: "bg-base-200 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
+			Class: "bg-base-300 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
 			Attributes: templ.Attributes{
 				"hx-post":   routes.StoreUser.Path,
 				"method":    "post",
@@ -88,10 +80,12 @@ templ RegisterForm(data RegisterFormProps) {
 		}) {
 			<div class="text-center mb-6">
 				<h1 class="text-[1.75rem] font-bold text-base-content mb-2">Register User</h1>
-				<p class="text-sm text-base-content">
-					Already have an account?
+				<div class="flex justify-center items-center">
+					<p class="text-sm text-base-content mr-2">
+						Already have an account?
+					</p>
 					@components.Link("Sign in", routes.LoginPage.Path).WithSecondary().Build()
-				</p>
+				</div>
 			</div>
 			@components.Input{
 				ID:          "email",

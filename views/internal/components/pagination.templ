@@ -25,15 +25,15 @@ type Pagination struct {
 }
 
 type SimplePagination struct {
-	CurrentPage  int
-	TotalPages   int
-	BaseURL      string
-	QueryParams  url.Values
-	PrevText     string
-	NextText     string
-	ShowNumbers  bool
-	Compact      bool
-	Class        string
+	CurrentPage int
+	TotalPages  int
+	BaseURL     string
+	QueryParams url.Values
+	PrevText    string
+	NextText    string
+	ShowNumbers bool
+	Compact     bool
+	Class       string
 }
 
 type PaginationInfo struct {
@@ -89,7 +89,6 @@ templ (p Pagination) buildNavigation() {
 				}
 			</a>
 		}
-		
 		if p.ShowPrevNext && p.CurrentPage > 1 {
 			<a
 				href={ templ.SafeURL(p.buildURL(p.CurrentPage - 1)) }
@@ -104,11 +103,9 @@ templ (p Pagination) buildNavigation() {
 				}
 			</a>
 		}
-		
 		if p.ShowPageNumbers {
 			@p.buildPageNumbers()
 		}
-		
 		if p.ShowPrevNext && p.CurrentPage < p.TotalPages {
 			<a
 				href={ templ.SafeURL(p.buildURL(p.CurrentPage + 1)) }
@@ -123,7 +120,6 @@ templ (p Pagination) buildNavigation() {
 				}
 			</a>
 		}
-		
 		if p.ShowFirstLast && p.CurrentPage < p.TotalPages {
 			<a
 				href={ templ.SafeURL(p.buildURL(p.TotalPages)) }
@@ -170,7 +166,7 @@ templ (p Pagination) buildPageNumbers() {
 templ (p Pagination) buildPageSizeSelector() {
 	<div class="flex items-center gap-2 text-sm">
 		<span class="text-base-content/70 hidden sm:inline">Show:</span>
-		<select 
+		<select
 			class="select select-bordered select-sm w-20"
 			onchange="window.location.href = this.dataset.baseUrl + '&per_page=' + this.value"
 			data-base-url={ p.buildURL(1) }
@@ -195,13 +191,11 @@ templ (sp SimplePagination) Build() {
 				{ sp.getPrevText() }
 			</a>
 		}
-		
 		if sp.ShowNumbers {
 			<span class="text-sm text-base-content/70">
 				Page { strconv.Itoa(sp.CurrentPage) } of { strconv.Itoa(sp.TotalPages) }
 			</span>
 		}
-		
 		if sp.CurrentPage < sp.TotalPages {
 			<a
 				href={ templ.SafeURL(sp.buildURL(sp.CurrentPage + 1)) }
@@ -222,7 +216,7 @@ templ (pi PaginationInfo) Build() {
 templ (ps PageSizeSelector) Build() {
 	<div class={ "flex items-center gap-2 text-sm", ps.Class }>
 		<span class="text-base-content/70">Show:</span>
-		<select 
+		<select
 			class="select select-bordered select-sm w-20"
 			onchange="window.location.href = this.dataset.baseUrl + '&per_page=' + this.value"
 			data-base-url={ ps.buildBaseURL() }
@@ -246,7 +240,7 @@ func (p Pagination) buildURL(page int) string {
 	if p.ItemsPerPage > 0 {
 		params.Set("per_page", strconv.Itoa(p.ItemsPerPage))
 	}
-	
+
 	if p.BaseURL == "" {
 		return "?" + params.Encode()
 	}
@@ -259,7 +253,7 @@ func (sp SimplePagination) buildURL(page int) string {
 		params = sp.QueryParams
 	}
 	params.Set("page", strconv.Itoa(page))
-	
+
 	if sp.BaseURL == "" {
 		return "?" + params.Encode()
 	}
@@ -272,7 +266,7 @@ func (ps PageSizeSelector) buildBaseURL() string {
 		params = ps.QueryParams
 	}
 	params.Set("page", "1")
-	
+
 	if ps.BaseURL == "" {
 		return "?"
 	}
@@ -281,33 +275,33 @@ func (ps PageSizeSelector) buildBaseURL() string {
 
 func (p Pagination) getButtonClass(isCurrent, isDisabled bool) string {
 	baseClass := "btn btn-sm"
-	
+
 	if p.Size == "large" {
 		baseClass = "btn btn-md"
 	} else if p.Size == "small" {
 		baseClass = "btn btn-xs"
 	}
-	
+
 	if isCurrent {
 		return baseClass + " btn-primary"
 	}
-	
+
 	if isDisabled {
 		return baseClass + " btn-disabled"
 	}
-	
+
 	return baseClass + " btn-outline"
 }
 
 func (p Pagination) getEllipsisClass() string {
 	baseClass := "flex items-center justify-center text-base-content/50"
-	
+
 	if p.Size == "large" {
 		return baseClass + " w-10 h-10"
 	} else if p.Size == "small" {
 		return baseClass + " w-6 h-6 text-xs"
 	}
-	
+
 	return baseClass + " w-8 h-8 text-sm"
 }
 
@@ -315,24 +309,24 @@ func (p Pagination) getVisiblePages() []int {
 	if p.TotalPages <= 1 {
 		return []int{}
 	}
-	
+
 	maxNumbers := p.MaxPageNumbers
 	if maxNumbers <= 0 {
 		maxNumbers = 5
 	}
-	
+
 	pages := []int{}
-	
+
 	if p.TotalPages <= maxNumbers {
 		for i := 1; i <= p.TotalPages; i++ {
 			pages = append(pages, i)
 		}
 		return pages
 	}
-	
+
 	leftSide := maxNumbers / 2
 	rightSide := maxNumbers - leftSide - 1
-	
+
 	if p.CurrentPage <= leftSide+1 {
 		for i := 1; i <= maxNumbers-1; i++ {
 			pages = append(pages, i)
@@ -342,19 +336,19 @@ func (p Pagination) getVisiblePages() []int {
 	} else if p.CurrentPage >= p.TotalPages-rightSide {
 		pages = append(pages, 1)
 		pages = append(pages, -1)
-		for i := p.TotalPages-maxNumbers+2; i <= p.TotalPages; i++ {
+		for i := p.TotalPages - maxNumbers + 2; i <= p.TotalPages; i++ {
 			pages = append(pages, i)
 		}
 	} else {
 		pages = append(pages, 1)
 		pages = append(pages, -1)
-		for i := p.CurrentPage - leftSide + 1; i <= p.CurrentPage + rightSide - 1; i++ {
+		for i := p.CurrentPage - leftSide + 1; i <= p.CurrentPage+rightSide-1; i++ {
 			pages = append(pages, i)
 		}
 		pages = append(pages, -1)
 		pages = append(pages, p.TotalPages)
 	}
-	
+
 	return pages
 }
 
@@ -362,13 +356,13 @@ func (p Pagination) getPageInfoText() string {
 	if p.TotalItems == 0 {
 		return "No entries found"
 	}
-	
+
 	startItem := (p.CurrentPage-1)*p.ItemsPerPage + 1
 	endItem := p.CurrentPage * p.ItemsPerPage
 	if endItem > p.TotalItems {
 		endItem = p.TotalItems
 	}
-	
+
 	return fmt.Sprintf("Showing %d to %d of %d entries", startItem, endItem, p.TotalItems)
 }
 
@@ -432,7 +426,7 @@ func NewPaginationInfo(currentPage, itemsPerPage, totalItems int) PaginationInfo
 	if endItem > totalItems {
 		endItem = totalItems
 	}
-	
+
 	return PaginationInfo{
 		CurrentPage:  currentPage,
 		ItemsPerPage: itemsPerPage,
@@ -446,7 +440,7 @@ func NewPageSizeSelector(currentSize int, options []int, baseURL string) PageSiz
 	if len(options) == 0 {
 		options = []int{10, 25, 50, 100}
 	}
-	
+
 	return PageSizeSelector{
 		CurrentSize: currentSize,
 		Options:     options,

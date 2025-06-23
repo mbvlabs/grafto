@@ -33,7 +33,7 @@ func TestStoreUser(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
+	router := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	tests := []struct {
 		name          string
@@ -109,7 +109,7 @@ func TestStoreUser(t *testing.T) {
 			).Return(nil)
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Registrations.StoreUser(c)
+			err := testHandlers.Registrations.Create(c)
 			if tt.expectedError == nil {
 				assert.NoError(t, err)
 			}
@@ -135,7 +135,7 @@ func TestVerifyEmail(t *testing.T) {
 
 	testHandlers := setupTestHandlers(t, postgres)
 	testMiddleware := setupTestMiddleware(t)
-	router, ctx := setupTestRouter(ctx, t, testHandlers, testMiddleware)
+	router := setupTestRouter(ctx, t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	user, err := seeder.PlantUser(ctx)
@@ -209,7 +209,7 @@ func TestVerifyEmail(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Registrations.VerifyUserEmail(c)
+			err := testHandlers.Registrations.Update(c)
 			assert.NoError(t, err)
 
 			usr, err := models.GetUser(

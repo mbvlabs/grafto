@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
@@ -81,14 +80,13 @@ func (a Sessions) Create(ctx echo.Context) error {
 	return sessionViews.LoginForm(true, views.Errors{}).Render(renderArgs(ctx))
 }
 
-func (a Sessions) Destroy(ctx echo.Context) error {
-	if err := destroyAuthSession(ctx); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
+func (a Sessions) Destroy(c echo.Context) error {
+	if err := destroyAuthSession(c); err != nil {
+		return views.ErrorPage().Render(renderArgs(c))
 	}
 
-	return redirect(
-		ctx.Response(),
-		ctx.Request(),
+	return redirectHx(
+		c.Response().Writer,
 		routes.LoginPage.Path,
 	)
 }
@@ -138,7 +136,7 @@ func (a Sessions) EditPasswordReset(ctx echo.Context) error {
 	}
 
 	return sessionViews.ResetPasswordPage(
-		false, false, csrf.Token(ctx.Request()), passwordResetToken.Token).
+		false, false, passwordResetToken.Token).
 		Render(renderArgs(ctx))
 }
 

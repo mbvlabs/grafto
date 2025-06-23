@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/csrf"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
@@ -106,7 +105,6 @@ func (r Registrations) Create(ctx echo.Context) error {
 	}
 
 	return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
-		CsrfToken:   csrf.Token(ctx.Request()),
 		CodeInvalid: false,
 		Success:     false,
 	}).Render(renderArgs(ctx))
@@ -122,20 +120,24 @@ func (r Registrations) Update(ctx echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
 
-	if err := services.ValidateUserEmail(
+	user, err := services.ValidateUserEmail(
 		ctx.Request().Context(),
 		r.db,
 		payload.Code,
-	); err != nil {
+	)
+	if err != nil {
 		return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
-			CsrfToken:   csrf.Token(ctx.Request()),
 			CodeInvalid: true,
 			Success:     false,
 		}).Render(renderArgs(ctx))
 	}
 
+	if err := createAuthSession(
+		ctx, false, user); err != nil {
+		return views.ErrorPage().Render(renderArgs(ctx))
+	}
+
 	return fragments.VerifyCodeForm(fragments.VerifyCodeProps{
-		CsrfToken:   csrf.Token(ctx.Request()),
 		CodeInvalid: false,
 		Success:     true,
 	}).Render(renderArgs(ctx))

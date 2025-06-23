@@ -187,7 +187,7 @@ func LoginForm(success bool, errors views.Errors) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"text-center mb-6\"><h1 class=\"text-3xl font-bold text-base-content mb-2\">Login</h1><p class=\"text-sm text-base-content\">Don't have an account?")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"text-center mb-6\"><h1 class=\"text-3xl font-bold text-base-content mb-2\">Login</h1><div class=\"flex justify-center items-center\"><p class=\"text-sm text-base-content mr-2\">Don't have an account?</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -195,7 +195,7 @@ func LoginForm(success bool, errors views.Errors) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</p></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
