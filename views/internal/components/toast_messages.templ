@@ -1,8 +1,8 @@
 package components
 
 import (
-	"github.com/mbvlabs/grafto/router/contexts"
 	"github.com/dromara/carbon/v2"
+	"github.com/mbvlabs/grafto/router/contexts"
 )
 
 templ toastBase(tType string, flash contexts.FlashMessage) {
@@ -38,7 +38,7 @@ templ toastBase(tType string, flash contexts.FlashMessage) {
 				</button>
 			</div>
 		</div>
-		<span class="max-h-40 p-4 text-wrap max-w-96 overflow-x-hidden overflow-y-scroll">
+		<span class="max-h-48 p-4 text-wrap max-w-[28rem] overflow-x-hidden overflow-y-auto break-words">
 			{ flash.Message }
 		</span>
 	</div>

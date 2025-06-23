@@ -102,6 +102,10 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+			_, err = gooseProvider.Up(ctx)
+			if err != nil {
+				panic(err)
+			}
 		case "status":
 			statuses, err := gooseProvider.Status(ctx)
 			if err != nil {

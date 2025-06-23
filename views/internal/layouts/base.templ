@@ -1,19 +1,19 @@
 package layouts
 
 import (
-	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/views/internal/components"
 )
 
 templ Base(headOpts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="grafto">
 		@components.SetupHead(ctx, headOpts...)
-		<body>
+		<body class="container mx-auto min-h-screen flex flex-col bg-base-200 text-base-content">
 			@components.Nav()
 			{ children... }
 		</body>
-		<div class="toast toast-end">
+		<div class="fixed bottom-4 right-10 z-50 space-y-2">
 			for _, flash := range contexts.ExtractFlashMessages(ctx) {
 				@components.ToastMessage(flash)
 			}
