@@ -12,30 +12,30 @@ const (
 	PROD_ENVIRONMENT = "production"
 )
 
-type App struct {
+type Application struct {
 	ServerHost             string `env:"SERVER_HOST"`
 	ServerPort             string `env:"SERVER_PORT"`
-	AppDomain              string `env:"APP_DOMAIN"`
-	AppProtocol            string `env:"APP_PROTOCOL"`
+	Domain                 string `env:"APP_DOMAIN"`
+	Protocol               string `env:"APP_PROTOCOL"`
 	ProjectName            string `env:"PROJECT_NAME"`
-	Environment            string `env:"ENVIRONMENT"`
+	Env                    string `env:"ENVIRONMENT"`
 	DefaultSenderSignature string `env:"DEFAULT_SENDER_SIGNATURE"`
 }
 
-func (a App) GetFullDomain() string {
-	if a.Environment == DEV_ENVIRONMENT {
+func (a Application) GetFullDomain() string {
+	if a.Env == DEV_ENVIRONMENT {
 		return fmt.Sprintf(
 			"%v://%v:%v",
-			a.AppProtocol,
-			a.AppDomain,
+			a.Protocol,
+			a.Domain,
 			a.ServerPort,
 		)
 	}
-	return fmt.Sprintf("%v://%v", a.AppProtocol, a.AppDomain)
+	return fmt.Sprintf("%v://%v", a.Protocol, a.Domain)
 }
 
-func newApp() App {
-	appCfg := App{}
+func newApp() Application {
+	appCfg := Application{}
 
 	if err := env.ParseWithOptions(&appCfg, env.Options{
 		RequiredIfNoDef: true,

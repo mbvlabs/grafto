@@ -55,7 +55,7 @@ func run(ctx context.Context) error {
 
 	conn, err := psql.CreatePooledConnection(
 		ctx,
-		cfg.GetDatabaseURL(),
+		cfg.DB.GetDatabaseURL(),
 	)
 	if err != nil {
 		return err
