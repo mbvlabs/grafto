@@ -103,7 +103,6 @@ func NewHandlers(
 	}
 }
 
-//nolint:unused // needed helper method
 func redirectHx(w http.ResponseWriter, url string) error {
 	w.Header().Set("HX-Redirect", url)
 	w.WriteHeader(http.StatusSeeOther)
@@ -111,7 +110,6 @@ func redirectHx(w http.ResponseWriter, url string) error {
 	return nil
 }
 
-//nolint:unused // needed helper method
 func redirect(
 	w http.ResponseWriter,
 	r *http.Request,

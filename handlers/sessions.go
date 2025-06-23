@@ -80,14 +80,13 @@ func (a Sessions) Create(ctx echo.Context) error {
 	return sessionViews.LoginForm(true, views.Errors{}).Render(renderArgs(ctx))
 }
 
-func (a Sessions) Destroy(ctx echo.Context) error {
-	if err := destroyAuthSession(ctx); err != nil {
-		return views.ErrorPage().Render(renderArgs(ctx))
+func (a Sessions) Destroy(c echo.Context) error {
+	if err := destroyAuthSession(c); err != nil {
+		return views.ErrorPage().Render(renderArgs(c))
 	}
 
-	return redirect(
-		ctx.Response(),
-		ctx.Request(),
+	return redirectHx(
+		c.Response().Writer,
 		routes.LoginPage.Path,
 	)
 }
