@@ -26,7 +26,5 @@ node_modules
 
 tmp
 
-OpenCode.md
-.opencode/
+CLAUDE.md
 cmd/explore/main.go
-task.xml
