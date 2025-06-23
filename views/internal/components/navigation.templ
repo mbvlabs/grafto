@@ -8,7 +8,11 @@ import (
 
 templ NavItem(name, pathName, path string, attrs templ.Attributes) {
 	<a
-		class="text-base-content no-underline transition-colors duration-300 hover:text-accent text-base font-medium py-2 relative after:content-[''] after:absolute after:w-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-accent after:transition-all after:duration-300 hover:after:w-full"
+		class={
+			"text-base-content no-underline transition-colors duration-300 hover:text-accent text-base font-medium py-2 relative after:content-[''] after:absolute after:h-0.5 after:bottom-0 after:left-0 after:bg-accent after:transition-all after:duration-300",
+			templ.KV("after:w-full text-accent", contexts.ExtractApp(ctx).CurrentPath == path),
+			templ.KV("after:w-0 hover:after:w-full", contexts.ExtractApp(ctx).CurrentPath != path),
+		}
 		{ attrs... }
 		data-navItemPath={ pathName }
 		href={ templ.SafeURL(path) }
