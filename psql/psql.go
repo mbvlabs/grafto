@@ -145,7 +145,7 @@ type TestPostgres struct {
 func NewPostgresTest(
 	ctx context.Context,
 ) (TestPostgres, error) {
-	if config.Cfg.Environment == config.PROD_ENVIRONMENT {
+	if config.Cfg.App.Env == config.PROD_ENVIRONMENT {
 		panic("don't NewPostgresTest in production")
 	}
 

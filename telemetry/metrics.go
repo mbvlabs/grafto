@@ -50,7 +50,7 @@ func newMeterProvider(
 }
 
 func GetMeter() metric.Meter {
-	return otel.Meter(config.Cfg.ServiceName)
+	return otel.Meter(config.Cfg.Telemetry.ServiceName)
 }
 
 func HTTPRequestsTotal() (metric.Int64Counter, error) {
