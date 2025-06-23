@@ -26,7 +26,7 @@ func main() {
 
 	conn, err := psql.CreatePooledConnection(
 		ctx,
-		cfg.GetDatabaseURL(),
+		cfg.DB.GetDatabaseURL(),
 	)
 	if err != nil {
 		panic(err)

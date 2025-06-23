@@ -48,5 +48,5 @@ func NewTraceProvider(
 }
 
 func GetTracer() trace.Tracer {
-	return otel.Tracer(config.Cfg.ServiceName)
+	return otel.Tracer(config.Cfg.Telemetry.ServiceName)
 }

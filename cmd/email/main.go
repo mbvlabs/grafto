@@ -19,7 +19,7 @@ func main() {
 	passwordReset := emails.PasswordReset{
 		ResetLink: fmt.Sprintf(
 			"%s/%s?token=%s",
-			config.Cfg.GetFullDomain(),
+			config.Cfg.App.GetFullDomain(),
 			"reset-password",
 			"wvSwI8Yq02o9cmJ6zVSTkP44lXGJZjmMF8v10vxAhrrV6UyzRr59ogUzdo3VKP7y",
 		),

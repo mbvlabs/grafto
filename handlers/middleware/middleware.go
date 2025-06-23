@@ -14,8 +14,8 @@ import (
 
 var AuthenticatedSessionName = fmt.Sprintf(
 	"ua-%s-%s",
-	strings.ToLower(config.Cfg.ProjectName),
-	config.Cfg.Environment,
+	strings.ToLower(config.Cfg.App.ProjectName),
+	config.Cfg.App.Env,
 )
 
 const (
