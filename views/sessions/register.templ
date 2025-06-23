@@ -1,0 +1,132 @@
+package sessions
+
+import (
+	"github.com/mbvlabs/grafto/router/routes"
+	"github.com/mbvlabs/grafto/views"
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
+)
+
+var (
+	UsernameField        string = "UsernameField"
+	EmailField           string = "EmailField"
+	PasswordField        string = "PasswordField"
+	ConfirmPasswordField string = "ConfirmPasswordField"
+	ErrEmailExists       string = "ErrEmailExists"
+	ErrPasswordWeak      string = "ErrPasswordWeak"
+	ErrPasswordMismatch  string = "ErrPasswordMismatch"
+	ErrInternalServer    string = "ErrInternalServer"
+)
+
+templ RegisterWarning(msg string) {
+	<div class="mb-4">
+		@components.WarningFlag(msg, templ.Attributes{
+			"x-data":                   "{ show: true }",
+			"x-show":                   "show",
+			"x-transition:leave":       "transition ease-in duration-300",
+			"x-transition:leave-start": "opacity-100 scale-100",
+			"x-transition:leave-end":   "opacity-0 scale-90",
+			"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+			"id":                       "register-flag",
+		})
+	</div>
+}
+
+templ RegisterError(msg string) {
+	<div class="mb-4">
+		@components.ErrorFlag(msg, templ.Attributes{
+			"x-data":                   "{ show: true }",
+			"x-show":                   "show",
+			"x-transition:leave":       "transition ease-in duration-300",
+			"x-transition:leave-start": "opacity-100 scale-100",
+			"x-transition:leave-end":   "opacity-0 scale-90",
+			"x-init":                   "setTimeout(() => $el.remove(), 4000)",
+			"id":                       "login-flag",
+		})
+	</div>
+}
+
+type RegisterFormProps struct {
+	Errors          views.Errors
+	SuccessRegister bool
+	EmailValue      string
+}
+
+templ RegisterForm(data RegisterFormProps) {
+	if data.Errors[ErrEmailExists] != "" {
+		@RegisterWarning(data.Errors[ErrEmailExists])
+	}
+	if data.Errors[ErrPasswordWeak] != "" {
+		@RegisterWarning(data.Errors[ErrPasswordWeak])
+	}
+	if data.Errors[ErrPasswordMismatch] != "" {
+		@RegisterWarning(data.Errors[ErrPasswordMismatch])
+	}
+	if data.Errors[ErrInternalServer] != "" {
+		@RegisterError(data.Errors[ErrInternalServer])
+	}
+	if data.SuccessRegister {
+		@components.SuccessFlag("Your account has been created!", nil)
+	}
+	<div class="w-full max-w-[400px] mx-auto">
+		@components.Form(components.FormProps{
+			Class: "bg-base-300 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
+			Attributes: templ.Attributes{
+				"hx-post":   routes.StoreUser.Path,
+				"method":    "post",
+				"hx-target": "this",
+				"hx-swap":   "outerHTML",
+			},
+		}) {
+			<div class="text-center mb-6">
+				<h1 class="text-[1.75rem] font-bold text-base-content mb-2">Register User</h1>
+				<div class="flex justify-center items-center">
+					<p class="text-sm text-base-content mr-2">
+						Already have an account?
+					</p>
+					@components.Link("Sign in", routes.LoginPage.Path).WithSecondary().Build()
+				</div>
+			</div>
+			@components.Input{
+				ID:          "email",
+				Label:       "Email",
+				Name:        "email",
+				Type:        "email",
+				Placeholder: "Enter your email",
+				Required:    true,
+				Value:       data.EmailValue,
+				Error:       data.Errors[EmailField],
+			}.Build()
+			@components.Input{
+				ID:          "password",
+				Label:       "Password",
+				Name:        "password",
+				Type:        "password",
+				Placeholder: "Enter your password",
+				Required:    true,
+				Error:       data.Errors[PasswordField],
+				Attributes:  templ.Attributes{"minlength": "8"},
+			}.Build()
+			@components.Input{
+				ID:          "confirm_password",
+				Label:       "Confirm Password",
+				Name:        "confirm_password",
+				Type:        "password",
+				Placeholder: "Repeat your password",
+				Required:    true,
+				Error:       data.Errors[ConfirmPasswordField],
+				Attributes:  templ.Attributes{"minlength": "8"},
+			}.Build()
+			@components.Button("Register").WithSuccess().WithSize("large").WithType("submit").Build()
+		}
+	</div>
+}
+
+templ RegisterPage(data RegisterFormProps) {
+	@layouts.Base(
+		views.WithTitle("Registration")) {
+		<main class="w-full px-4 mx-auto max-w-[540px] sm:max-w-[720px] md:max-w-[960px] lg:max-w-[1140px] xl:max-w-[1320px] flex flex-col relative justify-center items-center min-h-[calc(100vh-4rem)]">
+			@RegisterForm(data)
+		</main>
+	}
+}
