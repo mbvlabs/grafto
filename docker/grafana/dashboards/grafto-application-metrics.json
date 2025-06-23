@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": null,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -38,7 +38,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${loki}"
       },
       "gridPos": {
         "h": 12,
@@ -61,10 +61,10 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${loki}"
           },
           "editorMode": "code",
-          "expr": "{service=\"grafto\"} !~ `status=4..` !~ `status=5...`",
+          "expr": "{service=\"$service\"} !~ `status=4..` !~ `status=5...` !~ `path=/api/v1/health`",
           "hide": false,
           "queryType": "range",
           "refId": "A"
@@ -76,7 +76,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "uid": "${loki}"
       },
       "gridPos": {
         "h": 12,
@@ -99,20 +99,20 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${loki}"
           },
           "editorMode": "builder",
-          "expr": "{service=\"grafto\"} |~ `status=4..` | logfmt --keep-empty",
+          "expr": "{service=\"$service\"} |~ `status=4..` | logfmt |~ `path=/api/v1/health`",
           "queryType": "range",
           "refId": "A"
         },
         {
           "datasource": {
             "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "uid": "${loki}"
           },
           "editorMode": "builder",
-          "expr": "{service=\"grafto\"} |~ `status=5..` | logfmt",
+          "expr": "{service=\"$service\"} |~ `status=5..` | logfmt |~ `path=/api/v1/health`",
           "hide": false,
           "queryType": "range",
           "refId": "B"
@@ -137,7 +137,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${prometheus}"
       },
       "fieldConfig": {
         "defaults": {
@@ -218,12 +218,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum by(status_code, route) (rate(http_requests_total{job=\"grafto\"}[5m]))",
+          "expr": "sum by(status_code, route) (rate(http_requests_total{job=\"$job\"}[5m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -237,7 +237,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": {},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -286,10 +289,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "http_requests_in_flight",
+          "expr": "http_requests_in_flight{job=\"$job\"}",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -300,7 +303,10 @@
       "type": "stat"
     },
     {
-      "datasource": {},
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheus}"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -349,10 +355,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "sum(increase(http_requests_total[1h]))",
+          "expr": "sum(increase(http_requests_total{job=\"$job\"}[1h]))",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -365,7 +371,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${prometheus}"
       },
       "fieldConfig": {
         "defaults": {
@@ -420,11 +426,11 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "disableTextWrap": false,
           "editorMode": "code",
-          "expr": "count(rate(http_requests_total{status_code=\"404\"}[5m])) / count(rate(http_requests_total{status_code!=\"404\"}[5m]))",
+          "expr": "count(rate(http_requests_total{job=\"$job\", status_code=\"404\"}[5m])) / count(rate(http_requests_total{job=\"$job\", status_code!=\"404\"}[5m]))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -440,7 +446,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${prometheus}"
       },
       "fieldConfig": {
         "defaults": {
@@ -489,12 +495,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "sum by (status_code) (increase(http_requests_total[1h]))",
+          "expr": "sum by (status_code) (increase(http_requests_total{job=\"$job\"}[1h]))",
           "instant": false,
-          "legendFormat": "{{status}}",
+          "legendFormat": "{{status_code}}",
           "range": true,
           "refId": "A"
         }
@@ -505,7 +511,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${prometheus}"
       },
       "fieldConfig": {
         "defaults": {
@@ -586,11 +592,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(job) (histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"grafto\"}[5m])))",
+          "exemplar": false,
+          "expr": "sum by(job) (histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"$job\"}[5m])))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -602,11 +609,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "sum by(job) (histogram_quantile(0.5, rate(http_request_duration_seconds_bucket{job=\"grafto\"}[5m])))",
+          "exemplar": false,
+          "expr": "sum by(job) (histogram_quantile(0.5, rate(http_request_duration_seconds_bucket{job=\"$job\"}[5m])))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -618,10 +626,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(http_request_duration_seconds_sum[5m])) / sum(rate(http_request_duration_seconds_count[5m]))",
+          "expr": "sum(rate(http_request_duration_seconds_sum{job=\"$job\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"$job\"}[5m]))",
           "instant": false,
           "legendFormat": "Average",
           "range": true,
@@ -647,7 +655,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${prometheus}"
       },
       "fieldConfig": {
         "defaults": {
@@ -728,10 +736,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "go_goroutines{job=\"grafto\"}",
+          "expr": "go_goroutines{job=\"$job\"}",
           "instant": false,
           "legendFormat": "Goroutines",
           "range": true,
@@ -740,10 +748,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "go_threads{job=\"grafto\"}",
+          "expr": "go_threads{job=\"$job\"}",
           "instant": false,
           "legendFormat": "OS Threads",
           "range": true,
@@ -756,7 +764,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${prometheus}"
       },
       "fieldConfig": {
         "defaults": {
@@ -806,10 +814,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "go_memstats_heap_objects{job=\"grafto\"}",
+          "expr": "go_memstats_heap_objects{job=\"$job\"}",
           "instant": false,
           "legendFormat": "__auto",
           "range": true,
@@ -822,7 +830,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "uid": "${prometheus}"
       },
       "fieldConfig": {
         "defaults": {
@@ -903,10 +911,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "go_memstats_alloc_bytes{job=\"grafto\"}",
+          "expr": "go_memstats_alloc_bytes{job=\"$job\"}",
           "instant": false,
           "legendFormat": "Allocated",
           "range": true,
@@ -915,10 +923,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "go_memstats_sys_bytes",
+          "expr": "go_memstats_sys_bytes{job=\"$job\"}",
           "instant": false,
           "legendFormat": "System",
           "range": true,
@@ -927,10 +935,10 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${prometheus}"
           },
           "editorMode": "code",
-          "expr": "process_resident_memory_bytes",
+          "expr": "process_resident_memory_bytes{job=\"$job\"}",
           "instant": false,
           "legendFormat": "Resident",
           "range": true,
@@ -944,12 +952,83 @@
   "refresh": "5s",
   "schemaVersion": 38,
   "tags": [
-    "grafto",
+    "blog-prod",
     "application",
     "metrics"
   ],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "hide": 0,
+        "includeAll": false,
+        "label": "Prometheus",
+        "multi": false,
+        "name": "prometheus",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "hide": 0,
+        "includeAll": false,
+        "label": "Loki",
+        "multi": false,
+        "name": "loki",
+        "options": [],
+        "query": "loki",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "blog-prod",
+          "value": "blog-prod"
+        },
+        "datasource": null,
+        "definition": "blog-prod",
+        "description": "Specify the job label for Prometheus queries.",
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Job",
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": "blog-prod",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "blog-prod",
+          "value": "blog-prod"
+        },
+        "datasource": null,
+        "definition": "blog-prod",
+        "description": "Specify the service label for Loki queries.",
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Service",
+        "multi": false,
+        "name": "service",
+        "options": [],
+        "query": "blog-prod",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "textbox"
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
@@ -958,7 +1037,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Application Metrics",
-  "uid": "grafto-app-metrics",
-  "version": 8,
+  "uid": null,
+  "version": 0,
   "weekStart": ""
 }

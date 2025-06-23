@@ -52,7 +52,7 @@ func newTestConfig() Config {
 			SessionKey:           "session",
 			SessionEncryptionKey: "session_enc_key",
 			TokenSigningKey:      "token_signing_key",
-			CsrfToken:            "csrf_token",
+			// CsrfToken:            "csrf_token",
 		},
 		App: App{
 			ServerHost:             "0.0.0.0",

@@ -125,21 +125,19 @@ func run(ctx context.Context) error {
 	}
 
 	routes := router.New(
-		ctx,
 		handlers,
 		mw,
 		riverUI,
 		tel.AppTracerProvider,
 	)
 
-	router, c := routes.SetupRoutes(ctx)
-
-	server := server.NewHttp(c, router)
+	router := routes.SetupRoutes()
+	server := server.NewHttp(ctx, router)
 
 	if err := psql.Queue().Start(ctx); err != nil {
 		return err
 	}
-	return server.Start(c)
+	return server.Start(ctx)
 }
 
 func main() {

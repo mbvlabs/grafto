@@ -259,7 +259,7 @@ configs:
 
         - job_name: 'alloy'
           static_configs:
-            - targets: ['alloy:9464']
+            - targets: ['alloy:12345']
           scrape_interval: 15s
 
         - job_name: 'node_exporter'
