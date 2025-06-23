@@ -23,7 +23,7 @@ func (w *EmailJobWorker) Work(
 	ctx context.Context,
 	job *river.Job[jobs.EmailJobArgs],
 ) error {
-	tracer := otel.Tracer(config.Cfg.ServiceName)
+	tracer := otel.Tracer(config.Cfg.Telemetry.ServiceName)
 	start := time.Now()
 
 	ctx, span := tracer.Start(ctx, "email_job",
