@@ -78,10 +78,12 @@ templ LoginForm(success bool, errors views.Errors) {
 	}) {
 		<div class="text-center mb-6">
 			<h1 class="text-3xl font-bold text-base-content mb-2">Login</h1>
-			<p class="text-sm text-base-content">
-				Don't have an account?
+			<div class="flex justify-center items-center">
+				<p class="text-sm text-base-content mr-2">
+					Don't have an account?
+				</p>
 				@components.Link("Register", routes.CreateUserPage.Path).WithSuccess().Build()
-			</p>
+			</div>
 		</div>
 		@components.Input{
 			ID:          "email",
