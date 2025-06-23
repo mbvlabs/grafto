@@ -25,13 +25,13 @@ const (
 )
 
 type Handlers struct {
-	Api            Api
-	App            App
-	Authentication Authentication
-	Dashboard      Dashboard
-	Registration   Registration
-	Assets         Assets
-	Fragments      Fragments
+	Api           Api
+	App           App
+	Sessions      Sessions
+	Dashboard     Dashboard
+	Registrations Registrations
+	Assets        Assets
+	Fragments     Fragments
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
@@ -87,9 +87,9 @@ func NewHandlers(
 
 	api := newApi()
 	app := newApp(db, cache)
-	auth := newAuthentication(db, emailSvc)
-	dashboard := newDashboard()
-	registration := newRegistration(db, emailSvc)
+	auth := newSessions(db, emailSvc)
+	dashboard := newDashboard(db)
+	registration := newRegistrations(db, emailSvc)
 	assets := newAssets()
 
 	return Handlers{
@@ -103,7 +103,6 @@ func NewHandlers(
 	}
 }
 
-//nolint:unused // needed helper method
 func redirectHx(w http.ResponseWriter, url string) error {
 	w.Header().Set("HX-Redirect", url)
 	w.WriteHeader(http.StatusSeeOther)
@@ -111,7 +110,6 @@ func redirectHx(w http.ResponseWriter, url string) error {
 	return nil
 }
 
-//nolint:unused // needed helper method
 func redirect(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -150,7 +148,7 @@ func destroyAuthSession(
 func createAuthSession(
 	c echo.Context,
 	extend bool,
-	user models.UserEntity,
+	user models.User,
 ) error {
 	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
 	if err != nil {

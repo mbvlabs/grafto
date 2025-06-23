@@ -1,0 +1,120 @@
+package components
+
+import "fmt"
+import "github.com/google/uuid"
+import "github.com/mbvlabs/grafto/router/routes"
+
+type TableRowElement struct {
+	Title     string
+	Highlight string
+}
+
+type TableRow struct {
+	ID       uuid.UUID
+	Elements []TableRowElement
+}
+
+type TableRowElements []TableRow
+
+type TablePagination struct {
+	TotalCount  int64
+	Page        int
+	PageSize    int
+	TotalPages  int
+	HasNext     bool
+	HasPrevious bool
+}
+
+type ActionBtn struct {
+	Title string
+	Route routes.Route
+}
+
+type TableConfig struct {
+	EditURLPattern string
+}
+
+templ Table(
+	title string,
+	headers []string,
+	tableRowElements TableRowElements,
+	pagination TablePagination,
+	actionBtn ActionBtn,
+	config TableConfig,
+) {
+	<div class="bg-base-200 border border-base-300 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+		<div class="px-6 py-4 border-b border-base-300 flex justify-between items-center bg-base-300/20">
+			<h2 class="text-base-content text-lg font-semibold m-0">
+				{ title }
+			</h2>
+			if actionBtn.Title != "" {
+				<div class="ml-auto">
+					<a href={ templ.SafeURL(actionBtn.Route.Path) } class="bg-primary text-primary-content border-0 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer no-underline inline-block hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg">{ actionBtn.Title }</a>
+				</div>
+			}
+		</div>
+		<table class="w-full border-collapse">
+			<thead>
+				<tr>
+					for _, header := range headers {
+						<th class="bg-base-300 text-base-content font-semibold text-sm px-6 py-4 text-left border-b border-base-300">{ header }</th>
+					}
+					if config.EditURLPattern != "" {
+						<th class="bg-base-300 text-base-content font-semibold text-sm px-6 py-4 text-right border-b border-base-300"></th>
+					}
+				</tr>
+			</thead>
+			<tbody>
+				if len(tableRowElements) == 0 {
+					<tr>
+						<td colspan="99" class="text-base-content px-6 py-4 border-b border-base-300 transition-colors duration-200 text-center">No elements found</td>
+					</tr>
+				}
+				for _, row := range tableRowElements {
+					<tr class="hover:bg-base-300/20 transition-colors duration-200">
+						for _, element := range row.Elements {
+							<td
+								class="text-base-content px-6 py-4 border-b border-base-300 transition-colors duration-200"
+								if element.Highlight == "status-published" {
+									class="text-base-content px-6 py-4 border-b border-base-300 transition-colors duration-200 text-success font-medium"
+								}
+								if element.Highlight == "status-draft" {
+									class="text-base-content px-6 py-4 border-b border-base-300 transition-colors duration-200 text-warning font-medium"
+								}
+							>{ element.Title }</td>
+						}
+						<td class="text-base-content px-6 py-4 border-b border-base-300 transition-colors duration-200">
+							<div class="flex gap-2 justify-end">
+								if config.EditURLPattern != "" {
+									<a href={ templ.URL(fmt.Sprintf(config.EditURLPattern, row.ID.String())) } class="bg-base-300 text-base-content border-0 px-3 py-1 text-xs rounded-md cursor-pointer no-underline inline-block hover:bg-primary hover:text-primary-content transition-all duration-200 shadow-sm hover:shadow-md">Edit</a>
+								}
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+		if pagination.TotalPages > 1 {
+			<div class="px-6 py-4 border-t border-base-300 flex justify-between items-center flex-wrap gap-4 bg-base-300/20">
+				<div class="flex gap-2 items-center">
+					if pagination.HasPrevious {
+						<a href={ templ.URL("?page=" + fmt.Sprintf("%d", pagination.Page-1)) } class="px-3 py-2 border border-base-300 bg-base-200 text-base-content no-underline rounded-md text-sm transition-all duration-200 hover:bg-primary hover:text-primary-content hover:border-primary hover:shadow-md">← Previous</a>
+					}
+					for i := 1; i <= pagination.TotalPages; i++ {
+						if i == pagination.Page {
+							<span class="px-3 py-2 border border-base-300 bg-base-200 text-base-content no-underline rounded-md text-sm transition-all duration-200 hover:bg-primary hover:text-primary-content hover:border-primary hover:shadow-md border-primary bg-primary text-primary-content shadow-md">{ fmt.Sprintf("%d", i) }</span>
+						} else {
+							<a href={ templ.URL("?page=" + fmt.Sprintf("%d", i)) } class="px-3 py-2 border border-base-300 bg-base-200 text-base-content no-underline rounded-md text-sm transition-all duration-200 hover:bg-primary hover:text-primary-content hover:border-primary hover:shadow-md">{ fmt.Sprintf("%d", i) }</a>
+						}
+					}
+					if pagination.HasNext {
+						<a href={ templ.URL("?page=" + fmt.Sprintf("%d", pagination.Page+1)) } class="px-3 py-2 border border-base-300 bg-base-200 text-base-content no-underline rounded-md text-sm transition-all duration-200 hover:bg-primary hover:text-primary-content hover:border-primary hover:shadow-md">Next →</a>
+					}
+				</div>
+				<div class="text-base-content/70 text-sm">
+					Showing { fmt.Sprintf("%d", (pagination.Page-1)*pagination.PageSize+1) } to { fmt.Sprintf("%d", min(pagination.Page*pagination.PageSize, int(pagination.TotalCount))) } of { fmt.Sprintf("%d", pagination.TotalCount) } items
+				</div>
+			</div>
+		}
+	</div>
+}

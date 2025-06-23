@@ -5,6 +5,7 @@ alias r := run
 alias ra := run-app
 alias rw := run-worker
 alias re := run-email
+alias rc := run-components
 
 alias ci := golangci
 
@@ -13,6 +14,7 @@ alias ms := migration-status
 alias um := up-migrations
 alias dm := down-migrations
 alias dmt := down-migrations-to
+alias fm := fix-migrations
 alias rdb := reset-db
 
 alias s := seed
@@ -60,7 +62,7 @@ generate-db-functions:
 
 # application
 run:
-    wgo -xdir views/emails -file=.js -file=.css -file=.go -file=.templ -xfile=_templ.go just compile-templates :: just run-app
+    wgo -file=.go -file=.templ -xfile=_templ.go just compile-templates :: wgo -file=.templ -file=base.css -xfile=_templ.go npm run build-css :: just run-app
 
 run-app:
     go run cmd/app/main.go
@@ -72,6 +74,10 @@ run-worker:
 # emails
 run-email:
     wgo -dir ./emails  -file=.go -file=.templ -xfile=_templ.go templ generate :: go run cmd/email/main.go
+
+# components
+run-components:
+    wgo -dir ./cmd/components  -dir ./views -file=.go -file=.templ -xfile=_templ.go templ generate :: wgo -file=.templ -file=base.css -xfile=_templ.go npm run build-css :: go run cmd/components/main.go
 
 # assets
 compile-templates:

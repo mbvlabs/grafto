@@ -91,7 +91,7 @@ func setupTestRouter(
 	t *testing.T,
 	handlers handlers.Handlers,
 	mw middleware.MW,
-) (*echo.Echo, context.Context) {
+) *echo.Echo {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 		Level: slog.LevelError,
 	}))
@@ -106,9 +106,9 @@ func setupTestRouter(
 
 	require.NoError(t, err, "new trace exporter returned error ")
 
-	router := router.New(ctx, handlers, mw, nil, tp)
+	router := router.New(handlers, mw, nil, tp)
 
-	return router.SetupRoutes(ctx)
+	return router.SetupRoutes()
 }
 
 type (

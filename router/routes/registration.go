@@ -13,22 +13,25 @@ var Registration = []Route{
 }
 
 var CreateUserPage = Route{
-	Name:        registrationNamePrefix + ".create_user",
-	Path:        "/register",
-	Method:      http.MethodGet,
-	HandlerName: "CreateUser",
+	Name:         registrationNamePrefix + ".create_user",
+	Path:         "/registrations/new",
+	Method:       http.MethodGet,
+	Handler:      "Registrations",
+	HandleMethod: "New",
 }
 
 var StoreUser = Route{
-	Name:        registrationNamePrefix + ".store_user",
-	Path:        "/register",
-	Method:      http.MethodPost,
-	HandlerName: "StoreUser",
+	Name:         registrationNamePrefix + ".store_user",
+	Path:         "/registrations",
+	Method:       http.MethodPost,
+	Handler:      "Registrations",
+	HandleMethod: "Create",
 }
 
 var VerifyEmail = Route{
-	Name:        registrationNamePrefix + ".verify_email",
-	Path:        "/verify-email",
-	Method:      http.MethodPost,
-	HandlerName: "VerifyUserEmail",
+	Name:         registrationNamePrefix + ".verify_email",
+	Path:         "/verify-email",
+	Method:       http.MethodPost,
+	Handler:      "Registrations",
+	HandleMethod: "Update",
 }

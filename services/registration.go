@@ -11,6 +11,8 @@ import (
 	"github.com/mbvlabs/grafto/psql"
 )
 
+var ErrUserAlreadyExists = errors.New("user already exists")
+
 type EmailSender interface {
 	SendTransaction(
 		ctx context.Context,
@@ -34,7 +36,7 @@ func RegisterUser(
 	defer tx.Rollback(ctx)
 
 	if _, err := models.GetUserByEmail(ctx, tx, email); err == nil {
-		return errors.New("user already registred")
+		return ErrUserAlreadyExists
 	}
 
 	user, err := models.NewUser(ctx, tx, models.NewUserPayload{
@@ -83,21 +85,21 @@ func ValidateUserEmail(
 	ctx context.Context,
 	db psql.Postgres,
 	tokenValue string,
-) error {
+) (models.User, error) {
 	tx, err := db.BeginTx(ctx)
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
 	//nolint:errcheck //how the setup should be
 	defer tx.Rollback(ctx)
 
 	token, err := models.GetHashedToken(ctx, tx, tokenValue)
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
 
 	if !token.IsValid() || token.Meta.Scope != models.ScopeEmailVerification {
-		return errors.New("invalid token")
+		return models.User{}, errors.New("invalid token")
 	}
 
 	user, err := models.GetUser(
@@ -106,7 +108,7 @@ func ValidateUserEmail(
 		token.Meta.ResourceID,
 	)
 	if err != nil {
-		return err
+		return models.User{}, err
 	}
 
 	if err := models.UpdateUserEmailToVerified(
@@ -118,12 +120,12 @@ func ValidateUserEmail(
 			VerifiedAt: time.Now(),
 		},
 	); err != nil {
-		return err
+		return models.User{}, err
 	}
 
 	if err := models.DeleteToken(ctx, tx, token.ID); err != nil {
-		return err
+		return models.User{}, err
 	}
 
-	return tx.Commit(ctx)
+	return user, tx.Commit(ctx)
 }

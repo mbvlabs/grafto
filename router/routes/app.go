@@ -14,25 +14,28 @@ var App = []Route{
 }
 
 var LandingPage = Route{
-	Name:        appNamePrefix + ".landing_page",
-	Path:        "/",
-	Method:      http.MethodGet,
-	HandlerName: "LandingPage",
+	Name:         appNamePrefix + ".landing_page",
+	Path:         "/",
+	Method:       http.MethodGet,
+	Handler:      "App",
+	HandleMethod: "LandingPage",
 }
 
 var AboutPage = Route{
-	Name:        appNamePrefix + ".about_page",
-	Path:        "/about",
-	Method:      http.MethodGet,
-	HandlerName: "AboutPage",
+	Name:         appNamePrefix + ".about_page",
+	Path:         "/about",
+	Method:       http.MethodGet,
+	Handler:      "App",
+	HandleMethod: "AboutPage",
 }
 
 var Redirect = redirect{
 	Route: Route{
-		Name:        appNamePrefix + ".redirect",
-		Path:        "/redirect",
-		HandlerName: "Redirect",
-		Method:      http.MethodGet,
+		Name:         appNamePrefix + ".redirect",
+		Path:         "/redirect",
+		Handler:      "App",
+		HandleMethod: "Redirect",
+		Method:       http.MethodGet,
 	},
 }
 
