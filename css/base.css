@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@import "./root.css";
+@import "./theme.css";
+@import "./button.css";
+
+@source "./views";

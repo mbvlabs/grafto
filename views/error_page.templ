@@ -1,6 +1,9 @@
 package views
 
-import "github.com/mbvlabs/grafto/views/internal/layouts"
+import (
+	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
+)
 
 type errorPageData struct {
 	link      string
@@ -43,7 +46,7 @@ templ errorPage(data errorPageData) {
 				<p class="text-lg text-base-content">{ data.msg }</p>
 				<div class="flex mt-4 text-lg text-base-content">
 					<p class="mr-2">Please try again, or go back to</p>
-					<a class="font-semibold hover:underline" href={ templ.SafeURL(data.link) }>{ data.linkTitle }.</a>
+					@components.Link(data.linkTitle+".", data.link).Build()
 				</div>
 			</div>
 		</div>

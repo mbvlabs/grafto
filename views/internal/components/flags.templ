@@ -1,0 +1,93 @@
+package components 
+
+templ InfoFlag(msg string, attributes templ.Attributes) {
+	<div
+		role="alert"
+		class="flex items-center p-3 mb-4 rounded bg-info/15 text-info"
+		{ attributes... }
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			class="h-6 w-6 shrink-0 stroke-current mr-4"
+			fill="none"
+			viewBox="0 0 24 24"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+			></path>
+		</svg>
+		<span>{ msg }</span>
+	</div>
+}
+
+templ SuccessFlag(msg string, attributes templ.Attributes) {
+	<div
+		role="alert"
+		class="flex items-center p-3 mb-4 rounded bg-success/15 text-success"
+		{ attributes... }
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			class="h-6 w-6 shrink-0 stroke-current mr-4"
+			fill="none"
+			viewBox="0 0 24 24"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+			></path>
+		</svg>
+		<span>{ msg }</span>
+	</div>
+}
+
+templ WarningFlag(msg string, attributes templ.Attributes) {
+	<div
+		role="alert"
+		class="flex items-center p-3 mb-4 rounded bg-warning/15 text-warning"
+		{ attributes... }
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			class="h-6 w-6 shrink-0 stroke-current mr-4"
+			fill="none"
+			viewBox="0 0 24 24"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+			></path>
+		</svg>
+		<span>{ msg }</span>
+	</div>
+}
+
+templ ErrorFlag(msg string, attributes templ.Attributes) {
+	<div
+		role="alert"
+		class="flex items-center p-3 mb-4 rounded bg-error/15 text-error"
+		{ attributes... }
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			class="h-6 w-6 shrink-0 stroke-current mr-4"
+			fill="none"
+			viewBox="0 0 24 24"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+				d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+			></path>
+		</svg>
+		<span>{ msg }</span>
+	</div>
+}

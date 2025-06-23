@@ -1,41 +1,71 @@
 package layouts
 
-import "github.com/mbvlabs/grafto/router/routes"
-import "time"
-import "fmt"
+import (
+	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/routes"
+	"github.com/mbvlabs/grafto/views/internal/components"
+)
 
-templ Dashboard() {
+templ dashboardSidebar() {
+	<aside class="w-64 bg-base-200 flex flex-col h-screen">
+		<!-- Logo/Header -->
+		<div class="p-6 flex items-center gap-2">
+			<span class="text-lg font-bold">Grafto</span>
+		</div>
+		<!-- Navigation -->
+		<nav class="flex-1 px-3 space-y-1">
+			@dashboardNavItem("Dashboard", routes.DashboardHome.Path, "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6")
+			@dashboardNavItem("Users", routes.DashboardUsers.Path, "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 016-6h4.5a6 6 0 016 6v1z")
+		</nav>
+		<div class="p-6 border-t border-base-300">
+			<div class="flex items-center gap-4 px-3 py-3 rounded-lg hover:bg-base-300 transition-colors cursor-pointer">
+				<div class="w-8 h-8 bg-base-300 rounded-full flex items-center justify-center text-sm font-medium">
+					U
+				</div>
+				<div class="flex-1">
+					<p class="text-sm font-medium">User</p>
+					<p class="text-xs text-base-content/60">user@example.com</p>
+				</div>
+				<svg class="w-4 h-4 text-base-content/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+				</svg>
+			</div>
+		</div>
+	</aside>
+}
+
+templ dashboardNavItem(name, path, iconPath string) {
+	<a
+		href={ templ.SafeURL(path) }
+		class={
+			"flex items-center gap-4 px-3 py-3 rounded-lg text-sm transition-colors",
+			templ.KV("bg-primary/10 text-primary font-medium", contexts.ExtractApp(ctx).CurrentPath == path),
+			templ.KV("text-base-content/70 hover:bg-base-300 hover:text-base-content", contexts.ExtractApp(ctx).CurrentPath != path),
+		}
+	>
+		<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={ iconPath }></path>
+		</svg>
+		<span>{ name }</span>
+	</a>
+}
+
+templ Dashboard(opts ...components.HeadDataOption) {
 	<!DOCTYPE html>
 	<html lang="en">
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>Grafto</title>
-			<link href={ routes.CssEntrypoint.Path } rel="stylesheet"/>
-			<link rel="icon" type="image/png" sizes="16x16" href={ routes.Favicon16.Path }/>
-			<link rel="icon" type="image/png" sizes="32x32" href={ routes.Favicon32.Path }/>
-			<script src={ fmt.Sprintf("%v?%v", routes.JsEntrypoint.Path, time.Now().Unix()) } type="module"></script>
-		</head>
-		<body class="flex flex-col min-w-screen h-screen">
-			<header class="bsc-fluid">
-				<div class="flex justify-between navbar bg-base-100">
-					<div class="navbar-left">
-						<a href={ templ.SafeURL(routes.DashboardHome.Path) }>Grafto Dashboard</a>
-					</div>
-					<div class="navbar-end">
-						<button class="btn btn-ghost btn-circle">
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path> </svg>
-						</button>
-						<button class="btn btn-ghost btn-circle">
-							<div class="indicator">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path> </svg>
-								<span class="badge badge-xs badge-primary indicator-item"></span>
-							</div>
-						</button>
-					</div>
-				</div>
-			</header>
-			{ children... }
+		@components.SetupHead(ctx, opts...)
+		<body class="bg-base-300 text-base-content font-sans">
+			<div class="flex h-screen">
+				@dashboardSidebar()
+				<main class="mx-auto container flex-1 overflow-y-auto">
+					{ children... }
+				</main>
+			</div>
 		</body>
+		<div class="fixed bottom-4 right-10 z-50 space-y-2">
+			for _, flash := range contexts.ExtractFlashMessages(ctx) {
+				@components.ToastMessage(flash)
+			}
+		</div>
 	</html>
 }
