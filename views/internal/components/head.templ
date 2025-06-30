@@ -5,6 +5,8 @@ import "github.com/mbvlabs/grafto/config"
 import "github.com/mbvlabs/grafto/router/routes"
 import "time"
 import "fmt"
+import "strings"
+import "strconv"
 
 type HeadDataOption func(*HeadData)
 
@@ -67,7 +69,7 @@ templ head(data HeadData) {
 	</head>
 }
 
-var startTime = time.Now()
+var startTime = time.Now().Unix()
 
 func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 
@@ -76,8 +78,8 @@ func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 		Description:    "A starter template for building one-man businesses using Golang.",
 		Slug:           "/",
 		MetaType:       "website",
-		StylesheetHref: fmt.Sprintf("%s/%s?%v", config.Cfg.App.GetFullDomain(), routes.CssEntrypoint.Path, startTime.Unix()),
-		ScriptSrc:      fmt.Sprintf("%s/%s?%v", config.Cfg.App.GetFullDomain(), routes.JsEntrypoint.Path, startTime.Unix()),
+		StylesheetHref: fmt.Sprintf("%s/%s", config.Cfg.App.GetFullDomain(), strings.Replace(routes.CssEntrypoint.Path, ":version", strconv.Itoa(int(startTime)), 1)),
+		ScriptSrc:      fmt.Sprintf("%s/%s", config.Cfg.App.GetFullDomain(), strings.Replace(routes.JsEntrypoint.Path, ":version", strconv.Itoa(int(startTime)), 1)),
 	}
 
 	for _, opt := range opts {
