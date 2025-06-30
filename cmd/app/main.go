@@ -124,12 +124,15 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	routes := router.New(
+	routes, err := router.New(
 		handlers,
 		mw,
 		riverUI,
 		tel.AppTracerProvider,
 	)
+	if err != nil {
+		return err
+	}
 
 	router := routes.SetupRoutes()
 	server := server.NewHttp(ctx, router)
