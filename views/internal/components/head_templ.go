@@ -13,6 +13,8 @@ import "github.com/mbvlabs/grafto/config"
 import "github.com/mbvlabs/grafto/router/routes"
 import "time"
 import "fmt"
+import "strings"
+import "strconv"
 
 type HeadDataOption func(*HeadData)
 
@@ -61,7 +63,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 35, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 37, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -74,7 +76,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.StylesheetHref)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 37, Col: 34}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 39, Col: 34}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -87,7 +89,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(routes.Favicon16.Path)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 38, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 40, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -100,7 +102,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(routes.Favicon32.Path)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 39, Col: 78}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 41, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -113,7 +115,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(data.MetaType)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 40, Col: 50}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 42, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -126,7 +128,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(data.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 41, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 43, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -139,7 +141,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(data.Description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 42, Col: 60}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 44, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -152,7 +154,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Slug)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 43, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 45, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -165,7 +167,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(data.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 44, Col: 52}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 46, Col: 52}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
@@ -183,7 +185,7 @@ func head(data HeadData) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(data.Image)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 46, Col: 49}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 48, Col: 49}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -207,7 +209,7 @@ func head(data HeadData) templ.Component {
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(extraMeta.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 51, Col: 26}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 53, Col: 26}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -226,7 +228,7 @@ func head(data HeadData) templ.Component {
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(extraMeta.Property)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 54, Col: 34}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 56, Col: 34}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -245,7 +247,7 @@ func head(data HeadData) templ.Component {
 				var templ_7745c5c3_Var14 string
 				templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(extraMeta.Content)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 57, Col: 32}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 59, Col: 32}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 				if templ_7745c5c3_Err != nil {
@@ -268,7 +270,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(data.Description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 61, Col: 53}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 63, Col: 53}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -281,7 +283,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var16 string
 		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(data.Slug)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 64, Col: 19}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 66, Col: 19}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
@@ -294,7 +296,7 @@ func head(data HeadData) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(data.ScriptSrc)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 66, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/head.templ`, Line: 68, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -308,7 +310,7 @@ func head(data HeadData) templ.Component {
 	})
 }
 
-var startTime = time.Now()
+var startTime = time.Now().Unix()
 
 func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 
@@ -317,8 +319,8 @@ func SetupHead(ctx context.Context, opts ...HeadDataOption) templ.Component {
 		Description:    "A starter template for building one-man businesses using Golang.",
 		Slug:           "/",
 		MetaType:       "website",
-		StylesheetHref: fmt.Sprintf("%s/%s?%v", config.Cfg.App.GetFullDomain(), routes.CssEntrypoint.Path, startTime.Unix()),
-		ScriptSrc:      fmt.Sprintf("%s/%s?%v", config.Cfg.App.GetFullDomain(), routes.JsEntrypoint.Path, startTime.Unix()),
+		StylesheetHref: fmt.Sprintf("%s/%s", config.Cfg.App.GetFullDomain(), strings.Replace(routes.CssEntrypoint.Path, ":version", strconv.Itoa(int(startTime)), 1)),
+		ScriptSrc:      fmt.Sprintf("%s/%s", config.Cfg.App.GetFullDomain(), strings.Replace(routes.JsEntrypoint.Path, ":version", strconv.Itoa(int(startTime)), 1)),
 	}
 
 	for _, opt := range opts {

@@ -38,7 +38,7 @@ var Sitemap = Route{
 
 var CssEntrypoint = Route{
 	Name:         assetsNamePrefix + "css.entry",
-	Path:         assetsNamePrefix + "/css/styles.css",
+	Path:         assetsNamePrefix + "/css/:version/styles.css",
 	Method:       http.MethodGet,
 	Handler:      "Assets",
 	HandleMethod: "Styles",
@@ -46,7 +46,7 @@ var CssEntrypoint = Route{
 
 var AllCss = Route{
 	Name:         assetsNamePrefix + "css.all",
-	Path:         assetsNamePrefix + "/css/:file",
+	Path:         assetsNamePrefix + "/css/:version/:file",
 	Method:       http.MethodGet,
 	Handler:      "Assets",
 	HandleMethod: "AllCss",
@@ -54,7 +54,7 @@ var AllCss = Route{
 
 var JsEntrypoint = Route{
 	Name:         assetsNamePrefix + "js.entry",
-	Path:         assetsNamePrefix + "/js/script.js",
+	Path:         assetsNamePrefix + "/js/:version/script.js",
 	Method:       http.MethodGet,
 	Handler:      "Assets",
 	HandleMethod: "Scripts",
@@ -62,7 +62,7 @@ var JsEntrypoint = Route{
 
 var AllJs = Route{
 	Name:         assetsNamePrefix + "js.all",
-	Path:         assetsNamePrefix + "/js/:file",
+	Path:         assetsNamePrefix + "/js/:version/:file",
 	Method:       http.MethodGet,
 	Handler:      "Assets",
 	HandleMethod: "AllJs",
