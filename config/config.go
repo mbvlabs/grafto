@@ -49,9 +49,9 @@ func newTestConfig() Config {
 	return Config{
 		Auth: Authentication{
 			PasswordSalt:         "salty",
-			SessionKey:           "session",
-			SessionEncryptionKey: "session_enc_key",
-			TokenSigningKey:      "token_signing_key",
+			SessionKey:           "44e72c7a3745db47d88c07b82e16917c6ca6ce30f2930fa2f67fec0fe001bb06469d61f5b3de80828d647f29e6b2ac7f40ff9f5b792dbb4a18c3b0420ed7343c",
+			SessionEncryptionKey: "5d32a679df4834fac7c919c06cf37162e73287e38ae6151fc054abac9ab40dfc",
+			TokenSigningKey:      "573ec461fea4cad049ffdcf0d08c353472f24adfec64529dfcafd044bee1f442",
 		},
 		App: Application{
 			ServerHost:             "0.0.0.0",

@@ -35,9 +35,10 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 	defer cleanup()
 	defer stopEmbedded()
 
-	testHandlers := setupTestHandlers(t, postgres)
+	emailSvc := new(mockedEmailService)
+	testHandlers := setupTestHandlers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(ctx, t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -146,9 +147,10 @@ func TestStoreForgottenPassword(t *testing.T) {
 	defer cleanup()
 	defer stopEmbedded()
 
-	testHandlers := setupTestHandlers(t, postgres)
+	emailSvc := new(mockedEmailService)
+	testHandlers := setupTestHandlers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(ctx, t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -271,9 +273,10 @@ func TestStoreResetPassword(t *testing.T) {
 	defer cleanup()
 	defer stopEmbedded()
 
-	testHandlers := setupTestHandlers(t, postgres)
+	emailSvc := new(mockedEmailService)
+	testHandlers := setupTestHandlers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(ctx, t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -422,9 +425,10 @@ func TestDestroyAuthenticatedSession(t *testing.T) {
 	defer cleanup()
 	defer stopEmbedded()
 
-	testHandlers := setupTestHandlers(t, postgres)
+	emailSvc := new(mockedEmailService)
+	testHandlers := setupTestHandlers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(ctx, t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testHandlers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	testUser, err := seeder.PlantUser(
