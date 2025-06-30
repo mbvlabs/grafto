@@ -1,6 +1,7 @@
 package router
 
 import (
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -31,14 +32,24 @@ func New(
 	mw middleware.MW,
 	riverUI *riverui.Server,
 	traceProvider trace.TracerProvider,
-) *Routes {
+) (*Routes, error) {
 	router := echo.New()
 	router.Debug = true
+
+	authKey, err := hex.DecodeString(config.Cfg.Auth.SessionKey)
+	if err != nil {
+		return nil, err
+	}
+	encKey, err := hex.DecodeString(config.Cfg.Auth.SessionEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
 
 	router.Use(
 		session.Middleware(
 			sessions.NewCookieStore(
-				[]byte(config.Cfg.Auth.SessionEncryptionKey),
+				authKey,
+				encKey,
 			),
 		),
 		mw.RegisterAppContext,
@@ -80,7 +91,7 @@ func New(
 		router,
 		mw,
 		handlers,
-	}
+	}, nil
 }
 
 func (r *Routes) SetupRoutes() *echo.Echo {
