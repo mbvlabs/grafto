@@ -19,6 +19,7 @@ import (
 	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router"
+	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/telemetry"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -54,11 +55,10 @@ func (m *mockedEmailService) SendTransaction(
 	return args.Error(0)
 }
 
-var emailSvc = new(mockedEmailService)
-
 func setupTestHandlers(
 	t *testing.T,
 	postgres psql.Postgres,
+	emailSvc services.EmailSender,
 ) handlers.Handlers {
 	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
 	require.NoError(t, err)
@@ -87,7 +87,6 @@ func setupTestMiddleware(
 }
 
 func setupTestRouter(
-	ctx context.Context,
 	t *testing.T,
 	handlers handlers.Handlers,
 	mw middleware.MW,
@@ -106,7 +105,8 @@ func setupTestRouter(
 
 	require.NoError(t, err, "new trace exporter returned error ")
 
-	router := router.New(handlers, mw, nil, tp)
+	router, err := router.New(handlers, mw, nil, tp)
+	require.NoError(t, err, "new router returned error ")
 
 	return router.SetupRoutes()
 }
