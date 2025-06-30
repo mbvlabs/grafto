@@ -101,7 +101,7 @@ func (r *Routes) SetupRoutes() *echo.Echo {
 }
 
 func (r *Routes) setup404Handler() {
-	r.router.RouteNotFound("/*", getHandlerFunc(r.handlers.App, "NotFoundPage"))
+	r.router.RouteNotFound("/*", getHandlerFunc(r.handlers.Pages, "NotFoundPage"))
 }
 
 func getHandlerFunc(handlers any, methodName string) echo.HandlerFunc {

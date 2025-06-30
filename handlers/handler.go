@@ -26,7 +26,7 @@ const (
 
 type Handlers struct {
 	Api           Api
-	App           App
+	Pages         Pages
 	Sessions      Sessions
 	Dashboard     Dashboard
 	Registrations Registrations
@@ -86,7 +86,7 @@ func NewHandlers(
 	gob.Register(contexts.FlashMessage{})
 
 	api := newApi()
-	app := newApp(db, cache)
+	pages := newPages(db, cache)
 	auth := newSessions(db, emailSvc)
 	dashboard := newDashboard(db)
 	registration := newRegistrations(db, emailSvc)
@@ -94,7 +94,7 @@ func NewHandlers(
 
 	return Handlers{
 		api,
-		app,
+		pages,
 		auth,
 		dashboard,
 		registration,

@@ -17,7 +17,7 @@ var LandingPage = Route{
 	Name:         appNamePrefix + ".landing_page",
 	Path:         "/",
 	Method:       http.MethodGet,
-	Handler:      "App",
+	Handler:      "Pages",
 	HandleMethod: "LandingPage",
 }
 
@@ -25,7 +25,7 @@ var AboutPage = Route{
 	Name:         appNamePrefix + ".about_page",
 	Path:         "/about",
 	Method:       http.MethodGet,
-	Handler:      "App",
+	Handler:      "Pages",
 	HandleMethod: "AboutPage",
 }
 
@@ -33,7 +33,7 @@ var Redirect = redirect{
 	Route: Route{
 		Name:         appNamePrefix + ".redirect",
 		Path:         "/redirect",
-		Handler:      "App",
+		Handler:      "Pages",
 		HandleMethod: "Redirect",
 		Method:       http.MethodGet,
 	},
