@@ -50,7 +50,6 @@ func GetAllUsers(
 		perPage = 25
 	}
 
-	// Query all users using raw SQL until we can access the generated queries properly
 	rows, err := database.Pool.Query(
 		ctx,
 		"SELECT id, created_at, updated_at, email, email_verified_at, is_admin FROM users ORDER BY created_at DESC",

@@ -114,15 +114,6 @@ func (d Dashboard) UpdateUser(ctx echo.Context) error {
 		},
 	)
 	if err != nil {
-		slog.Error(
-			"$$$$$$$$$$$$$$$$",
-			"err",
-			err,
-			"actor",
-			appCtx.Email,
-			"id",
-			appCtx.UserID,
-		)
 		if flashErr := addFlash(ctx, contexts.FlashError, fmt.Sprintf("Failed to update user: %v", err)); flashErr != nil {
 			return flashErr
 		}
