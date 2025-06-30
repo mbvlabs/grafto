@@ -46,6 +46,7 @@ func main() {
 		ctx,
 		seeds.WithUserEmailVerifiedAt(time.Now()),
 		seeds.WithUserEmail("aryastark@gmail.com"),
+		seeds.WithUserIsAdmin(true),
 	)
 	if err != nil {
 		panic(err)

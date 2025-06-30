@@ -11,27 +11,27 @@ import (
 	"github.com/mbvlabs/grafto/views"
 )
 
-type App struct {
+type Pages struct {
 	db    psql.Postgres
 	cache otter.CacheWithVariableTTL[string, templ.Component]
 }
 
-func newApp(
+func newPages(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
-) App {
-	return App{db, cache}
+) Pages {
+	return Pages{db, cache}
 }
 
-func (a App) LandingPage(c echo.Context) error {
+func (p Pages) LandingPage(c echo.Context) error {
 	return views.HomePage().Render(renderArgs(c))
 }
 
-func (a App) AboutPage(c echo.Context) error {
+func (p Pages) AboutPage(c echo.Context) error {
 	return views.AboutPage().Render(renderArgs(c))
 }
 
-func (a App) Redirect(c echo.Context) error {
+func (p Pages) Redirect(c echo.Context) error {
 	to := c.QueryParam("to")
 	for _, r := range routes.AllRoutes {
 		if to == r.Path {
@@ -48,7 +48,7 @@ func (a App) Redirect(c echo.Context) error {
 	return redirect(c.Response(), c.Request(), "/")
 }
 
-func (a App) NotFoundPage(c echo.Context) error {
+func (p Pages) NotFoundPage(c echo.Context) error {
 	c.Response().Status = 404
 	return views.NotFoundPage().Render(renderArgs(c))
 }
