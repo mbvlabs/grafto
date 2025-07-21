@@ -1,5 +1,6 @@
 github.com/PuerkitoBio/goquery v1.10.3 h1:pFYcNSqHxBD06Fpj/KsbStFRsgRATgnf3LeXiUkhzPo=
 github.com/PuerkitoBio/goquery v1.10.3/go.mod h1:tMUX0zDMHXYlAQk6p35XxQMqMweEKB7iK7iLNd4RH4Y=
+dependabot/go_modules/github.com/a-h/templ-0.3.920
 github.com/a-h/templ v0.3.920 h1:IQjjTu4KGrYreHo/ewzSeS8uefecisPayIIc9VflLSE=
 github.com/a-h/templ v0.3.920/go.mod h1:FFAu4dI//ESmEN7PQkJ7E7QfnSEMdcnu7QrAY8Dn334=
 github.com/andybalholm/cascadia v1.3.3 h1:AG2YHrzJIm4BZ19iwJ/DAua6Btl3IwJX+VI4kktS1LM=
