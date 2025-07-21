@@ -78,7 +78,7 @@ var DashboardUserToggleAdmin = Route{
 	Path:         dashboardRoutePrefix + "/users/:id/toggle-admin",
 	Method:       http.MethodPost,
 	Handler:      "Dashboard",
-	HandleMethod: "ToggleUserAdmin",
+	HandleMethod: "MakeUserAdmin",
 	Middleware: []string{
 		"AuthOnly",
 	},
