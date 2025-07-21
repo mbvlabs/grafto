@@ -1,8 +1,10 @@
 package components
 
-import "fmt"
-import "github.com/google/uuid"
-import "github.com/mbvlabs/grafto/router/routes"
+import (
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/mbvlabs/grafto/router/routes"
+)
 
 type TableRowElement struct {
 	Title     string
@@ -18,9 +20,9 @@ type TableRowElements []TableRow
 
 type TablePagination struct {
 	TotalCount  int64
-	Page        int
-	PageSize    int
-	TotalPages  int
+	Page        int64
+	PageSize    int64
+	TotalPages  int64
 	HasNext     bool
 	HasPrevious bool
 }
@@ -100,7 +102,7 @@ templ Table(
 					if pagination.HasPrevious {
 						<a href={ templ.URL("?page=" + fmt.Sprintf("%d", pagination.Page-1)) } class="px-3 py-2 border border-base-300 bg-base-200 text-base-content no-underline rounded-md text-sm transition-all duration-200 hover:bg-primary hover:text-primary-content hover:border-primary hover:shadow-md">← Previous</a>
 					}
-					for i := 1; i <= pagination.TotalPages; i++ {
+					for i := int64(1); int64(i) <= pagination.TotalPages; i++ {
 						if i == pagination.Page {
 							<span class="px-3 py-2 border border-base-300 bg-base-200 text-base-content no-underline rounded-md text-sm transition-all duration-200 hover:bg-primary hover:text-primary-content hover:border-primary hover:shadow-md border-primary bg-primary text-primary-content shadow-md">{ fmt.Sprintf("%d", i) }</span>
 						} else {
@@ -112,7 +114,7 @@ templ Table(
 					}
 				</div>
 				<div class="text-base-content/70 text-sm">
-					Showing { fmt.Sprintf("%d", (pagination.Page-1)*pagination.PageSize+1) } to { fmt.Sprintf("%d", min(pagination.Page*pagination.PageSize, int(pagination.TotalCount))) } of { fmt.Sprintf("%d", pagination.TotalCount) } items
+					Showing { fmt.Sprintf("%d", (pagination.Page-1)*pagination.PageSize+1) } to { fmt.Sprintf("%d", min(int64(pagination.Page*pagination.PageSize), pagination.TotalCount)) } of { fmt.Sprintf("%d", pagination.TotalCount) } items
 				</div>
 			</div>
 		}

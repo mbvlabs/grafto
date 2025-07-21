@@ -84,33 +84,21 @@ func (s Seeder) PlantUser(
 		return models.User{}, err
 	}
 
-	if !data.EmailVerifiedAt.IsZero() {
-		if err := db.Stmts.VerifyUserEmail(ctx, s.dbtx, db.VerifyUserEmailParams{
-			Email: data.Email,
-			UpdatedAt: pgtype.Timestamptz{
-				Time:  data.UpdatedAt,
-				Valid: true,
-			},
-			EmailVerifiedAt: pgtype.Timestamptz{
-				Time:  data.EmailVerifiedAt,
-				Valid: true,
-			},
-		}); err != nil {
-			return models.User{}, err
-		}
-	}
-
-	if data.IsAdmin {
-		if _, err := db.Stmts.UpdateUserIsAdmin(ctx, s.dbtx, db.UpdateUserIsAdminParams{
-			ID:      user.ID,
-			IsAdmin: data.IsAdmin,
-			UpdatedAt: pgtype.Timestamptz{
-				Time:  data.UpdatedAt,
-				Valid: true,
-			},
-		}); err != nil {
-			return models.User{}, err
-		}
+	_, err = db.Stmts.UpdateUser(ctx, s.dbtx, db.UpdateUserParams{
+		ID: user.ID,
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  data.UpdatedAt,
+			Valid: true,
+		},
+		Email:   data.Email,
+		IsAdmin: data.IsAdmin,
+		EmailVerifiedAt: pgtype.Timestamptz{
+			Time:  data.EmailVerifiedAt,
+			Valid: !data.EmailVerifiedAt.IsZero(),
+		},
+	})
+	if err != nil {
+		return models.User{}, err
 	}
 
 	return user, nil

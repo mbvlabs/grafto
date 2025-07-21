@@ -111,13 +111,13 @@ func ValidateUserEmail(
 		return models.User{}, err
 	}
 
-	if err := models.UpdateUserEmailToVerified(
+	if _, err := models.UpdateUser(
 		ctx,
 		tx,
-		models.UpdateUserEmailToVerifiedPayload{
-			ID:         user.ID,
-			Email:      user.Email,
-			VerifiedAt: time.Now(),
+		models.UpdateUserPayload{
+			ID:              user.ID,
+			Email:           user.Email,
+			EmailVerifiedAt: time.Now(),
 		},
 	); err != nil {
 		return models.User{}, err

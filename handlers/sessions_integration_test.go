@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -198,8 +197,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 			rec := httptest.NewRecorder()
 
-			var sentHtml string
-			slog.Info(sentHtml)
+			var sentHTML string
 
 			if tt.expectedToSucceed {
 				emailSvc.On(
@@ -209,7 +207,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 						correctEmail := payload.To == tt.user.Email
 						correctSubject := payload.Subject == "Action Required | Password reset requested"
 
-						sentHtml = payload.HtmlBody
+						sentHTML = payload.HtmlBody
 
 						if correctEmail && correctSubject {
 							return true
@@ -242,7 +240,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 
 			if tt.expectedToSucceed {
 				doc, err := goquery.NewDocumentFromReader(
-					bytes.NewBuffer([]byte(sentHtml)),
+					bytes.NewBuffer([]byte(sentHTML)),
 				)
 				assert.NoError(t, err)
 
