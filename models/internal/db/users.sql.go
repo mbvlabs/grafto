@@ -108,16 +108,16 @@ func (q *Queries) QueryFirstUser(ctx context.Context, db DBTX) (User, error) {
 const queryPaginatedUsers = `-- name: QueryPaginatedUsers :many
 select id, created_at, updated_at, email, email_verified_at, password, is_admin from users 
 order by created_at desc 
-limit $1 offset $2
+limit $2::bigint offset $1::bigint
 `
 
 type QueryPaginatedUsersParams struct {
-	Limit  int32
-	Offset int32
+	Offset int64
+	Limit  int64
 }
 
 func (q *Queries) QueryPaginatedUsers(ctx context.Context, db DBTX, arg QueryPaginatedUsersParams) ([]User, error) {
-	rows, err := db.Query(ctx, queryPaginatedUsers, arg.Limit, arg.Offset)
+	rows, err := db.Query(ctx, queryPaginatedUsers, arg.Offset, arg.Limit)
 	if err != nil {
 		return nil, err
 	}

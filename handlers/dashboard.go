@@ -29,18 +29,18 @@ func (d Dashboard) Index(c echo.Context) error {
 }
 
 func (d Dashboard) UsersList(c echo.Context) error {
-	page := int32(1)
+	page := int64(1)
 	if p := c.QueryParam("page"); p != "" {
 		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
-			page = int32(parsed)
+			page = int64(parsed)
 		}
 	}
 
-	perPage := int32(25)
+	perPage := int64(25)
 	if pp := c.QueryParam("per_page"); pp != "" {
 		if parsed, err := strconv.Atoi(pp); err == nil && parsed > 0 &&
 			parsed <= 100 {
-			perPage = int32(parsed)
+			perPage = int64(parsed)
 		}
 	}
 

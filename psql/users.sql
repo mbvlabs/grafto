@@ -32,7 +32,7 @@ update users set updated_at=$2, password=$3 where id=$1;
 -- name: QueryPaginatedUsers :many
 select * from users 
 order by created_at desc 
-limit $1 offset $2;
+limit sqlc.arg('limit')::bigint offset sqlc.arg('offset')::bigint;
 
 -- name: CountUsers :one
 select count(*) from users;

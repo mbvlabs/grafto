@@ -227,16 +227,16 @@ func MakeUserAdmin(
 type PaginatedUsers struct {
 	Users      []User
 	TotalCount int64
-	Page       int32
-	PageSize   int32
-	TotalPages int32
+	Page       int64
+	PageSize   int64
+	TotalPages int64
 }
 
 func GetPaginatedUsers(
 	ctx context.Context,
 	dbtx db.DBTX,
-	page int32,
-	pageSize int32,
+	page int64,
+	pageSize int64,
 ) (PaginatedUsers, error) {
 	if page < 1 {
 		page = 1
@@ -272,7 +272,7 @@ func GetPaginatedUsers(
 		users[i] = rowToUser(row)
 	}
 
-	totalPages := int32((totalCount + int64(pageSize) - 1) / int64(pageSize))
+	totalPages := (totalCount + int64(pageSize) - 1) / int64(pageSize)
 
 	return PaginatedUsers{
 		Users:      users,
