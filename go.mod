@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/a-h/templ v0.3.920
-	github.com/dromara/carbon/v2 v2.6.8
+	github.com/dromara/carbon/v2 v2.6.11
 	github.com/exaring/otelpgx v0.9.3
 	github.com/fergusstrange/embedded-postgres v1.31.0
 	github.com/google/uuid v1.6.0
