@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/gob"
+	"errors"
 	"io"
 	"net/http"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
@@ -140,6 +142,24 @@ func destroyAuthSession(
 
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func adminOnlyAction(
+	c echo.Context,
+	dbtx *pgxpool.Pool,
+) error {
+	appCtx := contexts.ExtractApp(setAppCtx(c))
+
+	actor, err := models.GetUser(c.Request().Context(), dbtx, appCtx.UserID)
+	if err != nil {
+		return err
+	}
+
+	if !actor.IsAdmin {
+		return errors.New("user must be admin to perform this action")
 	}
 
 	return nil
