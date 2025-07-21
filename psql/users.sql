@@ -19,7 +19,7 @@ returning *;
 
 -- name: UpdateUser :one
 update users
-    set updated_at=$2, email=$3, is_admin=$4
+    set updated_at=$2, email=$3, is_admin=$4, email_verified_at=$5
 where id = $1
 returning *;
 
@@ -29,13 +29,10 @@ delete from users where id=$1;
 -- name: ChangeUserPassword :exec
 update users set updated_at=$2, password=$3 where id=$1;
 
--- name: VerifyUserEmail :exec
-update users set updated_at=$2, email_verified_at=$3 where email=$1;
+-- name: QueryPaginatedUsers :many
+select * from users 
+order by created_at desc 
+limit $1 offset $2;
 
--- name: UpdateUserIsAdmin :one
-UPDATE users 
-SET 
-    is_admin = $2,
-    updated_at = $3
-WHERE id = $1
-RETURNING *;
+-- name: CountUsers :one
+select count(*) from users;
