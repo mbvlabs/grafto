@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/maypok86/otter"
@@ -17,12 +20,45 @@ import (
 	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/mbvlabs/grafto/psql/queue/workers"
 	"github.com/mbvlabs/grafto/router"
-	"github.com/mbvlabs/grafto/server"
 	"github.com/mbvlabs/grafto/telemetry"
+	"golang.org/x/sync/errgroup"
 	"riverqueue.com/riverui"
 )
 
 var appVersion string
+
+func startServer(ctx context.Context, srv *http.Server) error {
+	eg, egCtx := errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		if err := srv.ListenAndServe(); err != nil &&
+			err != http.ErrServerClosed {
+			return fmt.Errorf("server error: %w", err)
+		}
+		return nil
+	})
+
+	eg.Go(func() error {
+		<-egCtx.Done()
+		slog.Info("initiating graceful shutdown")
+		shutdownCtx, cancel := context.WithTimeout(
+			ctx,
+			10*time.Second,
+		)
+		defer cancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			return fmt.Errorf("shutdown error: %w", err)
+		}
+		return nil
+	})
+
+	if err := eg.Wait(); err != nil {
+		slog.Info("wait error", "e", err)
+		return err
+	}
+
+	return nil
+}
 
 func run(ctx context.Context) error {
 	cfg := config.NewConfig()
@@ -135,12 +171,24 @@ func run(ctx context.Context) error {
 	}
 
 	router := routes.SetupRoutes()
-	server := server.NewHttp(ctx, router)
 
 	if err := psql.Queue().Start(ctx); err != nil {
 		return err
 	}
-	return server.Start(ctx)
+
+	port := config.Cfg.App.ServerPort
+	host := config.Cfg.App.ServerHost
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf("%v:%v", host, port),
+		Handler:      router,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 5 * time.Second,
+		BaseContext:  func(_ net.Listener) context.Context { return ctx },
+	}
+
+	slog.InfoContext(ctx, "starting server", "host", host, "port", port)
+	return startServer(ctx, srv)
 }
 
 func main() {
