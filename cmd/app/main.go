@@ -30,9 +30,7 @@ var appVersion string
 func startServer(ctx context.Context, srv *http.Server) error {
 	eg, egCtx := errgroup.WithContext(ctx)
 
-	// Start server
 	eg.Go(func() error {
-		// slog.Info("starting server on", "host", s.host, "port", s.port)
 		if err := srv.ListenAndServe(); err != nil &&
 			err != http.ErrServerClosed {
 			return fmt.Errorf("server error: %w", err)
@@ -40,7 +38,6 @@ func startServer(ctx context.Context, srv *http.Server) error {
 		return nil
 	})
 
-	// Handle shutdown on context cancellation
 	eg.Go(func() error {
 		<-egCtx.Done()
 		slog.Info("initiating graceful shutdown")
@@ -55,7 +52,6 @@ func startServer(ctx context.Context, srv *http.Server) error {
 		return nil
 	})
 
-	// Wait for either server error or successful shutdown
 	if err := eg.Wait(); err != nil {
 		slog.Info("wait error", "e", err)
 		return err
@@ -191,6 +187,7 @@ func run(ctx context.Context) error {
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },
 	}
 
+	slog.InfoContext(ctx, "starting server", "host", host, "port", port)
 	return startServer(ctx, srv)
 }
 
