@@ -192,7 +192,7 @@ func run(ctx context.Context) error {
 	}
 
 	slog.InfoContext(ctx, "starting server", "host", host, "port", port)
-	return startServer(ctx, srv)
+	return startServer(ctx, srv, cfg.App.Env)
 }
 
 func main() {

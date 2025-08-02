@@ -16,7 +16,7 @@ import (
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/handlers"
-	"github.com/mbvlabs/grafto/handlers/middleware"
+	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router"
 	"github.com/mbvlabs/grafto/services"

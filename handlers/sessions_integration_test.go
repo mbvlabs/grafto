@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/handlers/middleware"
+	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
 	"github.com/mbvlabs/grafto/router/routes"
