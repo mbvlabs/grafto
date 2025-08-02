@@ -27,37 +27,41 @@ import (
 
 var appVersion string
 
-func startServer(ctx context.Context, srv *http.Server) error {
-	eg, egCtx := errgroup.WithContext(ctx)
+func startServer(ctx context.Context, srv *http.Server, env string) error {
+	if env == config.PROD_ENVIRONMENT {
+		eg, egCtx := errgroup.WithContext(ctx)
 
-	eg.Go(func() error {
-		if err := srv.ListenAndServe(); err != nil &&
-			err != http.ErrServerClosed {
-			return fmt.Errorf("server error: %w", err)
+		eg.Go(func() error {
+			if err := srv.ListenAndServe(); err != nil &&
+				err != http.ErrServerClosed {
+				return fmt.Errorf("server error: %w", err)
+			}
+			return nil
+		})
+
+		eg.Go(func() error {
+			<-egCtx.Done()
+			slog.Info("initiating graceful shutdown")
+			shutdownCtx, cancel := context.WithTimeout(
+				ctx,
+				10*time.Second,
+			)
+			defer cancel()
+			if err := srv.Shutdown(shutdownCtx); err != nil {
+				return fmt.Errorf("shutdown error: %w", err)
+			}
+			return nil
+		})
+
+		if err := eg.Wait(); err != nil {
+			slog.Info("wait error", "e", err)
+			return err
 		}
-		return nil
-	})
 
-	eg.Go(func() error {
-		<-egCtx.Done()
-		slog.Info("initiating graceful shutdown")
-		shutdownCtx, cancel := context.WithTimeout(
-			ctx,
-			10*time.Second,
-		)
-		defer cancel()
-		if err := srv.Shutdown(shutdownCtx); err != nil {
-			return fmt.Errorf("shutdown error: %w", err)
-		}
 		return nil
-	})
-
-	if err := eg.Wait(); err != nil {
-		slog.Info("wait error", "e", err)
-		return err
 	}
 
-	return nil
+	return srv.ListenAndServe()
 }
 
 func run(ctx context.Context) error {
