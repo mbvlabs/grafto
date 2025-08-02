@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/handlers"
-	"github.com/mbvlabs/grafto/handlers/middleware"
+	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
 	"go.opentelemetry.io/otel/trace"
 	"riverqueue.com/riverui"
@@ -21,8 +21,8 @@ import (
 	echomw "github.com/labstack/echo/v4/middleware"
 )
 
-type Routes struct {
-	router   *echo.Echo
+type Router struct {
+	e        *echo.Echo
 	mw       middleware.MW
 	handlers handlers.Handlers
 }
@@ -32,7 +32,7 @@ func New(
 	mw middleware.MW,
 	riverUI *riverui.Server,
 	traceProvider trace.TracerProvider,
-) (*Routes, error) {
+) (*Router, error) {
 	router := echo.New()
 	router.Debug = true
 
@@ -87,21 +87,21 @@ func New(
 
 	router.Any("/river*", echo.WrapHandler(riverUI), mw.AuthOnly)
 
-	return &Routes{
+	return &Router{
 		router,
 		mw,
 		handlers,
 	}, nil
 }
 
-func (r *Routes) SetupRoutes() *echo.Echo {
-	setupRoutes(r.router, routes.AllRoutes, r.handlers, r.mw)
+func (r *Router) SetupRoutes() *echo.Echo {
+	setupRoutes(r.e, routes.AllRoutes, r.handlers, r.mw)
 	r.setup404Handler()
-	return r.router
+	return r.e
 }
 
-func (r *Routes) setup404Handler() {
-	r.router.RouteNotFound("/*", getHandlerFunc(r.handlers.Pages, "NotFoundPage"))
+func (r *Router) setup404Handler() {
+	r.e.RouteNotFound("/*", getHandlerFunc(r.handlers.Pages, "NotFoundPage"))
 }
 
 func getHandlerFunc(handlers any, methodName string) echo.HandlerFunc {

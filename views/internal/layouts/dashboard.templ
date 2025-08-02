@@ -1,7 +1,7 @@
 package layouts
 
 import (
-	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/reqmeta"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views/internal/components"
 )
@@ -39,8 +39,8 @@ templ dashboardNavItem(name, path, iconPath string) {
 		href={ templ.SafeURL(path) }
 		class={
 			"flex items-center gap-4 px-3 py-3 rounded-lg text-sm transition-colors",
-			templ.KV("bg-primary/10 text-primary font-medium", contexts.ExtractApp(ctx).CurrentPath == path),
-			templ.KV("text-base-content/70 hover:bg-base-300 hover:text-base-content", contexts.ExtractApp(ctx).CurrentPath != path),
+			templ.KV("bg-primary/10 text-primary font-medium", reqmeta.ExtractApp(ctx).CurrentPath == path),
+			templ.KV("text-base-content/70 hover:bg-base-300 hover:text-base-content", reqmeta.ExtractApp(ctx).CurrentPath != path),
 		}
 	>
 		<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@ templ Dashboard(opts ...components.HeadDataOption) {
 			</div>
 		</body>
 		<div class="fixed bottom-4 right-10 z-50 space-y-2">
-			for _, flash := range contexts.ExtractFlashMessages(ctx) {
+			for _, flash := range reqmeta.ExtractFlashMessages(ctx) {
 				@components.ToastMessage(flash)
 			}
 		</div>

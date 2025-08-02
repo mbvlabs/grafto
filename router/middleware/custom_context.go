@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/reqmeta"
 )
 
 func (m MW) RegisterAppContext(
@@ -28,7 +28,7 @@ func (m MW) RegisterAppContext(
 		userEmail, _ := sess.Values[SessUserEmail].(string)
 		isAdmin, _ := sess.Values[SessIsAdmin].(bool)
 
-		ac := contexts.App{
+		ac := reqmeta.App{
 			Context:         c,
 			UserID:          userID,
 			Email:           userEmail,
@@ -37,7 +37,7 @@ func (m MW) RegisterAppContext(
 			CurrentPath:     c.Request().URL.Path,
 		}
 
-		c.Set(contexts.AppKey{}.String(), ac)
+		c.Set(reqmeta.AppKey{}.String(), ac)
 
 		return next(c)
 	}
@@ -56,15 +56,15 @@ func (m MW) RegisterFlashMessagesContext(
 			return err
 		}
 
-		flashMessages := []contexts.FlashMessage{}
+		flashMessages := []reqmeta.FlashMessage{}
 		if flashes := sess.Flashes(FlashSessionKey); len(
 			flashes,
 		) > 0 {
 			for _, flash := range flashes {
-				if msg, ok := flash.(contexts.FlashMessage); ok {
+				if msg, ok := flash.(reqmeta.FlashMessage); ok {
 					flashMessages = append(
 						flashMessages,
-						contexts.FlashMessage{
+						reqmeta.FlashMessage{
 							Context:   c,
 							ID:        msg.ID,
 							Type:      msg.Type,
@@ -80,7 +80,7 @@ func (m MW) RegisterFlashMessagesContext(
 			}
 		}
 
-		c.Set(contexts.FlashKey{}.String(), flashMessages)
+		c.Set(reqmeta.FlashKey{}.String(), flashMessages)
 
 		return next(c)
 	}

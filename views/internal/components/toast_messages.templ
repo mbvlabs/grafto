@@ -2,10 +2,10 @@ package components
 
 import (
 	"github.com/dromara/carbon/v2"
-	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/reqmeta"
 )
 
-templ toastBase(tType string, flash contexts.FlashMessage) {
+templ toastBase(tType string, flash reqmeta.FlashMessage) {
 	<div
 		x-data="{ show: true }"
 		x-show="show"
@@ -44,15 +44,15 @@ templ toastBase(tType string, flash contexts.FlashMessage) {
 	</div>
 }
 
-templ ToastMessage(flash contexts.FlashMessage) {
+templ ToastMessage(flash reqmeta.FlashMessage) {
 	switch flash.Type {
-		case contexts.FlashSuccess:
+		case reqmeta.FlashSuccess:
 			@toastBase("bg-success", flash)
-		case contexts.FlashInfo:
+		case reqmeta.FlashInfo:
 			@toastBase("bg-info", flash)
-		case contexts.FlashError:
+		case reqmeta.FlashError:
 			@toastBase("bg-error", flash)
-		case contexts.FlashWarning:
+		case reqmeta.FlashWarning:
 			@toastBase("bg-warning", flash)
 	}
 }

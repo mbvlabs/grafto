@@ -15,10 +15,10 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/handlers/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/middleware"
+	"github.com/mbvlabs/grafto/router/reqmeta"
 	"github.com/mbvlabs/grafto/services"
 )
 
@@ -37,7 +37,7 @@ type Handlers struct {
 }
 
 func setAppCtx(ctx echo.Context) context.Context {
-	appcKey := contexts.AppKey{}
+	appcKey := reqmeta.AppKey{}
 	appc := ctx.Get(appcKey.String())
 
 	cOne := context.WithValue(
@@ -46,7 +46,7 @@ func setAppCtx(ctx echo.Context) context.Context {
 		appc,
 	)
 
-	flashCKey := contexts.FlashKey{}
+	flashCKey := reqmeta.FlashKey{}
 	flashC := ctx.Get(flashCKey.String())
 
 	return context.WithValue(
@@ -58,14 +58,14 @@ func setAppCtx(ctx echo.Context) context.Context {
 
 //nolint:unused // needed helper method
 func addFlash(
-	c echo.Context, flashType contexts.FlashType, msg string,
+	c echo.Context, flashType reqmeta.FlashType, msg string,
 ) error {
 	sess, err := session.Get(middleware.FlashSessionKey, c)
 	if err != nil {
 		return err
 	}
 
-	sess.AddFlash(contexts.FlashMessage{
+	sess.AddFlash(reqmeta.FlashMessage{
 		ID:        uuid.New(),
 		Type:      flashType,
 		CreatedAt: time.Now(),
@@ -85,7 +85,7 @@ func NewHandlers(
 	emailSvc services.EmailSender,
 ) Handlers {
 	gob.Register(uuid.UUID{})
-	gob.Register(contexts.FlashMessage{})
+	gob.Register(reqmeta.FlashMessage{})
 
 	api := newApi()
 	pages := newPages(db, cache)
@@ -151,7 +151,7 @@ func adminOnlyAction(
 	c echo.Context,
 	dbtx *pgxpool.Pool,
 ) error {
-	appCtx := contexts.ExtractApp(setAppCtx(c))
+	appCtx := reqmeta.ExtractApp(setAppCtx(c))
 
 	actor, err := models.GetUser(c.Request().Context(), dbtx, appCtx.UserID)
 	if err != nil {
