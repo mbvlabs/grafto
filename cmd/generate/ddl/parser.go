@@ -33,12 +33,12 @@ type DDLStatement struct {
 	Raw            string // original SQL
 	IndexDef       *catalog.Index
 	EnumDef        *catalog.Enum
-	IfNotExists    bool                   // for CREATE TABLE IF NOT EXISTS
-	AlterOperation string                 // ADD_COLUMN, DROP_COLUMN, ALTER_COLUMN, RENAME_COLUMN, RENAME_TABLE
-	ColumnName     string                 // for column-specific operations
-	NewColumnName  string                 // for RENAME operations
-	NewTableName   string                 // for table renames
-	ColumnChanges  map[string]interface{} // for ALTER COLUMN operations (type, nullable, default)
+	IfNotExists    bool           // for CREATE TABLE IF NOT EXISTS
+	AlterOperation string         // ADD_COLUMN, DROP_COLUMN, ALTER_COLUMN, RENAME_COLUMN, RENAME_TABLE
+	ColumnName     string         // for column-specific operations
+	NewColumnName  string         // for RENAME operations
+	NewTableName   string         // for table renames
+	ColumnChanges  map[string]any // for ALTER COLUMN operations (type, nullable, default)
 }
 
 func ParseDDLStatement(sql, migrationFile string) (*DDLStatement, error) {
@@ -292,8 +292,13 @@ func splitColumnDefinitions(defs string) []string {
 	return result
 }
 
-func parseAddColumn(stmt *DDLStatement, operation, migrationFile string) (*DDLStatement, error) {
-	addColumnRegex := regexp.MustCompile(`(?i)add\s+column\s+(?:if\s+not\s+exists\s+)?(.+)`)
+func parseAddColumn(
+	stmt *DDLStatement,
+	operation, migrationFile string,
+) (*DDLStatement, error) {
+	addColumnRegex := regexp.MustCompile(
+		`(?i)add\s+column\s+(?:if\s+not\s+exists\s+)?(.+)`,
+	)
 	matches := addColumnRegex.FindStringSubmatch(operation)
 
 	if len(matches) < 2 {
@@ -303,7 +308,10 @@ func parseAddColumn(stmt *DDLStatement, operation, migrationFile string) (*DDLSt
 	columnDef := strings.TrimSpace(matches[1])
 	column, err := parseColumnDefinition(columnDef, migrationFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse column definition in ADD COLUMN: %w", err)
+		return nil, fmt.Errorf(
+			"failed to parse column definition in ADD COLUMN: %w",
+			err,
+		)
 	}
 
 	stmt.AlterOperation = "ADD_COLUMN"
@@ -313,7 +321,10 @@ func parseAddColumn(stmt *DDLStatement, operation, migrationFile string) (*DDLSt
 	return stmt, nil
 }
 
-func parseDropColumn(stmt *DDLStatement, operation string) (*DDLStatement, error) {
+func parseDropColumn(
+	stmt *DDLStatement,
+	operation string,
+) (*DDLStatement, error) {
 	dropColumnRegex := regexp.MustCompile(`(?i)drop\s+column\s+(\w+)`)
 	matches := dropColumnRegex.FindStringSubmatch(operation)
 
@@ -327,9 +338,12 @@ func parseDropColumn(stmt *DDLStatement, operation string) (*DDLStatement, error
 	return stmt, nil
 }
 
-func parseAlterColumn(stmt *DDLStatement, operation string) (*DDLStatement, error) {
+func parseAlterColumn(
+	stmt *DDLStatement,
+	operation string,
+) (*DDLStatement, error) {
 	stmt.AlterOperation = "ALTER_COLUMN"
-	stmt.ColumnChanges = make(map[string]interface{})
+	stmt.ColumnChanges = make(map[string]any)
 
 	alterColumnRegex := regexp.MustCompile(`(?i)alter\s+column\s+(\w+)\s+(.+)`)
 	matches := alterColumnRegex.FindStringSubmatch(operation)
@@ -366,8 +380,13 @@ func parseAlterColumn(stmt *DDLStatement, operation string) (*DDLStatement, erro
 	return stmt, nil
 }
 
-func parseRenameColumn(stmt *DDLStatement, operation string) (*DDLStatement, error) {
-	renameColumnRegex := regexp.MustCompile(`(?i)rename\s+column\s+(\w+)\s+to\s+(\w+)`)
+func parseRenameColumn(
+	stmt *DDLStatement,
+	operation string,
+) (*DDLStatement, error) {
+	renameColumnRegex := regexp.MustCompile(
+		`(?i)rename\s+column\s+(\w+)\s+to\s+(\w+)`,
+	)
 	matches := renameColumnRegex.FindStringSubmatch(operation)
 
 	if len(matches) < 3 {
@@ -381,7 +400,10 @@ func parseRenameColumn(stmt *DDLStatement, operation string) (*DDLStatement, err
 	return stmt, nil
 }
 
-func parseRenameTable(stmt *DDLStatement, operation string) (*DDLStatement, error) {
+func parseRenameTable(
+	stmt *DDLStatement,
+	operation string,
+) (*DDLStatement, error) {
 	renameTableRegex := regexp.MustCompile(`(?i)rename\s+to\s+(\w+)`)
 	matches := renameTableRegex.FindStringSubmatch(operation)
 
@@ -411,12 +433,18 @@ func parseAlterTable(sql, migrationFile string) (*DDLStatement, error) {
 
 	// Handle comma-separated operations by returning multiple statements
 	operationList := splitAlterOperations(operations)
-	
+
 	if len(operationList) == 1 {
 		// Single operation - handle normally
-		return parseAlterTableSingleOperation(schemaName, tableName, operationList[0], sql, migrationFile)
+		return parseAlterTableSingleOperation(
+			schemaName,
+			tableName,
+			operationList[0],
+			sql,
+			migrationFile,
+		)
 	}
-	
+
 	// Multiple operations - we'll return the first one and the executor will need to handle this differently
 	// For now, let's handle this by processing each operation separately in the executor
 	stmt := &DDLStatement{
@@ -426,16 +454,18 @@ func parseAlterTable(sql, migrationFile string) (*DDLStatement, error) {
 		Operation:      operations,
 		Raw:            sql,
 		AlterOperation: "MULTIPLE_OPERATIONS",
-		ColumnChanges:  make(map[string]interface{}),
+		ColumnChanges:  make(map[string]any),
 	}
-	
+
 	// Store the operations list in ColumnChanges for the executor to process
 	stmt.ColumnChanges["operations"] = operationList
-	
+
 	return stmt, nil
 }
 
-func parseAlterTableSingleOperation(schemaName, tableName, operation, sql, migrationFile string) (*DDLStatement, error) {
+func parseAlterTableSingleOperation(
+	schemaName, tableName, operation, sql, migrationFile string,
+) (*DDLStatement, error) {
 	stmt := &DDLStatement{
 		Type:       AlterTable,
 		SchemaName: schemaName,
