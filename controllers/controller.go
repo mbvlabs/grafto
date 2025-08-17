@@ -79,7 +79,7 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
-func NewControllers(
+func New(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
 	emailSvc services.EmailSender,

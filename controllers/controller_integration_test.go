@@ -66,7 +66,7 @@ func setupTestControllers(
 	pageCacher, err := cacheBuilder.WithVariableTTL().Build()
 	require.NoError(t, err)
 
-	return controllers.NewControllers(postgres, pageCacher, emailSvc)
+	return controllers.New(postgres, pageCacher, emailSvc)
 }
 
 func setupTestMiddleware(

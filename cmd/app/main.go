@@ -149,7 +149,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	controllers := controllers.NewControllers(
+	controllers := controllers.New(
 		psql,
 		pageCacher,
 		emailClient,
