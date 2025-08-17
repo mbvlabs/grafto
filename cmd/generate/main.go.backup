@@ -1,0 +1,837 @@
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"text/template"
+
+	"github.com/jinzhu/inflection"
+)
+
+func main() {
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: go run cmd/generate/main.go <type> <name>")
+		fmt.Println("Example: go run cmd/generate/main.go view User")
+		os.Exit(1)
+	}
+
+	generateType := os.Args[1]
+	resourceName := os.Args[2]
+
+	switch generateType {
+	case "view":
+		if err := generateView(resourceName); err != nil {
+			fmt.Printf("Error generating view: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Generated view for %s\n", resourceName)
+	case "model":
+		if err := generateModel(resourceName); err != nil {
+			fmt.Printf("Error generating model: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Generated model for %s\n", resourceName)
+	default:
+		fmt.Printf("Unknown generate type: %s\n", generateType)
+		os.Exit(1)
+	}
+}
+
+func generateView(resourceName string) error {
+	pluralName := strings.ToLower(resourceName) + "s"
+	viewPath := filepath.Join("views", pluralName+".templ")
+
+	if _, err := os.Stat(viewPath); err == nil {
+		return fmt.Errorf("file %s already exists", viewPath)
+	}
+
+	content, err := generateViewContent(resourceName, pluralName)
+	if err != nil {
+		return fmt.Errorf("failed to generate content: %w", err)
+	}
+
+	//nolint:gosec // This is a controlled write operation
+	if err := os.WriteFile(viewPath, []byte(content), 0644); err != nil {
+		return fmt.Errorf("failed to write file: %w", err)
+	}
+
+	return nil
+}
+
+type TemplateData struct {
+	ResourceName string
+	PluralName   string
+}
+
+func generateViewContent(resourceName, pluralName string) (string, error) {
+	tmplPath := filepath.Join("cmd", "generate", "templates", "view.templ")
+	tmplContent, err := os.ReadFile(tmplPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read template file: %w", err)
+	}
+
+	tmpl, err := template.New("view").Parse(string(tmplContent))
+	if err != nil {
+		return "", fmt.Errorf("failed to parse template: %w", err)
+	}
+
+	data := TemplateData{
+		ResourceName: resourceName,
+		PluralName:   pluralName,
+	}
+
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("failed to execute template: %w", err)
+	}
+
+	return buf.String(), nil
+}
+
+type TableColumn struct {
+	Name         string
+	PostgresType string
+	GoType       string
+	Nullable     bool
+	IsPrimaryKey bool
+	IsUnique     bool
+	DefaultValue string
+}
+
+type TableSchema struct {
+	Name    string
+	Columns []TableColumn
+}
+
+func generateModel(resourceName string) error {
+	pluralName := inflection.Plural(strings.ToLower(resourceName))
+	
+	modelPath := filepath.Join("models", strings.ToLower(resourceName)+".go")
+	sqlPath := filepath.Join("psql", pluralName+".sql")
+
+	if _, err := os.Stat(modelPath); err == nil {
+		return fmt.Errorf("model file %s already exists", modelPath)
+	}
+
+	if _, err := os.Stat(sqlPath); err == nil {
+		return fmt.Errorf("SQL file %s already exists", sqlPath)
+	}
+
+	schema, err := parseTableSchemaFromMigrations(pluralName)
+	if err != nil {
+		return fmt.Errorf("failed to parse table schema: %w", err)
+	}
+
+	if err := generateSQLFile(resourceName, pluralName, schema, sqlPath); err != nil {
+		return fmt.Errorf("failed to generate SQL file: %w", err)
+	}
+
+	if err := generateModelFile(resourceName, pluralName, schema, modelPath); err != nil {
+		return fmt.Errorf("failed to generate model file: %w", err)
+	}
+
+	if err := runSQLCGenerate(); err != nil {
+		return fmt.Errorf("failed to run sqlc generate: %w", err)
+	}
+
+	return nil
+}
+
+func parseTableSchemaFromMigrations(tableName string) (*TableSchema, error) {
+	migrationsDir := filepath.Join("psql", "migrations")
+	
+	files, err := os.ReadDir(migrationsDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read migrations directory: %w", err)
+	}
+
+	var migrationFiles []string
+	for _, file := range files {
+		if strings.HasSuffix(file.Name(), ".sql") {
+			migrationFiles = append(migrationFiles, file.Name())
+		}
+	}
+
+	sort.Strings(migrationFiles)
+
+	var schema *TableSchema
+	
+	for _, filename := range migrationFiles {
+		filePath := filepath.Join(migrationsDir, filename)
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			continue
+		}
+
+		if tableSchema := parseCreateTableFromContent(string(content), tableName); tableSchema != nil {
+			schema = tableSchema
+		}
+	}
+
+	if schema == nil {
+		return nil, fmt.Errorf("table '%s' not found in any migration files", tableName)
+	}
+
+	return schema, nil
+}
+
+func parseCreateTableFromContent(content, tableName string) *TableSchema {
+	createTableRegex := regexp.MustCompile(`(?s)(?i)create\s+table(?:\s+if\s+not\s+exists)?\s+` + regexp.QuoteMeta(tableName) + `\s*\(\s*(.*?)\s*\);`)
+	
+	matches := createTableRegex.FindStringSubmatch(content)
+	if len(matches) < 2 {
+		return nil
+	}
+
+	columnDefinitions := matches[1]
+	
+	// Split by lines and process each line
+	lines := strings.Split(columnDefinitions, "\n")
+	var columns []TableColumn
+	var primaryKeyColumns []string
+	
+	// First pass: collect column definitions and primary key info
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		line = strings.TrimSuffix(line, ",")
+		
+		if line == "" {
+			continue
+		}
+		
+		lineLower := strings.ToLower(line)
+		
+		// Handle separate primary key constraint
+		if strings.HasPrefix(lineLower, "primary key") {
+			// Extract column names from primary key (id)
+			pkRegex := regexp.MustCompile(`primary\s+key\s*\(\s*([^)]+)\s*\)`)
+			if pkMatches := pkRegex.FindStringSubmatch(lineLower); len(pkMatches) > 1 {
+				pkCols := strings.Split(pkMatches[1], ",")
+				for _, col := range pkCols {
+					primaryKeyColumns = append(primaryKeyColumns, strings.TrimSpace(col))
+				}
+			}
+			continue
+		}
+		
+		// Skip other constraints
+		if strings.HasPrefix(lineLower, "foreign key") || 
+		   strings.HasPrefix(lineLower, "constraint") ||
+		   strings.HasPrefix(lineLower, "unique") ||
+		   strings.HasPrefix(lineLower, "check") {
+			continue
+		}
+		
+		column := parseColumnDefinition(line)
+		if column.Name != "" {
+			columns = append(columns, column)
+		}
+	}
+	
+	// Second pass: mark primary key columns
+	for i := range columns {
+		for _, pkCol := range primaryKeyColumns {
+			if columns[i].Name == pkCol {
+				columns[i].IsPrimaryKey = true
+				columns[i].Nullable = false
+			}
+		}
+	}
+
+	return &TableSchema{
+		Name:    tableName,
+		Columns: columns,
+	}
+}
+
+func parseColumnDefinition(definition string) TableColumn {
+	parts := strings.Fields(definition)
+	if len(parts) < 2 {
+		return TableColumn{}
+	}
+
+	column := TableColumn{
+		Name:         parts[0],
+		PostgresType: parts[1],
+		Nullable:     true,
+	}
+
+	definitionLower := strings.ToLower(definition)
+	
+	if strings.Contains(definitionLower, "not null") {
+		column.Nullable = false
+	}
+	
+	if strings.Contains(definitionLower, "primary key") {
+		column.IsPrimaryKey = true
+		column.Nullable = false
+	}
+	
+	if strings.Contains(definitionLower, "unique") {
+		column.IsUnique = true
+	}
+
+	defaultRegex := regexp.MustCompile(`(?i)default\s+([^,\s]+)`)
+	if matches := defaultRegex.FindStringSubmatch(definition); len(matches) > 1 {
+		column.DefaultValue = matches[1]
+	}
+
+	column.GoType = mapPostgresToGoType(column.PostgresType, column.Nullable)
+	
+	return column
+}
+
+func mapPostgresToGoType(pgType string, nullable bool) string {
+	baseType := strings.ToLower(pgType)
+	
+	var goType string
+	switch {
+	case baseType == "uuid":
+		goType = "uuid.UUID"
+	case strings.HasPrefix(baseType, "varchar") || baseType == "text":
+		goType = "string"
+	case baseType == "bytea":
+		goType = "[]byte"
+	case baseType == "bool" || baseType == "boolean":
+		goType = "bool"
+	case strings.Contains(baseType, "timestamp"):
+		goType = "time.Time"
+	case baseType == "jsonb" || baseType == "json":
+		goType = "interface{}"
+	case strings.HasPrefix(baseType, "int") || baseType == "bigint":
+		goType = "int64"
+	case strings.HasPrefix(baseType, "decimal") || strings.HasPrefix(baseType, "numeric"):
+		goType = "float64"
+	default:
+		goType = "interface{}"
+	}
+	
+	return goType
+}
+
+func generateSQLFile(resourceName, pluralName string, schema *TableSchema, sqlPath string) error {
+	tmpl := `-- name: Query{{.ResourceName}}ByID :one
+select * from {{.PluralName}} where id=$1;
+
+-- name: Query{{.ResourceName}}s :many
+select * from {{.PluralName}};
+
+-- name: Insert{{.ResourceName}} :one
+insert into
+    {{.PluralName}} ({{.InsertColumns}})
+values
+    ({{.InsertPlaceholders}})
+returning *;
+
+-- name: Update{{.ResourceName}} :one
+update {{.PluralName}}
+    set {{.UpdateColumns}}
+where id = $1
+returning *;
+
+-- name: Delete{{.ResourceName}} :exec
+delete from {{.PluralName}} where id=$1;
+
+-- name: QueryPaginated{{.ResourceName}}s :many
+select * from {{.PluralName}} 
+order by created_at desc 
+limit sqlc.arg('limit')::bigint offset sqlc.arg('offset')::bigint;
+
+-- name: Count{{.ResourceName}}s :one
+select count(*) from {{.PluralName}};
+`
+
+	var insertColumns []string
+	var insertPlaceholders []string
+	var updateColumns []string
+	
+	placeholderIndex := 1
+	
+	for _, col := range schema.Columns {
+		if col.Name != "id" {
+			insertColumns = append(insertColumns, col.Name)
+			insertPlaceholders = append(insertPlaceholders, "$"+strconv.Itoa(placeholderIndex))
+			placeholderIndex++
+		}
+	}
+	
+	placeholderIndex = 2 // Start from 2 since $1 is the ID in update
+	for _, col := range schema.Columns {
+		if col.Name != "id" && col.Name != "created_at" {
+			updateColumns = append(updateColumns, col.Name+"=$"+strconv.Itoa(placeholderIndex))
+			placeholderIndex++
+		}
+	}
+
+	data := struct {
+		ResourceName       string
+		PluralName         string
+		InsertColumns      string
+		InsertPlaceholders string
+		UpdateColumns      string
+	}{
+		ResourceName:       resourceName,
+		PluralName:         pluralName,
+		InsertColumns:      strings.Join(insertColumns, ", "),
+		InsertPlaceholders: strings.Join(insertPlaceholders, ", "),
+		UpdateColumns:      strings.Join(updateColumns, ", "),
+	}
+
+	t, err := template.New("sql").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, data); err != nil {
+		return err
+	}
+
+	return os.WriteFile(sqlPath, buf.Bytes(), 0644)
+}
+
+func generateModelFile(resourceName, pluralName string, schema *TableSchema, modelPath string) error {
+	tmpl := `package models
+
+import (
+	"context"
+	"errors"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/mbvlabs/grafto/models/internal/db"
+)
+
+type {{.ResourceName}} struct {
+{{range .Columns}}	{{.GoName}} {{.GoType}}
+{{end}}}
+
+type New{{.ResourceName}}Payload struct {
+{{range .NonIDColumns}}	{{.GoName}} {{.PayloadType}} {{.ValidationTag}}
+{{end}}}
+
+func New{{.ResourceName}}(
+	ctx context.Context,
+	dbtx db.DBTX,
+	data New{{.ResourceName}}Payload,
+) ({{.ResourceName}}, error) {
+	if err := validate.Struct(data); err != nil {
+		return {{.ResourceName}}{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	resource := {{.ResourceName}}{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),{{range .NonStandardColumns}}
+		{{.GoName}}: data.{{.GoName}},{{end}}
+	}
+
+	row, err := db.Stmts.Insert{{.ResourceName}}(ctx, dbtx, db.Insert{{.ResourceName}}Params{
+		ID:        resource.ID,
+		CreatedAt: pgtype.Timestamptz{Time: resource.CreatedAt, Valid: true},
+		UpdatedAt: pgtype.Timestamptz{Time: resource.UpdatedAt, Valid: true},{{range .NonStandardColumns}}
+		{{.GoName}}: data.{{.GoName}},{{end}}
+	})
+	if err != nil {
+		return {{.ResourceName}}{}, err
+	}
+
+	return rowTo{{.ResourceName}}(row), nil
+}
+
+func Find{{.ResourceName}}(
+	ctx context.Context,
+	dbtx db.DBTX,
+	id uuid.UUID,
+) ({{.ResourceName}}, error) {
+	row, err := db.Stmts.Query{{.ResourceName}}ByID(ctx, dbtx, id)
+	if err != nil {
+		return {{.ResourceName}}{}, err
+	}
+
+	return rowTo{{.ResourceName}}(row), nil
+}
+
+type Update{{.ResourceName}}Payload struct {
+	ID        uuid.UUID ` + "`validate:\"required,uuid\"`" + `{{range .UpdatableColumns}}
+	{{.GoName}} {{.PayloadType}}{{end}}
+}
+
+func Update{{.ResourceName}}(
+	ctx context.Context,
+	dbtx db.DBTX,
+	data Update{{.ResourceName}}Payload,
+) ({{.ResourceName}}, error) {
+	if err := validate.Struct(data); err != nil {
+		return {{.ResourceName}}{}, errors.Join(ErrDomainValidation, err)
+	}
+
+	currentRow, err := db.Stmts.Query{{.ResourceName}}ByID(ctx, dbtx, data.ID)
+	if err != nil {
+		return {{.ResourceName}}{}, err
+	}
+
+	payload := db.Update{{.ResourceName}}Params{
+		ID: data.ID,
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  time.Now(),
+			Valid: true,
+		},{{range .UpdatableColumns}}
+		{{.GoName}}: currentRow.{{.GoName}},{{end}}
+	}
+
+{{range .UpdatableColumns}}	if !isEmpty{{.SafeGoType}}(data.{{.GoName}}) {
+		payload.{{.GoName}} = {{.ConvertValue}}
+	}
+{{end}}
+	row, err := db.Stmts.Update{{.ResourceName}}(ctx, dbtx, payload)
+	if err != nil {
+		return {{.ResourceName}}{}, err
+	}
+
+	return rowTo{{.ResourceName}}(row), nil
+}
+
+type Paginated{{.PluralName}} struct {
+	{{.PluralName}}   []{{.ResourceName}}
+	TotalCount int64
+	Page       int64
+	PageSize   int64
+	TotalPages int64
+}
+
+func GetPaginated{{.PluralName}}(
+	ctx context.Context,
+	dbtx db.DBTX,
+	page int64,
+	pageSize int64,
+) (Paginated{{.PluralName}}, error) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 10
+	}
+	if pageSize > 100 {
+		pageSize = 100
+	}
+
+	offset := (page - 1) * pageSize
+
+	totalCount, err := db.Stmts.Count{{.ResourceName}}s(ctx, dbtx)
+	if err != nil {
+		return Paginated{{.PluralName}}{}, err
+	}
+
+	rows, err := db.Stmts.QueryPaginated{{.ResourceName}}s(
+		ctx,
+		dbtx,
+		db.QueryPaginated{{.ResourceName}}sParams{
+			Limit:  pageSize,
+			Offset: offset,
+		},
+	)
+	if err != nil {
+		return Paginated{{.PluralName}}{}, err
+	}
+
+	{{.LowerPluralName}} := make([]{{.ResourceName}}, len(rows))
+	for i, row := range rows {
+		{{.LowerPluralName}}[i] = rowTo{{.ResourceName}}(row)
+	}
+
+	totalPages := (totalCount + int64(pageSize) - 1) / int64(pageSize)
+
+	return Paginated{{.PluralName}}{
+		{{.PluralName}}:   {{.LowerPluralName}},
+		TotalCount: totalCount,
+		Page:       page,
+		PageSize:   pageSize,
+		TotalPages: totalPages,
+	}, nil
+}
+
+func rowTo{{.ResourceName}}(row db.{{.ResourceName}}) {{.ResourceName}} {
+	return {{.ResourceName}}{
+{{range .Columns}}		{{.GoName}}: {{.ConvertFromDB}},
+{{end}}	}
+}
+
+func Delete{{.ResourceName}}(
+	ctx context.Context,
+	dbtx db.DBTX,
+	id uuid.UUID,
+) error {
+	return db.Stmts.Delete{{.ResourceName}}(ctx, dbtx, id)
+}
+
+{{range .EmptyCheckFunctions}}{{.}}
+
+{{end}}`
+
+	var columns []struct {
+		GoName        string
+		GoType        string
+		PayloadType   string
+		ValidationTag string
+		ConvertFromDB string
+		ConvertValue  string
+	}
+
+	var nonIDColumns []struct {
+		GoName        string
+		GoType        string
+		PayloadType   string
+		ValidationTag string
+	}
+
+	var updatableColumns []struct {
+		GoName       string
+		GoType       string
+		SafeGoType   string
+		PayloadType  string
+		ConvertValue string
+	}
+
+	var nonStandardColumns []struct {
+		GoName string
+	}
+
+	var emptyCheckFunctions []string
+	
+	for _, col := range schema.Columns {
+		goName := toPascalCase(col.Name)
+		
+		columnData := struct {
+			GoName        string
+			GoType        string
+			PayloadType   string
+			ValidationTag string
+			ConvertFromDB string
+			ConvertValue  string
+		}{
+			GoName:        goName,
+			GoType:        col.GoType,
+			PayloadType:   col.GoType,
+			ValidationTag: generateValidationTag(col),
+			ConvertFromDB: generateConvertFromDB(col, goName),
+			ConvertValue:  generateConvertValue(col),
+		}
+
+		columns = append(columns, columnData)
+		
+		if col.Name != "id" && col.Name != "created_at" && col.Name != "updated_at" {
+			nonIDColumns = append(nonIDColumns, struct {
+				GoName        string
+				GoType        string
+				PayloadType   string
+				ValidationTag string
+			}{
+				GoName:        goName,
+				GoType:        col.GoType,
+				PayloadType:   col.GoType,
+				ValidationTag: generateValidationTag(col),
+			})
+		}
+		
+		if col.Name != "id" && col.Name != "created_at" {
+			updatableColumns = append(updatableColumns, struct {
+				GoName       string
+				GoType       string
+				SafeGoType   string
+				PayloadType  string
+				ConvertValue string
+			}{
+				GoName:       goName,
+				GoType:       col.GoType,
+				SafeGoType:   strings.ReplaceAll(col.GoType, ".", "_"),
+				PayloadType:  col.GoType,
+				ConvertValue: generateConvertValue(col),
+			})
+		}
+		
+		if col.Name != "id" && col.Name != "created_at" && col.Name != "updated_at" {
+			nonStandardColumns = append(nonStandardColumns, struct {
+				GoName string
+			}{
+				GoName: goName,
+			})
+		}
+
+		if needsEmptyCheck(col.GoType) {
+			emptyCheckFunctions = append(emptyCheckFunctions, generateEmptyCheckFunction(col.GoType))
+		}
+	}
+
+	data := struct {
+		ResourceName        string
+		PluralName          string
+		LowerPluralName     string
+		Columns             []struct {
+			GoName        string
+			GoType        string
+			PayloadType   string
+			ValidationTag string
+			ConvertFromDB string
+			ConvertValue  string
+		}
+		NonIDColumns        []struct {
+			GoName        string
+			GoType        string
+			PayloadType   string
+			ValidationTag string
+		}
+		UpdatableColumns    []struct {
+			GoName       string
+			GoType       string
+			SafeGoType   string
+			PayloadType  string
+			ConvertValue string
+		}
+		NonStandardColumns  []struct {
+			GoName string
+		}
+		EmptyCheckFunctions []string
+	}{
+		ResourceName:        resourceName,
+		PluralName:          strings.Title(pluralName),
+		LowerPluralName:     strings.ToLower(pluralName),
+		Columns:             columns,
+		NonIDColumns:        nonIDColumns,
+		UpdatableColumns:    updatableColumns,
+		NonStandardColumns:  nonStandardColumns,
+		EmptyCheckFunctions: removeDuplicates(emptyCheckFunctions),
+	}
+
+	t, err := template.New("model").Parse(tmpl)
+	if err != nil {
+		return err
+	}
+
+	var buf bytes.Buffer
+	if err := t.Execute(&buf, data); err != nil {
+		return err
+	}
+
+	return os.WriteFile(modelPath, buf.Bytes(), 0644)
+}
+
+func toPascalCase(s string) string {
+	if s == "" {
+		return ""
+	}
+	
+	// Special case for common field names
+	if s == "id" {
+		return "ID"
+	}
+	
+	parts := strings.Split(s, "_")
+	for i, part := range parts {
+		if len(part) > 0 {
+			parts[i] = strings.ToUpper(part[:1]) + strings.ToLower(part[1:])
+		}
+	}
+	
+	return strings.Join(parts, "")
+}
+
+func generateValidationTag(col TableColumn) string {
+	var tags []string
+	
+	if !col.Nullable {
+		tags = append(tags, "required")
+	}
+	
+	if col.GoType == "string" && strings.Contains(col.Name, "email") {
+		tags = append(tags, "email")
+	}
+	
+	if col.GoType == "uuid.UUID" {
+		tags = append(tags, "uuid")
+	}
+	
+	if len(tags) > 0 {
+		return "`validate:\"" + strings.Join(tags, ",") + "\"`"
+	}
+	
+	return ""
+}
+
+func generateConvertFromDB(col TableColumn, goName string) string {
+	switch col.GoType {
+	case "time.Time":
+		return "row." + goName + ".Time"
+	case "uuid.UUID":
+		return "row." + goName
+	case "[]byte":
+		if strings.Contains(strings.ToLower(col.Name), "password") {
+			return "string(row." + goName + ")"
+		}
+		return "row." + goName
+	default:
+		return "row." + goName
+	}
+}
+
+func generateConvertValue(col TableColumn) string {
+	switch col.GoType {
+	case "time.Time":
+		return "pgtype.Timestamptz{Time: data." + toPascalCase(col.Name) + ", Valid: true}"
+	default:
+		return "data." + toPascalCase(col.Name)
+	}
+}
+
+func needsEmptyCheck(goType string) bool {
+	return goType == "string" || goType == "time.Time" || goType == "float64" || goType == "bool" || goType == "int64"
+}
+
+func generateEmptyCheckFunction(goType string) string {
+	switch goType {
+	case "string":
+		return "func isEmptystring(s string) bool {\n\treturn s == \"\"\n}"
+	case "time.Time":
+		return "func isEmptytime_Time(t time.Time) bool {\n\treturn t.IsZero()\n}"
+	case "float64":
+		return "func isEmptyfloat64(f float64) bool {\n\treturn f == 0\n}"
+	case "bool":
+		return "func isEmptybool(b bool) bool {\n\treturn false\n}"
+	case "int64":
+		return "func isEmptyint64(i int64) bool {\n\treturn i == 0\n}"
+	default:
+		return ""
+	}
+}
+
+func removeDuplicates(slice []string) []string {
+	seen := make(map[string]bool)
+	var result []string
+	
+	for _, item := range slice {
+		if !seen[item] {
+			seen[item] = true
+			result = append(result, item)
+		}
+	}
+	
+	return result
+}
+
+func runSQLCGenerate() error {
+	cmd := exec.Command("just", "generate-db-functions")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to run 'just generate-db-functions': %w\nOutput: %s", err, output)
+	}
+	fmt.Println("Generated database functions with sqlc")
+	return nil
+}
