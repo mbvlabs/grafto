@@ -1,0 +1,101 @@
+package views
+
+import (
+	"github.com/mbvlabs/grafto/models"
+	"github.com/mbvlabs/grafto/views/internal/layouts"
+)
+
+type {{.ResourceName}} struct {
+	data models.{{.ResourceName}}
+}
+
+templ (r {{.ResourceName}}) Index() {
+	@layouts.Base() {
+		<div class="container mx-auto p-6">
+			<div class="flex items-center justify-between mb-8">
+				<h1 class="text-2xl font-semibold">{{ .ResourceName }}</h1>
+				<a href="/{{.PluralName}}/new" class="btn btn-primary">New {{ .ResourceName }}</a>
+			</div>
+			<div class="bg-white rounded-lg shadow">
+				<div class="p-6">
+					<p>List of {{ .PluralName }} will be displayed here</p>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ (r {{.ResourceName}}) Show() {
+	@layouts.Base() {
+		<div class="container mx-auto p-6">
+			<div class="flex items-center justify-between mb-8">
+				<h1 class="text-2xl font-semibold">{{ .ResourceName }} Details</h1>
+				<div class="flex gap-2">
+					<a href="/{{.PluralName}}/edit" class="btn btn-outline">Edit</a>
+					<a href="/{{.PluralName}}" class="btn btn-ghost">Back to List</a>
+				</div>
+			</div>
+			<div class="bg-white rounded-lg shadow">
+				<div class="p-6">
+					<p>{{ .ResourceName }} details will be displayed here</p>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ (r {{.ResourceName}}) New() {
+	@layouts.Base() {
+		<div class="container mx-auto p-6">
+			<div class="flex items-center justify-between mb-8">
+				<h1 class="text-2xl font-semibold">New {{ .ResourceName }}</h1>
+				<a href="/{{.PluralName}}" class="btn btn-ghost">Back to List</a>
+			</div>
+			<div class="bg-white rounded-lg shadow">
+				<div class="p-6">
+					<form method="POST" action="/{{.PluralName}}">
+						<div class="mb-4">
+							<label class="block text-sm font-medium text-gray-700 mb-2">
+								Name
+							</label>
+							<input type="text" name="name" class="input input-bordered w-full" required/>
+						</div>
+						<div class="flex justify-end gap-2">
+							<a href="/{{.PluralName}}" class="btn btn-ghost">Cancel</a>
+							<button type="submit" class="btn btn-primary">Create {{ .ResourceName }}</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ (r {{.ResourceName}}) Edit() {
+	@layouts.Base() {
+		<div class="container mx-auto p-6">
+			<div class="flex items-center justify-between mb-8">
+				<h1 class="text-2xl font-semibold">Edit {{ .ResourceName }}</h1>
+				<a href="/{{.PluralName}}" class="btn btn-ghost">Back to List</a>
+			</div>
+			<div class="bg-white rounded-lg shadow">
+				<div class="p-6">
+					<form method="POST" action="/{{.PluralName}}">
+						<input type="hidden" name="_method" value="PUT"/>
+						<div class="mb-4">
+							<label class="block text-sm font-medium text-gray-700 mb-2">
+								Name
+							</label>
+							<input type="text" name="name" class="input input-bordered w-full" required/>
+						</div>
+						<div class="flex justify-end gap-2">
+							<a href="/{{.PluralName}}" class="btn btn-ghost">Cancel</a>
+							<button type="submit" class="btn btn-primary">Update {{ .ResourceName }}</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	}
+}
+
