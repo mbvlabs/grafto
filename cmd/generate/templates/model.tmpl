@@ -146,7 +146,7 @@ func All{{.Name}}s(
 	return {{.TableName}}, nil
 }
 
-type Paginated{{.Name}}sPayload struct {
+type Paginated{{.Name}}s struct {
 	{{.Name}}s    []{{.Name}}
 	TotalCount int64
 	Page       int64

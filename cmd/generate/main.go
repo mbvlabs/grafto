@@ -212,39 +212,16 @@ func generateSQLFile(
 	table *catalog.Table,
 	sqlPath string,
 ) error {
-	tmpl := `-- name: Query{{.ResourceName}}ByID :one
-select * from {{.PluralName}} where id=$1;
-
--- name: Query{{.ResourceName}}s :many
-select * from {{.PluralName}};
-
--- name: QueryAll{{.ResourceName}}s :many
-select * from {{.PluralName}};
-
--- name: Insert{{.ResourceName}} :one
-insert into
-    {{.PluralName}} ({{.InsertColumns}})
-values
-    ({{.InsertPlaceholders}})
-returning *;
-
--- name: Update{{.ResourceName}} :one
-update {{.PluralName}}
-    set {{.UpdateColumns}}
-where id = $1
-returning *;
-
--- name: Delete{{.ResourceName}} :exec
-delete from {{.PluralName}} where id=$1;
-
--- name: QueryPaginated{{.ResourceName}}s :many
-select * from {{.PluralName}} 
-order by created_at desc 
-limit sqlc.arg('limit')::bigint offset sqlc.arg('offset')::bigint;
-
--- name: Count{{.ResourceName}}s :one
-select count(*) from {{.PluralName}};
-`
+	templatePath := filepath.Join(
+		"cmd",
+		"generate",
+		"templates",
+		"crud_operations.sql",
+	)
+	templateContent, err := os.ReadFile(templatePath)
+	if err != nil {
+		return fmt.Errorf("failed to read SQL template: %w", err)
+	}
 
 	var insertColumns []string
 	var insertPlaceholders []string
@@ -253,17 +230,15 @@ select count(*) from {{.PluralName}};
 	placeholderIndex := 1
 
 	for _, col := range table.Columns {
-		// if col.Name != "id" {
 		insertColumns = append(insertColumns, col.Name)
 		insertPlaceholders = append(
 			insertPlaceholders,
 			fmt.Sprintf("$%d", placeholderIndex),
 		)
 		placeholderIndex++
-		// }
 	}
 
-	placeholderIndex = 2 // Start from 2 since $1 is the ID in update
+	placeholderIndex = 2
 	for _, col := range table.Columns {
 		if col.Name != "id" && col.Name != "created_at" {
 			updateColumns = append(
@@ -288,7 +263,7 @@ select count(*) from {{.PluralName}};
 		UpdateColumns:      strings.Join(updateColumns, ", "),
 	}
 
-	t, err := template.New("sql").Parse(tmpl)
+	t, err := template.New("sql").Parse(string(templateContent))
 	if err != nil {
 		return err
 	}
