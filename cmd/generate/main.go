@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -141,6 +142,7 @@ func generateModel(resourceName string) error {
 		return fmt.Errorf("failed to generate model file content: %w", err)
 	}
 
+	//nolint:gosec //
 	if err := os.WriteFile(modelPath, []byte(modelContent), 0644); err != nil {
 		return fmt.Errorf("failed to write model file: %w", err)
 	}
@@ -273,11 +275,16 @@ func generateSQLFile(
 		return err
 	}
 
+	//nolint:gosec //
 	return os.WriteFile(sqlPath, []byte(buf.String()), 0644)
 }
 
 func runSQLCGenerate() error {
-	cmd := exec.Command("just", "generate-db-functions")
+	cmd := exec.CommandContext(
+		context.Background(),
+		"just",
+		"generate-db-functions",
+	)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf(
@@ -290,19 +297,19 @@ func runSQLCGenerate() error {
 	return nil
 }
 
-func runFormat() error {
-	cmd := exec.Command("just", "fmt-go")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf(
-			"failed to run 'just fmt-go': %w\nOutput: %s",
-			err,
-			output,
-		)
-	}
-	fmt.Println("Generated database functions with sqlc")
-	return nil
-}
+// func runFormat() error {
+// 	cmd := exec.Command("just", "fmt-go")
+// 	output, err := cmd.CombinedOutput()
+// 	if err != nil {
+// 		return fmt.Errorf(
+// 			"failed to run 'just fmt-go': %w\nOutput: %s",
+// 			err,
+// 			output,
+// 		)
+// 	}
+// 	fmt.Println("Generated database functions with sqlc")
+// 	return nil
+// }
 
 // Keep the original view generation code unchanged
 func generateView(resourceName string) error {
@@ -318,6 +325,7 @@ func generateView(resourceName string) error {
 		return fmt.Errorf("failed to generate content: %w", err)
 	}
 
+	//nolint:gosec //
 	if err := os.WriteFile(viewPath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
