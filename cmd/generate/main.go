@@ -170,7 +170,7 @@ func isRelevantForTable(stmt, targetTable string) bool {
 	if strings.Contains(stmtLower, "alter table") &&
 		strings.Contains(stmtLower, targetLower) {
 		alterTableRegex := regexp.MustCompile(
-			`(?i)alter\s+table\s+(?:\w+\.)?(\w+)`,
+			`(?i)alter\s+table\s+(?:if\s+exists\s+)?(?:\w+\.)?(\w+)`,
 		)
 		matches := alterTableRegex.FindStringSubmatch(stmt)
 		if len(matches) > 1 && strings.ToLower(matches[1]) == targetLower {

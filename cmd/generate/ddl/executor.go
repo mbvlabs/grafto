@@ -158,8 +158,124 @@ func applyAlterTable(
 	stmt *DDLStatement,
 	migrationFile string,
 ) error {
-	// Basic ALTER TABLE support - will be expanded in Phase 2
-	// For now, just return success to avoid breaking existing migrations
+	schemaName := stmt.SchemaName
+	if schemaName == "" {
+		schemaName = catalog.DefaultSchema
+	}
+
+	table, err := catalog.GetTable(schemaName, stmt.TableName)
+	if err != nil {
+		return fmt.Errorf("table %s.%s not found: %w", schemaName, stmt.TableName, err)
+	}
+
+	switch stmt.AlterOperation {
+	case "ADD_COLUMN":
+		return applyAddColumn(table, stmt.ColumnDef)
+	case "DROP_COLUMN":
+		return applyDropColumn(table, stmt.ColumnName)
+	case "ALTER_COLUMN":
+		return applyAlterColumn(table, stmt.ColumnName, stmt.ColumnChanges, migrationFile)
+	case "RENAME_COLUMN":
+		return applyRenameColumn(table, stmt.ColumnName, stmt.NewColumnName)
+	case "RENAME_TABLE":
+		return applyRenameTable(catalog, schemaName, stmt.TableName, stmt.NewTableName)
+	case "MULTIPLE_OPERATIONS":
+		return applyMultipleAlterOperations(catalog, stmt, migrationFile)
+	default:
+		return nil
+	}
+}
+
+func applyAddColumn(table *catalog.Table, column *catalog.Column) error {
+	return table.AddColumn(column)
+}
+
+func applyDropColumn(table *catalog.Table, columnName string) error {
+	return table.DropColumn(columnName)
+}
+
+func applyAlterColumn(table *catalog.Table, columnName string, changes map[string]interface{}, migrationFile string) error {
+	column, err := table.GetColumn(columnName)
+	if err != nil {
+		return err
+	}
+
+	newColumn := column.Clone()
+	newColumn.SetModifiedBy(migrationFile)
+
+	for changeType, value := range changes {
+		switch changeType {
+		case "type":
+			if typeStr, ok := value.(string); ok {
+				dataType, length, precision, scale := parseDataType(typeStr)
+				newColumn.DataType = dataType
+				if length != nil {
+					newColumn.SetLength(*length)
+				}
+				if precision != nil && scale != nil {
+					newColumn.SetPrecisionScale(*precision, *scale)
+				}
+			}
+		case "nullable":
+			if nullable, ok := value.(bool); ok {
+				newColumn.IsNullable = nullable
+			}
+		case "default":
+			if defaultVal, ok := value.(string); ok {
+				newColumn.SetDefault(defaultVal)
+			}
+		case "drop_default":
+			if drop, ok := value.(bool); ok && drop {
+				newColumn.DefaultVal = nil
+			}
+		}
+	}
+
+	return table.ModifyColumn(columnName, newColumn)
+}
+
+func applyRenameColumn(table *catalog.Table, oldName, newName string) error {
+	return table.RenameColumn(oldName, newName)
+}
+
+func applyRenameTable(catalog *catalog.Catalog, schemaName, oldName, newName string) error {
+	table, err := catalog.GetTable(schemaName, oldName)
+	if err != nil {
+		return err
+	}
+
+	newTable := table.Clone()
+	newTable.Name = newName
+
+	if err := catalog.DropTable(schemaName, oldName); err != nil {
+		return err
+	}
+
+	return catalog.AddTable(schemaName, newTable)
+}
+
+func applyMultipleAlterOperations(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile string) error {
+	operations, ok := stmt.ColumnChanges["operations"].([]string)
+	if !ok {
+		return fmt.Errorf("invalid multiple operations data in ALTER TABLE statement")
+	}
+
+	for _, operation := range operations {
+		// Create a temporary SQL statement for this operation
+		tempSQL := fmt.Sprintf("ALTER TABLE %s %s", stmt.TableName, operation)
+		
+		// Parse each individual operation
+		individualStmt, err := ParseDDLStatement(tempSQL, migrationFile)
+		if err != nil {
+			return fmt.Errorf("failed to parse individual ALTER operation '%s': %w", operation, err)
+		}
+
+		// Apply the individual operation
+		if err := applyAlterTable(catalog, individualStmt, migrationFile); err != nil {
+			return fmt.Errorf("failed to apply ALTER operation '%s': %w", operation, err)
+		}
+	}
+
 	return nil
 }
 
