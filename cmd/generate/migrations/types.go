@@ -13,19 +13,13 @@ type Migration struct {
 type MigrationFormat int
 
 const (
-	GolangMigrate MigrationFormat = iota
-	Goose
-	Dbmate
+	Goose MigrationFormat = iota
 )
 
 func (f MigrationFormat) String() string {
 	switch f {
-	case GolangMigrate:
-		return "golang-migrate"
 	case Goose:
 		return "goose"
-	case Dbmate:
-		return "dbmate"
 	default:
 		return "unknown"
 	}

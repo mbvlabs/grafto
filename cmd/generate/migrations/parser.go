@@ -99,12 +99,8 @@ func ParseMigration(filePath string) (*Migration, error) {
 
 func RemoveRollbackStatements(content string, format MigrationFormat) string {
 	switch format {
-	case GolangMigrate:
-		return extractUpSQLGolangMigrate(content)
 	case Goose:
 		return extractUpSQLGoose(content)
-	case Dbmate:
-		return extractUpSQLDbmate(content)
 	default:
 		return content
 	}
@@ -139,44 +135,12 @@ func parseFilename(filename string) (sequence int, name string, err error) {
 }
 
 func detectMigrationFormat(content string) MigrationFormat {
-	if strings.Contains(content, "-- migrate:up") ||
-		strings.Contains(content, "-- migrate:down") {
-		return GolangMigrate
-	}
 	if strings.Contains(content, "-- +goose Up") ||
 		strings.Contains(content, "-- +goose Down") {
 		return Goose
 	}
-	if strings.Contains(content, "-- migrate:up") ||
-		strings.Contains(content, "-- migrate:down") {
-		return Dbmate
-	}
-	return GolangMigrate
-}
 
-func extractUpSQLGolangMigrate(content string) string {
-	lines := strings.Split(content, "\n")
-	var upLines []string
-	inUp := false
-
-	for _, line := range lines {
-		if strings.TrimSpace(line) == "-- migrate:up" {
-			inUp = true
-			continue
-		}
-		if strings.TrimSpace(line) == "-- migrate:down" {
-			break
-		}
-		if inUp {
-			upLines = append(upLines, line)
-		}
-	}
-
-	if !inUp {
-		return content
-	}
-
-	return strings.Join(upLines, "\n")
+	return Goose
 }
 
 func extractUpSQLGoose(content string) string {
@@ -205,39 +169,13 @@ func extractUpSQLGoose(content string) string {
 	return strings.Join(upLines, "\n")
 }
 
-func extractUpSQLDbmate(content string) string {
-	return extractUpSQLGolangMigrate(content)
-}
-
 func extractDownSQL(content string, format MigrationFormat) string {
 	switch format {
-	case GolangMigrate:
-		return extractDownSQLGolangMigrate(content)
 	case Goose:
 		return extractDownSQLGoose(content)
-	case Dbmate:
-		return extractDownSQLDbmate(content)
 	default:
 		return ""
 	}
-}
-
-func extractDownSQLGolangMigrate(content string) string {
-	lines := strings.Split(content, "\n")
-	var downLines []string
-	inDown := false
-
-	for _, line := range lines {
-		if strings.TrimSpace(line) == "-- migrate:down" {
-			inDown = true
-			continue
-		}
-		if inDown {
-			downLines = append(downLines, line)
-		}
-	}
-
-	return strings.Join(downLines, "\n")
 }
 
 func extractDownSQLGoose(content string) string {
@@ -261,10 +199,6 @@ func extractDownSQLGoose(content string) string {
 	}
 
 	return strings.Join(downLines, "\n")
-}
-
-func extractDownSQLDbmate(content string) string {
-	return extractDownSQLGolangMigrate(content)
 }
 
 func parseStatements(sql string) []string {
