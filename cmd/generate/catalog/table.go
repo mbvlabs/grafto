@@ -13,9 +13,9 @@ type Table struct {
 }
 
 type Index struct {
-	Name    string
-	Columns []string
-	IsUnique bool
+	Name      string
+	Columns   []string
+	IsUnique  bool
 	CreatedBy string
 }
 
@@ -35,7 +35,7 @@ func (t *Table) AddColumn(column *Column) error {
 			return fmt.Errorf("column %s already exists in table %s", column.Name, t.Name)
 		}
 	}
-	
+
 	t.Columns = append(t.Columns, column)
 	return nil
 }
@@ -77,12 +77,12 @@ func (t *Table) RenameColumn(oldName, newName string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	// Check if new name already exists
 	if _, err := t.GetColumn(newName); err == nil {
 		return fmt.Errorf("column %s already exists in table %s", newName, t.Name)
 	}
-	
+
 	col.Name = newName
 	return nil
 }
@@ -94,7 +94,7 @@ func (t *Table) AddIndex(index *Index) error {
 			return fmt.Errorf("index %s already exists in table %s", index.Name, t.Name)
 		}
 	}
-	
+
 	t.Indexes = append(t.Indexes, index)
 	return nil
 }
@@ -132,11 +132,11 @@ func (t *Table) Clone() *Table {
 		Columns:   make([]*Column, len(t.Columns)),
 		Indexes:   make([]*Index, len(t.Indexes)),
 	}
-	
+
 	for i, col := range t.Columns {
 		clone.Columns[i] = col.Clone()
 	}
-	
+
 	for i, idx := range t.Indexes {
 		clone.Indexes[i] = &Index{
 			Name:      idx.Name,
@@ -145,6 +145,6 @@ func (t *Table) Clone() *Table {
 			CreatedBy: idx.CreatedBy,
 		}
 	}
-	
+
 	return clone
 }

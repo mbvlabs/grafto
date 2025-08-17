@@ -13,11 +13,11 @@ func ApplyDDL(catalog *catalog.Catalog, stmt string, migrationFile string) error
 	if err != nil {
 		return fmt.Errorf("failed to parse DDL statement in %s: %w", filepath.Base(migrationFile), err)
 	}
-	
+
 	if ddlStmt == nil {
 		return nil // Skip empty statements
 	}
-	
+
 	switch ddlStmt.Type {
 	case CreateTable:
 		return applyCreateTable(catalog, ddlStmt, migrationFile)
@@ -46,19 +46,19 @@ func applyCreateTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFil
 	if err != nil {
 		return fmt.Errorf("failed to parse CREATE TABLE statement: %w", err)
 	}
-	
+
 	schemaName := stmt.SchemaName
 	if schemaName == "" {
 		schemaName = catalog.DefaultSchema
 	}
-	
+
 	// Ensure schema exists
 	if _, err := catalog.GetSchema(schemaName); err != nil {
 		if _, createErr := catalog.CreateSchema(schemaName); createErr != nil {
 			return fmt.Errorf("failed to create schema %s: %w", schemaName, createErr)
 		}
 	}
-	
+
 	// Handle IF NOT EXISTS
 	if stmt.IfNotExists {
 		if _, err := catalog.GetTable(schemaName, table.Name); err == nil {
@@ -66,7 +66,7 @@ func applyCreateTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFil
 			return nil
 		}
 	}
-	
+
 	return catalog.AddTable(schemaName, table)
 }
 
@@ -75,31 +75,31 @@ func parseCreateTableToTable(sql, migrationFile string) (*catalog.Table, error) 
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if ddlStmt.Type != CreateTable {
 		return nil, fmt.Errorf("expected CREATE TABLE statement")
 	}
-	
+
 	// Extract table info from parsed statement
 	table := catalog.NewTable(ddlStmt.SchemaName, ddlStmt.TableName).SetCreatedBy(migrationFile)
-	
+
 	// Re-parse column definitions from the raw SQL
 	columnDefs, err := extractColumnDefinitions(sql)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract column definitions: %w", err)
 	}
-	
+
 	columns, err := parseColumnDefinitions(columnDefs, migrationFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse column definitions: %w", err)
 	}
-	
+
 	for _, col := range columns {
 		if err := table.AddColumn(col); err != nil {
 			return nil, fmt.Errorf("failed to add column %s: %w", col.Name, err)
 		}
 	}
-	
+
 	return table, nil
 }
 
@@ -108,7 +108,7 @@ func extractColumnDefinitions(sql string) (string, error) {
 	start := -1
 	end := -1
 	parenLevel := 0
-	
+
 	for i, char := range sql {
 		if char == '(' {
 			if start == -1 {
@@ -123,11 +123,11 @@ func extractColumnDefinitions(sql string) (string, error) {
 			}
 		}
 	}
-	
+
 	if start == -1 || end == -1 {
 		return "", fmt.Errorf("could not find column definitions in CREATE TABLE statement")
 	}
-	
+
 	return sql[start:end], nil
 }
 
@@ -142,7 +142,7 @@ func applyDropTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile 
 	if schemaName == "" {
 		schemaName = catalog.DefaultSchema
 	}
-	
+
 	return catalog.DropTable(schemaName, stmt.TableName)
 }
 
