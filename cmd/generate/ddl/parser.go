@@ -431,11 +431,9 @@ func parseAlterTable(sql, migrationFile string) (*DDLStatement, error) {
 	tableName := matches[2]
 	operations := strings.TrimSpace(matches[3])
 
-	// Handle comma-separated operations by returning multiple statements
 	operationList := splitAlterOperations(operations)
 
 	if len(operationList) == 1 {
-		// Single operation - handle normally
 		return parseAlterTableSingleOperation(
 			schemaName,
 			tableName,
@@ -445,8 +443,6 @@ func parseAlterTable(sql, migrationFile string) (*DDLStatement, error) {
 		)
 	}
 
-	// Multiple operations - we'll return the first one and the executor will need to handle this differently
-	// For now, let's handle this by processing each operation separately in the executor
 	stmt := &DDLStatement{
 		Type:           AlterTable,
 		SchemaName:     schemaName,
@@ -457,7 +453,6 @@ func parseAlterTable(sql, migrationFile string) (*DDLStatement, error) {
 		ColumnChanges:  make(map[string]any),
 	}
 
-	// Store the operations list in ColumnChanges for the executor to process
 	stmt.ColumnChanges["operations"] = operationList
 
 	return stmt, nil
