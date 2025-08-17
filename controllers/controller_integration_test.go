@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package handlers_test
+package controllers_test
 
 import (
 	"context"
@@ -15,8 +15,8 @@ import (
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/handlers"
-	"github.com/mbvlabs/grafto/handlers/middleware"
+	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/controllers/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router"
 	"github.com/mbvlabs/grafto/services"
@@ -55,18 +55,18 @@ func (m *mockedEmailService) SendTransaction(
 	return args.Error(0)
 }
 
-func setupTestHandlers(
+func setupTestControllers(
 	t *testing.T,
 	postgres psql.Postgres,
 	emailSvc services.EmailSender,
-) handlers.Handlers {
+) controllers.Controllers {
 	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
 	require.NoError(t, err)
 
 	pageCacher, err := cacheBuilder.WithVariableTTL().Build()
 	require.NoError(t, err)
 
-	return handlers.NewHandlers(postgres, pageCacher, emailSvc)
+	return controllers.NewControllers(postgres, pageCacher, emailSvc)
 }
 
 func setupTestMiddleware(
@@ -88,7 +88,7 @@ func setupTestMiddleware(
 
 func setupTestRouter(
 	t *testing.T,
-	handlers handlers.Handlers,
+	controllers controllers.Controllers,
 	mw middleware.MW,
 ) *echo.Echo {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
@@ -105,7 +105,7 @@ func setupTestRouter(
 
 	require.NoError(t, err, "new trace exporter returned error ")
 
-	router, err := router.New(handlers, mw, nil, tp)
+	router, err := router.New(controllers, mw, nil, tp)
 	require.NoError(t, err, "new router returned error ")
 
 	return router.SetupRoutes()

@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package handlers_test
+package controllers_test
 
 import (
 	"context"
@@ -32,9 +32,9 @@ func TestStoreUser(t *testing.T) {
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
-	testHandlers := setupTestHandlers(t, postgres, emailSvc)
+	testControllers := setupTestControllers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testControllers, testMiddleware)
 
 	tests := []struct {
 		name          string
@@ -110,7 +110,7 @@ func TestStoreUser(t *testing.T) {
 			).Return(nil)
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Registrations.Create(c)
+			err := testControllers.Registrations.Create(c)
 			if tt.expectedError == nil {
 				assert.NoError(t, err)
 			}
@@ -135,9 +135,9 @@ func TestVerifyEmail(t *testing.T) {
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
-	testHandlers := setupTestHandlers(t, postgres, emailSvc)
+	testControllers := setupTestControllers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testControllers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	user, err := seeder.PlantUser(ctx)
@@ -211,7 +211,7 @@ func TestVerifyEmail(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Registrations.Update(c)
+			err := testControllers.Registrations.Update(c)
 			assert.NoError(t, err)
 
 			usr, err := models.GetUser(
