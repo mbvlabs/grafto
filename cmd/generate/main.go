@@ -339,7 +339,7 @@ type TemplateData struct {
 }
 
 func generateViewContent(resourceName, pluralName string) (string, error) {
-	tmplPath := filepath.Join("cmd", "generate", "templates", "view.templ")
+	tmplPath := filepath.Join("cmd", "generate", "templates", "view.tmpl")
 	tmplContent, err := os.ReadFile(tmplPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to read template file: %w", err)

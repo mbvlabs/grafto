@@ -6,13 +6,14 @@ toolchain go1.24.2
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
-	github.com/a-h/templ v0.3.920
+	github.com/a-h/templ v0.3.943
 	github.com/dromara/carbon/v2 v2.6.11
 	github.com/exaring/otelpgx v0.9.3
 	github.com/fergusstrange/embedded-postgres v1.31.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.4.0
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
+	github.com/jinzhu/inflection v1.0.0
 	github.com/lmittmann/tint v1.1.2
 	github.com/riverqueue/river v0.23.1
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
@@ -51,7 +52,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -68,7 +68,6 @@ require (
 	github.com/riverqueue/river/rivertype v0.23.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
-	github.com/sqlc-dev/sqlc v1.29.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
