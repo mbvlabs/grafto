@@ -112,7 +112,7 @@ func CreatePooledConnection(
 	return dbpool, nil
 }
 
-func getFreePort() (uint32, error) {
+func getFreePort(ctx context.Context) (uint32, error) {
 	const (
 		minPort = 1024
 		maxPort = 65535
@@ -123,7 +123,8 @@ func getFreePort() (uint32, error) {
 		port := rand.Intn(maxPort-minPort) + minPort
 
 		addr := fmt.Sprintf(":%d", port)
-		conn, err := net.Listen("tcp", addr)
+		n := net.ListenConfig{}
+		conn, err := n.Listen(ctx, "tcp", addr)
 		if err != nil {
 			continue // Port is in use, try another
 		}
@@ -153,7 +154,7 @@ func NewPostgresTest(
 	password := "grafto"
 	database := fmt.Sprintf("grafto_test_%s", faker.DomainName())
 
-	port, err := getFreePort()
+	port, err := getFreePort(ctx)
 	if err != nil {
 		return TestPostgres{}, fmt.Errorf("failed to get free port: %w", err)
 	}

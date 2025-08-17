@@ -45,6 +45,7 @@ func generateView(resourceName string) error {
 		return fmt.Errorf("failed to generate content: %w", err)
 	}
 
+	//nolint:gosec // This is a controlled write operation
 	if err := os.WriteFile(viewPath, []byte(content), 0644); err != nil {
 		return fmt.Errorf("failed to write file: %w", err)
 	}
