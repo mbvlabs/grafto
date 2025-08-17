@@ -2,20 +2,28 @@ package ddl
 
 import (
 	"fmt"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/mbvlabs/grafto/cmd/generate/catalog"
 )
 
-// ApplyDDL applies a DDL statement to the catalog
-func ApplyDDL(catalog *catalog.Catalog, stmt string, migrationFile string) error {
+func ApplyDDL(
+	catalog *catalog.Catalog,
+	stmt string,
+	migrationFile string,
+) error {
 	ddlStmt, err := ParseDDLStatement(stmt, migrationFile)
 	if err != nil {
-		return fmt.Errorf("failed to parse DDL statement in %s: %w", filepath.Base(migrationFile), err)
+		return fmt.Errorf(
+			"failed to parse DDL statement in %s: %w",
+			filepath.Base(migrationFile),
+			err,
+		)
 	}
 
 	if ddlStmt == nil {
-		return nil // Skip empty statements
+		return nil
 	}
 
 	switch ddlStmt.Type {
@@ -30,18 +38,29 @@ func ApplyDDL(catalog *catalog.Catalog, stmt string, migrationFile string) error
 	case DropIndex:
 		return applyDropIndex(catalog, ddlStmt, migrationFile)
 	case Unknown:
-		// Silently skip unknown statements for now
+		slog.Warn(
+			"Unknown DDL statement type in %s: %s",
+			filepath.Base(migrationFile),
+			ddlStmt.Raw,
+		)
 		return nil
 	case CreateEnum, DropEnum, CreateSchema, DropSchema:
 		// Skip these for now - not needed for basic table scaffolding
 		return nil
 	default:
-		return fmt.Errorf("unsupported DDL statement type: %v in %s", ddlStmt.Type, filepath.Base(migrationFile))
+		return fmt.Errorf(
+			"unsupported DDL statement type: %v in %s",
+			ddlStmt.Type,
+			filepath.Base(migrationFile),
+		)
 	}
 }
 
-func applyCreateTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile string) error {
-	// Re-parse the CREATE TABLE statement to extract table structure
+func applyCreateTable(
+	catalog *catalog.Catalog,
+	stmt *DDLStatement,
+	migrationFile string,
+) error {
 	table, err := parseCreateTableToTable(stmt.Raw, migrationFile)
 	if err != nil {
 		return fmt.Errorf("failed to parse CREATE TABLE statement: %w", err)
@@ -52,17 +71,18 @@ func applyCreateTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFil
 		schemaName = catalog.DefaultSchema
 	}
 
-	// Ensure schema exists
 	if _, err := catalog.GetSchema(schemaName); err != nil {
 		if _, createErr := catalog.CreateSchema(schemaName); createErr != nil {
-			return fmt.Errorf("failed to create schema %s: %w", schemaName, createErr)
+			return fmt.Errorf(
+				"failed to create schema %s: %w",
+				schemaName,
+				createErr,
+			)
 		}
 	}
 
-	// Handle IF NOT EXISTS
 	if stmt.IfNotExists {
 		if _, err := catalog.GetTable(schemaName, table.Name); err == nil {
-			// Table already exists, skip creation
 			return nil
 		}
 	}
@@ -70,7 +90,9 @@ func applyCreateTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFil
 	return catalog.AddTable(schemaName, table)
 }
 
-func parseCreateTableToTable(sql, migrationFile string) (*catalog.Table, error) {
+func parseCreateTableToTable(
+	sql, migrationFile string,
+) (*catalog.Table, error) {
 	ddlStmt, err := ParseDDLStatement(sql, migrationFile)
 	if err != nil {
 		return nil, err
@@ -80,10 +102,9 @@ func parseCreateTableToTable(sql, migrationFile string) (*catalog.Table, error) 
 		return nil, fmt.Errorf("expected CREATE TABLE statement")
 	}
 
-	// Extract table info from parsed statement
-	table := catalog.NewTable(ddlStmt.SchemaName, ddlStmt.TableName).SetCreatedBy(migrationFile)
+	table := catalog.NewTable(ddlStmt.SchemaName, ddlStmt.TableName).
+		SetCreatedBy(migrationFile)
 
-	// Re-parse column definitions from the raw SQL
 	columnDefs, err := extractColumnDefinitions(sql)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract column definitions: %w", err)
@@ -104,7 +125,6 @@ func parseCreateTableToTable(sql, migrationFile string) (*catalog.Table, error) 
 }
 
 func extractColumnDefinitions(sql string) (string, error) {
-	// Extract the content between parentheses in CREATE TABLE
 	start := -1
 	end := -1
 	parenLevel := 0
@@ -125,19 +145,29 @@ func extractColumnDefinitions(sql string) (string, error) {
 	}
 
 	if start == -1 || end == -1 {
-		return "", fmt.Errorf("could not find column definitions in CREATE TABLE statement")
+		return "", fmt.Errorf(
+			"could not find column definitions in CREATE TABLE statement",
+		)
 	}
 
 	return sql[start:end], nil
 }
 
-func applyAlterTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile string) error {
+func applyAlterTable(
+	catalog *catalog.Catalog,
+	stmt *DDLStatement,
+	migrationFile string,
+) error {
 	// Basic ALTER TABLE support - will be expanded in Phase 2
 	// For now, just return success to avoid breaking existing migrations
 	return nil
 }
 
-func applyDropTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile string) error {
+func applyDropTable(
+	catalog *catalog.Catalog,
+	stmt *DDLStatement,
+	migrationFile string,
+) error {
 	schemaName := stmt.SchemaName
 	if schemaName == "" {
 		schemaName = catalog.DefaultSchema
@@ -146,12 +176,18 @@ func applyDropTable(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile 
 	return catalog.DropTable(schemaName, stmt.TableName)
 }
 
-func applyCreateIndex(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile string) error {
-	// Placeholder for CREATE INDEX support
+func applyCreateIndex(
+	catalog *catalog.Catalog,
+	stmt *DDLStatement,
+	migrationFile string,
+) error {
 	return nil
 }
 
-func applyDropIndex(catalog *catalog.Catalog, stmt *DDLStatement, migrationFile string) error {
-	// Placeholder for DROP INDEX support
+func applyDropIndex(
+	catalog *catalog.Catalog,
+	stmt *DDLStatement,
+	migrationFile string,
+) error {
 	return nil
 }

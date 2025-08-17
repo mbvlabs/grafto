@@ -29,10 +29,13 @@ func NewTable(schema, name string) *Table {
 }
 
 func (t *Table) AddColumn(column *Column) error {
-	// Check if column already exists
 	for _, existingCol := range t.Columns {
 		if existingCol.Name == column.Name {
-			return fmt.Errorf("column %s already exists in table %s", column.Name, t.Name)
+			return fmt.Errorf(
+				"column %s already exists in table %s",
+				column.Name,
+				t.Name,
+			)
 		}
 	}
 
@@ -52,7 +55,6 @@ func (t *Table) GetColumn(name string) (*Column, error) {
 func (t *Table) DropColumn(name string) error {
 	for i, col := range t.Columns {
 		if col.Name == name {
-			// Remove column from slice
 			t.Columns = append(t.Columns[:i], t.Columns[i+1:]...)
 			return nil
 		}
@@ -63,7 +65,6 @@ func (t *Table) DropColumn(name string) error {
 func (t *Table) ModifyColumn(name string, newColumn *Column) error {
 	for i, col := range t.Columns {
 		if col.Name == name {
-			// Preserve creation info
 			newColumn.CreatedBy = col.CreatedBy
 			t.Columns[i] = newColumn
 			return nil
@@ -78,9 +79,12 @@ func (t *Table) RenameColumn(oldName, newName string) error {
 		return err
 	}
 
-	// Check if new name already exists
 	if _, err := t.GetColumn(newName); err == nil {
-		return fmt.Errorf("column %s already exists in table %s", newName, t.Name)
+		return fmt.Errorf(
+			"column %s already exists in table %s",
+			newName,
+			t.Name,
+		)
 	}
 
 	col.Name = newName
@@ -88,10 +92,13 @@ func (t *Table) RenameColumn(oldName, newName string) error {
 }
 
 func (t *Table) AddIndex(index *Index) error {
-	// Check if index already exists
 	for _, existingIdx := range t.Indexes {
 		if existingIdx.Name == index.Name {
-			return fmt.Errorf("index %s already exists in table %s", index.Name, t.Name)
+			return fmt.Errorf(
+				"index %s already exists in table %s",
+				index.Name,
+				t.Name,
+			)
 		}
 	}
 

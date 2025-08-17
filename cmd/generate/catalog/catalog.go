@@ -29,7 +29,6 @@ func NewCatalog(defaultSchema string) *Catalog {
 		Schemas:       make(map[string]*Schema),
 	}
 
-	// Create default schema
 	catalog.Schemas[defaultSchema] = &Schema{
 		Name:   defaultSchema,
 		Tables: make(map[string]*Table),
@@ -81,7 +80,11 @@ func (c *Catalog) GetTable(schemaName, tableName string) (*Table, error) {
 
 	table, exists := schema.Tables[tableName]
 	if !exists {
-		return nil, fmt.Errorf("table %s not found in schema %s", tableName, schemaName)
+		return nil, fmt.Errorf(
+			"table %s not found in schema %s",
+			tableName,
+			schemaName,
+		)
 	}
 
 	return table, nil
@@ -101,7 +104,11 @@ func (c *Catalog) AddTable(schemaName string, table *Table) error {
 	}
 
 	if _, exists := schema.Tables[table.Name]; exists {
-		return fmt.Errorf("table %s already exists in schema %s", table.Name, schemaName)
+		return fmt.Errorf(
+			"table %s already exists in schema %s",
+			table.Name,
+			schemaName,
+		)
 	}
 
 	table.Schema = schemaName
@@ -123,7 +130,11 @@ func (c *Catalog) DropTable(schemaName, tableName string) error {
 	}
 
 	if _, exists := schema.Tables[tableName]; !exists {
-		return fmt.Errorf("table %s not found in schema %s", tableName, schemaName)
+		return fmt.Errorf(
+			"table %s not found in schema %s",
+			tableName,
+			schemaName,
+		)
 	}
 
 	delete(schema.Tables, tableName)
@@ -145,11 +156,19 @@ func (c *Catalog) RenameTable(schemaName, oldName, newName string) error {
 
 	table, exists := schema.Tables[oldName]
 	if !exists {
-		return fmt.Errorf("table %s not found in schema %s", oldName, schemaName)
+		return fmt.Errorf(
+			"table %s not found in schema %s",
+			oldName,
+			schemaName,
+		)
 	}
 
 	if _, exists := schema.Tables[newName]; exists {
-		return fmt.Errorf("table %s already exists in schema %s", newName, schemaName)
+		return fmt.Errorf(
+			"table %s already exists in schema %s",
+			newName,
+			schemaName,
+		)
 	}
 
 	table.Name = newName
@@ -179,7 +198,10 @@ const (
 	DropIndex
 )
 
-func (c *Catalog) AlterTable(schemaName, tableName string, alteration TableAlteration) error {
+func (c *Catalog) AlterTable(
+	schemaName, tableName string,
+	alteration TableAlteration,
+) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -191,7 +213,9 @@ func (c *Catalog) AlterTable(schemaName, tableName string, alteration TableAlter
 	switch alteration.Type {
 	case AddColumn:
 		if alteration.Column == nil {
-			return fmt.Errorf("column definition required for ADD COLUMN operation")
+			return fmt.Errorf(
+				"column definition required for ADD COLUMN operation",
+			)
 		}
 		return table.AddColumn(alteration.Column)
 
@@ -203,19 +227,25 @@ func (c *Catalog) AlterTable(schemaName, tableName string, alteration TableAlter
 
 	case ModifyColumn:
 		if alteration.Column == nil {
-			return fmt.Errorf("column definition required for MODIFY COLUMN operation")
+			return fmt.Errorf(
+				"column definition required for MODIFY COLUMN operation",
+			)
 		}
 		return table.ModifyColumn(alteration.Column.Name, alteration.Column)
 
 	case RenameColumn:
 		if alteration.OldName == "" || alteration.NewName == "" {
-			return fmt.Errorf("old and new column names required for RENAME COLUMN operation")
+			return fmt.Errorf(
+				"old and new column names required for RENAME COLUMN operation",
+			)
 		}
 		return table.RenameColumn(alteration.OldName, alteration.NewName)
 
 	case AddIndex:
 		if alteration.IndexDef == nil {
-			return fmt.Errorf("index definition required for ADD INDEX operation")
+			return fmt.Errorf(
+				"index definition required for ADD INDEX operation",
+			)
 		}
 		return table.AddIndex(alteration.IndexDef)
 
@@ -242,7 +272,11 @@ func (c *Catalog) getTableUnsafe(schemaName, tableName string) (*Table, error) {
 
 	table, exists := schema.Tables[tableName]
 	if !exists {
-		return nil, fmt.Errorf("table %s not found in schema %s", tableName, schemaName)
+		return nil, fmt.Errorf(
+			"table %s not found in schema %s",
+			tableName,
+			schemaName,
+		)
 	}
 
 	return table, nil
@@ -276,7 +310,11 @@ func (c *Catalog) AddEnum(schemaName string, enum *Enum) error {
 	}
 
 	if _, exists := schema.Enums[enum.Name]; exists {
-		return fmt.Errorf("enum %s already exists in schema %s", enum.Name, schemaName)
+		return fmt.Errorf(
+			"enum %s already exists in schema %s",
+			enum.Name,
+			schemaName,
+		)
 	}
 
 	schema.Enums[enum.Name] = enum

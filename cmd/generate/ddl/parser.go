@@ -74,8 +74,12 @@ func ParseDDLStatement(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseCreateTable(sql, migrationFile string) (*DDLStatement, error) {
-	// Regex to match CREATE TABLE statement with multiline support
-	createTableRegex := regexp.MustCompile(`(?is)create\s+table(\s+if\s+not\s+exists)?\s+(?:(\w+)\.)?(\w+)\s*\(\s*(.*?)\s*\)`)
+	createTableRegex, err := regexp.Compile(
+		`(?is)create\s+table(\s+if\s+not\s+exists)?\s+(?:(\w+)\.)?(\w+)\s*\(\s*(.*?)\s*\)`,
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	matches := createTableRegex.FindStringSubmatch(sql)
 	if len(matches) < 5 {
@@ -89,7 +93,6 @@ func parseCreateTable(sql, migrationFile string) (*DDLStatement, error) {
 
 	table := catalog.NewTable(schemaName, tableName).SetCreatedBy(migrationFile)
 
-	// Parse column definitions
 	columns, err := parseColumnDefinitions(columnDefs, migrationFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse column definitions: %w", err)
@@ -110,11 +113,12 @@ func parseCreateTable(sql, migrationFile string) (*DDLStatement, error) {
 	}, nil
 }
 
-func parseColumnDefinitions(columnDefs, migrationFile string) ([]*catalog.Column, error) {
+func parseColumnDefinitions(
+	columnDefs, migrationFile string,
+) ([]*catalog.Column, error) {
 	var columns []*catalog.Column
 	var primaryKeyColumns []string
 
-	// Split column definitions by comma, but handle parentheses
 	defs := splitColumnDefinitions(columnDefs)
 
 	for _, def := range defs {
@@ -125,19 +129,22 @@ func parseColumnDefinitions(columnDefs, migrationFile string) ([]*catalog.Column
 
 		defLower := strings.ToLower(def)
 
-		// Handle separate primary key constraint
 		if strings.HasPrefix(defLower, "primary key") {
-			pkRegex := regexp.MustCompile(`(?i)primary\s+key\s*\(\s*([^)]+)\s*\)`)
+			pkRegex := regexp.MustCompile(
+				`(?i)primary\s+key\s*\(\s*([^)]+)\s*\)`,
+			)
 			if matches := pkRegex.FindStringSubmatch(def); len(matches) > 1 {
-				pkCols := strings.Split(matches[1], ",")
-				for _, col := range pkCols {
-					primaryKeyColumns = append(primaryKeyColumns, strings.TrimSpace(col))
+				pkCols := strings.SplitSeq(matches[1], ",")
+				for col := range pkCols {
+					primaryKeyColumns = append(
+						primaryKeyColumns,
+						strings.TrimSpace(col),
+					)
 				}
 			}
 			continue
 		}
 
-		// Skip other constraints for now
 		if strings.HasPrefix(defLower, "foreign key") ||
 			strings.HasPrefix(defLower, "constraint") ||
 			strings.HasPrefix(defLower, "unique") ||
@@ -145,10 +152,13 @@ func parseColumnDefinitions(columnDefs, migrationFile string) ([]*catalog.Column
 			continue
 		}
 
-		// Parse individual column definition
 		col, err := parseColumnDefinition(def, migrationFile)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse column definition '%s': %w", def, err)
+			return nil, fmt.Errorf(
+				"failed to parse column definition '%s': %w",
+				def,
+				err,
+			)
 		}
 
 		if col != nil {
@@ -156,7 +166,6 @@ func parseColumnDefinitions(columnDefs, migrationFile string) ([]*catalog.Column
 		}
 	}
 
-	// Mark primary key columns
 	for _, col := range columns {
 		for _, pkCol := range primaryKeyColumns {
 			if col.Name == pkCol {
@@ -177,7 +186,6 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 	columnName := parts[0]
 	columnType := parts[1]
 
-	// Parse type with length/precision
 	dataType, length, precision, scale := parseDataType(columnType)
 
 	col := catalog.NewColumn(columnName, dataType).SetCreatedBy(migrationFile)
@@ -192,7 +200,6 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 
 	defLower := strings.ToLower(def)
 
-	// Parse constraints
 	if strings.Contains(defLower, "not null") {
 		col.SetNotNull()
 	}
@@ -205,7 +212,6 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 		col.SetUnique()
 	}
 
-	// Parse default value
 	defaultRegex := regexp.MustCompile(`(?i)default\s+([^,\s]+(?:\s+[^,\s]+)*)`)
 	if matches := defaultRegex.FindStringSubmatch(def); len(matches) > 1 {
 		col.SetDefault(strings.TrimSpace(matches[1]))
@@ -214,8 +220,9 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 	return col, nil
 }
 
-func parseDataType(typeStr string) (dataType string, length *int32, precision *int32, scale *int32) {
-	// Handle types with parameters: varchar(255), decimal(10,2), etc.
+func parseDataType(
+	typeStr string,
+) (dataType string, length *int32, precision *int32, scale *int32) {
 	typeRegex := regexp.MustCompile(`^(\w+)(?:\(([^)]+)\))?$`)
 	matches := typeRegex.FindStringSubmatch(typeStr)
 
@@ -229,13 +236,11 @@ func parseDataType(typeStr string) (dataType string, length *int32, precision *i
 		params := strings.Split(matches[2], ",")
 
 		if len(params) == 1 {
-			// Single parameter (length)
 			if val, err := strconv.ParseInt(strings.TrimSpace(params[0]), 10, 32); err == nil {
 				length32 := int32(val)
 				length = &length32
 			}
 		} else if len(params) == 2 {
-			// Two parameters (precision, scale)
 			if val, err := strconv.ParseInt(strings.TrimSpace(params[0]), 10, 32); err == nil {
 				precision32 := int32(val)
 				precision = &precision32
@@ -283,8 +288,9 @@ func splitColumnDefinitions(defs string) []string {
 }
 
 func parseAlterTable(sql, migrationFile string) (*DDLStatement, error) {
-	// Basic ALTER TABLE parsing - will be expanded in Phase 2
-	alterRegex := regexp.MustCompile(`(?i)alter\s+table\s+(?:(\w+)\.)?(\w+)\s+(.+)`)
+	alterRegex := regexp.MustCompile(
+		`(?i)alter\s+table\s+(?:(\w+)\.)?(\w+)\s+(.+)`,
+	)
 	matches := alterRegex.FindStringSubmatch(sql)
 
 	if len(matches) < 4 {
@@ -305,7 +311,9 @@ func parseAlterTable(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseDropTable(sql, migrationFile string) (*DDLStatement, error) {
-	dropRegex := regexp.MustCompile(`(?i)drop\s+table(?:\s+if\s+exists)?\s+(?:(\w+)\.)?(\w+)`)
+	dropRegex := regexp.MustCompile(
+		`(?i)drop\s+table(?:\s+if\s+exists)?\s+(?:(\w+)\.)?(\w+)`,
+	)
 	matches := dropRegex.FindStringSubmatch(sql)
 
 	if len(matches) < 3 {
@@ -324,7 +332,6 @@ func parseDropTable(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseCreateIndex(sql, migrationFile string) (*DDLStatement, error) {
-	// Placeholder for CREATE INDEX parsing
 	return &DDLStatement{
 		Type: CreateIndex,
 		Raw:  sql,
@@ -332,7 +339,6 @@ func parseCreateIndex(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseDropIndex(sql, migrationFile string) (*DDLStatement, error) {
-	// Placeholder for DROP INDEX parsing
 	return &DDLStatement{
 		Type: DropIndex,
 		Raw:  sql,
@@ -340,7 +346,6 @@ func parseDropIndex(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseCreateSchema(sql, migrationFile string) (*DDLStatement, error) {
-	// Placeholder for CREATE SCHEMA parsing
 	return &DDLStatement{
 		Type: CreateSchema,
 		Raw:  sql,
@@ -348,7 +353,6 @@ func parseCreateSchema(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseDropSchema(sql, migrationFile string) (*DDLStatement, error) {
-	// Placeholder for DROP SCHEMA parsing
 	return &DDLStatement{
 		Type: DropSchema,
 		Raw:  sql,
@@ -356,7 +360,6 @@ func parseDropSchema(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseCreateEnum(sql, migrationFile string) (*DDLStatement, error) {
-	// Placeholder for CREATE TYPE (enum) parsing
 	return &DDLStatement{
 		Type: CreateEnum,
 		Raw:  sql,
@@ -364,7 +367,6 @@ func parseCreateEnum(sql, migrationFile string) (*DDLStatement, error) {
 }
 
 func parseDropEnum(sql, migrationFile string) (*DDLStatement, error) {
-	// Placeholder for DROP TYPE parsing
 	return &DDLStatement{
 		Type: DropEnum,
 		Raw:  sql,

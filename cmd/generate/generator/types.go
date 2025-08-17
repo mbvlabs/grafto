@@ -48,7 +48,6 @@ func NewTypeMapper(databaseType string) *TypeMapper {
 		Overrides:    make([]TypeOverride, 0),
 	}
 
-	// Initialize default PostgreSQL mappings
 	if databaseType == "postgresql" {
 		tm.initPostgreSQLMappings()
 	}
@@ -57,7 +56,6 @@ func NewTypeMapper(databaseType string) *TypeMapper {
 }
 
 func (tm *TypeMapper) initPostgreSQLMappings() {
-	// Non-nullable type mappings
 	tm.TypeMap["uuid"] = "uuid.UUID"
 	tm.TypeMap["varchar"] = "string"
 	tm.TypeMap["text"] = "string"
@@ -95,10 +93,8 @@ func (tm *TypeMapper) MapSQLTypeToGo(
 	sqlType string,
 	nullable bool,
 ) (goType, sqlcType, packageName string, err error) {
-	// Normalize the SQL type
 	normalizedType := normalizeSQLType(sqlType)
 
-	// Check for overrides first
 	for _, override := range tm.Overrides {
 		if override.DatabaseType == normalizedType &&
 			override.Nullable == nullable {
@@ -106,13 +102,11 @@ func (tm *TypeMapper) MapSQLTypeToGo(
 		}
 	}
 
-	// Get base Go type
 	baseGoType, exists := tm.TypeMap[normalizedType]
 	if !exists {
 		return "interface{}", "interface{}", "", nil
 	}
 
-	// Determine package requirements
 	var pkg string
 	switch baseGoType {
 	case "uuid.UUID":
@@ -121,7 +115,6 @@ func (tm *TypeMapper) MapSQLTypeToGo(
 		pkg = "time"
 	}
 
-	// For nullable columns, determine sqlc type and conversion
 	if nullable {
 		sqlcType, goType = tm.mapNullableType(normalizedType, baseGoType)
 	} else {
@@ -179,7 +172,11 @@ func (tm *TypeMapper) GenerateConversionFromDB(field GeneratedField) string {
 	case "sql.NullFloat64":
 		return fmt.Sprintf("row.%s.Float64", field.Name)
 	case "pgtype.Numeric":
-		return fmt.Sprintf("func() float64 { if row.%s.Valid { f, _ := row.%s.Float64Value(); return f.Float64 }; return 0 }()", field.Name, field.Name)
+		return fmt.Sprintf(
+			"func() float64 { if row.%s.Valid { f, _ := row.%s.Float64Value(); return f.Float64 }; return 0 }()",
+			field.Name,
+			field.Name,
+		)
 	default:
 		return fmt.Sprintf("row.%s", field.Name)
 	}
@@ -217,22 +214,22 @@ func (tm *TypeMapper) GenerateConversionToDB(
 			valueExpr,
 		)
 	case "pgtype.Numeric":
-		return fmt.Sprintf("func() pgtype.Numeric { var n pgtype.Numeric; _ = n.Scan(%s); return n }()", valueExpr)
+		return fmt.Sprintf(
+			"func() pgtype.Numeric { var n pgtype.Numeric; _ = n.Scan(%s); return n }()",
+			valueExpr,
+		)
 	default:
 		return valueExpr
 	}
 }
 
 func normalizeSQLType(sqlType string) string {
-	// Remove parameters like (255) or (10,2)
 	normalizedType := strings.ToLower(sqlType)
 
-	// Handle types with parameters
 	if idx := strings.Index(normalizedType, "("); idx != -1 {
 		normalizedType = normalizedType[:idx]
 	}
 
-	// Handle common aliases
 	switch normalizedType {
 	case "int4":
 		return "integer"
@@ -313,7 +310,10 @@ func generateValidationTags(column *catalog.Column) string {
 	return strings.Join(tags, ",")
 }
 
-func (tm *TypeMapper) GenerateZeroCheck(field GeneratedField, valueExpr string) string {
+func (tm *TypeMapper) GenerateZeroCheck(
+	field GeneratedField,
+	valueExpr string,
+) string {
 	switch field.Type {
 	case "string":
 		return fmt.Sprintf("%s != \"\"", valueExpr)

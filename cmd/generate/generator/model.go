@@ -75,13 +75,15 @@ func GenerateModel(
 			"data."+field.Name,
 		)
 
-		field.ZeroCheck = typeMapper.GenerateZeroCheck(field, "data."+field.Name)
+		field.ZeroCheck = typeMapper.GenerateZeroCheck(
+			field,
+			"data."+field.Name,
+		)
 
 		if pkg != "" {
 			importSet[pkg] = true
 		}
 
-		// Add imports for nullable types
 		if col.IsNullable {
 			switch sqlcType {
 			case "sql.NullString",

@@ -11,21 +11,27 @@ import (
 	"strings"
 )
 
-// DiscoverMigrations finds all .sql files in given directories
 func DiscoverMigrations(dirs []string) ([]Migration, error) {
 	var migrations []Migration
 
 	for _, dir := range dirs {
 		dirMigrations, err := discoverMigrationsInDir(dir)
 		if err != nil {
-			return nil, fmt.Errorf("failed to discover migrations in %s: %w", dir, err)
+			return nil, fmt.Errorf(
+				"failed to discover migrations in %s: %w",
+				dir,
+				err,
+			)
 		}
 		migrations = append(migrations, dirMigrations...)
 	}
 
-	// Sort migrations lexicographically by filename
 	sort.Slice(migrations, func(i, j int) bool {
-		return filepath.Base(migrations[i].FilePath) < filepath.Base(migrations[j].FilePath)
+		return filepath.Base(
+			migrations[i].FilePath,
+		) < filepath.Base(
+			migrations[j].FilePath,
+		)
 	})
 
 	return migrations, nil
@@ -34,32 +40,34 @@ func DiscoverMigrations(dirs []string) ([]Migration, error) {
 func discoverMigrationsInDir(dir string) ([]Migration, error) {
 	var migrations []Migration
 
-	err := filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
+	err := filepath.WalkDir(
+		dir,
+		func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
 
-		if d.IsDir() || !strings.HasSuffix(path, ".sql") {
+			if d.IsDir() || !strings.HasSuffix(path, ".sql") {
+				return nil
+			}
+
+			if IsDownMigration(filepath.Base(path)) {
+				return nil
+			}
+
+			migration, err := ParseMigration(path)
+			if err != nil {
+				return fmt.Errorf("failed to parse migration %s: %w", path, err)
+			}
+
+			migrations = append(migrations, *migration)
 			return nil
-		}
-
-		if IsDownMigration(filepath.Base(path)) {
-			return nil
-		}
-
-		migration, err := ParseMigration(path)
-		if err != nil {
-			return fmt.Errorf("failed to parse migration %s: %w", path, err)
-		}
-
-		migrations = append(migrations, *migration)
-		return nil
-	})
+		},
+	)
 
 	return migrations, err
 }
 
-// ParseMigration extracts DDL statements from migration file
 func ParseMigration(filePath string) (*Migration, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
@@ -89,7 +97,6 @@ func ParseMigration(filePath string) (*Migration, error) {
 	return migration, nil
 }
 
-// RemoveRollbackStatements filters out "down" migration content
 func RemoveRollbackStatements(content string, format MigrationFormat) string {
 	switch format {
 	case GolangMigrate:
@@ -103,24 +110,28 @@ func RemoveRollbackStatements(content string, format MigrationFormat) string {
 	}
 }
 
-// IsDownMigration checks if file is a rollback migration
 func IsDownMigration(filename string) bool {
-	return strings.Contains(filename, ".down.") || strings.HasSuffix(filename, ".down.sql")
+	return strings.Contains(filename, ".down.") ||
+		strings.HasSuffix(filename, ".down.sql")
 }
 
 func parseFilename(filename string) (sequence int, name string, err error) {
-	// Extract sequence number from filename
-	// Supports formats like: 00001_name.sql, 001_name.sql, 1_name.sql
 	re := regexp.MustCompile(`^(\d+)_(.+)\.sql$`)
 	matches := re.FindStringSubmatch(filename)
 
 	if len(matches) != 3 {
-		return 0, "", fmt.Errorf("invalid migration filename format: %s", filename)
+		return 0, "", fmt.Errorf(
+			"invalid migration filename format: %s",
+			filename,
+		)
 	}
 
 	sequence, err = strconv.Atoi(matches[1])
 	if err != nil {
-		return 0, "", fmt.Errorf("invalid sequence number in filename: %s", matches[1])
+		return 0, "", fmt.Errorf(
+			"invalid sequence number in filename: %s",
+			matches[1],
+		)
 	}
 
 	name = matches[2]
@@ -128,16 +139,18 @@ func parseFilename(filename string) (sequence int, name string, err error) {
 }
 
 func detectMigrationFormat(content string) MigrationFormat {
-	if strings.Contains(content, "-- migrate:up") || strings.Contains(content, "-- migrate:down") {
+	if strings.Contains(content, "-- migrate:up") ||
+		strings.Contains(content, "-- migrate:down") {
 		return GolangMigrate
 	}
-	if strings.Contains(content, "-- +goose Up") || strings.Contains(content, "-- +goose Down") {
+	if strings.Contains(content, "-- +goose Up") ||
+		strings.Contains(content, "-- +goose Down") {
 		return Goose
 	}
-	if strings.Contains(content, "-- migrate:up") || strings.Contains(content, "-- migrate:down") {
+	if strings.Contains(content, "-- migrate:up") ||
+		strings.Contains(content, "-- migrate:down") {
 		return Dbmate
 	}
-	// Default to golang-migrate if no specific markers found
 	return GolangMigrate
 }
 
@@ -160,7 +173,6 @@ func extractUpSQLGolangMigrate(content string) string {
 	}
 
 	if !inUp {
-		// If no explicit up section, assume entire content is up
 		return content
 	}
 
@@ -181,8 +193,10 @@ func extractUpSQLGoose(content string) string {
 		if strings.HasPrefix(trimmed, "-- +goose Down") {
 			break
 		}
-		if inUp && !strings.HasPrefix(trimmed, "-- +goose StatementBegin") && !strings.HasPrefix(trimmed, "-- +goose StatementEnd") {
-			if !strings.HasPrefix(trimmed, "SELECT ") || !strings.Contains(trimmed, "SQL query") {
+		if inUp && !strings.HasPrefix(trimmed, "-- +goose StatementBegin") &&
+			!strings.HasPrefix(trimmed, "-- +goose StatementEnd") {
+			if !strings.HasPrefix(trimmed, "SELECT ") ||
+				!strings.Contains(trimmed, "SQL query") {
 				upLines = append(upLines, line)
 			}
 		}
@@ -192,7 +206,6 @@ func extractUpSQLGoose(content string) string {
 }
 
 func extractUpSQLDbmate(content string) string {
-	// Dbmate uses same format as golang-migrate
 	return extractUpSQLGolangMigrate(content)
 }
 
@@ -238,8 +251,10 @@ func extractDownSQLGoose(content string) string {
 			inDown = true
 			continue
 		}
-		if inDown && !strings.HasPrefix(trimmed, "-- +goose StatementBegin") && !strings.HasPrefix(trimmed, "-- +goose StatementEnd") {
-			if !strings.HasPrefix(trimmed, "SELECT ") || !strings.Contains(trimmed, "SQL query") {
+		if inDown && !strings.HasPrefix(trimmed, "-- +goose StatementBegin") &&
+			!strings.HasPrefix(trimmed, "-- +goose StatementEnd") {
+			if !strings.HasPrefix(trimmed, "SELECT ") ||
+				!strings.Contains(trimmed, "SQL query") {
 				downLines = append(downLines, line)
 			}
 		}
@@ -255,14 +270,12 @@ func extractDownSQLDbmate(content string) string {
 func parseStatements(sql string) []string {
 	var statements []string
 
-	// Split by semicolon but handle string literals and comments
 	lines := strings.Split(sql, "\n")
 	var currentStatement strings.Builder
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
-		// Skip empty lines and comments
 		if trimmed == "" || strings.HasPrefix(trimmed, "--") {
 			continue
 		}
@@ -270,7 +283,6 @@ func parseStatements(sql string) []string {
 		currentStatement.WriteString(line)
 		currentStatement.WriteString("\n")
 
-		// Check if statement ends with semicolon
 		if strings.HasSuffix(trimmed, ";") {
 			stmt := strings.TrimSpace(currentStatement.String())
 			if stmt != "" {
@@ -280,7 +292,6 @@ func parseStatements(sql string) []string {
 		}
 	}
 
-	// Handle case where last statement doesn't end with semicolon
 	if currentStatement.Len() > 0 {
 		stmt := strings.TrimSpace(currentStatement.String())
 		if stmt != "" {
