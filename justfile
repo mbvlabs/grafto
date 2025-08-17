@@ -26,6 +26,8 @@ alias ft := fmt-templates
 
 alias ex := explore
 
+alias g := generate
+
 alias ti := test-integrations
 alias tu := test-units
 
@@ -92,6 +94,10 @@ explore:
 
 seed:
 	@go run ./cmd/seed/main.go
+
+# generators
+generate type name:
+    @go run ./cmd/generate/main.go {{type}} {{name}}
 
 # code quality
 golangci:

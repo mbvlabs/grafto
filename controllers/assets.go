@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	//nolint:gosec //only needed for browser caching
