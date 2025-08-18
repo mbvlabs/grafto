@@ -56,11 +56,11 @@ func main() {
 		}
 		fmt.Printf("Generated model for %s\n", resourceName)
 
-		if err := generateView(resourceName); err != nil {
-			fmt.Printf("Error generating view: %v\n", err)
+		if err := generateController(resourceName); err != nil {
+			fmt.Printf("Error generating controller: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("Generated view for %s\n", resourceName)
+		fmt.Printf("Generated controller for %s\n", resourceName)
 	default:
 		fmt.Printf("Unknown generate type: %s\n", generateType)
 		os.Exit(1)
@@ -353,6 +353,7 @@ type TemplateData struct {
 type ViewField struct {
 	Name            string
 	GoType          string
+	GoFormType      string
 	DisplayName     string
 	IsTimestamp     bool
 	InputType       string
@@ -478,28 +479,24 @@ func generateViewContent(resourceName, pluralName string) (string, error) {
 			if field.StringConverter == "" {
 				return fmt.Sprintf("{ %s.%s }", strings.ToLower(resourceName), field.Name)
 			}
-			if strings.Contains(field.StringConverter, "%s") {
-				return fmt.Sprintf("{ %s }", fmt.Sprintf(field.StringConverter, strings.ToLower(resourceName)+"."+field.Name))
-			}
-			return fmt.Sprintf("{ %s }", strings.Replace(field.StringConverter, "%s", strings.ToLower(resourceName)+"."+field.Name, 1))
+			actualFieldRef := strings.ToLower(resourceName) + "." + field.Name
+			converter := strings.ReplaceAll(field.StringConverter, "%s", actualFieldRef)
+			return fmt.Sprintf("{ %s }", converter)
 		},
 		"StringTableDisplay": func(field ViewField, resourceName string) string {
 			if field.StringConverter == "" {
 				return fmt.Sprintf("{ %s.%s }", strings.ToLower(resourceName), field.Name)
 			}
-			if strings.Contains(field.StringConverter, "%s") {
-				return fmt.Sprintf("{ %s }", fmt.Sprintf(field.StringConverter, strings.ToLower(resourceName)+"."+field.Name))
-			}
-			return fmt.Sprintf("{ %s }", strings.Replace(field.StringConverter, "%s", strings.ToLower(resourceName)+"."+field.Name, 1))
+			actualFieldRef := strings.ToLower(resourceName) + "." + field.Name
+			converter := strings.ReplaceAll(field.StringConverter, "%s", actualFieldRef)
+			return fmt.Sprintf("{ %s }", converter)
 		},
 		"StringValue": func(field ViewField, resourceName string) string {
 			if field.StringConverter == "" {
 				return fmt.Sprintf("%s.%s", strings.ToLower(resourceName), field.Name)
 			}
-			if strings.Contains(field.StringConverter, "%s") {
-				return fmt.Sprintf(field.StringConverter, strings.ToLower(resourceName)+"."+field.Name)
-			}
-			return strings.Replace(field.StringConverter, "%s", strings.ToLower(resourceName)+"."+field.Name, 1)
+			actualFieldRef := strings.ToLower(resourceName) + "." + field.Name
+			return strings.ReplaceAll(field.StringConverter, "%s", actualFieldRef)
 		},
 	}
 
@@ -591,6 +588,90 @@ func generateController(resourceName string) error {
 func generateControllerFile(
 	resourceName, pluralName, controllerPath string,
 ) error {
+	// Get field information from database schema
+	cfg := config.NewDefaultConfig()
+	cfg.TableName = pluralName
+
+	migrationsList, err := migrations.DiscoverMigrations(cfg.MigrationDirs)
+	if err != nil {
+		return fmt.Errorf("failed to discover migrations: %w", err)
+	}
+
+	if len(migrationsList) == 0 {
+		return fmt.Errorf("no migration files found in %v", cfg.MigrationDirs)
+	}
+
+	cat := catalog.NewCatalog("public")
+
+	for _, migration := range migrationsList {
+		for _, stmt := range migration.Statements {
+			if isRelevantForTable(stmt, pluralName) {
+				if err := ddl.ApplyDDL(cat, stmt, migration.FilePath); err != nil {
+					return fmt.Errorf(
+						"failed to apply DDL from %s: %w",
+						migration.FilePath,
+						err,
+					)
+				}
+			}
+		}
+	}
+
+	table, err := cat.GetTable("", pluralName)
+	if err != nil {
+		return fmt.Errorf(
+			"table '%s' not found in migrations. Check that you have a CREATE TABLE %s statement in your migrations",
+			pluralName,
+			pluralName,
+		)
+	}
+
+	typeMapper := generator.NewTypeMapper("postgresql")
+
+	fields := []ViewField{}
+	for _, col := range table.Columns {
+		if col.Name == "id" {
+			continue
+		}
+
+		field := ViewField{
+			Name:          formatFieldName(col.Name),
+			DisplayName:   formatDisplayName(col.Name),
+			DBName:        col.Name,
+			IsSystemField: col.Name == "created_at" || col.Name == "updated_at",
+		}
+
+		goType, _, _, err := typeMapper.MapSQLTypeToGo(col.DataType, col.IsNullable)
+		if err != nil {
+			goType = "string"
+		}
+
+		field.GoType = goType
+
+		// Map Go types to appropriate form types
+		switch goType {
+		case "time.Time":
+			field.GoFormType = "time.Time"
+			field.IsTimestamp = true
+		case "int16":
+			field.GoFormType = "int16"
+		case "int32":
+			field.GoFormType = "int32"
+		case "int64":
+			field.GoFormType = "int64"
+		case "float32":
+			field.GoFormType = "float32"
+		case "float64":
+			field.GoFormType = "float64"
+		case "bool":
+			field.GoFormType = "bool"
+		default:
+			field.GoFormType = "string"
+		}
+
+		fields = append(fields, field)
+	}
+
 	templatePath := filepath.Join(
 		"cmd",
 		"generate",
@@ -616,6 +697,7 @@ func generateControllerFile(
 	data := TemplateData{
 		ResourceName: resourceName,
 		PluralName:   pluralName,
+		Fields:       fields,
 	}
 
 	var buf strings.Builder

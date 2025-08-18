@@ -119,10 +119,27 @@ func (tm *TypeMapper) MapSQLTypeToGo(
 		sqlcType, goType = tm.mapNullableType(normalizedType, baseGoType)
 	} else {
 		goType = baseGoType
-		sqlcType = baseGoType
+		sqlcType = tm.getSQLCType(normalizedType, baseGoType)
 	}
 
 	return goType, sqlcType, pkg, nil
+}
+
+func (tm *TypeMapper) getSQLCType(sqlType, baseGoType string) string {
+	switch baseGoType {
+	case "time.Time":
+		// Map based on the specific timestamp type
+		switch sqlType {
+		case "timestamp", "timestamp without time zone":
+			return "pgtype.Timestamp"
+		case "timestamptz", "timestamp with time zone":
+			return "pgtype.Timestamptz"
+		default:
+			return "pgtype.Timestamptz" // default fallback
+		}
+	default:
+		return baseGoType
+	}
 }
 
 func (tm *TypeMapper) mapNullableType(
@@ -130,7 +147,15 @@ func (tm *TypeMapper) mapNullableType(
 ) (sqlcType, goType string) {
 	switch baseGoType {
 	case "time.Time":
-		return "pgtype.Timestamptz", "time.Time"
+		// Map based on the specific timestamp type for nullable fields
+		switch sqlType {
+		case "timestamp", "timestamp without time zone":
+			return "pgtype.Timestamp", "time.Time"
+		case "timestamptz", "timestamp with time zone":
+			return "pgtype.Timestamptz", "time.Time"
+		default:
+			return "pgtype.Timestamptz", "time.Time" // default fallback
+		}
 	case "string":
 		return "sql.NullString", "string"
 	case "bool":
@@ -159,7 +184,7 @@ func (tm *TypeMapper) GenerateConversionFromDB(field GeneratedField) string {
 	}
 
 	switch field.SQLCType {
-	case "pgtype.Timestamptz":
+	case "pgtype.Timestamptz", "pgtype.Timestamp":
 		return fmt.Sprintf("row.%s.Time", field.Name)
 	case "sql.NullString":
 		return fmt.Sprintf("row.%s.String", field.Name)
@@ -191,9 +216,14 @@ func (tm *TypeMapper) GenerateConversionToDB(
 	}
 
 	switch field.SQLCType {
-	case "pgtype.Timestamptz", "time.Time":
+	case "pgtype.Timestamptz":
 		return fmt.Sprintf(
 			"pgtype.Timestamptz{Time: %s, Valid: true}",
+			valueExpr,
+		)
+	case "pgtype.Timestamp":
+		return fmt.Sprintf(
+			"pgtype.Timestamp{Time: %s, Valid: true}",
 			valueExpr,
 		)
 	case "sql.NullString":

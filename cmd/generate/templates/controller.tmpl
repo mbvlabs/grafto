@@ -21,15 +21,19 @@ type {{.ResourceName}}s struct {
 }
 
 type Create{{.ResourceName}}FormPayload struct {
-	Name    string `form:"name"`
-	Ibn     string `form:"ibn"`
-	Release string `form:"release"`
+{{- range .Fields}}
+{{- if not .IsSystemField}}
+	{{.Name}}    {{.GoFormType}} `form:"{{.DBName}}"`
+{{- end}}
+{{- end}}
 }
 
 type Update{{.ResourceName}}FormPayload struct {
-	Name    string `form:"name"`
-	Ibn     string `form:"ibn"`
-	Release string `form:"release"`
+{{- range .Fields}}
+{{- if not .IsSystemField}}
+	{{.Name}}    {{.GoFormType}} `form:"{{.DBName}}"`
+{{- end}}
+{{- end}}
 }
 
 func new{{.ResourceName}}s(db psql.Postgres) {{.ResourceName}}s {
@@ -100,18 +104,12 @@ func (r {{.ResourceName}}s) Create(c echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(c))
 	}
 
-	releaseTime, err := time.Parse("2006-01-02", formPayload.Release)
-	if err != nil {
-		if flashErr := addFlash(c, contexts.FlashError, "Invalid release date format"); flashErr != nil {
-			return flashErr
-		}
-		return c.Redirect(http.StatusSeeOther, routes.{{.ResourceName}}New.Path)
-	}
-
 	payload := models.Create{{.ResourceName}}Payload{
-		Name:    formPayload.Name,
-		Ibn:     formPayload.Ibn,
-		Release: releaseTime,
+{{- range .Fields}}
+{{- if not .IsSystemField}}
+		{{.Name}}:    formPayload.{{.Name}},
+{{- end}}
+{{- end}}
 	}
 
 	{{.ResourceName | ToLower}}, err := models.Create{{.ResourceName}}(
@@ -165,22 +163,13 @@ func (r {{.ResourceName}}s) Update(c echo.Context) error {
 		return views.ErrorPage().Render(renderArgs(c))
 	}
 
-	releaseTime, err := time.Parse("2006-01-02", formPayload.Release)
-	if err != nil {
-		if flashErr := addFlash(c, contexts.FlashError, "Invalid release date format"); flashErr != nil {
-			return flashErr
-		}
-		return c.Redirect(
-			http.StatusSeeOther,
-			routes.{{.ResourceName}}Edit.GetPath({{.ResourceName | ToLower}}ID),
-		)
-	}
-
 	payload := models.Update{{.ResourceName}}Payload{
 		ID:      {{.ResourceName | ToLower}}ID,
-		Name:    formPayload.Name,
-		Ibn:     formPayload.Ibn,
-		Release: releaseTime,
+{{- range .Fields}}
+{{- if not .IsSystemField}}
+		{{.Name}}:    formPayload.{{.Name}},
+{{- end}}
+{{- end}}
 	}
 
 	{{.ResourceName | ToLower}}, err := models.Update{{.ResourceName}}(
