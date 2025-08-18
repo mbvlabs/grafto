@@ -88,6 +88,9 @@ compile-templates:
 fmt-templates:
     cd views && templ fmt .
 
+golines:
+	@golines -w -m 120 controllers models router router/routes router/contexts
+
 # exploration
 explore:
     @go run ./cmd/explore/main.go

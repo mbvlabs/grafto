@@ -84,17 +84,15 @@ func GenerateModel(
 			importSet[pkg] = true
 		}
 
-		if col.IsNullable {
-			switch sqlcType {
-			case "sql.NullString",
-				"sql.NullBool",
-				"sql.NullInt32",
-				"sql.NullInt64",
-				"sql.NullFloat64":
-				importSet["database/sql"] = true
-			case "pgtype.Timestamptz", "pgtype.Numeric":
-				importSet["github.com/jackc/pgx/v5/pgtype"] = true
-			}
+		switch sqlcType {
+		case "sql.NullString",
+			"sql.NullBool",
+			"sql.NullInt32",
+			"sql.NullInt64",
+			"sql.NullFloat64":
+			importSet["database/sql"] = true
+		case "pgtype.Timestamptz", "pgtype.Timestamp", "pgtype.Numeric":
+			importSet["github.com/jackc/pgx/v5/pgtype"] = true
 		}
 
 		model.Fields = append(model.Fields, field)
