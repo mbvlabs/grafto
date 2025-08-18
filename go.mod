@@ -9,7 +9,7 @@ require (
 	github.com/a-h/templ v0.3.943
 	github.com/dromara/carbon/v2 v2.6.11
 	github.com/exaring/otelpgx v0.9.3
-	github.com/fergusstrange/embedded-postgres v1.31.0
+	github.com/fergusstrange/embedded-postgres v1.32.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.4.0
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
