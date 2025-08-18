@@ -88,11 +88,11 @@ templ {{.ResourceName}}New() {
 								<p class="mt-1 text-sm text-gray-400">Enter the details for the new {{.ResourceName | ToLower}}.</p>
 								<div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
 									{{range .Fields}}{{if not .IsSystemField}}<div class="sm:col-span-3">
-										<label for="{{.DBName}}" class="block text-sm font-medium text-white">
+										<label for="{{.CamelCase}}" class="block text-sm font-medium text-white">
 											{{.DisplayName}}
 										</label>
 										<div class="mt-2">
-											<input id="{{.DBName}}" type="{{.InputType}}" data-bind="{{.DBName}}" class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" required/>
+											<input id="{{.CamelCase}}" type="{{.InputType}}" data-bind="{{.CamelCase}}" class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" />
 										</div>
 									</div>
 									{{end}}{{end}}</div>
@@ -125,11 +125,11 @@ templ {{.ResourceName}}Edit({{.ResourceName | ToLower}} models.{{.ResourceName}}
 								<p class="mt-1 text-sm text-gray-400">Update the details for this {{.ResourceName | ToLower}}.</p>
 								<div class="mt-6 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
 									{{range .Fields}}{{if not .IsSystemField}}<div class="sm:col-span-3">
-										<label for="{{.DBName}}" class="block text-sm font-medium text-white">
+										<label for="{{.CamelCase}}" class="block text-sm font-medium text-white">
 											{{.DisplayName}}
 										</label>
 										<div class="mt-2">
-											<input id="{{.DBName}}" type="{{.InputType}}" data-bind="{{.DBName}}" class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" value={ {{StringValue . $.ResourceName}} } required/>
+											<input id="{{.CamelCase}}" type="{{.InputType}}" data-bind="{{.CamelCase}}" class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm" value={ {{StringValue . $.ResourceName}} } />
 										</div>
 									</div>
 									{{end}}{{end}}</div>

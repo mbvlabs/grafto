@@ -359,6 +359,7 @@ type ViewField struct {
 	InputType       string
 	StringConverter string
 	DBName          string
+	CamelCase       string
 	IsSystemField   bool
 }
 
@@ -412,6 +413,7 @@ func generateViewContent(resourceName, pluralName string) (string, error) {
 			Name:          formatFieldName(col.Name),
 			DisplayName:   formatDisplayName(col.Name),
 			DBName:        col.Name,
+			CamelCase:     formatCamelCase(col.Name),
 			IsSystemField: col.Name == "created_at" || col.Name == "updated_at",
 		}
 
@@ -537,6 +539,19 @@ func formatDisplayName(dbName string) string {
 	return strings.Join(parts, " ")
 }
 
+func formatCamelCase(dbName string) string {
+	parts := strings.Split(dbName, "_")
+	if len(parts) == 0 {
+		return dbName
+	}
+	
+	result := parts[0]
+	for i := 1; i < len(parts); i++ {
+		result += strings.Title(parts[i])
+	}
+	return result
+}
+
 func generateController(resourceName string) error {
 	pluralName := inflection.Plural(strings.ToLower(resourceName))
 
@@ -638,6 +653,7 @@ func generateControllerFile(
 			Name:          formatFieldName(col.Name),
 			DisplayName:   formatDisplayName(col.Name),
 			DBName:        col.Name,
+			CamelCase:     formatCamelCase(col.Name),
 			IsSystemField: col.Name == "created_at" || col.Name == "updated_at",
 		}
 

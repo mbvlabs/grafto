@@ -23,7 +23,11 @@ type {{.ResourceName}}s struct {
 type Create{{.ResourceName}}FormPayload struct {
 {{- range .Fields}}
 {{- if not .IsSystemField}}
-	{{.Name}}    {{.GoFormType}} `form:"{{.DBName}}"`
+	{{- if eq .GoFormType "time.Time"}}
+	{{.Name}}    string `form:"{{.CamelCase}}"`
+	{{- else}}
+	{{.Name}}    {{.GoFormType}} `form:"{{.CamelCase}}"`
+	{{- end}}
 {{- end}}
 {{- end}}
 }
@@ -31,13 +35,30 @@ type Create{{.ResourceName}}FormPayload struct {
 type Update{{.ResourceName}}FormPayload struct {
 {{- range .Fields}}
 {{- if not .IsSystemField}}
-	{{.Name}}    {{.GoFormType}} `form:"{{.DBName}}"`
+	{{- if eq .GoFormType "time.Time"}}
+	{{.Name}}    string `form:"{{.CamelCase}}"`
+	{{- else}}
+	{{.Name}}    {{.GoFormType}} `form:"{{.CamelCase}}"`
+	{{- end}}
 {{- end}}
 {{- end}}
 }
 
 func new{{.ResourceName}}s(db psql.Postgres) {{.ResourceName}}s {
 	return {{.ResourceName}}s{db}
+}
+
+func parseTimeField(dateStr string) time.Time {
+	if dateStr == "" {
+		return time.Time{}
+	}
+	
+	t, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return time.Time{}
+	}
+	
+	return t
 }
 
 func (r {{.ResourceName}}s) Index(c echo.Context) error {
@@ -107,7 +128,11 @@ func (r {{.ResourceName}}s) Create(c echo.Context) error {
 	payload := models.Create{{.ResourceName}}Payload{
 {{- range .Fields}}
 {{- if not .IsSystemField}}
+		{{- if eq .GoFormType "time.Time"}}
+		{{.Name}}:    parseTimeField(formPayload.{{.Name}}),
+		{{- else}}
 		{{.Name}}:    formPayload.{{.Name}},
+		{{- end}}
 {{- end}}
 {{- end}}
 	}
@@ -167,7 +192,11 @@ func (r {{.ResourceName}}s) Update(c echo.Context) error {
 		ID:      {{.ResourceName | ToLower}}ID,
 {{- range .Fields}}
 {{- if not .IsSystemField}}
+		{{- if eq .GoFormType "time.Time"}}
+		{{.Name}}:    parseTimeField(formPayload.{{.Name}}),
+		{{- else}}
 		{{.Name}}:    formPayload.{{.Name}},
+		{{- end}}
 {{- end}}
 {{- end}}
 	}
