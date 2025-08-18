@@ -27,7 +27,7 @@ const (
 )
 
 type Controllers struct {
-	Api           Api
+	API           Api
 	Pages         Pages
 	Sessions      Sessions
 	Dashboard     Dashboard
