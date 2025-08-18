@@ -65,6 +65,11 @@ func main() {
 		fmt.Printf("Unknown generate type: %s\n", generateType)
 		os.Exit(1)
 	}
+
+	if err := runGolines(); err != nil {
+		fmt.Printf("Error running golines: %v\n", err)
+		os.Exit(1)
+	}
 }
 
 func generateModel(resourceName string) error {
@@ -318,6 +323,23 @@ func runCompileTemplates() error {
 	return nil
 }
 
+func runGolines() error {
+	cmd := exec.Command(
+		"just",
+		"golines",
+	)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf(
+			"failed to run 'just golines': %w\nOutput: %s",
+			err,
+			output,
+		)
+	}
+	fmt.Println("formatted gofiles")
+	return nil
+}
+
 // Keep the original view generation code unchanged
 func generateView(resourceName string) error {
 	pluralName := inflection.Plural(strings.ToLower(resourceName))
@@ -373,7 +395,10 @@ func generateViewContent(resourceName, pluralName string) (string, error) {
 	}
 
 	if len(migrationsList) == 0 {
-		return "", fmt.Errorf("no migration files found in %v", cfg.MigrationDirs)
+		return "", fmt.Errorf(
+			"no migration files found in %v",
+			cfg.MigrationDirs,
+		)
 	}
 
 	cat := catalog.NewCatalog("public")
@@ -417,7 +442,10 @@ func generateViewContent(resourceName, pluralName string) (string, error) {
 			IsSystemField: col.Name == "created_at" || col.Name == "updated_at",
 		}
 
-		goType, _, _, err := typeMapper.MapSQLTypeToGo(col.DataType, col.IsNullable)
+		goType, _, _, err := typeMapper.MapSQLTypeToGo(
+			col.DataType,
+			col.IsNullable,
+		)
 		if err != nil {
 			goType = "string"
 		}
@@ -479,26 +507,50 @@ func generateViewContent(resourceName, pluralName string) (string, error) {
 		"ToLower": strings.ToLower,
 		"StringDisplay": func(field ViewField, resourceName string) string {
 			if field.StringConverter == "" {
-				return fmt.Sprintf("{ %s.%s }", strings.ToLower(resourceName), field.Name)
+				return fmt.Sprintf(
+					"{ %s.%s }",
+					strings.ToLower(resourceName),
+					field.Name,
+				)
 			}
 			actualFieldRef := strings.ToLower(resourceName) + "." + field.Name
-			converter := strings.ReplaceAll(field.StringConverter, "%s", actualFieldRef)
+			converter := strings.ReplaceAll(
+				field.StringConverter,
+				"%s",
+				actualFieldRef,
+			)
 			return fmt.Sprintf("{ %s }", converter)
 		},
 		"StringTableDisplay": func(field ViewField, resourceName string) string {
 			if field.StringConverter == "" {
-				return fmt.Sprintf("{ %s.%s }", strings.ToLower(resourceName), field.Name)
+				return fmt.Sprintf(
+					"{ %s.%s }",
+					strings.ToLower(resourceName),
+					field.Name,
+				)
 			}
 			actualFieldRef := strings.ToLower(resourceName) + "." + field.Name
-			converter := strings.ReplaceAll(field.StringConverter, "%s", actualFieldRef)
+			converter := strings.ReplaceAll(
+				field.StringConverter,
+				"%s",
+				actualFieldRef,
+			)
 			return fmt.Sprintf("{ %s }", converter)
 		},
 		"StringValue": func(field ViewField, resourceName string) string {
 			if field.StringConverter == "" {
-				return fmt.Sprintf("%s.%s", strings.ToLower(resourceName), field.Name)
+				return fmt.Sprintf(
+					"%s.%s",
+					strings.ToLower(resourceName),
+					field.Name,
+				)
 			}
 			actualFieldRef := strings.ToLower(resourceName) + "." + field.Name
-			return strings.ReplaceAll(field.StringConverter, "%s", actualFieldRef)
+			return strings.ReplaceAll(
+				field.StringConverter,
+				"%s",
+				actualFieldRef,
+			)
 		},
 	}
 
@@ -544,7 +596,7 @@ func formatCamelCase(dbName string) string {
 	if len(parts) == 0 {
 		return dbName
 	}
-	
+
 	result := parts[0]
 	for i := 1; i < len(parts); i++ {
 		result += strings.Title(parts[i])
@@ -657,7 +709,10 @@ func generateControllerFile(
 			IsSystemField: col.Name == "created_at" || col.Name == "updated_at",
 		}
 
-		goType, _, _, err := typeMapper.MapSQLTypeToGo(col.DataType, col.IsNullable)
+		goType, _, _, err := typeMapper.MapSQLTypeToGo(
+			col.DataType,
+			col.IsNullable,
+		)
 		if err != nil {
 			goType = "string"
 		}
@@ -740,7 +795,9 @@ func generateRoutesFile(resourceName, pluralName, routesPath string) error {
 		"ToLower": strings.ToLower,
 	}
 
-	tmpl, err := template.New("routes").Funcs(funcMap).Parse(string(templateContent))
+	tmpl, err := template.New("routes").
+		Funcs(funcMap).
+		Parse(string(templateContent))
 	if err != nil {
 		return fmt.Errorf("failed to parse routes template: %w", err)
 	}
