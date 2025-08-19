@@ -11,15 +11,6 @@ const (
 	{{.PluralName}}NamePrefix  = "{{.PluralName}}"
 )
 
-var {{.ResourceName}}s = []Route{
-	{{.ResourceName}}Index,
-	{{.ResourceName}}Show.Route,
-	{{.ResourceName}}New,
-	{{.ResourceName}}Create,
-	{{.ResourceName}}Edit.Route,
-	{{.ResourceName}}Update.Route,
-	{{.ResourceName}}Destroy.Route,
-}
 
 var {{.ResourceName}}Index = Route{
 	Name:         {{.PluralName}}NamePrefix + ".index",

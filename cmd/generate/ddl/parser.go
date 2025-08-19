@@ -189,7 +189,26 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 	}
 
 	columnName := parts[0]
-	columnType := parts[1]
+	
+	// Extract the type, which may be multiple words
+	// Find the type portion by looking for constraint keywords
+	constraintKeywords := []string{"not", "null", "primary", "key", "unique", "default", "references", "check"}
+	typeEndIndex := len(parts)
+	
+	for i := 1; i < len(parts); i++ {
+		wordLower := strings.ToLower(parts[i])
+		for _, keyword := range constraintKeywords {
+			if wordLower == keyword {
+				typeEndIndex = i
+				break
+			}
+		}
+		if typeEndIndex != len(parts) {
+			break
+		}
+	}
+	
+	columnType := strings.Join(parts[1:typeEndIndex], " ")
 
 	dataType, length, precision, scale := parseDataType(columnType)
 
@@ -228,6 +247,27 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 func parseDataType(
 	typeStr string,
 ) (dataType string, length *int32, precision *int32, scale *int32) {
+	// Handle special multi-word types first
+	typeStrLower := strings.ToLower(typeStr)
+	
+	// Check for timestamp with/without time zone
+	if strings.Contains(typeStrLower, "timestamp with time zone") {
+		return "timestamp with time zone", nil, nil, nil
+	}
+	if strings.Contains(typeStrLower, "timestamp without time zone") {
+		return "timestamp without time zone", nil, nil, nil
+	}
+	if strings.Contains(typeStrLower, "time with time zone") {
+		return "time with time zone", nil, nil, nil
+	}
+	if strings.Contains(typeStrLower, "time without time zone") {
+		return "time without time zone", nil, nil, nil
+	}
+	if strings.Contains(typeStrLower, "double precision") {
+		return "double precision", nil, nil, nil
+	}
+	
+	// For single word types with potential parameters
 	typeRegex := regexp.MustCompile(`^(\w+)(?:\(([^)]+)\))?$`)
 	matches := typeRegex.FindStringSubmatch(typeStr)
 

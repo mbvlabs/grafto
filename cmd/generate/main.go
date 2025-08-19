@@ -645,7 +645,7 @@ func generateController(resourceName string) error {
 		return fmt.Errorf("failed to register controller: %w", err)
 	}
 
-	if err := registerRoutes(resourceName, pluralName); err != nil {
+	if err := registerRoutes(resourceName); err != nil {
 		return fmt.Errorf("failed to register routes: %w", err)
 	}
 
@@ -896,7 +896,7 @@ func registerController(resourceName, pluralName string) error {
 	return os.WriteFile(controllerFilePath, []byte(contentStr), 0644)
 }
 
-func registerRoutes(resourceName, pluralName string) error {
+func registerRoutes(resourceName string) error {
 	routesFilePath := "router/routes/routes.go"
 
 	content, err := os.ReadFile(routesFilePath)
@@ -906,24 +906,49 @@ func registerRoutes(resourceName, pluralName string) error {
 
 	contentStr := string(content)
 
-	appendLine := fmt.Sprintf("\tr = append(r, %ss...)", resourceName)
+	// Add the individual routes to the BuildRoutes append call
+	routesToAdd := []string{
+		fmt.Sprintf("\t\t%sIndex,", resourceName),
+		fmt.Sprintf("\t\t%sShow.Route,", resourceName),
+		fmt.Sprintf("\t\t%sNew,", resourceName),
+		fmt.Sprintf("\t\t%sCreate,", resourceName),
+		fmt.Sprintf("\t\t%sEdit.Route,", resourceName),
+		fmt.Sprintf("\t\t%sUpdate.Route,", resourceName),
+		fmt.Sprintf("\t\t%sDestroy.Route,", resourceName),
+	}
 
-	if !strings.Contains(contentStr, appendLine) {
-		pattern := `var AllRoutes = func() []Route {`
-		replacement := pattern + "\n\tvar r []Route"
-
-		if !strings.Contains(contentStr, "var r []Route") {
-			contentStr = strings.Replace(contentStr, pattern, replacement, 1)
+	// Check if any of these routes are already present
+	alreadyExists := false
+	for _, route := range routesToAdd {
+		if strings.Contains(contentStr, strings.TrimSpace(route)) {
+			alreadyExists = true
+			break
 		}
+	}
 
-		returnPattern := `return r`
-		returnReplacement := appendLine + "\n\n\t" + returnPattern
-		contentStr = strings.Replace(
-			contentStr,
-			"\t"+returnPattern,
-			"\t"+returnReplacement,
-			1,
-		)
+	if !alreadyExists {
+		// Find the closing parenthesis of the r = append() call
+		lines := strings.Split(contentStr, "\n")
+		inAppend := false
+		
+		for i, line := range lines {
+			// Look for the start of the append call
+			if strings.Contains(line, "r = append(") {
+				inAppend = true
+				continue
+			}
+			
+			// If we're in the append and find a line with just "\t)", this is our closing parenthesis
+			if inAppend && strings.TrimSpace(line) == ")" {
+				// Insert the routes before the closing parenthesis
+				newLines := make([]string, 0, len(lines)+len(routesToAdd))
+				newLines = append(newLines, lines[:i]...)
+				newLines = append(newLines, routesToAdd...)
+				newLines = append(newLines, lines[i:]...)
+				contentStr = strings.Join(newLines, "\n")
+				break
+			}
+		}
 	}
 
 	//nolint:gosec //
