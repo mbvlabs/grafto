@@ -1,7 +1,6 @@
 package sessions
 
 import (
-	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
 )
@@ -17,7 +16,7 @@ templ VerifyEmailPage(tokenInvalid bool) {
 						Your token is not valid; please request a new one.
 					</p>
 				} else {
-					<p hx-get={ routes.Redirect.WithQuery(routes.DashboardHome) } hx-trigger="load delay:4s" class="text-green-600">
+					<p hx-get={ "" } hx-trigger="load delay:4s" class="text-green-600">
 						Your email has been validated; you'll be re-directed to the dashboard in 4 seconds.
 					</p>
 				}

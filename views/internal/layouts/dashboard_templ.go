@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/mbvlabs/grafto/router/reqmeta"
+	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views/internal/components"
 )
@@ -77,8 +77,8 @@ func dashboardNavItem(name, path, iconPath string) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		var templ_7745c5c3_Var3 = []any{"flex items-center gap-4 px-3 py-3 rounded-lg text-sm transition-colors",
-			templ.KV("bg-primary/10 text-primary font-medium", reqmeta.ExtractApp(ctx).CurrentPath == path),
-			templ.KV("text-base-content/70 hover:bg-base-300 hover:text-base-content", reqmeta.ExtractApp(ctx).CurrentPath != path),
+			templ.KV("bg-primary/10 text-primary font-medium", cookies.GetAppCtx(ctx).CurrentPath == path),
+			templ.KV("text-base-content/70 hover:bg-base-300 hover:text-base-content", cookies.GetAppCtx(ctx).CurrentPath != path),
 		}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var3...)
 		if templ_7745c5c3_Err != nil {
@@ -193,7 +193,7 @@ func Dashboard(opts ...components.HeadDataOption) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, flash := range reqmeta.ExtractFlashMessages(ctx) {
+		for _, flash := range cookies.GetFlashesCtx(ctx) {
 			templ_7745c5c3_Err = components.ToastMessage(flash).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

@@ -9,7 +9,6 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
@@ -193,7 +192,7 @@ func RegisterForm(data RegisterFormProps) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Link("Sign in", routes.LoginPage.Path).WithSecondary().Build().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Link("Sign in", "").WithSecondary().Build().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -261,7 +260,7 @@ func RegisterForm(data RegisterFormProps) templ.Component {
 		templ_7745c5c3_Err = components.Form(components.FormProps{
 			Class: "bg-base-300 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
 			Attributes: templ.Attributes{
-				"hx-post":   routes.StoreUser.Path,
+				"hx-post":   "",
 				"method":    "post",
 				"hx-target": "this",
 				"hx-swap":   "outerHTML",

@@ -9,7 +9,6 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
@@ -134,10 +133,10 @@ func LoginForm(success bool, errors views.Errors) templ.Component {
 		if success {
 			templ_7745c5c3_Err = components.NavItem(
 				"Logout",
-				routes.DestroyAuthSession.Name,
-				routes.DestroyAuthSession.Path,
+				"",
+				"",
 				templ.Attributes{
-					"hx-delete":   routes.DestroyAuthSession.Path,
+					"hx-delete":   "",
 					"hx-swap-oob": "outerHTML:a[data-navItemPath='login']",
 				},
 			).Render(ctx, templ_7745c5c3_Buffer)
@@ -151,7 +150,7 @@ func LoginForm(success bool, errors views.Errors) templ.Component {
 			templ_7745c5c3_Err = components.SuccessFlag(
 				"You've been authenticated and will be redirected to the dashboard.",
 				templ.Attributes{
-					"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
+					"hx-get":     "",
 					"hx-trigger": "load delay:4s",
 				},
 			).Render(ctx, templ_7745c5c3_Buffer)
@@ -191,7 +190,7 @@ func LoginForm(success bool, errors views.Errors) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Link("Register", routes.CreateUserPage.Path).WithSuccess().Build().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Link("Register", "").WithSuccess().Build().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -237,7 +236,7 @@ func LoginForm(success bool, errors views.Errors) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = components.Link("Forgotten password?", routes.ForgotPasswordPage.Path).WithSize("small").Build().Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = components.Link("Forgotten password?", "").WithSize("small").Build().Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -254,7 +253,7 @@ func LoginForm(success bool, errors views.Errors) templ.Component {
 		templ_7745c5c3_Err = components.Form(components.FormProps{
 			Class: "bg-base-300 w-full mx-auto max-w-[400px] p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
 			Attributes: templ.Attributes{
-				"hx-post":   routes.StoreAuthSession.Path,
+				"hx-post":   "",
 				"method":    "post",
 				"hx-target": "this",
 				"hx-swap":   "outerHTML",

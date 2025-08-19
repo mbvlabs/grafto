@@ -2,10 +2,10 @@ package components
 
 import (
 	"github.com/dromara/carbon/v2"
-	"github.com/mbvlabs/grafto/router/reqmeta"
+	"github.com/mbvlabs/grafto/router/cookies"
 )
 
-templ toastBase(tType string, flash reqmeta.FlashMessage) {
+templ toastBase(tType string, flash cookies.FlashMessage) {
 	<div
 		x-data="{ show: true }"
 		x-show="show"
@@ -44,15 +44,15 @@ templ toastBase(tType string, flash reqmeta.FlashMessage) {
 	</div>
 }
 
-templ ToastMessage(flash reqmeta.FlashMessage) {
+templ ToastMessage(flash cookies.FlashMessage) {
 	switch flash.Type {
-		case reqmeta.FlashSuccess:
+		case cookies.FlashSuccess:
 			@toastBase("bg-success", flash)
-		case reqmeta.FlashInfo:
+		case cookies.FlashInfo:
 			@toastBase("bg-info", flash)
-		case reqmeta.FlashError:
+		case cookies.FlashError:
 			@toastBase("bg-error", flash)
-		case reqmeta.FlashWarning:
+		case cookies.FlashWarning:
 			@toastBase("bg-warning", flash)
 	}
 }

@@ -1,7 +1,6 @@
 package sessions
 
 import (
-	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
@@ -44,10 +43,10 @@ templ LoginForm(success bool, errors views.Errors) {
 	if success {
 		@components.NavItem(
 			"Logout",
-			routes.DestroyAuthSession.Name,
-			routes.DestroyAuthSession.Path,
+			"",
+			"",
 			templ.Attributes{
-				"hx-delete":   routes.DestroyAuthSession.Path,
+				"hx-delete":   "",
 				"hx-swap-oob": "outerHTML:a[data-navItemPath='login']",
 			},
 		)
@@ -55,7 +54,7 @@ templ LoginForm(success bool, errors views.Errors) {
 			@components.SuccessFlag(
 				"You've been authenticated and will be redirected to the dashboard.",
 				templ.Attributes{
-					"hx-get":     routes.Redirect.WithQuery(routes.DashboardHome),
+					"hx-get":     "",
 					"hx-trigger": "load delay:4s",
 				},
 			)
@@ -70,7 +69,7 @@ templ LoginForm(success bool, errors views.Errors) {
 	@components.Form(components.FormProps{
 		Class: "bg-base-300 w-full mx-auto max-w-[400px] p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
 		Attributes: templ.Attributes{
-			"hx-post":   routes.StoreAuthSession.Path,
+			"hx-post":   "",
 			"method":    "post",
 			"hx-target": "this",
 			"hx-swap":   "outerHTML",
@@ -82,7 +81,7 @@ templ LoginForm(success bool, errors views.Errors) {
 				<p class="text-sm text-base-content mr-2">
 					Don't have an account?
 				</p>
-				@components.Link("Register", routes.CreateUserPage.Path).WithSuccess().Build()
+				@components.Link("Register", "").WithSuccess().Build()
 			</div>
 		</div>
 		@components.Input{
@@ -107,7 +106,7 @@ templ LoginForm(success bool, errors views.Errors) {
 				Name: "remember_me",
 				Text: "Remember me",
 			}.Build()
-			@components.Link("Forgotten password?", routes.ForgotPasswordPage.Path).WithSize("small").Build()
+			@components.Link("Forgotten password?", "").WithSize("small").Build()
 		</div>
 		@components.Button("Login").WithSuccess().WithType("submit").Build()
 	}

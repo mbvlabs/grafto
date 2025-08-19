@@ -1,8 +1,8 @@
 package layouts
 
 import (
-	"github.com/mbvlabs/grafto/router/reqmeta"
 	"github.com/mbvlabs/grafto/views/internal/components"
+	"github.com/mbvlabs/grafto/router/cookies"
 )
 
 templ Base(headOpts ...components.HeadDataOption) {
@@ -14,7 +14,7 @@ templ Base(headOpts ...components.HeadDataOption) {
 			{ children... }
 		</body>
 		<div class="fixed bottom-4 right-10 z-50 space-y-2">
-			for _, flash := range reqmeta.ExtractFlashMessages(ctx) {
+			for _, flash := range cookies.GetFlashesCtx(ctx) {
 				@components.ToastMessage(flash)
 			}
 		</div>

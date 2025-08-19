@@ -9,10 +9,21 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"context"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/router/reqmeta"
 	"github.com/mbvlabs/grafto/router/routes"
+
+	"github.com/mbvlabs/grafto/router/cookies"
 )
+
+func extractApp(ctx context.Context) cookies.App {
+	appCtx, ok := ctx.Value(cookies.AppKey).(cookies.App)
+	if !ok {
+		return cookies.App{}
+	}
+
+	return appCtx
+}
 
 func NavItem(name, pathName, path string, attrs templ.Attributes) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -36,8 +47,8 @@ func NavItem(name, pathName, path string, attrs templ.Attributes) templ.Componen
 		}
 		ctx = templ.ClearChildren(ctx)
 		var templ_7745c5c3_Var2 = []any{"text-base-content no-underline transition-colors duration-300 hover:text-accent text-base font-medium py-2 relative after:content-[''] after:absolute after:h-0.5 after:bottom-0 after:left-0 after:bg-accent after:transition-all after:duration-300",
-			templ.KV("after:w-full text-accent", reqmeta.ExtractApp(ctx).CurrentPath == path),
-			templ.KV("after:w-0 hover:after:w-full", reqmeta.ExtractApp(ctx).CurrentPath != path),
+			templ.KV("after:w-full text-accent", extractApp(ctx).CurrentPath == path),
+			templ.KV("after:w-0 hover:after:w-full", extractApp(ctx).CurrentPath != path),
 		}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
@@ -71,7 +82,7 @@ func NavItem(name, pathName, path string, attrs templ.Attributes) templ.Componen
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(pathName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 17, Col: 29}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 28, Col: 29}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -84,7 +95,7 @@ func NavItem(name, pathName, path string, attrs templ.Attributes) templ.Componen
 		var templ_7745c5c3_Var5 templ.SafeURL
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinURLErrs(templ.SafeURL(path))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 18, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 29, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -97,7 +108,7 @@ func NavItem(name, pathName, path string, attrs templ.Attributes) templ.Componen
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 19, Col: 8}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/internal/components/navigation.templ`, Line: 30, Col: 8}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -160,7 +171,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if reqmeta.ExtractApp(ctx).IsAuthenticated {
+		if extractApp(ctx).IsAuthenticated {
 			templ_7745c5c3_Err = NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, templ.Attributes{"hx-delete": routes.DestroyAuthSession.Path}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

@@ -10,10 +10,10 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/dromara/carbon/v2"
-	"github.com/mbvlabs/grafto/router/reqmeta"
+	"github.com/mbvlabs/grafto/router/cookies"
 )
 
-func toastBase(tType string, flash reqmeta.FlashMessage) templ.Component {
+func toastBase(tType string, flash cookies.FlashMessage) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -90,7 +90,7 @@ func toastBase(tType string, flash reqmeta.FlashMessage) templ.Component {
 	})
 }
 
-func ToastMessage(flash reqmeta.FlashMessage) templ.Component {
+func ToastMessage(flash cookies.FlashMessage) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -112,22 +112,22 @@ func ToastMessage(flash reqmeta.FlashMessage) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		switch flash.Type {
-		case reqmeta.FlashSuccess:
+		case cookies.FlashSuccess:
 			templ_7745c5c3_Err = toastBase("bg-success", flash).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		case reqmeta.FlashInfo:
+		case cookies.FlashInfo:
 			templ_7745c5c3_Err = toastBase("bg-info", flash).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		case reqmeta.FlashError:
+		case cookies.FlashError:
 			templ_7745c5c3_Err = toastBase("bg-error", flash).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		case reqmeta.FlashWarning:
+		case cookies.FlashWarning:
 			templ_7745c5c3_Err = toastBase("bg-warning", flash).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

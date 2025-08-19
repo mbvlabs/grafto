@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/mbvlabs/grafto/router/reqmeta"
+	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/views/internal/components"
 )
 
@@ -58,7 +58,7 @@ func Base(headOpts ...components.HeadDataOption) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, flash := range reqmeta.ExtractFlashMessages(ctx) {
+		for _, flash := range cookies.GetFlashesCtx(ctx) {
 			templ_7745c5c3_Err = components.ToastMessage(flash).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

@@ -9,7 +9,6 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
@@ -89,7 +88,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(props.ResetToken)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/sessions/reset_password.templ`, Line: 47, Col: 60}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `views/sessions/reset_password.templ`, Line: 46, Col: 60}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -140,7 +139,7 @@ func ResetPasswordForm(props ResetPasswordFormProps) templ.Component {
 		templ_7745c5c3_Err = components.Form(components.FormProps{
 			Class: "rounded-lg p-4 bg-base-300 flex flex-col items-center w-full",
 			Attributes: templ.Attributes{
-				"hx-put":    routes.StoreResetPasswordPage.Path,
+				"hx-put":    "",
 				"hx-target": "this",
 				"hx-swap":   "outerHTML",
 			},

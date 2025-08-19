@@ -113,7 +113,7 @@ func ForgottenPasswordForm(props ForgottenPasswordFormProps) templ.Component {
 		templ_7745c5c3_Err = components.Form(components.FormProps{
 			Class: "bg-base-300 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
 			Attributes: templ.Attributes{
-				"hx-post":   routes.StoreForgotPassword.Path,
+				"hx-post":   routes.DestroyAuthSession.Path,
 				"hx-target": "this",
 				"hx-swap":   "outerHTML",
 			},

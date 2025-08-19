@@ -1,7 +1,6 @@
 package sessions
 
 import (
-	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/internal/components"
 	"github.com/mbvlabs/grafto/views/internal/layouts"
@@ -72,7 +71,7 @@ templ RegisterForm(data RegisterFormProps) {
 		@components.Form(components.FormProps{
 			Class: "bg-base-300 p-8 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-base-content",
 			Attributes: templ.Attributes{
-				"hx-post":   routes.StoreUser.Path,
+				"hx-post":   "",
 				"method":    "post",
 				"hx-target": "this",
 				"hx-swap":   "outerHTML",
@@ -84,7 +83,7 @@ templ RegisterForm(data RegisterFormProps) {
 					<p class="text-sm text-base-content mr-2">
 						Already have an account?
 					</p>
-					@components.Link("Sign in", routes.LoginPage.Path).WithSecondary().Build()
+					@components.Link("Sign in", "").WithSecondary().Build()
 				</div>
 			</div>
 			@components.Input{
