@@ -206,20 +206,6 @@ func isRelevantForTable(stmt, targetTable string) bool {
 	return false
 }
 
-// func getAvailableTableNames(cat *catalog.Catalog) string {
-// 	tables, err := cat.ListTables("")
-// 	if err != nil {
-// 		return "unable to list tables"
-// 	}
-//
-// 	var names []string
-// 	for _, table := range tables {
-// 		names = append(names, table.Name)
-// 	}
-//
-// 	return strings.Join(names, ", ")
-// }
-
 func generateSQLFile(
 	resourceName string,
 	pluralName string,
@@ -340,7 +326,6 @@ func runGolines() error {
 	return nil
 }
 
-// Keep the original view generation code unchanged
 func generateView(resourceName string) error {
 	pluralName := inflection.Plural(strings.ToLower(resourceName))
 	viewPath := filepath.Join("views", pluralName+"_resource.templ")
@@ -655,7 +640,6 @@ func generateController(resourceName string) error {
 func generateControllerFile(
 	resourceName, pluralName, controllerPath string,
 ) error {
-	// Get field information from database schema
 	cfg := config.NewDefaultConfig()
 	cfg.TableName = pluralName
 
@@ -719,7 +703,6 @@ func generateControllerFile(
 
 		field.GoType = goType
 
-		// Map Go types to appropriate form types
 		switch goType {
 		case "time.Time":
 			field.GoFormType = "time.Time"
@@ -879,7 +862,6 @@ func registerController(resourceName, pluralName string) error {
 				for j := i + 1; j < len(lines); j++ {
 					if strings.Contains(lines[j], "}") &&
 						!strings.Contains(lines[j], "{") {
-						// Insert before the closing brace
 						lines = append(
 							lines[:j],
 							append([]string{returnField}, lines[j:]...)...)
@@ -906,7 +888,6 @@ func registerRoutes(resourceName string) error {
 
 	contentStr := string(content)
 
-	// Add the individual routes to the BuildRoutes append call
 	routesToAdd := []string{
 		fmt.Sprintf("\t\t%sIndex,", resourceName),
 		fmt.Sprintf("\t\t%sShow.Route,", resourceName),
@@ -917,7 +898,6 @@ func registerRoutes(resourceName string) error {
 		fmt.Sprintf("\t\t%sDestroy.Route,", resourceName),
 	}
 
-	// Check if any of these routes are already present
 	alreadyExists := false
 	for _, route := range routesToAdd {
 		if strings.Contains(contentStr, strings.TrimSpace(route)) {
@@ -927,20 +907,16 @@ func registerRoutes(resourceName string) error {
 	}
 
 	if !alreadyExists {
-		// Find the closing parenthesis of the r = append() call
 		lines := strings.Split(contentStr, "\n")
 		inAppend := false
-		
+
 		for i, line := range lines {
-			// Look for the start of the append call
 			if strings.Contains(line, "r = append(") {
 				inAppend = true
 				continue
 			}
-			
-			// If we're in the append and find a line with just "\t)", this is our closing parenthesis
+
 			if inAppend && strings.TrimSpace(line) == ")" {
-				// Insert the routes before the closing parenthesis
 				newLines := make([]string, 0, len(lines)+len(routesToAdd))
 				newLines = append(newLines, lines[:i]...)
 				newLines = append(newLines, routesToAdd...)

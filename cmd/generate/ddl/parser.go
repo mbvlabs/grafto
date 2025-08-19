@@ -3,6 +3,7 @@ package ddl
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -59,19 +60,19 @@ func ParseDDLStatement(sql, migrationFile string) (*DDLStatement, error) {
 	case strings.HasPrefix(sqlLower, "alter table"):
 		return parseAlterTable(sql, migrationFile)
 	case strings.HasPrefix(sqlLower, "drop table"):
-		return parseDropTable(sql, migrationFile)
+		return parseDropTable(sql)
 	case strings.HasPrefix(sqlLower, "create index") || strings.HasPrefix(sqlLower, "create unique index"):
-		return parseCreateIndex(sql, migrationFile)
+		return parseCreateIndex(sql)
 	case strings.HasPrefix(sqlLower, "drop index"):
-		return parseDropIndex(sql, migrationFile)
+		return parseDropIndex(sql)
 	case strings.HasPrefix(sqlLower, "create schema"):
-		return parseCreateSchema(sql, migrationFile)
+		return parseCreateSchema(sql)
 	case strings.HasPrefix(sqlLower, "drop schema"):
-		return parseDropSchema(sql, migrationFile)
+		return parseDropSchema(sql)
 	case strings.HasPrefix(sqlLower, "create type"):
-		return parseCreateEnum(sql, migrationFile)
+		return parseCreateEnum(sql)
 	case strings.HasPrefix(sqlLower, "drop type"):
-		return parseDropEnum(sql, migrationFile)
+		return parseDropEnum(sql)
 	default:
 		stmt.Type = Unknown
 		return stmt, nil
@@ -189,25 +190,29 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 	}
 
 	columnName := parts[0]
-	
-	// Extract the type, which may be multiple words
-	// Find the type portion by looking for constraint keywords
-	constraintKeywords := []string{"not", "null", "primary", "key", "unique", "default", "references", "check"}
+
+	constraintKeywords := []string{
+		"not",
+		"null",
+		"primary",
+		"key",
+		"unique",
+		"default",
+		"references",
+		"check",
+	}
 	typeEndIndex := len(parts)
-	
+
 	for i := 1; i < len(parts); i++ {
 		wordLower := strings.ToLower(parts[i])
-		for _, keyword := range constraintKeywords {
-			if wordLower == keyword {
-				typeEndIndex = i
-				break
-			}
+		if slices.Contains(constraintKeywords, wordLower) {
+			typeEndIndex = i
 		}
 		if typeEndIndex != len(parts) {
 			break
 		}
 	}
-	
+
 	columnType := strings.Join(parts[1:typeEndIndex], " ")
 
 	dataType, length, precision, scale := parseDataType(columnType)
@@ -247,10 +252,8 @@ func parseColumnDefinition(def, migrationFile string) (*catalog.Column, error) {
 func parseDataType(
 	typeStr string,
 ) (dataType string, length *int32, precision *int32, scale *int32) {
-	// Handle special multi-word types first
 	typeStrLower := strings.ToLower(typeStr)
-	
-	// Check for timestamp with/without time zone
+
 	if strings.Contains(typeStrLower, "timestamp with time zone") {
 		return "timestamp with time zone", nil, nil, nil
 	}
@@ -266,8 +269,7 @@ func parseDataType(
 	if strings.Contains(typeStrLower, "double precision") {
 		return "double precision", nil, nil, nil
 	}
-	
-	// For single word types with potential parameters
+
 	typeRegex := regexp.MustCompile(`^(\w+)(?:\(([^)]+)\))?$`)
 	matches := typeRegex.FindStringSubmatch(typeStr)
 
@@ -574,7 +576,7 @@ func splitAlterOperations(operations string) []string {
 	return result
 }
 
-func parseDropTable(sql, migrationFile string) (*DDLStatement, error) {
+func parseDropTable(sql string) (*DDLStatement, error) {
 	dropRegex := regexp.MustCompile(
 		`(?i)drop\s+table(?:\s+if\s+exists)?\s+(?:(\w+)\.)?(\w+)`,
 	)
@@ -595,42 +597,42 @@ func parseDropTable(sql, migrationFile string) (*DDLStatement, error) {
 	}, nil
 }
 
-func parseCreateIndex(sql, migrationFile string) (*DDLStatement, error) {
+func parseCreateIndex(sql string) (*DDLStatement, error) {
 	return &DDLStatement{
 		Type: CreateIndex,
 		Raw:  sql,
 	}, nil
 }
 
-func parseDropIndex(sql, migrationFile string) (*DDLStatement, error) {
+func parseDropIndex(sql string) (*DDLStatement, error) {
 	return &DDLStatement{
 		Type: DropIndex,
 		Raw:  sql,
 	}, nil
 }
 
-func parseCreateSchema(sql, migrationFile string) (*DDLStatement, error) {
+func parseCreateSchema(sql string) (*DDLStatement, error) {
 	return &DDLStatement{
 		Type: CreateSchema,
 		Raw:  sql,
 	}, nil
 }
 
-func parseDropSchema(sql, migrationFile string) (*DDLStatement, error) {
+func parseDropSchema(sql string) (*DDLStatement, error) {
 	return &DDLStatement{
 		Type: DropSchema,
 		Raw:  sql,
 	}, nil
 }
 
-func parseCreateEnum(sql, migrationFile string) (*DDLStatement, error) {
+func parseCreateEnum(sql string) (*DDLStatement, error) {
 	return &DDLStatement{
 		Type: CreateEnum,
 		Raw:  sql,
 	}, nil
 }
 
-func parseDropEnum(sql, migrationFile string) (*DDLStatement, error) {
+func parseDropEnum(sql string) (*DDLStatement, error) {
 	return &DDLStatement{
 		Type: DropEnum,
 		Raw:  sql,
