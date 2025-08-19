@@ -2,7 +2,7 @@ package workers
 
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/mbvlabs/grafto/clients"
+	"github.com/mbvlabs/grafto/pkg/clients"
 	"github.com/riverqueue/river"
 )
 

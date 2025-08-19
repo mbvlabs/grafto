@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/emails"
 	"github.com/mbvlabs/grafto/models"
+	"github.com/mbvlabs/grafto/pkg/clients"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/routes"
 )

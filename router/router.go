@@ -16,10 +16,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/pkg/telemetry"
 	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
-	"github.com/mbvlabs/grafto/telemetry"
 	"go.opentelemetry.io/otel/trace"
 	"riverqueue.com/riverui"
 

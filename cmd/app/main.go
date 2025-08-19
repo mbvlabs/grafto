@@ -12,14 +12,14 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/pkg/clients"
+	"github.com/mbvlabs/grafto/pkg/telemetry"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/mbvlabs/grafto/psql/queue/workers"
 	"github.com/mbvlabs/grafto/router"
-	"github.com/mbvlabs/grafto/telemetry"
 	"golang.org/x/sync/errgroup"
 	"riverqueue.com/riverui"
 )
