@@ -1,0 +1,118 @@
+package routes
+
+import (
+	"net/http"
+	"strings"
+	"github.com/google/uuid"
+)
+
+const (
+	{{.PluralName}}RoutePrefix = "/{{.PluralName}}"
+	{{.PluralName}}NamePrefix  = "{{.PluralName}}"
+)
+
+var {{.ResourceName}}s = []Route{
+	{{.ResourceName}}Index,
+	{{.ResourceName}}Show.Route,
+	{{.ResourceName}}New,
+	{{.ResourceName}}Create,
+	{{.ResourceName}}Edit.Route,
+	{{.ResourceName}}Update.Route,
+	{{.ResourceName}}Destroy.Route,
+}
+
+var {{.ResourceName}}Index = Route{
+	Name:         {{.PluralName}}NamePrefix + ".index",
+	Path:         {{.PluralName}}RoutePrefix,
+	Method:       http.MethodGet,
+	Handler:      "{{.ResourceName}}s",
+	HandleMethod: "Index",
+}
+
+var {{.ResourceName}}Show = {{.PluralName | ToLower}}Show{
+	Route: Route{
+		Name:         {{.PluralName}}NamePrefix + ".show",
+		Path:         {{.PluralName}}RoutePrefix + "/:id",
+		Method:       http.MethodGet,
+		Handler:      "{{.ResourceName}}s",
+		HandleMethod: "Show",
+	},
+}
+
+type {{.PluralName | ToLower}}Show struct {
+	Route
+}
+
+func (r {{.PluralName | ToLower}}Show) GetPath(id uuid.UUID) string {
+	return strings.Replace(r.Path, ":id", id.String(), 1)
+}
+
+var {{.ResourceName}}New = Route{
+	Name:         {{.PluralName}}NamePrefix + ".new",
+	Path:         {{.PluralName}}RoutePrefix + "/new",
+	Method:       http.MethodGet,
+	Handler:      "{{.ResourceName}}s",
+	HandleMethod: "New",
+}
+
+var {{.ResourceName}}Create = Route{
+	Name:         {{.PluralName}}NamePrefix + ".create",
+	Path:         {{.PluralName}}RoutePrefix,
+	Method:       http.MethodPost,
+	Handler:      "{{.ResourceName}}s",
+	HandleMethod: "Create",
+}
+
+var {{.ResourceName}}Edit = {{.PluralName | ToLower}}Edit{
+	Route: Route{
+		Name:         {{.PluralName}}NamePrefix + ".edit",
+		Path:         {{.PluralName}}RoutePrefix + "/:id/edit",
+		Method:       http.MethodGet,
+		Handler:      "{{.ResourceName}}s",
+		HandleMethod: "Edit",
+	},
+}
+
+type {{.PluralName | ToLower}}Edit struct {
+	Route
+}
+
+func (r {{.PluralName | ToLower}}Edit) GetPath(id uuid.UUID) string {
+	return strings.Replace(r.Path, ":id", id.String(), 1)
+}
+
+var {{.ResourceName}}Update = {{.PluralName | ToLower}}Update{
+	Route: Route{
+		Name:         {{.PluralName}}NamePrefix + ".update",
+		Path:         {{.PluralName}}RoutePrefix + "/:id",
+		Method:       http.MethodPut,
+		Handler:      "{{.ResourceName}}s",
+		HandleMethod: "Update",
+	},
+}
+
+type {{.PluralName | ToLower}}Update struct {
+	Route
+}
+
+func (r {{.PluralName | ToLower}}Update) GetPath(id uuid.UUID) string {
+	return strings.Replace(r.Path, ":id", id.String(), 1)
+}
+
+var {{.ResourceName}}Destroy = {{.PluralName | ToLower}}Destroy{
+	Route: Route{
+		Name:         {{.PluralName}}NamePrefix + ".destroy",
+		Path:         {{.PluralName}}RoutePrefix + "/:id",
+		Method:       http.MethodDelete,
+		Handler:      "{{.ResourceName}}s",
+		HandleMethod: "Destroy",
+	},
+}
+
+type {{.PluralName | ToLower}}Destroy struct {
+	Route
+}
+
+func (r {{.PluralName | ToLower}}Destroy) GetPath(id uuid.UUID) string {
+	return strings.Replace(r.Path, ":id", id.String(), 1)
+}

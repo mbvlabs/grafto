@@ -12,8 +12,8 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/handlers"
-	"github.com/mbvlabs/grafto/router/middleware"
+	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/controllers/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
 	"go.opentelemetry.io/otel/trace"
 	"riverqueue.com/riverui"
@@ -21,14 +21,14 @@ import (
 	echomw "github.com/labstack/echo/v4/middleware"
 )
 
-type Router struct {
-	e        *echo.Echo
-	mw       middleware.MW
-	handlers handlers.Handlers
+type Routes struct {
+	router      *echo.Echo
+	mw          middleware.MW
+	controllers controllers.Controllers
 }
 
 func New(
-	handlers handlers.Handlers,
+	controllers controllers.Controllers,
 	mw middleware.MW,
 	riverUI *riverui.Server,
 	traceProvider trace.TracerProvider,
@@ -90,37 +90,40 @@ func New(
 	return &Router{
 		router,
 		mw,
-		handlers,
+		controllers,
 	}, nil
 }
 
-func (r *Router) SetupRoutes() *echo.Echo {
-	setupRoutes(r.e, routes.AllRoutes, r.handlers, r.mw)
+func (r *Routes) SetupRoutes() *echo.Echo {
+	setupRoutes(r.router, routes.AllRoutes, r.controllers, r.mw)
 	r.setup404Handler()
 	return r.e
 }
 
-func (r *Router) setup404Handler() {
-	r.e.RouteNotFound("/*", getHandlerFunc(r.handlers.Pages, "NotFoundPage"))
+func (r *Routes) setup404Handler() {
+	r.router.RouteNotFound(
+		"/*",
+		getHandlerFunc(r.controllers.Pages, "NotFoundPage"),
+	)
 }
 
-func getHandlerFunc(handlers any, methodName string) echo.HandlerFunc {
-	appType := reflect.TypeOf(handlers)
+func getHandlerFunc(controller any, methodName string) echo.HandlerFunc {
+	appType := reflect.TypeOf(controller)
 	method, found := appType.MethodByName(methodName)
 	if !found {
-		panic(fmt.Sprintf("Handler method %s not found", methodName))
+		panic(fmt.Sprintf("Controller method %s not found", methodName))
 	}
 
 	return func(c echo.Context) error {
 		values := method.Func.Call([]reflect.Value{
-			reflect.ValueOf(handlers),
+			reflect.ValueOf(controller),
 			reflect.ValueOf(c),
 		})
 
 		if len(values) != 1 {
 			panic(
 				fmt.Sprintf(
-					"Handler %s does not return exactly one value",
+					"Controller method %s does not return exactly one value",
 					methodName,
 				),
 			)
@@ -150,13 +153,13 @@ func getAllMiddlewareFuncs(
 	return middlewareFuncs
 }
 
-func getMiddlewareFunc(handlers any, methodName string) echo.MiddlewareFunc {
-	appValue := reflect.ValueOf(handlers)
+func getMiddlewareFunc(middleware any, methodName string) echo.MiddlewareFunc {
+	appValue := reflect.ValueOf(middleware)
 	appType := appValue.Type()
 
 	method, found := appType.MethodByName(methodName)
 	if !found {
-		panic(fmt.Sprintf("Handler method %s not found", methodName))
+		panic(fmt.Sprintf("Controller method %s not found", methodName))
 	}
 
 	methodType := method.Type
@@ -220,11 +223,11 @@ func getMiddlewareFunc(handlers any, methodName string) echo.MiddlewareFunc {
 func setupRoutes(
 	router *echo.Echo,
 	r []routes.Route,
-	handlers handlers.Handlers,
+	controllers controllers.Controllers,
 	middlewares any,
 ) {
 	registeredRoutes := []string{}
-	handlersValue := reflect.ValueOf(handlers)
+	controllersValue := reflect.ValueOf(controllers)
 
 	for _, route := range r {
 		if registered := slices.Contains(registeredRoutes, route.Name); registered {
@@ -240,33 +243,33 @@ func setupRoutes(
 			panic("Route must specify Handler and HandleMethod fields")
 		}
 
-		handlerField := handlersValue.FieldByName(route.Handler)
-		if !handlerField.IsValid() {
+		controllerField := controllersValue.FieldByName(route.Handler)
+		if !controllerField.IsValid() {
 			panic(
 				fmt.Sprintf(
-					"Handler field %s not found in handlers struct",
+					"Controller field %s not found in controllers struct",
 					route.Handler,
 				),
 			)
 		}
 
-		handler := handlerField.Interface()
-		handlerFunc := getHandlerFunc(handler, route.HandleMethod)
+		controller := controllerField.Interface()
+		controllerFunc := getHandlerFunc(controller, route.HandleMethod)
 		middlewareFuncs := getAllMiddlewareFuncs(middlewares, route.Middleware)
 
 		switch route.Method {
 		case http.MethodGet:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.GET(route.Path, handlerFunc, middlewareFuncs...).Name = route.Name
+			router.GET(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
 		case http.MethodPost:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.POST(route.Path, handlerFunc, middlewareFuncs...).Name = route.Name
+			router.POST(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
 		case http.MethodPut:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.PUT(route.Path, handlerFunc, middlewareFuncs...).Name = route.Name
+			router.PUT(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
 		case http.MethodDelete:
 			registeredRoutes = append(registeredRoutes, route.Name)
-			router.DELETE(route.Path, handlerFunc, middlewareFuncs...).Name = route.Name
+			router.DELETE(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
 		}
 	}
 }

@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package handlers_test
+package controllers_test
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/jackc/pgx/v5"
 	"github.com/mbvlabs/grafto/clients"
-	"github.com/mbvlabs/grafto/router/middleware"
+	"github.com/mbvlabs/grafto/controllers/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
 	"github.com/mbvlabs/grafto/router/routes"
@@ -35,9 +35,9 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
-	testHandlers := setupTestHandlers(t, postgres, emailSvc)
+	testControllers := setupTestControllers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testControllers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -105,7 +105,7 @@ func TestStoreAuthenticatedSession(t *testing.T) {
 			store := sessions.NewCookieStore([]byte("secret"))
 
 			mw := testCookieStore(store)
-			h := mw(testHandlers.Sessions.Create)
+			h := mw(testControllers.Sessions.Create)
 
 			if tt.expectedToSucceed {
 				assert.NoError(t, h(c))
@@ -147,9 +147,9 @@ func TestStoreForgottenPassword(t *testing.T) {
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
-	testHandlers := setupTestHandlers(t, postgres, emailSvc)
+	testControllers := setupTestControllers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testControllers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -233,7 +233,7 @@ func TestStoreForgottenPassword(t *testing.T) {
 			}
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Sessions.CreatePasswordReset(c)
+			err := testControllers.Sessions.CreatePasswordReset(c)
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusOK, rec.Code)
@@ -272,9 +272,9 @@ func TestStoreResetPassword(t *testing.T) {
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
-	testHandlers := setupTestHandlers(t, postgres, emailSvc)
+	testControllers := setupTestControllers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testControllers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	validUser, err := seeder.PlantUser(
@@ -378,7 +378,7 @@ func TestStoreResetPassword(t *testing.T) {
 			rec := httptest.NewRecorder()
 
 			c := router.NewContext(req, rec)
-			err := testHandlers.Sessions.UpdatePasswordReset(c)
+			err := testControllers.Sessions.UpdatePasswordReset(c)
 
 			assert.NoError(t, err)
 
@@ -424,9 +424,9 @@ func TestDestroyAuthenticatedSession(t *testing.T) {
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
-	testHandlers := setupTestHandlers(t, postgres, emailSvc)
+	testControllers := setupTestControllers(t, postgres, emailSvc)
 	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testHandlers, testMiddleware)
+	router := setupTestRouter(t, testControllers, testMiddleware)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	testUser, err := seeder.PlantUser(
@@ -474,7 +474,7 @@ func TestDestroyAuthenticatedSession(t *testing.T) {
 	rec = httptest.NewRecorder()
 
 	mw := testCookieStore(store)
-	h := mw(testHandlers.Sessions.Destroy)
+	h := mw(testControllers.Sessions.Destroy)
 
 	c := router.NewContext(req, rec)
 	err = h(c)

@@ -1,3 +1,3 @@
-package handlers
+package controllers
 
 type Fragments struct{}

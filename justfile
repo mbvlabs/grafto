@@ -26,6 +26,8 @@ alias ft := fmt-templates
 
 alias ex := explore
 
+alias g := generate
+
 alias ti := test-integrations
 alias tu := test-units
 
@@ -86,12 +88,19 @@ compile-templates:
 fmt-templates:
     cd views && templ fmt .
 
+golines:
+	@golines -w -m 120 controllers models router router/routes router/contexts
+
 # exploration
 explore:
     @go run ./cmd/explore/main.go
 
 seed:
 	@go run ./cmd/seed/main.go
+
+# generators
+generate type name:
+    @go run ./cmd/generate/main.go {{type}} {{name}}
 
 # code quality
 golangci:

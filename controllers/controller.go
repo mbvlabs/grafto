@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"context"
@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
+	"github.com/mbvlabs/grafto/controllers/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/middleware"
@@ -26,8 +27,8 @@ const (
 	oneWeekInSeconds = 604800
 )
 
-type Handlers struct {
-	Api           Api
+type Controllers struct {
+	API           Api
 	Pages         Pages
 	Sessions      Sessions
 	Dashboard     Dashboard
@@ -79,11 +80,11 @@ func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
 	return setAppCtx(ctx), ctx.Response().Writer
 }
 
-func NewHandlers(
+func New(
 	db psql.Postgres,
 	cache otter.CacheWithVariableTTL[string, templ.Component],
 	emailSvc services.EmailSender,
-) Handlers {
+) Controllers {
 	gob.Register(uuid.UUID{})
 	gob.Register(reqmeta.FlashMessage{})
 
@@ -94,7 +95,7 @@ func NewHandlers(
 	registration := newRegistrations(db, emailSvc)
 	assets := newAssets()
 
-	return Handlers{
+	return Controllers{
 		api,
 		pages,
 		auth,

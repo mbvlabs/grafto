@@ -14,7 +14,8 @@ import (
 	"github.com/maypok86/otter"
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/handlers"
+	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/controllers/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/mbvlabs/grafto/psql/queue/workers"
@@ -153,7 +154,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	handlers := handlers.NewHandlers(
+	controllers := controllers.New(
 		psql,
 		pageCacher,
 		emailClient,
@@ -165,7 +166,7 @@ func run(ctx context.Context) error {
 	}
 
 	routes, err := router.New(
-		handlers,
+		controllers,
 		mw,
 		riverUI,
 		tel.AppTracerProvider,
