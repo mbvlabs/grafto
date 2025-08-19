@@ -15,7 +15,6 @@ import (
 	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/controllers"
-	"github.com/mbvlabs/grafto/controllers/middleware"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/mbvlabs/grafto/psql/queue/workers"

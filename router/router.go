@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/controllers"
-	"github.com/mbvlabs/grafto/controllers/middleware"
+	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
 	"go.opentelemetry.io/otel/trace"
 	"riverqueue.com/riverui"
@@ -21,8 +21,8 @@ import (
 	echomw "github.com/labstack/echo/v4/middleware"
 )
 
-type Routes struct {
-	router      *echo.Echo
+type Router struct {
+	e           *echo.Echo
 	mw          middleware.MW
 	controllers controllers.Controllers
 }
@@ -94,14 +94,14 @@ func New(
 	}, nil
 }
 
-func (r *Routes) SetupRoutes() *echo.Echo {
-	setupRoutes(r.router, routes.AllRoutes, r.controllers, r.mw)
+func (r *Router) SetupRoutes() *echo.Echo {
+	setupRoutes(r.e, routes.AllRoutes, r.controllers, r.mw)
 	r.setup404Handler()
 	return r.e
 }
 
-func (r *Routes) setup404Handler() {
-	r.router.RouteNotFound(
+func (r *Router) setup404Handler() {
+	r.e.RouteNotFound(
 		"/*",
 		getHandlerFunc(r.controllers.Pages, "NotFoundPage"),
 	)

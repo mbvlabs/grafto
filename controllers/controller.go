@@ -15,7 +15,6 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/controllers/middleware"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router/middleware"
