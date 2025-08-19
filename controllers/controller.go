@@ -2,23 +2,13 @@ package controllers
 
 import (
 	"context"
-	"encoding/gob"
-	"errors"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/a-h/templ"
-	"github.com/google/uuid"
-	"github.com/gorilla/sessions"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/router/middleware"
-	"github.com/mbvlabs/grafto/router/reqmeta"
 	"github.com/mbvlabs/grafto/services"
 )
 
@@ -36,47 +26,8 @@ type Controllers struct {
 	Fragments     Fragments
 }
 
-func setAppCtx(ctx echo.Context) context.Context {
-	appcKey := reqmeta.AppKey{}
-	appc := ctx.Get(appcKey.String())
-
-	cOne := context.WithValue(
-		ctx.Request().Context(),
-		appcKey,
-		appc,
-	)
-
-	flashCKey := reqmeta.FlashKey{}
-	flashC := ctx.Get(flashCKey.String())
-
-	return context.WithValue(
-		cOne,
-		flashCKey,
-		flashC,
-	)
-}
-
-//nolint:unused // needed helper method
-func addFlash(
-	c echo.Context, flashType reqmeta.FlashType, msg string,
-) error {
-	sess, err := session.Get(middleware.FlashSessionKey, c)
-	if err != nil {
-		return err
-	}
-
-	sess.AddFlash(reqmeta.FlashMessage{
-		ID:        uuid.New(),
-		Type:      flashType,
-		CreatedAt: time.Now(),
-		Message:   msg,
-	}, middleware.FlashSessionKey)
-
-	return sess.Save(c.Request(), c.Response())
-}
-
 func renderArgs(ctx echo.Context) (context.Context, io.Writer) {
-	return setAppCtx(ctx), ctx.Response().Writer
+	return ctx.Request().Context(), ctx.Response().Writer
 }
 
 func New(
@@ -84,9 +35,6 @@ func New(
 	cache otter.CacheWithVariableTTL[string, templ.Component],
 	emailSvc services.EmailSender,
 ) Controllers {
-	gob.Register(uuid.UUID{})
-	gob.Register(reqmeta.FlashMessage{})
-
 	api := newApi()
 	pages := newPages(db, cache)
 	auth := newSessions(db, emailSvc)
@@ -121,78 +69,20 @@ func redirect(
 	return nil
 }
 
-func destroyAuthSession(
-	c echo.Context,
-) error {
-	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
-	if err != nil {
-		return err
-	}
-
-	sess.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	}
-
-	sess.Values[middleware.SessIsAuthenticated] = false
-	sess.Values[middleware.SessUserID] = ""
-	sess.Values[middleware.SessUserEmail] = ""
-	sess.Values[middleware.SessIsAdmin] = false
-
-	if err := sess.Save(c.Request(), c.Response()); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func adminOnlyAction(
-	c echo.Context,
-	dbtx *pgxpool.Pool,
-) error {
-	appCtx := reqmeta.ExtractApp(setAppCtx(c))
-
-	actor, err := models.GetUser(c.Request().Context(), dbtx, appCtx.UserID)
-	if err != nil {
-		return err
-	}
-
-	if !actor.IsAdmin {
-		return errors.New("user must be admin to perform this action")
-	}
-
-	return nil
-}
-
-func createAuthSession(
-	c echo.Context,
-	extend bool,
-	user models.User,
-) error {
-	sess, err := session.Get(middleware.AuthenticatedSessionName, c)
-	if err != nil {
-		return err
-	}
-
-	maxAge := oneWeekInSeconds
-	if extend {
-		maxAge = oneWeekInSeconds * 2
-	}
-
-	sess.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   maxAge,
-		HttpOnly: true,
-	}
-	sess.Values[middleware.SessIsAuthenticated] = true
-	sess.Values[middleware.SessUserID] = user.ID
-	sess.Values[middleware.SessUserEmail] = user.Email
-	sess.Values[middleware.SessIsAdmin] = user.IsAdmin
-
-	if err := sess.Save(c.Request(), c.Response()); err != nil {
-		return err
-	}
-
-	return nil
-}
+// func adminOnlyAction(
+// 	c echo.Context,
+// 	dbtx *pgxpool.Pool,
+// ) error {
+// 	appCtx := reqmeta.ExtractApp(c.Request().Context())
+//
+// 	actor, err := models.GetUser(c.Request().Context(), dbtx, appCtx.UserID)
+// 	if err != nil {
+// 		return err
+// 	}
+//
+// 	if !actor.IsAdmin {
+// 		return errors.New("user must be admin to perform this action")
+// 	}
+//
+// 	return nil
+// }

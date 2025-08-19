@@ -19,7 +19,6 @@ import (
 	"github.com/mbvlabs/grafto/psql/queue"
 	"github.com/mbvlabs/grafto/psql/queue/workers"
 	"github.com/mbvlabs/grafto/router"
-	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/telemetry"
 	"golang.org/x/sync/errgroup"
 	"riverqueue.com/riverui"
@@ -159,14 +158,8 @@ func run(ctx context.Context) error {
 		emailClient,
 	)
 
-	mw, err := middleware.New(tel.AppTracerProvider)
-	if err != nil {
-		return err
-	}
-
 	routes, err := router.New(
 		controllers,
-		mw,
 		riverUI,
 		tel.AppTracerProvider,
 	)

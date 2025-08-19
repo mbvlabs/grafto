@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/router/reqmeta"
+	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/dashboard"
 )
@@ -113,7 +113,7 @@ func (d Dashboard) UpdateUser(c echo.Context) error {
 		data,
 	)
 	if err != nil {
-		if flashErr := addFlash(c, reqmeta.FlashError, fmt.Sprintf("Failed to update user: %v", err)); flashErr != nil {
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, fmt.Sprintf("Failed to update user: %v", err)); flashErr != nil {
 			return flashErr
 		}
 		return c.Redirect(
@@ -122,7 +122,7 @@ func (d Dashboard) UpdateUser(c echo.Context) error {
 		)
 	}
 
-	if flashErr := addFlash(c, reqmeta.FlashSuccess, "User updated successfully"); flashErr != nil {
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "User updated successfully"); flashErr != nil {
 		return flashErr
 	}
 
@@ -130,7 +130,7 @@ func (d Dashboard) UpdateUser(c echo.Context) error {
 }
 
 func (d Dashboard) DeleteUser(c echo.Context) error {
-	if err := adminOnlyAction(c, d.db.Pool); err != nil {
+	if isAdmin := cookies.GetApp(c).IsAdmin; !isAdmin {
 		return c.String(http.StatusUnauthorized, "User must be an admin")
 	}
 
@@ -141,12 +141,12 @@ func (d Dashboard) DeleteUser(c echo.Context) error {
 
 	err = models.DeleteUser(c.Request().Context(), d.db.Pool, userID)
 	if err != nil {
-		if flashErr := addFlash(c, reqmeta.FlashError, fmt.Sprintf("Failed to delete user: %v", err)); flashErr != nil {
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, fmt.Sprintf("Failed to delete user: %v", err)); flashErr != nil {
 			return flashErr
 		}
 	}
 
-	if flashErr := addFlash(c, reqmeta.FlashSuccess, "User deleted successfully"); flashErr != nil {
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "User deleted successfully"); flashErr != nil {
 		return flashErr
 	}
 
@@ -154,7 +154,7 @@ func (d Dashboard) DeleteUser(c echo.Context) error {
 }
 
 func (d Dashboard) MakeUserAdmin(c echo.Context) error {
-	if err := adminOnlyAction(c, d.db.Pool); err != nil {
+	if isAdmin := cookies.GetApp(c).IsAdmin; !isAdmin {
 		return c.String(http.StatusUnauthorized, "User must be an admin")
 	}
 
@@ -172,12 +172,12 @@ func (d Dashboard) MakeUserAdmin(c echo.Context) error {
 		},
 	)
 	if err != nil {
-		if flashErr := addFlash(c, reqmeta.FlashError, fmt.Sprintf("Failed to make user admin: %v", err)); flashErr != nil {
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, fmt.Sprintf("Failed to make user admin: %v", err)); flashErr != nil {
 			return flashErr
 		}
 	}
 
-	if flashErr := addFlash(c, reqmeta.FlashSuccess, "Admin status updated successfully"); flashErr != nil {
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "Admin status updated successfully"); flashErr != nil {
 		return flashErr
 	}
 

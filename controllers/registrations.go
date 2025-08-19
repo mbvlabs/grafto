@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
 	"github.com/mbvlabs/grafto/views/fragments"
@@ -132,7 +133,7 @@ func (r Registrations) Update(ctx echo.Context) error {
 		}).Render(renderArgs(ctx))
 	}
 
-	if err := createAuthSession(
+	if err := cookies.CreateAuth(
 		ctx, false, user); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}

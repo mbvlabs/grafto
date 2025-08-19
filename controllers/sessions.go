@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
+	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/services"
 	"github.com/mbvlabs/grafto/views"
@@ -72,7 +73,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 		return sessionViews.LoginForm(false, userErr).Render(renderArgs(ctx))
 	}
 
-	if err := createAuthSession(
+	if err := cookies.CreateAuth(
 		ctx, payload.RememberMe == "on", authenticatedUser); err != nil {
 		return views.ErrorPage().Render(renderArgs(ctx))
 	}
@@ -81,7 +82,7 @@ func (a Sessions) Create(ctx echo.Context) error {
 }
 
 func (a Sessions) Destroy(c echo.Context) error {
-	if err := destroyAuthSession(c); err != nil {
+	if err := cookies.DestroyAuthSession(c); err != nil {
 		return views.ErrorPage().Render(renderArgs(c))
 	}
 

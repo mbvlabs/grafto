@@ -33,7 +33,7 @@ func (p Pages) AboutPage(c echo.Context) error {
 
 func (p Pages) Redirect(c echo.Context) error {
 	to := c.QueryParam("to")
-	for _, r := range routes.AllRoutes {
+	for _, r := range routes.BuildRoutes {
 		if to == r.Path {
 			return redirectHx(c.Response(), to)
 		}
