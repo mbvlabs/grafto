@@ -2,19 +2,12 @@ package routes
 
 import (
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/router/middleware"
 )
 
 const authNamePrefix = "auth"
-
-var Authentication = []Route{
-	LoginPage,
-	StoreAuthSession,
-	DestroyAuthSession,
-	ForgotPasswordPage,
-	StoreForgotPassword,
-	ResetPasswordPage,
-	StoreResetPasswordPage,
-}
 
 var LoginPage = Route{
 	Name:         authNamePrefix + ".login_page",
@@ -30,8 +23,8 @@ var StoreAuthSession = Route{
 	Method:       http.MethodPost,
 	Handler:      "Sessions",
 	HandleMethod: "Create",
-	Middleware: []string{
-		"LoginRateLimiter",
+	Middleware: []func(next echo.HandlerFunc) echo.HandlerFunc{
+		middleware.LoginRateLimiter,
 	},
 }
 

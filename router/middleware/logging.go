@@ -10,12 +10,18 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
-func (m MW) Logging() echo.MiddlewareFunc {
+func Logging(
+	tp trace.TracerProvider,
+	httpRequestsTotal metric.Int64Counter,
+	httpDuration metric.Float64Histogram,
+	httpInFlight metric.Int64UpDownCounter,
+) echo.MiddlewareFunc {
 	otelMiddleware := otelecho.Middleware(
 		"grafto",
-		otelecho.WithTracerProvider(m.tp),
+		otelecho.WithTracerProvider(tp),
 	)
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
@@ -27,7 +33,7 @@ func (m MW) Logging() echo.MiddlewareFunc {
 			var ctx context.Context
 			var requestDuration time.Duration
 
-			m.httpInFlight.Add(ctx, 1)
+			httpInFlight.Add(ctx, 1)
 
 			wrappedNext := func(c echo.Context) error {
 				ctx = c.Request().Context()
@@ -41,7 +47,7 @@ func (m MW) Logging() echo.MiddlewareFunc {
 
 			err := otelMiddleware(wrappedNext)(c)
 
-			m.httpInFlight.Add(ctx, -1)
+			httpInFlight.Add(ctx, -1)
 
 			statusCode := c.Response().Status
 
@@ -51,13 +57,13 @@ func (m MW) Logging() echo.MiddlewareFunc {
 				attribute.Int("status_code", statusCode),
 			}
 
-			m.httpRequestsTotal.Add(
+			httpRequestsTotal.Add(
 				ctx,
 				1,
 				metric.WithAttributes(attrs...),
 			)
 
-			m.httpDuration.Record(
+			httpDuration.Record(
 				ctx,
 				requestDuration.Seconds(),
 				metric.WithAttributes(attrs...),

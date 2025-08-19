@@ -9,17 +9,6 @@ const (
 	assetsNamePrefix  = "assets"
 )
 
-var Assets = []Route{
-	Robots,
-	Sitemap,
-	CssEntrypoint,
-	AllCss,
-	JsEntrypoint,
-	AllJs,
-	Favicon16,
-	Favicon32,
-}
-
 var Robots = Route{
 	Name:         assetsNamePrefix + ".robots",
 	Path:         assetsNamePrefix + "/robots.txt",

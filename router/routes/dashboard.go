@@ -2,6 +2,9 @@ package routes
 
 import (
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/router/middleware"
 )
 
 const (
@@ -9,23 +12,14 @@ const (
 	dashboardNamePrefix  = "dashboard"
 )
 
-var Dashboard = []Route{
-	DashboardHome,
-	DashboardUsers,
-	DashboardUserEdit,
-	DashboardUserUpdate,
-	DashboardUserDelete,
-	DashboardUserToggleAdmin,
-}
-
 var DashboardHome = Route{
 	Name:         dashboardNamePrefix + ".home",
 	Path:         dashboardRoutePrefix,
 	Method:       http.MethodGet,
 	Handler:      "Dashboard",
 	HandleMethod: "Index",
-	Middleware: []string{
-		"AuthOnly",
+	Middleware: []func(next echo.HandlerFunc) echo.HandlerFunc{
+		middleware.AuthOnly,
 	},
 }
 
@@ -35,8 +29,8 @@ var DashboardUsers = Route{
 	Method:       http.MethodGet,
 	Handler:      "Dashboard",
 	HandleMethod: "UsersList",
-	Middleware: []string{
-		"AuthOnly",
+	Middleware: []func(next echo.HandlerFunc) echo.HandlerFunc{
+		middleware.AuthOnly,
 	},
 }
 
@@ -46,8 +40,8 @@ var DashboardUserEdit = Route{
 	Method:       http.MethodGet,
 	Handler:      "Dashboard",
 	HandleMethod: "EditUser",
-	Middleware: []string{
-		"AuthOnly",
+	Middleware: []func(next echo.HandlerFunc) echo.HandlerFunc{
+		middleware.AuthOnly,
 	},
 }
 
@@ -57,8 +51,8 @@ var DashboardUserUpdate = Route{
 	Method:       http.MethodPost,
 	Handler:      "Dashboard",
 	HandleMethod: "UpdateUser",
-	Middleware: []string{
-		"AuthOnly",
+	Middleware: []func(next echo.HandlerFunc) echo.HandlerFunc{
+		middleware.AuthOnly,
 	},
 }
 
@@ -68,8 +62,8 @@ var DashboardUserDelete = Route{
 	Method:       http.MethodPost,
 	Handler:      "Dashboard",
 	HandleMethod: "DeleteUser",
-	Middleware: []string{
-		"AuthOnly",
+	Middleware: []func(next echo.HandlerFunc) echo.HandlerFunc{
+		middleware.AuthOnly,
 	},
 }
 
@@ -79,7 +73,7 @@ var DashboardUserToggleAdmin = Route{
 	Method:       http.MethodPost,
 	Handler:      "Dashboard",
 	HandleMethod: "MakeUserAdmin",
-	Middleware: []string{
-		"AuthOnly",
+	Middleware: []func(next echo.HandlerFunc) echo.HandlerFunc{
+		middleware.AuthOnly,
 	},
 }

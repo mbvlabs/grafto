@@ -1,20 +1,25 @@
 package router
 
 import (
+	"encoding/gob"
 	"encoding/hex"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"reflect"
 	"slices"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/config"
 	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/router/routes"
+	"github.com/mbvlabs/grafto/telemetry"
 	"go.opentelemetry.io/otel/trace"
 	"riverqueue.com/riverui"
 
@@ -22,17 +27,18 @@ import (
 )
 
 type Router struct {
-	e           *echo.Echo
-	mw          middleware.MW
+	Handler     *echo.Echo
 	controllers controllers.Controllers
 }
 
 func New(
 	controllers controllers.Controllers,
-	mw middleware.MW,
 	riverUI *riverui.Server,
 	traceProvider trace.TracerProvider,
 ) (*Router, error) {
+	gob.Register(uuid.UUID{})
+	gob.Register(cookies.FlashMessage{})
+
 	router := echo.New()
 	router.Debug = true
 
@@ -45,6 +51,21 @@ func New(
 		return nil, err
 	}
 
+	httpRequestsTotal, err := telemetry.HTTPRequestsTotal()
+	if err != nil {
+		return nil, err
+	}
+
+	httpDuration, err := telemetry.HTTPRequestDuration()
+	if err != nil {
+		return nil, err
+	}
+
+	httpInFlight, err := telemetry.HTTPRequestsInFlight()
+	if err != nil {
+		return nil, err
+	}
+
 	router.Use(
 		session.Middleware(
 			sessions.NewCookieStore(
@@ -52,8 +73,8 @@ func New(
 				encKey,
 			),
 		),
-		mw.RegisterAppContext,
-		mw.RegisterFlashMessagesContext,
+		registerAppContext,
+		registerFlashMessagesContext,
 
 		echomw.CSRFWithConfig(echomw.CSRFConfig{
 			Skipper: func(c echo.Context) bool {
@@ -77,34 +98,81 @@ func New(
 			CookieHTTPOnly: true,
 			CookieSameSite: http.SameSiteStrictMode,
 		}),
-	)
-
-	router.Use(
-		//nolint:contextcheck // not needed here
-		mw.Logging(),
+		middleware.Logging(
+			traceProvider,
+			httpRequestsTotal,
+			httpDuration,
+			httpInFlight,
+		),
 		echomw.Recover(),
 	)
 
-	router.Any("/river*", echo.WrapHandler(riverUI), mw.AuthOnly)
+	router.Any("/river*", echo.WrapHandler(riverUI), middleware.AuthOnly)
 
 	return &Router{
 		router,
-		mw,
 		controllers,
 	}, nil
 }
 
 func (r *Router) SetupRoutes() *echo.Echo {
-	setupRoutes(r.e, routes.AllRoutes, r.controllers, r.mw)
-	r.setup404Handler()
-	return r.e
-}
+	registeredRoutes := []string{}
+	controllersValue := reflect.ValueOf(r.controllers)
 
-func (r *Router) setup404Handler() {
-	r.e.RouteNotFound(
+	for _, route := range routes.BuildRoutes {
+		if registered := slices.Contains(registeredRoutes, route.Name); registered {
+			panic(
+				fmt.Sprintf(
+					"%s is registered more than once",
+					route.Name,
+				),
+			)
+		}
+
+		if route.Handler == "" || route.HandleMethod == "" {
+			panic("Route must specify Handler and HandleMethod fields")
+		}
+
+		controllerField := controllersValue.FieldByName(route.Handler)
+		if !controllerField.IsValid() {
+			panic(
+				fmt.Sprintf(
+					"Controller field %s not found in controllers struct",
+					route.Handler,
+				),
+			)
+		}
+
+		controller := controllerField.Interface()
+		controllerFunc := getHandlerFunc(controller, route.HandleMethod)
+
+		var middlewareFuncs []echo.MiddlewareFunc
+		for _, mw := range route.Middleware {
+			middlewareFuncs = append(middlewareFuncs, echo.MiddlewareFunc(mw))
+		}
+
+		switch route.Method {
+		case http.MethodGet:
+			registeredRoutes = append(registeredRoutes, route.Name)
+			r.Handler.GET(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
+		case http.MethodPost:
+			registeredRoutes = append(registeredRoutes, route.Name)
+			r.Handler.POST(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
+		case http.MethodPut:
+			registeredRoutes = append(registeredRoutes, route.Name)
+			r.Handler.PUT(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
+		case http.MethodDelete:
+			registeredRoutes = append(registeredRoutes, route.Name)
+			r.Handler.DELETE(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
+		}
+	}
+
+	r.Handler.RouteNotFound(
 		"/*",
 		getHandlerFunc(r.controllers.Pages, "NotFoundPage"),
 	)
+
+	return r.Handler
 }
 
 func getHandlerFunc(controller any, methodName string) echo.HandlerFunc {
@@ -137,139 +205,41 @@ func getHandlerFunc(controller any, methodName string) echo.HandlerFunc {
 	}
 }
 
-func getAllMiddlewareFuncs(
-	middlewares any,
-	middlewareNames []string,
-) []echo.MiddlewareFunc {
-	var middlewareFuncs []echo.MiddlewareFunc
+func registerFlashMessagesContext(
+	next echo.HandlerFunc,
+) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if strings.HasPrefix(c.Request().URL.Path, "/static") {
+			return next(c)
+		}
 
-	for _, name := range middlewareNames {
-		middlewareFuncs = append(
-			middlewareFuncs,
-			getMiddlewareFunc(middlewares, name),
-		)
-	}
-
-	return middlewareFuncs
-}
-
-func getMiddlewareFunc(middleware any, methodName string) echo.MiddlewareFunc {
-	appValue := reflect.ValueOf(middleware)
-	appType := appValue.Type()
-
-	method, found := appType.MethodByName(methodName)
-	if !found {
-		panic(fmt.Sprintf("Controller method %s not found", methodName))
-	}
-
-	methodType := method.Type
-	numIn := methodType.NumIn()
-	numOut := methodType.NumOut()
-
-	if numOut != 1 {
-		panic(
-			fmt.Sprintf("Method %s must return exactly one value", methodName),
-		)
-	}
-
-	returnType := methodType.Out(0)
-	handlerFuncType := reflect.TypeOf((echo.HandlerFunc)(nil))
-	middlewareFuncType := reflect.TypeOf((echo.MiddlewareFunc)(nil))
-
-	switch numIn {
-	case 1:
-		if !returnType.AssignableTo(middlewareFuncType) {
-			panic(
-				fmt.Sprintf(
-					"Method %s must return echo.MiddlewareFunc",
-					methodName,
-				),
+		flashMessages, err := cookies.GetFlashes(c)
+		if err != nil {
+			slog.WarnContext(c.Request().Context(),
+				"Failed to get flash messages",
+				"error", err,
 			)
-		}
-		values := method.Func.Call([]reflect.Value{appValue})
-		middleware, _ := values[0].Interface().(echo.MiddlewareFunc)
-		if middleware == nil {
-			panic(fmt.Sprintf("Method %s returned nil", methodName))
-		}
-		return middleware
 
-	case 2:
-		if !returnType.AssignableTo(handlerFuncType) {
-			panic(
-				fmt.Sprintf(
-					"Method %s must return echo.HandlerFunc",
-					methodName,
-				),
-			)
-		}
-		return func(next echo.HandlerFunc) echo.HandlerFunc {
-			values := method.Func.Call([]reflect.Value{
-				appValue,
-				reflect.ValueOf(next),
-			})
-			return values[0].Interface().(echo.HandlerFunc)
+			return next(c)
 		}
 
-	default:
-		panic(
-			fmt.Sprintf(
-				"Method %s has unsupported number of parameters",
-				methodName,
-			),
-		)
+		c.Set(cookies.FlashKey, flashMessages)
+
+		return next(c)
 	}
 }
 
-func setupRoutes(
-	router *echo.Echo,
-	r []routes.Route,
-	controllers controllers.Controllers,
-	middlewares any,
-) {
-	registeredRoutes := []string{}
-	controllersValue := reflect.ValueOf(controllers)
-
-	for _, route := range r {
-		if registered := slices.Contains(registeredRoutes, route.Name); registered {
-			panic(
-				fmt.Sprintf(
-					"%s is registered more than once",
-					route.Name,
-				),
-			)
+func registerAppContext(
+	next echo.HandlerFunc,
+) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if strings.HasPrefix(c.Request().URL.Path, "/static") ||
+			strings.HasPrefix(c.Request().URL.Path, "/fragments") {
+			return next(c)
 		}
 
-		if route.Handler == "" || route.HandleMethod == "" {
-			panic("Route must specify Handler and HandleMethod fields")
-		}
+		c.Set(cookies.AppKey, cookies.GetApp(c))
 
-		controllerField := controllersValue.FieldByName(route.Handler)
-		if !controllerField.IsValid() {
-			panic(
-				fmt.Sprintf(
-					"Controller field %s not found in controllers struct",
-					route.Handler,
-				),
-			)
-		}
-
-		controller := controllerField.Interface()
-		controllerFunc := getHandlerFunc(controller, route.HandleMethod)
-		middlewareFuncs := getAllMiddlewareFuncs(middlewares, route.Middleware)
-
-		switch route.Method {
-		case http.MethodGet:
-			registeredRoutes = append(registeredRoutes, route.Name)
-			router.GET(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
-		case http.MethodPost:
-			registeredRoutes = append(registeredRoutes, route.Name)
-			router.POST(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
-		case http.MethodPut:
-			registeredRoutes = append(registeredRoutes, route.Name)
-			router.PUT(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
-		case http.MethodDelete:
-			registeredRoutes = append(registeredRoutes, route.Name)
-			router.DELETE(route.Path, controllerFunc, middlewareFuncs...).Name = route.Name
-		}
+		return next(c)
 	}
 }

@@ -7,8 +7,6 @@ const (
 	apiV1NamePrefix  = "api.v1"
 )
 
-var ApiV1 = []Route{}
-
 var Health = Route{
 	Name:         apiV1NamePrefix + ".health",
 	Path:         apiV1RoutePrefix + "/health",

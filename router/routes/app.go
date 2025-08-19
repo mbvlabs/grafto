@@ -7,12 +7,6 @@ import (
 
 const appNamePrefix = "app"
 
-var App = []Route{
-	LandingPage,
-	AboutPage,
-	Redirect.Route,
-}
-
 var LandingPage = Route{
 	Name:         appNamePrefix + ".landing_page",
 	Path:         "/",

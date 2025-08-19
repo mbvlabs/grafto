@@ -6,12 +6,6 @@ const (
 	registrationNamePrefix = "registration"
 )
 
-var Registration = []Route{
-	CreateUserPage,
-	StoreUser,
-	VerifyEmail,
-}
-
 var CreateUserPage = Route{
 	Name:         registrationNamePrefix + ".create_user",
 	Path:         "/registrations/new",

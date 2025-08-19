@@ -1,40 +1,58 @@
 package middleware
 
 import (
+	"errors"
+	"log/slog"
+	"time"
+
 	"github.com/labstack/echo/v4"
-	"github.com/mbvlabs/grafto/views/sessions"
+	"github.com/maypok86/otter"
 )
 
-func (m MW) LoginRateLimiter() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) (err error) {
-			ip := c.RealIP()
+func LoginRateLimiter(next echo.HandlerFunc) echo.HandlerFunc {
+	rateLimitCacheBuilder, err := otter.NewBuilder[string, int32](10_000)
+	if err != nil {
+		slog.Error("failed to create rate limit cache builder", "error", err)
 
-			hits, found := m.rateLimiter.Get(ip)
-			if !found {
-				if ok := m.rateLimiter.Set(ip, 1); !ok {
-					return next(c)
-				}
-			}
-			if hits <= 5 {
-				if ok := m.rateLimiter.Set(ip, hits+1); !ok {
-					return next(c)
-				}
-			}
-
-			if hits > 5 {
-				c.Response().
-					Header().
-					Set("HX-Retarget", "div[id='login-flag']")
-				c.Response().
-					Header().
-					Set("HX-Reswap", "outerHTML")
-
-				return sessions.LoginError("Too many failed attemps!").
-					Render(c.Request().Context(), c.Response())
-			}
-
+		return func(c echo.Context) error {
 			return next(c)
 		}
+	}
+
+	rateLimiter, err := rateLimitCacheBuilder.WithTTL(10 * time.Minute).Build()
+	if err != nil {
+		slog.Error("failed to build rate limiter cache", "error", err)
+		return func(c echo.Context) error {
+			return next(c)
+		}
+	}
+
+	return func(c echo.Context) (err error) {
+		ip := c.RealIP()
+
+		hits, found := rateLimiter.Get(ip)
+		if !found {
+			if ok := rateLimiter.Set(ip, 1); !ok {
+				return next(c)
+			}
+		}
+		if hits <= 5 {
+			if ok := rateLimiter.Set(ip, hits+1); !ok {
+				return next(c)
+			}
+		}
+
+		if hits > 5 {
+			c.Response().
+				Header().
+				Set("HX-Retarget", "div[id='login-flag']")
+			c.Response().
+				Header().
+				Set("HX-Reswap", "outerHTML")
+
+			return errors.New("")
+		}
+
+		return next(c)
 	}
 }

@@ -3,19 +3,13 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	"github.com/mbvlabs/grafto/router/cookies"
 )
 
-func (m MW) AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
+func AuthOnly(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		sess, err := session.Get(AuthenticatedSessionName, c)
-		if err != nil {
-			return next(c)
-		}
-
-		isAuth, _ := sess.Values[SessIsAuthenticated].(bool)
-		if isAuth {
+		if cookies.GetApp(c).IsAdmin {
 			return next(c)
 		}
 
