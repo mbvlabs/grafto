@@ -1,7 +1,7 @@
 package layouts
 
 import (
-	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/reqmeta"
 	"github.com/mbvlabs/grafto/views/internal/components"
 )
 
@@ -14,7 +14,7 @@ templ Base(headOpts ...components.HeadDataOption) {
 			{ children... }
 		</body>
 		<div class="fixed bottom-4 right-10 z-50 space-y-2">
-			for _, flash := range contexts.ExtractFlashMessages(ctx) {
+			for _, flash := range reqmeta.ExtractFlashMessages(ctx) {
 				@components.ToastMessage(flash)
 			}
 		</div>

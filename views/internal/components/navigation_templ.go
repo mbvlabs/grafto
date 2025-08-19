@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/mbvlabs/grafto/config"
-	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/reqmeta"
 	"github.com/mbvlabs/grafto/router/routes"
 )
 
@@ -36,8 +36,8 @@ func NavItem(name, pathName, path string, attrs templ.Attributes) templ.Componen
 		}
 		ctx = templ.ClearChildren(ctx)
 		var templ_7745c5c3_Var2 = []any{"text-base-content no-underline transition-colors duration-300 hover:text-accent text-base font-medium py-2 relative after:content-[''] after:absolute after:h-0.5 after:bottom-0 after:left-0 after:bg-accent after:transition-all after:duration-300",
-			templ.KV("after:w-full text-accent", contexts.ExtractApp(ctx).CurrentPath == path),
-			templ.KV("after:w-0 hover:after:w-full", contexts.ExtractApp(ctx).CurrentPath != path),
+			templ.KV("after:w-full text-accent", reqmeta.ExtractApp(ctx).CurrentPath == path),
+			templ.KV("after:w-0 hover:after:w-full", reqmeta.ExtractApp(ctx).CurrentPath != path),
 		}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
@@ -160,7 +160,7 @@ func Nav() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if contexts.ExtractApp(ctx).IsAuthenticated {
+		if reqmeta.ExtractApp(ctx).IsAuthenticated {
 			templ_7745c5c3_Err = NavItem("Logout", routes.DestroyAuthSession.Name, routes.DestroyAuthSession.Path, templ.Attributes{"hx-delete": routes.DestroyAuthSession.Path}).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

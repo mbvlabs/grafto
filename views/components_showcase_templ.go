@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/mbvlabs/grafto/views/internal/components"
-import "github.com/mbvlabs/grafto/router/contexts"
+import "github.com/mbvlabs/grafto/router/reqmeta"
 import "github.com/mbvlabs/grafto/router/routes"
 import "github.com/google/uuid"
 import "time"
@@ -640,8 +640,8 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
-			Type:      contexts.FlashSuccess,
+		templ_7745c5c3_Err = components.ToastMessage(reqmeta.FlashMessage{
+			Type:      reqmeta.FlashSuccess,
 			Message:   "Operation completed successfully!",
 			CreatedAt: time.Now(),
 		}).Render(ctx, templ_7745c5c3_Buffer)
@@ -652,8 +652,8 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
-			Type:      contexts.FlashError,
+		templ_7745c5c3_Err = components.ToastMessage(reqmeta.FlashMessage{
+			Type:      reqmeta.FlashError,
 			Message:   "An error occurred while processing your request.",
 			CreatedAt: time.Now(),
 		}).Render(ctx, templ_7745c5c3_Buffer)
@@ -664,8 +664,8 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
-			Type:      contexts.FlashWarning,
+		templ_7745c5c3_Err = components.ToastMessage(reqmeta.FlashMessage{
+			Type:      reqmeta.FlashWarning,
 			Message:   "Please check your input and try again.",
 			CreatedAt: time.Now(),
 		}).Render(ctx, templ_7745c5c3_Buffer)
@@ -676,8 +676,8 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
-			Type:      contexts.FlashInfo,
+		templ_7745c5c3_Err = components.ToastMessage(reqmeta.FlashMessage{
+			Type:      reqmeta.FlashInfo,
 			Message:   "Here's some helpful information for you.",
 			CreatedAt: time.Now(),
 		}).Render(ctx, templ_7745c5c3_Buffer)
@@ -688,8 +688,8 @@ func ComponentsShowcase() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = components.ToastMessage(contexts.FlashMessage{
-			Type:      contexts.FlashInfo,
+		templ_7745c5c3_Err = components.ToastMessage(reqmeta.FlashMessage{
+			Type:      reqmeta.FlashInfo,
 			Message:   "This is a very long toast message that demonstrates the improved scrolling behavior. The toast will now expand to a reasonable size before showing scroll bars, and it will only show scroll bars when the content actually exceeds the available space. This makes the user experience much cleaner and more polished. You can see how the toast handles both vertical overflow (when there's a lot of text like this example) and horizontal overflow (when there are very long words or URLs like https://example.com/very/long/url/path/that/might/cause/horizontal/scrolling). The scroll bars now appear only when needed, not always visible like before.",
 			CreatedAt: time.Now(),
 		}).Render(ctx, templ_7745c5c3_Buffer)
