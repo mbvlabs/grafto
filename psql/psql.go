@@ -96,7 +96,7 @@ func CreatePooledConnection(
 ) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(uri)
 	if err != nil {
-		slog.Error("could not parse database connection string", "error", err)
+		slog.ErrorContext(ctx, "could not parse database connection string", "error", err)
 		return nil, err
 	}
 
@@ -105,7 +105,7 @@ func CreatePooledConnection(
 
 	dbpool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
-		slog.Error("could not establish connection to database", "error", err)
+		slog.ErrorContext(ctx, "could not establish connection to database", "error", err)
 		return nil, err
 	}
 
@@ -140,7 +140,7 @@ func getFreePort(ctx context.Context) (uint32, error) {
 type TestPostgres struct {
 	Psql         Postgres
 	EmbeddedPsql *embeddedpostgres.EmbeddedPostgres
-	CleanupFunc  func()
+	CleanupFunc  func(context.Context)
 }
 
 func NewPostgresTest(
@@ -160,10 +160,11 @@ func NewPostgresTest(
 	}
 
 	runtimePath := fmt.Sprintf("/tmp/psql_%s", uuid.New().String())
-	runtimePathCleanup := func() {
-		slog.Info("REMOVING EMBEDDED PSQL DIR")
+	runtimePathCleanup := func(ctx context.Context) {
+		slog.InfoContext(ctx, "REMOVING EMBEDDED PSQL DIR")
 		if err := os.RemoveAll(runtimePath); err != nil {
-			slog.Error(
+			slog.ErrorContext(
+				ctx,
 				"failed to remove temporary directory",
 				"path",
 				runtimePath,

@@ -16,6 +16,8 @@ import (
 	"github.com/mbvlabs/grafto/cmd/generate/ddl"
 	"github.com/mbvlabs/grafto/cmd/generate/generator"
 	"github.com/mbvlabs/grafto/cmd/generate/migrations"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func main() {
@@ -296,7 +298,7 @@ func runSQLCGenerate() error {
 }
 
 func runCompileTemplates() error {
-	cmd := exec.Command("just", "ct")
+	cmd := exec.CommandContext(context.Background(), "just", "ct")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf(
@@ -310,7 +312,8 @@ func runCompileTemplates() error {
 }
 
 func runGolines() error {
-	cmd := exec.Command(
+	cmd := exec.CommandContext(
+		context.Background(),
 		"just",
 		"golines",
 	)
@@ -563,7 +566,7 @@ func generateViewContent(resourceName, pluralName string) (string, error) {
 func formatFieldName(dbName string) string {
 	parts := strings.Split(dbName, "_")
 	for i, part := range parts {
-		parts[i] = strings.Title(part)
+		parts[i] = cases.Title(language.English).String(part)
 	}
 	return strings.Join(parts, "")
 }
@@ -571,7 +574,7 @@ func formatFieldName(dbName string) string {
 func formatDisplayName(dbName string) string {
 	parts := strings.Split(dbName, "_")
 	for i, part := range parts {
-		parts[i] = strings.Title(part)
+		parts[i] = cases.Title(language.English).String(part)
 	}
 	return strings.Join(parts, " ")
 }
@@ -584,7 +587,7 @@ func formatCamelCase(dbName string) string {
 
 	result := parts[0]
 	for i := 1; i < len(parts); i++ {
-		result += strings.Title(parts[i])
+		result += cases.Title(language.English).String(parts[i])
 	}
 	return result
 }

@@ -6,12 +6,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Api struct{}
+type API struct{}
 
-func newApi() Api {
-	return Api{}
+func newAPI() API {
+	return API{}
 }
 
-func (a *Api) AppHealth(ctx echo.Context) error {
+func (a API) AppHealth(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, "app is healthy and running")
 }

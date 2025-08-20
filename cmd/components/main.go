@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 
 	"github.com/labstack/echo/v4"
@@ -21,6 +22,6 @@ func main() {
 		return views.ComponentsShowcase().Render(c.Request().Context(), c.Response().Writer)
 	})
 
-	slog.Info("starting the components server on port: 5555")
+	slog.InfoContext(context.Background(), "starting the components server on port: 5555")
 	e.Logger.Fatal(e.Start(":5555"))
 }

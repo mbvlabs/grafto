@@ -4,12 +4,11 @@ import (
 	"context"
 	"net/textproto"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2"
+	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 	jwEmail "github.com/jordan-wright/email"
-	"github.com/mbvlabs/grafto/config"
+	appConfig "github.com/mbvlabs/grafto/config"
 )
 
 type EmailPayload struct {
@@ -31,27 +30,22 @@ const (
 	awsRegion = "eu-central-1"
 )
 
-var defaultSender = config.Cfg.App.DefaultSenderSignature
+var defaultSender = appConfig.Cfg.App.DefaultSenderSignature
 
 type Email struct {
-	client *ses.SES
+	client *sesv2.Client
 }
 
-func NewEmail() Email {
-	creds := credentials.NewEnvCredentials()
-	conf := &aws.Config{
-		Region:      aws.String(awsRegion),
-		Credentials: creds,
-	}
-	sess, err := session.NewSession(conf)
+func NewEmail(ctx context.Context) Email {
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(awsRegion))
 	if err != nil {
 		panic(err)
 	}
 
-	ses := ses.New(sess)
+	client := sesv2.NewFromConfig(cfg)
 
 	return Email{
-		ses,
+		client,
 	}
 }
 
@@ -102,13 +96,15 @@ func (e Email) send(
 		return err
 	}
 
-	input := &ses.SendRawEmailInput{
-		RawMessage: &ses.RawMessage{
-			Data: rawMessage,
+	input := &sesv2.SendEmailInput{
+		Content: &types.EmailContent{
+			Raw: &types.RawMessage{
+				Data: rawMessage,
+			},
 		},
 	}
 
-	_, err = e.client.SendRawEmailWithContext(ctx, input)
+	_, err = e.client.SendEmail(ctx, input)
 	if err != nil {
 		return err
 	}
