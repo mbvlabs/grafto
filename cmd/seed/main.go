@@ -16,9 +16,8 @@ import (
 )
 
 func main() {
-	slog.Info("Starting seed script...")
-
 	ctx := context.Background()
+	slog.InfoContext(ctx, "Starting seed script...")
 	pool, err := psql.CreatePooledConnection(
 		context.Background(),
 		config.Cfg.DB.GetDatabaseURL(),
@@ -39,7 +38,7 @@ func main() {
 	///nolint:errcheck
 	defer tx.Rollback(ctx)
 
-	slog.Info("Starting seed script...")
+	slog.InfoContext(ctx, "Starting seed script...")
 
 	seeder := seeds.NewSeeder(pool)
 	_, err = seeder.PlantUser(
@@ -56,11 +55,11 @@ func main() {
 		panic(err)
 	}
 
-	slog.Info("Seed script finished")
+	slog.InfoContext(ctx, "Seed script finished")
 }
 
 func resetDatabase(ctx context.Context, pool *pgxpool.Pool) error {
-	slog.Info("Resetting database...")
+	slog.InfoContext(ctx, "Resetting database...")
 	gooseLock, err := lock.NewPostgresSessionLocker()
 	if err != nil {
 		return err
@@ -93,6 +92,6 @@ func resetDatabase(ctx context.Context, pool *pgxpool.Pool) error {
 		return err
 	}
 
-	slog.Info("Database reset finished")
+	slog.InfoContext(ctx, "Database reset finished")
 	return nil
 }

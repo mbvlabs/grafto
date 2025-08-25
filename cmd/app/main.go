@@ -40,7 +40,7 @@ func startServer(ctx context.Context, srv *http.Server, env string) error {
 
 		eg.Go(func() error {
 			<-egCtx.Done()
-			slog.Info("initiating graceful shutdown")
+			slog.InfoContext(ctx, "initiating graceful shutdown")
 			shutdownCtx, cancel := context.WithTimeout(
 				ctx,
 				10*time.Second,
@@ -53,7 +53,7 @@ func startServer(ctx context.Context, srv *http.Server, env string) error {
 		})
 
 		if err := eg.Wait(); err != nil {
-			slog.Info("wait error", "e", err)
+			slog.InfoContext(ctx, "wait error", "e", err)
 			return err
 		}
 
@@ -84,7 +84,7 @@ func run(ctx context.Context) error {
 	}
 	defer func() {
 		if err := tel.Shutdown(ctx); err != nil {
-			slog.Error("Failed to shutdown telemetry", "error", err)
+			slog.ErrorContext(ctx, "Failed to shutdown telemetry", "error", err)
 		}
 	}()
 
@@ -113,7 +113,7 @@ func run(ctx context.Context) error {
 	)
 	defer func() {
 		if err := queueLoggerShutdown(ctx); err != nil {
-			slog.Error("Failed to shutdown telemetry", "error", err)
+			slog.ErrorContext(ctx, "Failed to shutdown telemetry", "error", err)
 		}
 	}()
 
@@ -140,7 +140,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	emailClient := clients.NewEmail()
+	emailClient := clients.NewEmail(ctx)
 
 	cacheBuilder, err := otter.NewBuilder[string, templ.Component](20)
 	if err != nil {

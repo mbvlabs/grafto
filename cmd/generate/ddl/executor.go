@@ -1,6 +1,7 @@
 package ddl
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -38,7 +39,8 @@ func ApplyDDL(
 	case DropIndex:
 		return applyDropIndex(catalog, ddlStmt, migrationFile)
 	case Unknown:
-		slog.Warn(
+		slog.WarnContext(
+			context.Background(),
 			"Unknown DDL statement type in %s: %s",
 			filepath.Base(migrationFile),
 			ddlStmt.Raw,

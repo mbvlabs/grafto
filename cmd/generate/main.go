@@ -16,6 +16,8 @@ import (
 	"github.com/mbvlabs/grafto/cmd/generate/ddl"
 	"github.com/mbvlabs/grafto/cmd/generate/generator"
 	"github.com/mbvlabs/grafto/cmd/generate/migrations"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func main() {
@@ -206,20 +208,6 @@ func isRelevantForTable(stmt, targetTable string) bool {
 	return false
 }
 
-// func getAvailableTableNames(cat *catalog.Catalog) string {
-// 	tables, err := cat.ListTables("")
-// 	if err != nil {
-// 		return "unable to list tables"
-// 	}
-//
-// 	var names []string
-// 	for _, table := range tables {
-// 		names = append(names, table.Name)
-// 	}
-//
-// 	return strings.Join(names, ", ")
-// }
-
 func generateSQLFile(
 	resourceName string,
 	pluralName string,
@@ -310,7 +298,7 @@ func runSQLCGenerate() error {
 }
 
 func runCompileTemplates() error {
-	cmd := exec.Command("just", "ct")
+	cmd := exec.CommandContext(context.Background(), "just", "ct")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf(
@@ -324,7 +312,8 @@ func runCompileTemplates() error {
 }
 
 func runGolines() error {
-	cmd := exec.Command(
+	cmd := exec.CommandContext(
+		context.Background(),
 		"just",
 		"golines",
 	)
@@ -340,7 +329,6 @@ func runGolines() error {
 	return nil
 }
 
-// Keep the original view generation code unchanged
 func generateView(resourceName string) error {
 	pluralName := inflection.Plural(strings.ToLower(resourceName))
 	viewPath := filepath.Join("views", pluralName+"_resource.templ")
@@ -578,7 +566,7 @@ func generateViewContent(resourceName, pluralName string) (string, error) {
 func formatFieldName(dbName string) string {
 	parts := strings.Split(dbName, "_")
 	for i, part := range parts {
-		parts[i] = strings.Title(part)
+		parts[i] = cases.Title(language.English).String(part)
 	}
 	return strings.Join(parts, "")
 }
@@ -586,7 +574,7 @@ func formatFieldName(dbName string) string {
 func formatDisplayName(dbName string) string {
 	parts := strings.Split(dbName, "_")
 	for i, part := range parts {
-		parts[i] = strings.Title(part)
+		parts[i] = cases.Title(language.English).String(part)
 	}
 	return strings.Join(parts, " ")
 }
@@ -599,7 +587,7 @@ func formatCamelCase(dbName string) string {
 
 	result := parts[0]
 	for i := 1; i < len(parts); i++ {
-		result += strings.Title(parts[i])
+		result += cases.Title(language.English).String(parts[i])
 	}
 	return result
 }
@@ -645,7 +633,7 @@ func generateController(resourceName string) error {
 		return fmt.Errorf("failed to register controller: %w", err)
 	}
 
-	if err := registerRoutes(resourceName, pluralName); err != nil {
+	if err := registerRoutes(resourceName); err != nil {
 		return fmt.Errorf("failed to register routes: %w", err)
 	}
 
@@ -655,7 +643,6 @@ func generateController(resourceName string) error {
 func generateControllerFile(
 	resourceName, pluralName, controllerPath string,
 ) error {
-	// Get field information from database schema
 	cfg := config.NewDefaultConfig()
 	cfg.TableName = pluralName
 
@@ -719,7 +706,6 @@ func generateControllerFile(
 
 		field.GoType = goType
 
-		// Map Go types to appropriate form types
 		switch goType {
 		case "time.Time":
 			field.GoFormType = "time.Time"
@@ -879,7 +865,6 @@ func registerController(resourceName, pluralName string) error {
 				for j := i + 1; j < len(lines); j++ {
 					if strings.Contains(lines[j], "}") &&
 						!strings.Contains(lines[j], "{") {
-						// Insert before the closing brace
 						lines = append(
 							lines[:j],
 							append([]string{returnField}, lines[j:]...)...)
@@ -896,7 +881,7 @@ func registerController(resourceName, pluralName string) error {
 	return os.WriteFile(controllerFilePath, []byte(contentStr), 0644)
 }
 
-func registerRoutes(resourceName, pluralName string) error {
+func registerRoutes(resourceName string) error {
 	routesFilePath := "router/routes/routes.go"
 
 	content, err := os.ReadFile(routesFilePath)
@@ -906,24 +891,43 @@ func registerRoutes(resourceName, pluralName string) error {
 
 	contentStr := string(content)
 
-	appendLine := fmt.Sprintf("\tr = append(r, %ss...)", resourceName)
+	routesToAdd := []string{
+		fmt.Sprintf("\t\t%sIndex,", resourceName),
+		fmt.Sprintf("\t\t%sShow.Route,", resourceName),
+		fmt.Sprintf("\t\t%sNew,", resourceName),
+		fmt.Sprintf("\t\t%sCreate,", resourceName),
+		fmt.Sprintf("\t\t%sEdit.Route,", resourceName),
+		fmt.Sprintf("\t\t%sUpdate.Route,", resourceName),
+		fmt.Sprintf("\t\t%sDestroy.Route,", resourceName),
+	}
 
-	if !strings.Contains(contentStr, appendLine) {
-		pattern := `var AllRoutes = func() []Route {`
-		replacement := pattern + "\n\tvar r []Route"
-
-		if !strings.Contains(contentStr, "var r []Route") {
-			contentStr = strings.Replace(contentStr, pattern, replacement, 1)
+	alreadyExists := false
+	for _, route := range routesToAdd {
+		if strings.Contains(contentStr, strings.TrimSpace(route)) {
+			alreadyExists = true
+			break
 		}
+	}
 
-		returnPattern := `return r`
-		returnReplacement := appendLine + "\n\n\t" + returnPattern
-		contentStr = strings.Replace(
-			contentStr,
-			"\t"+returnPattern,
-			"\t"+returnReplacement,
-			1,
-		)
+	if !alreadyExists {
+		lines := strings.Split(contentStr, "\n")
+		inAppend := false
+
+		for i, line := range lines {
+			if strings.Contains(line, "r = append(") {
+				inAppend = true
+				continue
+			}
+
+			if inAppend && strings.TrimSpace(line) == ")" {
+				newLines := make([]string, 0, len(lines)+len(routesToAdd))
+				newLines = append(newLines, lines[:i]...)
+				newLines = append(newLines, routesToAdd...)
+				newLines = append(newLines, lines[i:]...)
+				contentStr = strings.Join(newLines, "\n")
+				break
+			}
+		}
 	}
 
 	//nolint:gosec //

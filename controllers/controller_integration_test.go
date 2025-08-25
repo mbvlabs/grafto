@@ -14,13 +14,12 @@ import (
 	"github.com/labstack/echo/v4"
 	echomw "github.com/labstack/echo/v4/middleware"
 	"github.com/maypok86/otter"
-	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/controllers"
+	"github.com/mbvlabs/grafto/pkg/clients"
+	"github.com/mbvlabs/grafto/pkg/telemetry"
 	"github.com/mbvlabs/grafto/psql"
 	"github.com/mbvlabs/grafto/router"
-	"github.com/mbvlabs/grafto/router/middleware"
 	"github.com/mbvlabs/grafto/services"
-	"github.com/mbvlabs/grafto/telemetry"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -28,7 +27,7 @@ import (
 func setupTestDB(
 	ctx context.Context,
 	t *testing.T,
-) (psql.Postgres, func(), func()) {
+) (psql.Postgres, func(context.Context), func()) {
 	testPsql, err := psql.NewPostgresTest(ctx)
 	require.NoError(t, err)
 
@@ -69,30 +68,12 @@ func setupTestControllers(
 	return controllers.New(postgres, pageCacher, emailSvc)
 }
 
-func setupTestMiddleware(
-	t *testing.T,
-) middleware.MW {
-	tp, err := telemetry.NewTraceProvider(
-		context.Background(),
-		nil,
-		&telemetry.NoopTraceExporter{},
-		0.0,
-	)
-	require.NoError(t, err, "new trace exporter returned error ")
-
-	mw, err := middleware.New(tp)
-	require.NoError(t, err, "new middleware returned error ")
-
-	return mw
-}
-
 func setupTestRouter(
 	t *testing.T,
 	controllers controllers.Controllers,
-	mw middleware.MW,
 ) *echo.Echo {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		Level: slog.LevelError,
+		Level: slog.LevelDebug,
 	}))
 	slog.SetDefault(logger)
 
@@ -105,7 +86,7 @@ func setupTestRouter(
 
 	require.NoError(t, err, "new trace exporter returned error ")
 
-	router, err := router.New(controllers, mw, nil, tp)
+	router, err := router.New(controllers, nil, tp)
 	require.NoError(t, err, "new router returned error ")
 
 	return router.SetupRoutes()

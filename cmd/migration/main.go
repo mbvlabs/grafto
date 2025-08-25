@@ -113,7 +113,8 @@ func main() {
 			}
 
 			for _, status := range statuses {
-				slog.Info(
+				slog.InfoContext(
+					ctx,
 					"database status",
 					"version",
 					status.Source.Version,

@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/psql"
-	"github.com/mbvlabs/grafto/router/contexts"
+	"github.com/mbvlabs/grafto/router/cookies"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/mbvlabs/grafto/views"
 )
@@ -46,19 +46,6 @@ type Update{{.ResourceName}}FormPayload struct {
 
 func new{{.ResourceName}}s(db psql.Postgres) {{.ResourceName}}s {
 	return {{.ResourceName}}s{db}
-}
-
-func parseTimeField(dateStr string) time.Time {
-	if dateStr == "" {
-		return time.Time{}
-	}
-	
-	t, err := time.Parse("2006-01-02", dateStr)
-	if err != nil {
-		return time.Time{}
-	}
-	
-	return t
 }
 
 func (r {{.ResourceName}}s) Index(c echo.Context) error {
@@ -129,7 +116,15 @@ func (r {{.ResourceName}}s) Create(c echo.Context) error {
 {{- range .Fields}}
 {{- if not .IsSystemField}}
 		{{- if eq .GoFormType "time.Time"}}
-		{{.Name}}:    parseTimeField(formPayload.{{.Name}}),
+		{{.Name}}:    func() time.Time {
+			if formPayload.{{.Name}} == "" {
+				return time.Time{}
+			}
+			if t, err := time.Parse("2006-01-02", formPayload.{{.Name}}); err == nil {
+				return t
+			}
+			return time.Time{}
+		}(),
 		{{- else}}
 		{{.Name}}:    formPayload.{{.Name}},
 		{{- end}}
@@ -143,13 +138,13 @@ func (r {{.ResourceName}}s) Create(c echo.Context) error {
 		payload,
 	)
 	if err != nil {
-		if flashErr := addFlash(c, contexts.FlashError, fmt.Sprintf("Failed to create {{.ResourceName | ToLower}}: %v", err)); flashErr != nil {
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, fmt.Sprintf("Failed to create {{.ResourceName | ToLower}}: %v", err)); flashErr != nil {
 			return flashErr
 		}
 		return c.Redirect(http.StatusSeeOther, routes.{{.ResourceName}}New.Path)
 	}
 
-	if flashErr := addFlash(c, contexts.FlashSuccess, "{{.ResourceName}} created successfully"); flashErr != nil {
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "{{.ResourceName}} created successfully"); flashErr != nil {
 		return flashErr
 	}
 
@@ -193,7 +188,15 @@ func (r {{.ResourceName}}s) Update(c echo.Context) error {
 {{- range .Fields}}
 {{- if not .IsSystemField}}
 		{{- if eq .GoFormType "time.Time"}}
-		{{.Name}}:    parseTimeField(formPayload.{{.Name}}),
+		{{.Name}}:    func() time.Time {
+			if formPayload.{{.Name}} == "" {
+				return time.Time{}
+			}
+			if t, err := time.Parse("2006-01-02", formPayload.{{.Name}}); err == nil {
+				return t
+			}
+			return time.Time{}
+		}(),
 		{{- else}}
 		{{.Name}}:    formPayload.{{.Name}},
 		{{- end}}
@@ -207,7 +210,7 @@ func (r {{.ResourceName}}s) Update(c echo.Context) error {
 		payload,
 	)
 	if err != nil {
-		if flashErr := addFlash(c, contexts.FlashError, fmt.Sprintf("Failed to update {{.ResourceName | ToLower}}: %v", err)); flashErr != nil {
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, fmt.Sprintf("Failed to update {{.ResourceName | ToLower}}: %v", err)); flashErr != nil {
 			return flashErr
 		}
 		return c.Redirect(
@@ -216,7 +219,7 @@ func (r {{.ResourceName}}s) Update(c echo.Context) error {
 		)
 	}
 
-	if flashErr := addFlash(c, contexts.FlashSuccess, "{{.ResourceName}} updated successfully"); flashErr != nil {
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "{{.ResourceName}} updated successfully"); flashErr != nil {
 		return flashErr
 	}
 
@@ -231,13 +234,13 @@ func (r {{.ResourceName}}s) Destroy(c echo.Context) error {
 
 	err = models.Destroy{{.ResourceName}}(c.Request().Context(), r.db.Pool, {{.ResourceName | ToLower}}ID)
 	if err != nil {
-		if flashErr := addFlash(c, contexts.FlashError, fmt.Sprintf("Failed to delete {{.ResourceName | ToLower}}: %v", err)); flashErr != nil {
+		if flashErr := cookies.AddFlash(c, cookies.FlashError, fmt.Sprintf("Failed to delete {{.ResourceName | ToLower}}: %v", err)); flashErr != nil {
 			return flashErr
 		}
 		return c.Redirect(http.StatusSeeOther, routes.{{.ResourceName}}Index.Path)
 	}
 
-	if flashErr := addFlash(c, contexts.FlashSuccess, "{{.ResourceName}} destroyed successfully"); flashErr != nil {
+	if flashErr := cookies.AddFlash(c, cookies.FlashSuccess, "{{.ResourceName}} destroyed successfully"); flashErr != nil {
 		return flashErr
 	}
 

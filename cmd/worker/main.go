@@ -22,7 +22,7 @@ func main() {
 	ctx := context.Background()
 	cfg := config.NewConfig()
 
-	emailClient := clients.NewEmail()
+	emailClient := clients.NewEmail(ctx)
 
 	conn, err := psql.CreatePooledConnection(
 		ctx,

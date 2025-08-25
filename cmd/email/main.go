@@ -47,6 +47,6 @@ func main() {
 		return c.HTML(http.StatusOK, signupWelcomeHtml.String())
 	})
 
-	slog.Info("starting the password server on port: 4444")
+	slog.InfoContext(ctx, "starting the password server on port: 4444")
 	log.Fatal(e.Start(":4444"))
 }

@@ -17,6 +17,10 @@ var authenticatedSessionName = fmt.Sprintf(
 	config.Cfg.App.Env,
 )
 
+func GetAuthenticatedSessionName() string {
+	return authenticatedSessionName
+}
+
 const (
 	FlashKey         = "flash_messages"
 	AppKey           = "app_context"

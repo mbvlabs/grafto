@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 )
 
 func main() {
-	slog.Info("explore")
+	slog.InfoContext(context.Background(), "explore")
 	// Create a new SHA-256 hash
 	// hash := sha256.New()
 

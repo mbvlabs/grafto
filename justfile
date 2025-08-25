@@ -89,7 +89,7 @@ fmt-templates:
     cd views && templ fmt .
 
 golines:
-	@golines -w -m 120 controllers models router router/routes router/contexts
+	@golines -w -m 100 controllers models router router/routes 
 
 # exploration
 explore:

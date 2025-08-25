@@ -7,6 +7,9 @@ toolchain go1.24.2
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/a-h/templ v0.3.924
+	github.com/aws/aws-sdk-go-v2 v1.38.0
+	github.com/aws/aws-sdk-go-v2/config v1.31.0
+	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.51.0
 	github.com/dromara/carbon/v2 v2.6.11
 	github.com/exaring/otelpgx v0.9.3
 	github.com/fergusstrange/embedded-postgres v1.32.0
@@ -29,12 +32,25 @@ require (
 	golang.org/x/crypto v0.41.0
 	golang.org/x/net v0.43.0
 	golang.org/x/sync v0.16.0
+	golang.org/x/text v0.28.0
 	gopkg.in/yaml.v2 v2.4.0
 	riverqueue.com/riverui v0.11.0
 )
 
 require (
 	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.18.4 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.28.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.33.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.37.0 // indirect
+	github.com/aws/smithy-go v1.22.5 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dolthub/maphash v0.1.0 // indirect
@@ -52,7 +68,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
@@ -83,7 +98,6 @@ require (
 	go.opentelemetry.io/proto/otlp v1.7.0 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
@@ -93,7 +107,6 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.55.8
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-faker/faker/v4 v4.6.1
 	github.com/go-playground/validator/v10 v10.27.0
