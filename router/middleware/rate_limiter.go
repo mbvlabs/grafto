@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"time"
@@ -12,7 +13,7 @@ import (
 func LoginRateLimiter(next echo.HandlerFunc) echo.HandlerFunc {
 	rateLimitCacheBuilder, err := otter.NewBuilder[string, int32](10_000)
 	if err != nil {
-		slog.Error("failed to create rate limit cache builder", "error", err)
+		slog.ErrorContext(context.Background(), "failed to create rate limit cache builder", "error", err)
 
 		return func(c echo.Context) error {
 			return next(c)
@@ -21,7 +22,7 @@ func LoginRateLimiter(next echo.HandlerFunc) echo.HandlerFunc {
 
 	rateLimiter, err := rateLimitCacheBuilder.WithTTL(10 * time.Minute).Build()
 	if err != nil {
-		slog.Error("failed to build rate limiter cache", "error", err)
+		slog.ErrorContext(context.Background(), "failed to build rate limiter cache", "error", err)
 		return func(c echo.Context) error {
 			return next(c)
 		}

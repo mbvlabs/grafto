@@ -12,12 +12,8 @@ import (
 	"github.com/mbvlabs/grafto/services"
 )
 
-const (
-	oneWeekInSeconds = 604800
-)
-
 type Controllers struct {
-	API           Api
+	API           API
 	Pages         Pages
 	Sessions      Sessions
 	Dashboard     Dashboard
@@ -35,7 +31,7 @@ func New(
 	cache otter.CacheWithVariableTTL[string, templ.Component],
 	emailSvc services.EmailSender,
 ) Controllers {
-	api := newApi()
+	api := newAPI()
 	pages := newPages(db, cache)
 	auth := newSessions(db, emailSvc)
 	dashboard := newDashboard(db)

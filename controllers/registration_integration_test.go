@@ -15,9 +15,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/mbvlabs/grafto/clients"
 	"github.com/mbvlabs/grafto/models"
 	"github.com/mbvlabs/grafto/models/seeds"
+	"github.com/mbvlabs/grafto/pkg/clients"
 	"github.com/mbvlabs/grafto/router/routes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -28,13 +28,12 @@ func TestStoreUser(t *testing.T) {
 
 	ctx := context.Background()
 	postgres, cleanup, stopEmbedded := setupTestDB(ctx, t)
-	defer cleanup()
+	defer cleanup(ctx)
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
 	testControllers := setupTestControllers(t, postgres, emailSvc)
-	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testControllers, testMiddleware)
+	router := setupTestRouter(t, testControllers)
 
 	tests := []struct {
 		name          string
@@ -131,13 +130,12 @@ func TestVerifyEmail(t *testing.T) {
 
 	ctx := context.Background()
 	postgres, cleanup, stopEmbedded := setupTestDB(ctx, t)
-	defer cleanup()
+	defer cleanup(ctx)
 	defer stopEmbedded()
 
 	emailSvc := new(mockedEmailService)
 	testControllers := setupTestControllers(t, postgres, emailSvc)
-	testMiddleware := setupTestMiddleware(t)
-	router := setupTestRouter(t, testControllers, testMiddleware)
+	router := setupTestRouter(t, testControllers)
 
 	seeder := seeds.NewSeeder(postgres.Pool)
 	user, err := seeder.PlantUser(ctx)
