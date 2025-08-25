@@ -71,7 +71,6 @@ func setupTestControllers(
 func setupTestRouter(
 	t *testing.T,
 	controllers controllers.Controllers,
-	// mw middleware.MW,
 ) *echo.Echo {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 		Level: slog.LevelDebug,
