@@ -15,8 +15,8 @@ require (
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lmittmann/tint v1.1.2
-	github.com/riverqueue/river v0.23.1
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
+	github.com/riverqueue/river v0.24.0
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.24.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.25.0
 	go.opentelemetry.io/otel v1.37.0
@@ -63,9 +63,9 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/riverqueue/apiframe v0.0.0-20250408034821-b206bbbd0fb4 // indirect
-	github.com/riverqueue/river/riverdriver v0.23.1 // indirect
-	github.com/riverqueue/river/rivershared v0.23.1 // indirect
-	github.com/riverqueue/river/rivertype v0.23.1 // indirect
+	github.com/riverqueue/river/riverdriver v0.24.0 // indirect
+	github.com/riverqueue/river/rivershared v0.24.0 // indirect
+	github.com/riverqueue/river/rivertype v0.24.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
