@@ -1,3 +1,5 @@
+This project has been archived in favor of [Andurel](https://github.com/mbvlabs/andurel) - a rails-like framework in Go that was always the natural next step from this starter template.
+
 # Grafto - full-stack web dev in Go
 
 The kickstarter repository for full-stack Go apps using your grandfather's technology.
