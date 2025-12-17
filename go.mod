@@ -7,7 +7,6 @@ toolchain go1.24.2
 require (
 	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/a-h/templ v0.3.924
-	github.com/aws/aws-sdk-go-v2 v1.38.0
 	github.com/aws/aws-sdk-go-v2/config v1.31.0
 	github.com/aws/aws-sdk-go-v2/service/sesv2 v1.51.0
 	github.com/dromara/carbon/v2 v2.6.11
@@ -18,8 +17,8 @@ require (
 	github.com/jaytaylor/html2text v0.0.0-20180606194806-57d518f124b0
 	github.com/jinzhu/inflection v1.0.0
 	github.com/lmittmann/tint v1.1.2
-	github.com/riverqueue/river v0.23.1
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
+	github.com/riverqueue/river v0.24.0
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.24.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vanng822/go-premailer v1.25.0
 	go.opentelemetry.io/otel v1.37.0
@@ -34,11 +33,12 @@ require (
 	golang.org/x/sync v0.16.0
 	golang.org/x/text v0.28.0
 	gopkg.in/yaml.v2 v2.4.0
-	riverqueue.com/riverui v0.11.0
+	riverqueue.com/riverui v0.12.2
 )
 
 require (
 	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.38.0 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.4 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.3 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.3 // indirect
@@ -78,9 +78,9 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/riverqueue/apiframe v0.0.0-20250408034821-b206bbbd0fb4 // indirect
-	github.com/riverqueue/river/riverdriver v0.23.1 // indirect
-	github.com/riverqueue/river/rivershared v0.23.1 // indirect
-	github.com/riverqueue/river/rivertype v0.23.1 // indirect
+	github.com/riverqueue/river/riverdriver v0.24.0 // indirect
+	github.com/riverqueue/river/rivershared v0.24.0 // indirect
+	github.com/riverqueue/river/rivertype v0.24.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf // indirect
